@@ -1,0 +1,195 @@
+[
+  {
+    "name": "Mignonne LeBlanc",
+    "email": "mempepleblanc@aol.com",
+    "street": "8 Spring Lake Drive",
+    "city": "West Harrison",
+    "state": "NY",
+    "zip": "10604",
+    "phone": {
+      "home": "914-946-8383",
+      "cell": "864-423-9306"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "Dan LeBlanc",
+    "email": "dleblanc@capeleisurecorp.com",
+    "street": "8720 Seashell Lane",
+    "city": "Cape Canaveral",
+    "state": "FL",
+    "zip": "32920",
+    "phone": {
+      "home": "321-783-2416",
+      "cell": "321-412-6834"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "Nicki & Chas Decker",
+    "email": "nickidecker@gmail.com",
+    "street": "8 Spring Lake Drive",
+    "city": "West Harrison",
+    "state": "NY",
+    "zip": "10604",
+    "phone": {
+      "home": "914-761-3861",
+      "cell": "914-393-4764"
+    },
+    "family": "Mignonne"
+  },
+
+  {
+    "name": "Claire & David Kapusta",
+    "email": "claire.kapusta@gmail.com",
+    "street": "13 Cottam Hill Road",
+    "city": "Wappingers Falls",
+    "state": "NY",
+    "zip": "12590",
+    "phone": {
+      "home": "845-297-6506",
+      "cell": "914-456-7393"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "Michele LeBlanc",
+    "email": "mdcl2233@gmail.com",
+    "street": "46 Carriage Drive",
+    "city": "Kings Park",
+    "state": "NY",
+    "zip": "11754",
+    "phone": {
+      "cell": "631-366-4651"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "Monique & Mark Miculcy",
+    "email": "mmiculcy@optonline.com",
+    "street": "69 Prospect Street",
+    "city": "Greenwich",
+    "state": "CT",
+    "zip": "06830",
+    "phone": {
+      "cell": "203-629-8194"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "Beth & Adam Emerson",
+    "email": "beth.emerson5@gmail.com",
+    "street": "14508 Brittania Drive",
+    "city": "Chesterfield",
+    "state": "MO",
+    "zip": "63017",
+    "phone": {
+      "cell": "636-220-7651"
+    },
+    "family": "Mignonne"
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  },
+  {
+    "name": "",
+    "email": "",
+    "street": "",
+    "city": "",
+    "state": "",
+    "zip": "",
+    "phone": {
+      "": "",
+      "cell": ""
+    },
+    "family": ""
+  }
+]
