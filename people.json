@@ -1,16 +1,14 @@
-[
   {
-name: "Mignonne LeBlanc",
-email: "mempepleblanc@aol.com",
-street: "8 Spring Lake Drive",
-city: "West Harrison",
-state: "NY" ,
-zip: "10604",
-phone: [
-  Home: "914-946-8383",
-  Cell: "864-423-9306"
-]
-  },
+"name": "Mignonne LeBlanc",
+"email": "mempepleblanc@aol.com",
+"street": "8 Spring Lake Drive",
+"city": "West Harrison",
+"state": "NY" ,
+"zip": "10604",
+"phone": {
+  "home": "914-946-8383",
+  "hell": "864-423-9306"
+},
 {
 name: "Dan LeBlanc",
 email: "dleblanc@capeleisurecorp.com",
@@ -34,7 +32,8 @@ phone: [
   home: "914-761-3861",
   cell: "914-393-4764"
 ]
-
+},
+{
 name: "Claire & David Kapusta",
 email: "claire.kapusta@gmail.com",
 street: "13 Cottam Hill Road",
@@ -45,25 +44,40 @@ phone: [
   home: "845-297-6506",
   cell: "914-456-7393"
 ]
-""
-name: "Michele LeBlanc"
-email: "mdcl2233@gmail.com"
-street: "46 Carriage Drive"
-"Kings Park, NY 11754"
-"631-366-4651"
-""
-name: "Monique & Mark Miculcy"
-email: "mmiculcy@optonline.com"
-street: "69 Prospect Street"
-"Greenwich, CT 06830"
-"203-629-8194"
-""
-name: "Beth & Adam Emerson"
-email: "beth.emerson5@gmail.com"
-street: "14508 Brittania Dr."
-"Chesterfield, MO 63017"
-"636-220-7651"
+},
+{
+name: "Michele LeBlanc",
+email: "mdcl2233@gmail.com",
+street: "46 Carriage Drive",
+street: "Kings Park",
+city: "NY",
+zip: "11754",
+phone: [
+  cell: "631-366-4651"
 ]
+},
+{
+name: "Monique & Mark Miculcy",
+email: "mmiculcy@optonline.com",
+street: "69 Prospect Street",
+city: "Greenwich",
+state: "CT",
+zip: "06830",
+phone: [
+  "203-629-8194"
+]
+},
+{
+name: "Beth & Adam Emerson",
+email: "beth.emerson5@gmail.com",
+street: "14508 Brittania Drive",
+city: "Chesterfield",
+state: "MO",
+zip: "63017",
+phone: [
+  "636-220-7651"
+]
+}
 "*************************************************"
 "Denise Hark"
 "aahark@myfairpoint.ne"
