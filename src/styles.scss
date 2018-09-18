@@ -1,10 +1,17 @@
-/* You can add global styles to this file, and also import other style files */
-$primary-color-dark:   #388E3C
-$primary-color:        #4CAF50
-$primary-color-light:  #C8E6C9
-$primary-color-text:   #FFFFFF
-$accent-color:         #8BC34A
-$primary-text-color:   #212121
-$secondary-text-color: #757575
-$divider-color:        #BDBDBD
+@import '~@angular/material/theming';
 
+// always include only once per project
+@include mat-core();
+
+$lecoursville-primary: mat-palette($mat-light-green);
+$lecoursville-accent: mat-palette($mat-light-green);
+$lecoursville-warn: mat-palette($mat-deep-orange);
+// specify theme class eg: <body class="my-theme"> ... </body>
+$lecoursville-theme: mat-light-theme($lecoursville-primary, $lecoursville-accent, $lecoursville-warn);    
+
+html, body {
+    margin: 0;
+    // background-color:  mat-palette($mat-light-green);
+    @include angular-material-theme($lecoursville-theme);
+}
+/* You can add global styles to this file, and also import other style files */

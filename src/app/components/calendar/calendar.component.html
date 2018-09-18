@@ -1,7 +1,16 @@
-<div>
-  <label>PDF src</label>
+<div style="width:80%;overflow: hidden; margin:auto">
+  <mat-toolbar style="margin: auto;display:flex;justify-content: space-between;">
+      <button mat-mini-fab *ngFor="let month of months">{{month.name}}</button>
+  </mat-toolbar>
+  <button mat-mini-fab>
+    <mat-icon>home</mat-icon>
+  </button>
+  
+  <pdf-viewer [src]="pdfSrc" 
+            [render-text]="true"
+            [show-all]="false"
+            [original-size]="false"
+            style="display: block;"
+            [page]="3">
+  </pdf-viewer>
 </div>
-<pdf-viewer [src]="pdfSrc" 
-          [render-text]="true"
-          style="display: block;">
-</pdf-viewer>
