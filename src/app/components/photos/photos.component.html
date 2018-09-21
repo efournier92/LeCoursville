@@ -1,3 +1,11 @@
-<p>
-  photos works!
-</p>
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      Firebase Cloud Storage & Angular 5
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Select a file for upload:</h5>
+      <input type="file" (change)="upload($event)" accept=".png,.jpg" multiple/>
+    </div>
+  </div>
+</div>
