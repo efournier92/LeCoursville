@@ -3,15 +3,33 @@
 // always include only once per project
 @include mat-core();
 
-$lecoursville-primary: mat-palette($mat-light-green);
-$lecoursville-accent: mat-palette($mat-light-green);
-$lecoursville-warn: mat-palette($mat-deep-orange);
-// specify theme class eg: <body class="my-theme"> ... </body>
-$lecoursville-theme: mat-light-theme($lecoursville-primary, $lecoursville-accent, $lecoursville-warn);    
+// define 3 theme color
+// mat-palette accepts $palette-name, main, lighter and darker variants
+$my-theme-primary: mat-palette($mat-blue-grey, 400);
+$my-theme-accent: mat-palette($mat-blue);
+$my-theme-warn: mat-palette($mat-deep-orange, A200);
+
+// create theme (use mat-dark-theme for themes with dark backgrounds)
+$my-theme: mat-light-theme(
+    $my-theme-primary,
+    $my-theme-accent,
+    $my-theme-warn
+);
+
+// $lecoursville-primary: mat-palette($mat-light-green);
+// $lecoursville-accent: mat-palette($mat-light-green);
+// $lecoursville-warn: mat-palette($mat-deep-orange);
+// // specify theme class eg: <body class="my-theme"> ... </body>
+// $lecoursville-theme: mat-light-theme($lecoursville-primary, $lecoursville-accent, $lecoursville-warn);    
 
 html, body {
+    height: 100%;
     margin: 0;
+    
     // background-color:  mat-palette($mat-light-green);
-    @include angular-material-theme($lecoursville-theme);
+    @include angular-material-theme($my-theme);
 }
 /* You can add global styles to this file, and also import other style files */
+.ng2-pdf-viewer-container {
+    overflow-x: hidden !important;
+}

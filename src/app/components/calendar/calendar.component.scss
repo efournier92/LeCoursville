@@ -1,0 +1,23 @@
+.calendar-component-container {
+    // display: flex;
+}
+
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+}
+
+.calendar-view {
+    flex-grow: 0;
+}
+
+.calendar-toolbar {
+    display: flex;
+    flex-direction: row;
+}
+
+.calendar-button {
+    width: 30px;
+}

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-photos',
@@ -12,7 +13,10 @@ export class PhotosComponent implements OnInit {
   uploads: any[];
   allPercentage: Observable<any>;
   
-  constructor(private afStorage: AngularFireStorage) { }
+  constructor(
+    private afStorage: AngularFireStorage,
+    // public afs: AngularFirestore,
+    ) { }
 
   ngOnInit() {
   }
@@ -23,40 +27,40 @@ export class PhotosComponent implements OnInit {
     this.task = this.ref.put(event.target.files[0]);
   }
 
-  importImages(event) {
-    // reset the array 
-    this.uploads = [];
-    const filelist = event.target.files;
-    const allPercentage: Observable<number>[] = [];
+  // importImages(event) {
+  //   // reset the array 
+  //   this.uploads = [];
+  //   const filelist = event.target.files;
+  //   const allPercentage: Observable<number>[] = [];
 
-    for (const file of filelist) {
+  //   for (const file of filelist) {
 
-      const path = `files/${file.name}`;
-      const ref = this.storage.ref(path);
-      const task = this.storage.upload(path, file);
-      const _percentage$ = task.percentageChanges();
-      allPercentage.push(_percentage$);
+  //     const path = `files/${file.name}`;
+  //     const ref = this.storage.ref(path);
+  //     const task = this.storage.upload(path, file);
+  //     const _percentage$ = task.percentageChanges();
+  //     allPercentage.push(_percentage$);
 
-      // create composed object with different information. ADAPT THIS ACCORDING YOUR NEED
-      const uploadTrack = {
-        fileName: file.name,
-        percentage: _percentage$
-      }
+  //     // create composed object with different information. ADAPT THIS ACCORDING YOUR NEED
+  //     const uploadTrack = {
+  //       fileName: file.name,
+  //       percentage: _percentage$
+  //     }
 
-      // push each upload into the array
-      this.uploads.push(uploadTrack);
+  //     // push each upload into the array
+  //     this.uploads.push(uploadTrack);
 
-      // for every upload do whatever you want in firestore with the uploaded file
-      const _t = task.then((f) => {
-        return f.ref.getDownloadURL().then((url) => {
-          return this.afs.collection('files').add({
-            name: f.metadata.name,
-            url: url
-          });
-        })
-      })
+  //     // for every upload do whatever you want in firestore with the uploaded file
+  //     const _t = task.then((f) => {
+  //       return f.ref.getDownloadURL().then((url) => {
+  //         return this.afs.collection('files').add({
+  //           name: f.metadata.name,
+  //           url: url
+  //         });
+  //       })
+  //     })
 
-    }
+  //   }
 
 
 }
