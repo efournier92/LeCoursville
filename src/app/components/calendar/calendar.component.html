@@ -1,8 +1,6 @@
   <div class="calendar-component-container">
-    <mat-toolbar class="calendar-toolbar">
-        <div class="calendar-button">
-          <button mat-button *ngFor="let month of months">{{month.name}}</button>
-        </div>
+    <mat-toolbar class="d-flex flex-wrap">
+        <button mat-button class="calendar-button" *ngFor="let month of months">{{month.name}}</button>
     </mat-toolbar>
     
     <div class="calendar-container">
