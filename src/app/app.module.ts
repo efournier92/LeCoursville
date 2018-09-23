@@ -1,7 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MaterialModule } from './material.module';
+import {MatIconModule} from '@angular/material/icon';
+
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -11,15 +14,18 @@ import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { PhotosComponent } from './components/photos/photos.component';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
+import { ContactsComponent } from './components/contacts/contacts.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CalendarComponent,
     PhotosComponent,
+    ContactsComponent,
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     PdfViewerModule,
     HttpClientModule,
@@ -32,6 +38,7 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
       storageBucket: "lecoursville.appspot.com",
       messagingSenderId: "346526681784",
     }),
+    MatIconModule,
     AngularFireStorageModule,
   ],
   providers: [

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { PhotosComponent } from './components/photos/photos.component';
+import { ContactsComponent } from './components/contacts/contacts.component';
 
 const routes : Routes =
   [
@@ -13,25 +14,10 @@ const routes : Routes =
       path: 'photos',
       component: PhotosComponent,
     },
-
-
-    // {
-    //   path: 'books',
-    //   component: BooksComponent
-    // },
-    // {
-    //   path: 'customers',
-    //   component: CustomersComponent,
-    // },
-    // {
-    //   path: 'loans',
-    //   component: LoansComponent,
- 
-    // },
-    // {
-    //   path: '**',
-    //   component: PageNotFoundComponent
-    // }
+    {
+      path: 'contacts',
+      component: ContactsComponent,
+    },
   ];
 
 @NgModule({

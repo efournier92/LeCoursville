@@ -3,6 +3,7 @@
 // always include only once per project
 @include mat-core();
 
+
 // define 3 theme color
 // mat-palette accepts $palette-name, main, lighter and darker variants
 $my-theme-primary: mat-palette($mat-blue-grey, 400);
@@ -25,11 +26,13 @@ $my-theme: mat-light-theme(
 @import "~font-awesome/css/font-awesome.css";
 
 html, body {
-    height: 100%;
     margin: 0;
-    
+    height: 100%;
+
     // background-color:  mat-palette($mat-light-green);
     @include angular-material-theme($my-theme);
+    background-color: #fafafa;
+
 }
 /* You can add global styles to this file, and also import other style files */
 .ng2-pdf-viewer-container {

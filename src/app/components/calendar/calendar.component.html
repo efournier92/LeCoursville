@@ -1,17 +1,37 @@
-  <div class="calendar-component-container">
-    <mat-toolbar class="d-flex flex-wrap">
-        <button mat-button class="calendar-button" *ngFor="let month of months">{{month.name}}</button>
-    </mat-toolbar>
-    
-    <div class="calendar-container">
-      <pdf-viewer class="calendar-view"
-          [src]="pdfSrc" 
-          [render-text]="true"
-          [show-all]="false"
-          [original-size]="false"
-          [autoresize]="true"
-          [page]="3">
+<div class="calendar-component-container">
+  <mat-toolbar class="row">
+    <div class="toolbar-section col-4">
+      <button mat-button>
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-button>
+        <mat-icon>get_app</mat-icon>
+      </button>
+    </div>
+    <div class="toolbar-section col-5">
+      <button class="arrow-button" mat-button (click)="pageBackward()">
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </button>
+      <button class="arrow-button" mat-button (click)="pageForward()">
+        <mat-icon>keyboard_arrow_right</mat-icon>
+      </button>
+    </div>
+    <div class="toolbar-section col-3">
+      <button mat-button [matMenuTriggerFor]="menu">
+        Month <mat-icon>keyboard_arrow_down</mat-icon>
+      </button>
+    </div>
+
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <div class="calendar-container-frame">
+    <div class="calendar-container align-middle">
+      <pdf-viewer class="calendar-view" [src]="pdfSrc" [render-text]="true" [show-all]="false" [original-size]="false"
+        [autoresize]="true" [page]="page">
       </pdf-viewer>
     </div>
-    <button mat-button color="primary">Download PDF</button>
   </div>
+</div>
