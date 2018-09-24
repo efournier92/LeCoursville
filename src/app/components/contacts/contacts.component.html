@@ -44,7 +44,7 @@
           <!-- <h4 mat-line *ngIf="contact.phone.cell">Cell{{ contact.phone.cell }}</h4>
           <h4 mat-line *ngIf="contact.phone.work">Work{{ contact.phone.work }}</h4> -->
         </mat-list-item>
-        <mat-list-item *ngIf="contact.email !== ''">
+        <mat-list-item *ngIf="contact.email && contact.email !== ''">
           <mat-icon mat-list-icon>email</mat-icon>
           <h4 mat-line>{{ contact.email }}</h4>
         </mat-list-item>

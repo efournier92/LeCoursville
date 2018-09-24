@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { DataService } from '../../services/data.service'
+
+declare var require: any
 
 class Phone {
   number: string;
@@ -10,7 +13,8 @@ class Phone {
   }
 }
 
-class Contact {
+export class Contact {
+    id: string;
     name: string;
     family: string;
     email: string;
@@ -46,15 +50,23 @@ export class ContactsComponent implements OnInit {
   family: string = '';
   families: string[];
 
-  constructor() { }
+  constructor(private data: DataService) { }
 
   ngOnInit() {
-    let contactsJson = require('./contacts.json');
+    this.data.userContacts.subscribe(contacts => {
+      this.contacts = contacts;
+      console.log(this.contacts);
+    })
 
-    for (let contact of contactsJson) {
-      this.contacts.push(new Contact(contact));
-    }
-    console.log(this.contacts);
+    // this.loadContacts();
+    // console.log("contacts", this.contacts);
+  }
+
+  loadContacts() {
+    // var contactsJson = require('./contacts.json');
+    // for (let contact of contactsJson) {
+    //   this.data.createUserContact(contact);
+    // }
   }
 
   changeFamily(family: string) {

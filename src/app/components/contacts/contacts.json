@@ -8,8 +8,8 @@
     "state": "NY",
     "zip": "10604",
     "phones": [
-      { "number": "914-946-8383", "type": "home" },
-      { "number": "864-423-9306", "type": "cell" }
+      { "type": "home", "number": "914-946-8383" },
+      { "type": "cell", "number": "864-423-9306" }
     ]
   },
   {
@@ -21,8 +21,8 @@
     "state": "FL",
     "zip": "32920",
     "phones": [
-      { "number": "321-783-2416", "type": "home" },
-      { "number": "321-412-6834", "type": "cell" }
+      { "type": "home", "number": "321-783-2416" },
+      { "type": "cell", "number": "321-412-6834" }
     ]
   },
   {

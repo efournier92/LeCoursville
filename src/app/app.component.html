@@ -1,6 +1,11 @@
 <body class="mat-app-background">
     <mat-toolbar color="primary">
-        <button mat-button>Primary</button>
+        <img src="./assets/icons/LeCours_Crest_Medium_White.png" 
+             routerLink="/" alt="LeCoursville" height="80%">
+        <span class="spacer"></span>
+        <button mat-button routerLink="/contacts">Contacts</button>
+        <button mat-button routerLink="/calendar">Calendar</button>
+        <button mat-button routerLink="/photos">Photos</button>
     </mat-toolbar>
     <router-outlet></router-outlet>
 </body>

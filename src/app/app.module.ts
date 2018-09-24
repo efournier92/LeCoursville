@@ -14,7 +14,10 @@ import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { PhotosComponent } from './components/photos/photos.component';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
+import { AngularFireAuthModule } from '@angular/fire/auth';
+import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { ContactsComponent } from './components/contacts/contacts.component';
+import { AuthComponent } from './components/auth/auth.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +25,7 @@ import { ContactsComponent } from './components/contacts/contacts.component';
     CalendarComponent,
     PhotosComponent,
     ContactsComponent,
+    AuthComponent,
   ],
   imports: [
     BrowserModule,
@@ -30,6 +34,7 @@ import { ContactsComponent } from './components/contacts/contacts.component';
     PdfViewerModule,
     HttpClientModule,
     MaterialModule,
+    AngularFireDatabaseModule,
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",
       authDomain: "lecoursville.firebaseapp.com",
@@ -38,8 +43,8 @@ import { ContactsComponent } from './components/contacts/contacts.component';
       storageBucket: "lecoursville.appspot.com",
       messagingSenderId: "346526681784",
     }),
-    MatIconModule,
     AngularFireStorageModule,
+    AngularFireAuthModule,
   ],
   providers: [
     { provide: LocationStrategy, useClass: PathLocationStrategy }
