@@ -28,6 +28,7 @@
     "firebase": "^5.5.0",
     "font-awesome": "^4.7.0",
     "ng2-pdf-viewer": "^5.1.2",
+    "ngx-filter-pipe": "^2.1.2",
     "node-sass": "^4.9.3",
     "rxjs": "^6.0.0",
     "zone.js": "^0.8.26"

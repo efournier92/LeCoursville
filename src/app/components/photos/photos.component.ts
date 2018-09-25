@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
+import { PhotosService } from './photos.service'
 
 @Component({
   selector: 'app-photos',
@@ -14,7 +15,8 @@ export class PhotosComponent implements OnInit {
   allPercentage: Observable<any>;
   
   constructor(
-    private afStorage: AngularFireStorage,
+    private storage: AngularFireStorage,
+    private photosService: PhotosService
     // public afs: AngularFirestore,
     ) { }
 
@@ -22,10 +24,14 @@ export class PhotosComponent implements OnInit {
   }
 
   upload(event) {
-    const id = Math.random().toString(36).substring(2);
-    this.ref = this.afStorage.ref(id);
-    this.task = this.ref.put(event.target.files[0]);
+    this.photosService.addPhoto(event.target.files[0])
   }
+
+  // upload(event) {
+  //   const id = Math.random().toString(36).substring(2);
+  //   this.ref = this.afStorage.ref(id);
+  //   this.task = this.ref.put(event.target.files[0]);
+  // }
 
   // importImages(event) {
   //   // reset the array 

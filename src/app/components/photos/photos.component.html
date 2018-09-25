@@ -5,7 +5,7 @@
     </div>
     <div class="card-body">
       <h5 class="card-title">Select a file for upload:</h5>
-      <input type="file" (change)="upload($event)" accept=".png,.jpg" multiple/>
+      <input type="file" (change)="photosService.addPhoto($event)" accept=".png,.jpg" multiple/>
     </div>
   </div>
 </div>

@@ -1,10 +1,13 @@
 <mat-toolbar class="row">
     <mat-form-field class="col-xs-5" style="height: 100%; width: 25%">
-      <input matInput placeholder="Search">
+      <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
     </mat-form-field>
-      <button mat-button class="col-xs-5">
+      <button mat-button class="col-xs-5" [matMenuTriggerFor]="menu">
         By Family <mat-icon>keyboard_arrow_down</mat-icon>
       </button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">{{ family }}</button>
+</mat-menu>
       <div class="spacer"></div>
   <div class="col-xs-2">
     <button  mat-button>
@@ -18,20 +21,20 @@
 </mat-toolbar>
 
 <div class="row d-flex justify-content-center" style="margin:0">
-  <mat-card class="contact-card col-lg-5" *ngFor="let contact of contacts">
+  <mat-card class="contact-card col-lg-5" *ngFor="let contact of filteredContacts">
     <mat-card-title>
       {{ contact.name }}
     </mat-card-title>
     <mat-card-content>
       <mat-list>
-        <mat-list-item>
+        <mat-list-item *ngIf="contact.street && contact.city && contact.state && contact.zip">
           <mat-icon mat-list-icon>home</mat-icon>
           <h4 mat-line>{{ contact.street }}</h4>
           <p mat-line>{{ contact.city }}, {{ contact.state }}, {{ contact.zip }}</p>
         </mat-list-item>
 
 
-        <mat-list-item *ngIf="contact.phones.length" style="margin: 16px 0">
+        <mat-list-item *ngIf="contact.phones && contact.phones.length" style="margin: 16px 0">
           <mat-icon mat-list-icon>phone</mat-icon>
           <div class="row d-flex">
             <mat-list-item *ngFor="let phone of contact.phones" class="col-xs-6">
@@ -49,7 +52,12 @@
           <h4 mat-line>{{ contact.email }}</h4>
         </mat-list-item>
       </mat-list>
-
     </mat-card-content>
+    <mat-card-footer *ngIf="auth === true" class="d-flex justify-content-end" style="padding:10px">
+      <button mat-button (click)="expression">
+        <mat-icon>edit</mat-icon>
+      </button>
+
+    </mat-card-footer>
   </mat-card>
 </div>

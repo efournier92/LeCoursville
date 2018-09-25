@@ -18,6 +18,9 @@ import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { ContactsComponent } from './components/contacts/contacts.component';
 import { AuthComponent } from './components/auth/auth.component';
+import { FormsModule } from '@angular/forms'
+
+import { FilterPipeModule } from 'ngx-filter-pipe';
 
 @NgModule({
   declarations: [
@@ -32,8 +35,10 @@ import { AuthComponent } from './components/auth/auth.component';
     BrowserAnimationsModule,
     AppRoutingModule,
     PdfViewerModule,
+    FormsModule,
     HttpClientModule,
     MaterialModule,
+    FilterPipeModule,
     AngularFireDatabaseModule,
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",

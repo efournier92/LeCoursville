@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data.service'
+import { FilterPipe } from 'ngx-filter-pipe';
 
 declare var require: any
 
@@ -24,6 +25,7 @@ export class Contact {
     zip: string;
     info: string = '';
     phones: Phone[] = [];
+    searchTerm: string = '';
 
     constructor(contact) {
       this.name = contact.name;
@@ -47,19 +49,31 @@ export class Contact {
 })
 export class ContactsComponent implements OnInit {
   contacts: Contact[] = [];
+  filteredContacts: Contact[] = [];
   family: string = '';
-  families: string[];
+  families: string[] = [];
+  auth: boolean = false;
+  searchTerm: string = '';
 
-  constructor(private data: DataService) { }
+  constructor(private data: DataService, private filter: FilterPipe) { }
 
   ngOnInit() {
     this.data.userContacts.subscribe(contacts => {
       this.contacts = contacts;
+      this.filteredContacts = contacts;
       console.log(this.contacts);
+      this.getFamilies()
     })
 
     // this.loadContacts();
     // console.log("contacts", this.contacts);
+  }
+
+  getFamilies() {
+    for (let contact of this.contacts) {
+      if (!this.families.includes(contact.family)) this.families.push(contact.family);
+    }
+    console.log(this.families);
   }
 
   loadContacts() {
@@ -69,8 +83,12 @@ export class ContactsComponent implements OnInit {
     // }
   }
 
-  changeFamily(family: string) {
-    this.family = family;
+  switchFamily(family: string) {
+    this.filteredContacts = this.filter.transform(this.contacts, { family: family });
+  }
+
+  filterContacts(event: any) {
+    this.filteredContacts = this.filter.transform(this.contacts, { name: event.target.value });
   }
 
   clearFamily() {
