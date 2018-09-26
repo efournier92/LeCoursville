@@ -3,8 +3,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MaterialModule } from './material.module';
-import {MatIconModule} from '@angular/material/icon';
-
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,6 +19,8 @@ import { AuthComponent } from './components/auth/auth.component';
 import { FormsModule } from '@angular/forms'
 
 import { FilterPipeModule } from 'ngx-filter-pipe';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+
 
 @NgModule({
   declarations: [
@@ -39,6 +39,7 @@ import { FilterPipeModule } from 'ngx-filter-pipe';
     HttpClientModule,
     MaterialModule,
     FilterPipeModule,
+    InfiniteScrollModule,
     AngularFireDatabaseModule,
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",

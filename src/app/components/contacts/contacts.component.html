@@ -1,22 +1,21 @@
 <mat-toolbar class="row">
-    <mat-form-field class="col-xs-5" style="height: 100%; width: 25%">
-      <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
-    </mat-form-field>
-      <button mat-button class="col-xs-5" [matMenuTriggerFor]="menu">
-        By Family <mat-icon>keyboard_arrow_down</mat-icon>
-      </button>
-<mat-menu #menu="matMenu">
-  <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">{{ family }}</button>
-</mat-menu>
-      <div class="spacer"></div>
+  <mat-form-field class="col-xs-5" style="height: 100%; width: 25%">
+    <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
+  </mat-form-field>
+  <button mat-button class="col-xs-5" [matMenuTriggerFor]="menu">
+    By Family <mat-icon>keyboard_arrow_down</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">{{ family }}</button>
+  </mat-menu>
+  <div class="spacer"></div>
   <div class="col-xs-2">
-    <button  mat-button>
+    <button mat-button>
       <mat-icon>print</mat-icon>
     </button>
-    <button  mat-button>
+    <button mat-button>
       <mat-icon>get_app</mat-icon>
     </button>
-
   </div>
 </mat-toolbar>
 
