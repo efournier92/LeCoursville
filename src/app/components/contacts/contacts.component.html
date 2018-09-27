@@ -2,7 +2,7 @@
   <mat-form-field class="col-xs-5" style="height: 100%; width: 25%">
     <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
   </mat-form-field>
-  <button mat-button class="col-xs-5" [matMenuTriggerFor]="menu">
+  <button mat-button class="col-xs-5" style="margin-bottom:0" [matMenuTriggerFor]="menu">
     By Family <mat-icon>keyboard_arrow_down</mat-icon>
   </button>
   <mat-menu #menu="matMenu">

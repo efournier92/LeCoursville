@@ -1,25 +1,30 @@
-<!-- <mat-toolbar class="row">
-  
-    <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple/>
+<mat-toolbar class="row">
+  <button mat-mini-fab>
+    <label style="margin:0">
+      <mat-icon>add</mat-icon>
 
-  <button mat-button class="col-xs-5" [matMenuTriggerFor]="menu">
-    <mat-icon>add</mat-icon>
+      <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
+    </label>
   </button>
+
+  <button mat-mini-fab>
+    <mat-icon>edit</mat-icon>
+  </button>
+
+
   <mat-menu #menu="matMenu">
     <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">{{ family }}</button>
   </mat-menu>
-</mat-toolbar> -->
+</mat-toolbar>
 
-<mat-card class="example-card" *ngFor="let photo of photos" style="margin:10px">
+<div class="">
+  <mat-card class="col-xl-5" *ngFor="let photo of photos" style="margin:10px">
     <img mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}" style="padding:15px">
     <mat-card-content>
       {{ photo.info }}
     </mat-card-content>
   </mat-card>
+</div>
 
-  <div
-  infiniteScroll
-  [infiniteScrollDistance]="2"
-  [infiniteScrollThrottle]="1000"
-  (scrolled)="onScroll()">
+<div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="1000" (scrolled)="onScroll()">
 </div>

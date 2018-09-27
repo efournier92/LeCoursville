@@ -14,6 +14,9 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
+import { FirebaseUIModule } from 'firebaseui-angular';
+import * as firebase from 'firebase/app';
+import * as firebaseui from 'firebaseui';
 import { ContactsComponent } from './components/contacts/contacts.component';
 import { AuthComponent } from './components/auth/auth.component';
 import { FormsModule } from '@angular/forms'
@@ -21,6 +24,31 @@ import { FormsModule } from '@angular/forms'
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
+const firebaseUiAuthConfig: firebaseui.auth.Config = {
+  signInFlow: 'popup',
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+    {
+      scopes: [
+        'public_profile',
+        'email',
+        'user_likes',
+        'user_friends'
+      ],
+      customParameters: {
+        'auth_type': 'reauthenticate'
+      },
+      provider: firebase.auth.FacebookAuthProvider.PROVIDER_ID
+    },
+    {
+      requireDisplayName: false,
+      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID
+    },
+    firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+    firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+  ],
+  credentialHelper: firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM
+};
 
 @NgModule({
   declarations: [
@@ -51,6 +79,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
     }),
     AngularFireStorageModule,
     AngularFireAuthModule,
+    FirebaseUIModule.forRoot(firebaseUiAuthConfig)
   ],
   providers: [
     { provide: LocationStrategy, useClass: PathLocationStrategy }
