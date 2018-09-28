@@ -1,7 +1,25 @@
 .container {
-    background-image: "./assets/icons/LeCours_Crest_Medium_White.png";
+    background-image: "./assets/icons/LeCours_Crest_Large_Black.png";
 }
 
 li.firebaseui-list-item {
-    margin: 10%; 
+    margin: 10%;
+}
+
+.auth-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.auth-image {
+    // width: 90%;
+    // height: auto;
+    // margin-left: 5%;
+    // top: 15%;
+    // left: 10%;
+    margin: auto;
+    // filter: invert(62%);
+    opacity: 0.25;
 }
