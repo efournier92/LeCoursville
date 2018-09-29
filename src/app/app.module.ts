@@ -21,6 +21,7 @@ import { ContactsComponent } from './components/contacts/contacts.component';
 import { AuthComponent } from './components/auth/auth.component';
 import { FormsModule } from '@angular/forms'
 
+
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 

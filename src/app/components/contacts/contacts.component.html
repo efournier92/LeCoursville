@@ -52,7 +52,7 @@
         </mat-list-item>
       </mat-list>
     </mat-card-content>
-    <mat-card-footer *ngIf="auth === true" class="d-flex justify-content-end" style="padding:10px">
+    <mat-card-footer *ngIf="user.roles.admin" class="d-flex justify-content-end" style="padding:10px">
       <button mat-button (click)="expression">
         <mat-icon>edit</mat-icon>
       </button>

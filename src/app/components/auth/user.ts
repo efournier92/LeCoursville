@@ -7,13 +7,13 @@ export interface AuthRoles {
 export class User {
     id: string;
     email: string;
-    authData: any;
+    // authData: any;
     roles: AuthRoles;
 
     constructor(authData: any) {
         this.id = authData.uid;
         this.email = authData.email;
         this.roles = { user: true };
-        this.authData = authData;
+        // this.authData = authData;
     }
 }

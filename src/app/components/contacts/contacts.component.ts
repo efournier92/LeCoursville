@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data.service'
 import { FilterPipe } from 'ngx-filter-pipe';
+import { AuthService } from '../auth/auth.service';
+import { User } from '../auth/user';
 
 declare var require: any
 
@@ -52,17 +54,26 @@ export class ContactsComponent implements OnInit {
   filteredContacts: Contact[] = [];
   family: string = '';
   families: string[] = [];
-  auth: boolean = false;
   searchTerm: string = '';
+  user: User;
 
-  constructor(private data: DataService, private filter: FilterPipe) { }
+  constructor(
+    private data: DataService, 
+    private filter: FilterPipe,
+    private auth: AuthService,
+  ) { }
 
   ngOnInit() {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+      });
+
     this.data.userContacts.subscribe(contacts => {
       this.contacts = contacts;
       this.filteredContacts = contacts;
       console.log(this.contacts);
-      this.getFamilies()
+      this.getFamilies();
     })
 
     // this.loadContacts();
