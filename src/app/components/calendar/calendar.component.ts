@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
-import { CalendarService } from './calendar.service';
-import { Calendar, Months } from './calendar';
-import { AngularFireList } from '@angular/fire/database';
+import { Months } from './calendar';
 import printJs from 'print-js'
 
 @Component({
@@ -19,20 +17,16 @@ export class CalendarComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
-    private calendar: CalendarService,
-  ) { }
+  ) { 
+
+  }
 
   ngOnInit() {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
       }
-      
     )
-  }
-
-  printPdf(path) {
-    printJs(path);
   }
 
   changePage(page: number) {
@@ -55,22 +49,7 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  downloadFile(){
-    console.log('hit')
-    var blob = new Blob(['./assets/calendars/2018.pdf'], { type: 'application/pdf' });
-    var url= window.URL.createObjectURL(blob);
-    window.open(url);
+  printPdf(path) {
+    printJs(path);
   }
-    // public async downloadZip(): Promise<void> {
-    //   // const blob = await this.downloadResource(this.id);
-    //   const url = window.URL.createObjectURL(blob);
-      
-    //   const link = this.downloadZipLink.nativeElement;
-    //   link.href = url;
-    //   link.download = 'archive.zip';
-    //   link.click();
-    
-    //   window.URL.revokeObjectURL(url);
-      
-    // }
 }

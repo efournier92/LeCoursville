@@ -19,6 +19,7 @@ export class Contact {
     zip: string;
     info: string = '';
     phones: Phone[] = [];
+    editable: boolean = false;
 
     constructor(contact) {
         this.name = contact.name;

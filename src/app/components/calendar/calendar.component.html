@@ -1,10 +1,10 @@
-<mat-toolbar class="d-flex justify-content-around flex-row">
-  <mat-menu #menu="matMenu">
+<mat-toolbar class="d-flex justify-content-center">
+  <mat-menu #monthMenu="matMenu">
     <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
   </mat-menu>
 
-  <div class="d-flex justify-content-center col-3">
-    <button mat-button [matMenuTriggerFor]="menu">
+  <div class="d-flex justify-content-center col-2">
+    <button mat-button [matMenuTriggerFor]="monthMenu">
       Month <mat-icon>keyboard_arrow_down</mat-icon>
     </button>
   </div>
@@ -18,16 +18,14 @@
     </button>
   </div>
   
-  <div class="d-flex justify-content-center col-3">
+  <div class="d-flex justify-content-center col-2">
     <button mat-button (click)="printPdf('./assets/calendars/2018.pdf')">
       <mat-icon>print</mat-icon>
     </button>
     
-    <button mat-button>
-      <a mat-button href="./assets/calendars/2018.pdf" download>
+    <a mat-button href="./assets/calendars/2018.pdf" download>
         <mat-icon>get_app</mat-icon>
-      </a>
-    </button>
+    </a>
   </div>
 </mat-toolbar>
 

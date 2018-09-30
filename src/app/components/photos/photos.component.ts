@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
+import { AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
 import { PhotosService } from './photos.service'
 import { Photo } from './photo';
@@ -19,6 +19,7 @@ export class PhotosComponent implements OnInit {
   allPercentage: Observable<any>;
   photos: Photo[];
   url: string;
+  loading: boolean = true;
   
   constructor(
     private photosService: PhotosService,
@@ -39,14 +40,14 @@ export class PhotosComponent implements OnInit {
       this.photos = photos;
     })
   }
-
+  
   addPhotos(event) {
     for (let file of event.currentTarget.files) {
       this.photosService.addPhotos(file)
     }
   }
 
-  loadMore () {
+  loadMore() {
     this.photosService.getPhotos().valueChanges().subscribe(
       (photos: Photo[]) => {
         this.photos = photos;
