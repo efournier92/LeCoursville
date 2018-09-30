@@ -1,25 +1,32 @@
 <mat-toolbar class="row">
-  <mat-form-field class="col-xs-5" style="height: 100%; width: 25%">
+  <mat-form-field class="search-field col-xs-5">
     <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
   </mat-form-field>
-  <button mat-button class="col-xs-5" style="margin-bottom:0" [matMenuTriggerFor]="menu">
+  <button mat-button class="col-xs-5" [matMenuTriggerFor]="byFamilyMenu">
     By Family <mat-icon>keyboard_arrow_down</mat-icon>
   </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">{{ family }}</button>
+  <mat-menu #byFamilyMenu="matMenu">
+    <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">
+      {{ family }}
+    </button>
   </mat-menu>
   <div class="spacer"></div>
   <div class="col-xs-2">
     <button mat-button>
       <mat-icon>print</mat-icon>
     </button>
+
+    <button type="button" (click)="printPdf()">
+        Print Form
+     </button>
+    
     <button mat-button>
       <mat-icon>get_app</mat-icon>
     </button>
   </div>
 </mat-toolbar>
 
-<div class="row d-flex justify-content-center" style="margin:0">
+<div #contactCards id="contact-cards-container" class="contact-card-container d-flex justify-content-center row">
   <mat-card class="contact-card col-lg-5" *ngFor="let contact of filteredContacts">
     <mat-card-title>
       {{ contact.name }}
@@ -31,20 +38,16 @@
           <h4 mat-line>{{ contact.street }}</h4>
           <p mat-line>{{ contact.city }}, {{ contact.state }}, {{ contact.zip }}</p>
         </mat-list-item>
-
-
-        <mat-list-item *ngIf="contact.phones && contact.phones.length" style="margin: 16px 0">
+        <mat-list-item class="contact-phone-container" *ngIf="contact.phones && contact.phones.length">
           <mat-icon mat-list-icon>phone</mat-icon>
-          <div class="row d-flex">
-            <mat-list-item *ngFor="let phone of contact.phones" class="col-xs-6">
-              <h4 mat-line *ngIf="phone.type !== ''">{{ phone.type | titlecase}}</h4>
+          <div class="d-inline-flex">
+            <mat-list-item class="contact-phone col-xs-5" *ngFor="let phone of contact.phones">
+              <h4 mat-line *ngIf="phone.type !== ''">
+                {{ phone.type | titlecase}}
+              </h4>
               <p mat-line>{{ phone.number }}</p>
             </mat-list-item>
           </div>
-
-
-          <!-- <h4 mat-line *ngIf="contact.phone.cell">Cell{{ contact.phone.cell }}</h4>
-          <h4 mat-line *ngIf="contact.phone.work">Work{{ contact.phone.work }}</h4> -->
         </mat-list-item>
         <mat-list-item *ngIf="contact.email && contact.email !== ''">
           <mat-icon mat-list-icon>email</mat-icon>
@@ -52,11 +55,10 @@
         </mat-list-item>
       </mat-list>
     </mat-card-content>
-    <mat-card-footer *ngIf="user.roles.admin" class="d-flex justify-content-end" style="padding:10px">
+    <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
       <button mat-button (click)="expression">
         <mat-icon>edit</mat-icon>
       </button>
-
     </mat-card-footer>
   </mat-card>
 </div>

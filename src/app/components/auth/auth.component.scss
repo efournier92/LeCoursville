@@ -14,12 +14,15 @@ li.firebaseui-list-item {
 }
 
 .auth-image {
-    // width: 90%;
-    // height: auto;
-    // margin-left: 5%;
-    // top: 15%;
-    // left: 10%;
     margin: auto;
-    // filter: invert(62%);
+    padding-top: 50px; 
     opacity: 0.25;
+}
+
+.auth-button {
+    margin: auto;    
+}
+
+.spacer {
+    flex: 1 1 auto;
 }

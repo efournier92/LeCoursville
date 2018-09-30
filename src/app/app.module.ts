@@ -2,74 +2,45 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { MaterialModule } from './material.module';
-
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { PdfViewerModule } from 'ng2-pdf-viewer';
-import { CalendarComponent } from './components/calendar/calendar.component';
 import { LocationStrategy, PathLocationStrategy } from '@angular/common';
-import { PhotosComponent } from './components/photos/photos.component';
+import { FilterPipeModule } from 'ngx-filter-pipe';
+import { FormsModule } from '@angular/forms';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { FirebaseUIModule } from 'firebaseui-angular';
-import * as firebase from 'firebase/app';
-import * as firebaseui from 'firebaseui';
-import { ContactsComponent } from './components/contacts/contacts.component';
+
+import { AppRoutingModule } from './app-routing.module';
+import { MaterialModule } from './material.module';
+import { AuthConfig } from './auth.config'
+import { AppComponent } from './app.component';
 import { AuthComponent } from './components/auth/auth.component';
-import { FormsModule } from '@angular/forms'
-
-
-import { FilterPipeModule } from 'ngx-filter-pipe';
-import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-
-const firebaseUiAuthConfig: firebaseui.auth.Config = {
-  signInFlow: 'popup',
-  signInOptions: [
-    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-    {
-      scopes: [
-        'public_profile',
-        'email',
-        'user_likes',
-        'user_friends'
-      ],
-      customParameters: {
-        'auth_type': 'reauthenticate'
-      },
-      provider: firebase.auth.FacebookAuthProvider.PROVIDER_ID
-    },
-    {
-      requireDisplayName: false,
-      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID
-    },
-    firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-    firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
-  ],
-  credentialHelper: firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM
-};
+import { ContactsComponent } from './components/contacts/contacts.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
+import { PhotosComponent } from './components/photos/photos.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AuthComponent,
+    ContactsComponent,
     CalendarComponent,
     PhotosComponent,
-    ContactsComponent,
-    AuthComponent,
   ],
   imports: [
+    AppRoutingModule,
     BrowserModule,
     BrowserAnimationsModule,
-    AppRoutingModule,
-    PdfViewerModule,
-    FormsModule,
     HttpClientModule,
-    MaterialModule,
     FilterPipeModule,
+    FormsModule,
+    MaterialModule,
+    PdfViewerModule,
     InfiniteScrollModule,
-    AngularFireDatabaseModule,
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",
       authDomain: "lecoursville.firebaseapp.com",
@@ -78,13 +49,17 @@ const firebaseUiAuthConfig: firebaseui.auth.Config = {
       storageBucket: "lecoursville.appspot.com",
       messagingSenderId: "346526681784",
     }),
+    AngularFireDatabaseModule,
     AngularFireStorageModule,
     AngularFireAuthModule,
-    FirebaseUIModule.forRoot(firebaseUiAuthConfig)
+    FirebaseUIModule.forRoot(AuthConfig),
   ],
   providers: [
     { provide: LocationStrategy, useClass: PathLocationStrategy }
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [
+    AppComponent,
+  ],
 })
+
 export class AppModule { }

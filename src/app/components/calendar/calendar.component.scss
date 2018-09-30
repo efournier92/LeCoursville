@@ -1,41 +1,20 @@
-.calendar-component-container {
-    // height: 100%;
-}
-
-.calendar-container-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.calendar-container {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    width: 80%;
-    margin-top: 15px;
-}
-
-.toolbar-section {
-    display: flex;
-    justify-content: center;
-}
-
 .mat-button {
     min-width: 55px;
 }
 
-.calendar-view {
-    flex-grow: 0;
+.calendar-container {
+    margin: auto;
 }
 
-.calendar-button {
-    min-width: 0;
-    // padding: 0;
+input[type="file"] {
+    display: none;
 }
 
-.calendar-toolbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
+a[type="download"] {
+    display: none;
+}
+
+.mat-button-wrapper {
+    height: 100%;
+    padding: 0px;
 }

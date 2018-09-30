@@ -3,24 +3,7 @@ import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { finalize } from 'rxjs/operators';
-
-export class Photo {
-  id: string;
-  path: string;
-  extension: string;
-  url: string;
-  info: string;
-  year: number;
-
-  constructor() {
-    this.id = '';
-    this.path = '';
-    this.extension = '';
-    this.url = '';
-    this.info = '';
-    this.year = 0;
-  }
-}
+import { Photo } from './photo';
 
 @Injectable({
   providedIn: 'root'

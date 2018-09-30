@@ -1,19 +1,23 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/database'
-import { Contact } from '../components/contacts/contacts.component'
-import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
+import { Contact } from './contact';
 import { BehaviorSubject } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root'
 })
-export class DataService {
+export class ContactsService {
   contacts: AngularFireList<Contact>;
   userId: String;
 
-  constructor(private db: AngularFireDatabase, private auth: AngularFireAuth) {
-    this.auth.authState.subscribe(user => {
-      // if (user) this.userId = user.uid;
+  constructor(
+    private db: AngularFireDatabase,
+    private auth: AngularFireAuth,
+  ) {
+    this.auth.authState.subscribe(
+      user => {
+      if (!user || !user.uid) return;
       this.getContacts().valueChanges().subscribe(
         contacts => {
           this.updateContactsEvent(contacts);
@@ -21,7 +25,6 @@ export class DataService {
       );
     });
   }
-
   private contactsSource = new BehaviorSubject([]);
   userContacts = this.contactsSource.asObservable();
 

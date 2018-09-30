@@ -1,10 +1,11 @@
-.contact-card {
-    margin: 10px;
-}
-
 .toolbar-section {
     display: flex;
     justify-content: center;
+}
+
+.search-field {
+    height: 100%;
+    width: 25%;
 }
 
 .mat-button {
@@ -13,4 +14,24 @@
 
 .spacer {
     flex: 1 1 auto;
-  }
+}
+
+.contact-card-container {
+    margin: 0;
+}
+
+.contact-card {
+    margin: 10px;
+}
+
+.contact-phone-container {
+    margin: 16px 0;
+}
+
+.contact-controls-container {
+    padding: 10px;
+}
+
+.contact-phone {
+    padding: 4px !important;
+}

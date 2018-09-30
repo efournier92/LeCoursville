@@ -1,37 +1,46 @@
-<div class="calendar-component-container">
-  <mat-toolbar class="row">
-    <div class="toolbar-section col-4">
-      <button mat-button>
-        <mat-icon>print</mat-icon>
-      </button>
-      <button mat-button>
+<mat-toolbar class="d-flex justify-content-around flex-row">
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
+  </mat-menu>
+
+  <div class="d-flex justify-content-center col-3">
+    <button mat-button [matMenuTriggerFor]="menu">
+      Month <mat-icon>keyboard_arrow_down</mat-icon>
+    </button>
+  </div>
+
+  <div class="d-flex justify-content-center col-6">
+    <button class="arrow-button" mat-button (click)="pageBackward()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <button class="arrow-button" mat-button (click)="pageForward()">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+  
+  <div class="d-flex justify-content-center col-3">
+    <button mat-button (click)="printPdf('./assets/calendars/2018.pdf')">
+      <mat-icon>print</mat-icon>
+    </button>
+    
+    <button mat-button>
+      <a mat-button href="./assets/calendars/2018.pdf" download>
         <mat-icon>get_app</mat-icon>
-      </button>
-    </div>
-    <div class="toolbar-section col-5">
-      <button class="arrow-button" mat-button (click)="pageBackward()">
-        <mat-icon>keyboard_arrow_left</mat-icon>
-      </button>
-      <button class="arrow-button" mat-button (click)="pageForward()">
-        <mat-icon>keyboard_arrow_right</mat-icon>
-      </button>
-    </div>
-    <div class="toolbar-section col-3">
-      <button mat-button [matMenuTriggerFor]="menu">
-        Month <mat-icon>keyboard_arrow_down</mat-icon>
-      </button>
-    </div>
+      </a>
+    </button>
+  </div>
+</mat-toolbar>
 
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
-    </mat-menu>
-  </mat-toolbar>
 
-  <div class="calendar-container-frame">
-    <div class="calendar-container align-middle">
-      <pdf-viewer class="calendar-view" [src]="pdfSrc" [render-text]="true" [show-all]="false" [original-size]="false"
-        [autoresize]="true" [page]="page">
-      </pdf-viewer>
-    </div>
+<div class="calendar-container d-flex col-xl-8 col-md-9 col-xs-10 flex-column">
+  <pdf-viewer [src]="pdfSrc" [render-text]="true" [show-all]="false" [original-size]="false" [autoresize]="true" [page]="page">
+  </pdf-viewer>
+  <div class="toolbar-admin d-flex justify-content-end" *ngIf="x && user && user.roles && user.roles.super">
+    <button mat-mini-fab>
+      <label style="margin:0">
+        <mat-icon>cloud_upload</mat-icon>
+        <input type="file" (change)="addCalendar($event)" accept=".png,.jpg" multiple />
+      </label>
+    </button>
   </div>
 </div>

@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
+import { Component } from '@angular/core';
 import { AuthService } from './components/auth/auth.service';
-import { User } from 'firebase';
+import { User } from './components/auth/user';
 
 @Component({
   selector: 'app-root',
@@ -9,18 +8,17 @@ import { User } from 'firebase';
   styleUrls: ['./app.component.scss']
 })
 
-export class AppComponent implements OnInit {
+export class AppComponent {
   user: User;
 
-  constructor(private auth: AuthService) {
-  }
-
-  ngOnInit() {
-   
-  }
-
-  successCallback($event) {
-    console.log('callback', $event);
+  constructor(
+    private auth: AuthService,
+  ) {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+      }
+    )
   }
 
 }

@@ -1,48 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { DataService } from '../../services/data.service'
+import { Component, OnInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { FilterPipe } from 'ngx-filter-pipe';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
-
-declare var require: any
-
-class Phone {
-  number: string;
-  type: string;
-
-  constructor(phone) {
-    this.number = phone.number;
-    this.type = phone.type;
-  }
-}
-
-export class Contact {
-    id: string;
-    name: string;
-    family: string;
-    email: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    info: string = '';
-    phones: Phone[] = [];
-    searchTerm: string = '';
-
-    constructor(contact) {
-      this.name = contact.name;
-      this.family = contact.family;
-      this.email = contact.email;
-      this.street = contact.street;
-      this.city = contact.city;
-      this.state = contact.state;
-      this.zip = contact.zip;
-      if (contact.info) this.info = contact.info;
-      for (let phone of contact.phones) {
-        this.phones.push(new Phone(phone));
-      }
-    }
-}
+import { Contact } from 'src/app/components/contacts/contact';
+import { ContactsService } from './contacts.service';
+import print from 'print-js'
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import pdfMake from "pdfmake/build/pdfmake";
 
 @Component({
   selector: 'app-contacts',
@@ -56,11 +21,14 @@ export class ContactsComponent implements OnInit {
   families: string[] = [];
   searchTerm: string = '';
   user: User;
+  printJS = print;
+  @ViewChild("contactCards") el:ElementRef;
 
   constructor(
-    private data: DataService, 
+    private data: ContactsService, 
     private filter: FilterPipe,
     private auth: AuthService,
+    private rd: Renderer2,
   ) { }
 
   ngOnInit() {
@@ -78,6 +46,11 @@ export class ContactsComponent implements OnInit {
 
     // this.loadContacts();
     // console.log("contacts", this.contacts);
+  }
+
+  printPage() {
+    console.log('hit');
+    // printJs('contact-cards-container', 'html');
   }
 
   getFamilies() {
@@ -105,4 +78,31 @@ export class ContactsComponent implements OnInit {
   clearFamily() {
     this.family = '';
   }
+
+  printPdf() {
+    html2canvas(document.getElementById('contact-cards-container')).then(
+      canvas => {
+          canvas.toDataURL().then(
+            data => {
+              var docDefinition = {
+                content: [{
+                    image: data,
+                    width: 500,
+                }]
+            };
+            pdfMake.createPdf(docDefinition).download("Score_Details.pdf");
+          });
+         
+      }
+  );
+    // console.log(document.getElementById('contact-cards-container'))
+    // let pdf = new jsPDF();
+    //   pdf.fromHTML(document.getElementById('contact-cards-container'), {
+    //     'width': 170, 
+    //     // 'elementHandlers': specialElemen tHandlers
+    //   });
+      
+    //   pdf.text()
+  }
+
 }

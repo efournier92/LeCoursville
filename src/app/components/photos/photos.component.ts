@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
-import { PhotosService, Photo } from './photos.service'
+import { PhotosService } from './photos.service'
+import { Photo } from './photo';
+import { AuthService } from '../auth/auth.service';
+import { User } from '../auth/user';
 
 @Component({
   selector: 'app-photos',
@@ -9,6 +12,7 @@ import { PhotosService, Photo } from './photos.service'
   styleUrls: ['./photos.component.scss']
 })
 export class PhotosComponent implements OnInit {
+  user: User;
   ref: AngularFireStorageReference;
   task: AngularFireUploadTask;
   uploads: any[];
@@ -17,10 +21,18 @@ export class PhotosComponent implements OnInit {
   url: string;
   
   constructor(
-    private storage: AngularFireStorage,
-    private photosService: PhotosService
-    // public afs: AngularFirestore,
-    ) { }
+    private photosService: PhotosService,
+    private auth: AuthService,
+    ) {
+      this.auth.userObservable.subscribe(
+        (user: User) => {
+          this.user = user;
+        }
+      )
+      // let download = require('download');
+      // download('./assets/calendars/2018.pdf');
+     }
+     
 
   ngOnInit() {
     this.photosService.photosObservable.subscribe(photos => {
@@ -34,8 +46,7 @@ export class PhotosComponent implements OnInit {
     }
   }
 
-  onScroll () {
-    console.log('scrolled!!')
+  loadMore () {
     this.photosService.getPhotos().valueChanges().subscribe(
       (photos: Photo[]) => {
         this.photos = photos;
@@ -43,47 +54,4 @@ export class PhotosComponent implements OnInit {
 
     );
   }
-
-  // upload(event) {
-  //   const id = Math.random().toString(36).substring(2);
-  //   this.ref = this.afStorage.ref(id);
-  //   this.task = this.ref.put(event.target.files[0]);
-  // }
-
-  // importImages(event) {
-  //   // reset the array 
-  //   this.uploads = [];
-  //   const filelist = event.target.files;
-  //   const allPercentage: Observable<number>[] = [];
-
-  //   for (const file of filelist) {
-
-  //     const path = `files/${file.name}`;
-  //     const ref = this.storage.ref(path);
-  //     const task = this.storage.upload(path, file);
-  //     const _percentage$ = task.percentageChanges();
-  //     allPercentage.push(_percentage$);
-
-  //     // create composed object with different information. ADAPT THIS ACCORDING YOUR NEED
-  //     const uploadTrack = {
-  //       fileName: file.name,
-  //       percentage: _percentage$
-  //     }
-
-  //     // push each upload into the array
-  //     this.uploads.push(uploadTrack);
-
-  //     // for every upload do whatever you want in firestore with the uploaded file
-  //     const _t = task.then((f) => {
-  //       return f.ref.getDownloadURL().then((url) => {
-  //         return this.afs.collection('files').add({
-  //           name: f.metadata.name,
-  //           url: url
-  //         });
-  //       })
-  //     })
-
-  //   }
-
-
 }
