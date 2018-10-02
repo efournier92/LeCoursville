@@ -32,7 +32,10 @@ export class ContactsComponent implements OnInit {
 
     this.contactsService.userContacts.subscribe(contacts => {
       this.contacts = contacts;
-      this.filteredContacts = contacts;
+
+      this.filteredContacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
+      // this.contactsService.changeEmails(this.contacts);
+      // this.contactsService.changePhones(this.contacts);
       this.getFamilies();
     })
   }
@@ -47,12 +50,22 @@ export class ContactsComponent implements OnInit {
     this.filteredContacts = this.filter.transform(this.contacts, { family: family });
   }
 
+  newContact() {
+    let contact = new Contact();
+    this.contactsService.newContact(contact);
+  }
+
   filterContacts(event: any) {
     this.filteredContacts = this.filter.transform(this.contacts, { name: event.target.value });
   }
 
   clearFamily() {
     this.family = '';
+  }
+
+  updateContact(contact) {
+    console.log(contact);
+    this.contactsService.updateContact(contact);
   }
 
   printPdf() {

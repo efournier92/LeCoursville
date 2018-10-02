@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { Contact } from './contact';
+import { Contact, Phone } from './contact';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -36,18 +36,38 @@ export class ContactsService {
     this.contactsSource.next(contacts);
   }
 
+  changeEmails(contacts) {
+    for (let contact of contacts) {
+      let email = contact.email[0][0][0];
+      contact.emails = [];
+      contact.emails.push(email);
+      this.updateContact(contact);
+    }
+  }
+
+    changePhones(contacts) {
+    for (let contact of contacts) {
+      if (!contact.emails){
+        contact.emails = [];
+        contact.emails.push('');
+        contact.emails.push('');
+      }
+      this.updateContact(contact);
+    }
+  }
+
   getContacts(): AngularFireList<Contact> {
     if (!this.user) return;
     this.contacts = this.db.list(`contacts`);
     return this.contacts;
   }
 
-  createUserContact(contact: Contact) {
+  newContact(contact: Contact) {
     contact.id = this.db.createPushId();
     this.contacts.set(contact.id, contact);
   }
 
-  updateUserContact(contact: Contact) {
+  updateContact(contact: Contact) {
     this.contacts.update(contact.id, contact);
   }
 
@@ -63,7 +83,37 @@ export class ContactsService {
     let lineHeight = 22;
     let onPage = 0;
 
+    function buildPhoneString(contact) {
+      let phoneString = '';
+      for (let phone of contact.phones) {
+        phone.type = phone.type.charAt(0).toUpperCase() + phone.type.substr(1);
+        if (phone.type !== '') {
+          phoneString += `${phone.type}: `;
+        }
+        phoneString += phone.number;
+        phoneString += '  ';
+      }
+      return phoneString;
+    }
+
+    function buildEmailString(contact) {
+      let emailString = '';
+      for (let email in contact.emails) {
+        emailString += `${contact.emails[0]}`;
+        email.type = phone.type.charAt(0).toUpperCase() + phone.type.substr(1);
+        if (email.type !== '') {
+          emailString += `${phone.type}: `;
+        }
+        phoneString += phone.number;
+        phoneString += '  ';
+      }
+      return phoneString;      
+    }
+
+
     for (let contact of contacts) {
+      if (contact.phones) buildPhoneString(contact)
+
       let phoneString = '';
       if (contact.phones) {
         for (let phone of contact.phones) {
@@ -99,6 +149,7 @@ export class ContactsService {
         onPage = 0;
         line = 70;
       }
+      
     }
 
     if (method === 'print') {

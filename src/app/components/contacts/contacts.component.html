@@ -1,8 +1,8 @@
 <mat-toolbar class="d-flex justify-content-around flex-row">
 
-      <mat-form-field class="search-field col-xs-4">
-        <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
-      </mat-form-field>
+  <mat-form-field class="search-field col-xs-4">
+    <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
+  </mat-form-field>
 
   <div class="d-flex justify-content-center col-xs-4">
     <button mat-button class="" [matMenuTriggerFor]="byFamilyMenu">
@@ -25,80 +25,115 @@
     </button>
   </div>
 </mat-toolbar>
+<mat-toolbar class="d-flex justify-content-around flex-row" *ngIf="user && user.roles && user.roles.admin">
+  <button mat-button (click)="newContact()">
+    <mat-icon>add</mat-icon>
+  </button>
+</mat-toolbar>
+
 
 <div class="contact-card-container d-flex justify-content-center row">
   <mat-card class="contact-card col-lg-5" *ngFor="let contact of filteredContacts">
+    <!-- VIEW CONTACT -->
     <div *ngIf="!contact.editable">
-    <mat-card-title>
-        {{ contact.name }}
-      </mat-card-title>
-    <mat-card-content>
-      <mat-list>
-        <mat-list-item *ngIf="contact.street && contact.city && contact.state && contact.zip">
-          <mat-icon mat-list-icon>home</mat-icon>
-          <h4 mat-line>{{ contact.street }}</h4>
-          <p mat-line>{{ contact.city }}, {{ contact.state }}, {{ contact.zip }}</p>
-        </mat-list-item>
-        <mat-list-item class="contact-phone-container" *ngIf="contact.phones && contact.phones.length">
-          <mat-icon mat-list-icon>phone</mat-icon>
-          <div class="d-inline-flex">
-            <mat-list-item class="contact-phone col-xs-5" *ngFor="let phone of contact.phones">
-              <h4 mat-line *ngIf="phone.type !== ''">
-                {{ phone.type | titlecase}}
-              </h4>
-              <p mat-line>{{ phone.number }}</p>
-            </mat-list-item>
-          </div>
-        </mat-list-item>
-        <mat-list-item *ngIf="contact.email && contact.email !== ''">
-          <mat-icon mat-list-icon>email</mat-icon>
-          <h4 mat-line>{{ contact.email }}</h4>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-    <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
-      <button mat-button (click)="contact.editable = true">
-        <mat-icon>edit</mat-icon>
-      </button>
-    </mat-card-footer>
-  </div>
-  <div *ngIf="contact.editable">
       <mat-card-title>
-          <input type="text" value="{{contact.name}}">
-        </mat-card-title>
+        {{ contact.name }}
+        <br />
+        <mat-card-subtitle>
+          <i>{{ contact.info }}</i>
+        </mat-card-subtitle>
+
+      </mat-card-title>
       <mat-card-content>
         <mat-list>
           <mat-list-item *ngIf="contact.street && contact.city && contact.state && contact.zip">
             <mat-icon mat-list-icon>home</mat-icon>
-            <h4 mat-line>
-              <input size="28" type="text" value="{{contact.street}}">
-            </h4>
-            <p mat-line>
-              <input size="16" type="text" value="{{contact.city}}">, <input size="1" type="text" value="{{contact.state}}">, <input type="text" size="3" value="{{contact.zip}}">
-            </p>
+            <h4 mat-line>{{ contact.street }}</h4>
+            <p mat-line>{{ contact.city }}, {{ contact.state }} {{ contact.zip }}</p>
           </mat-list-item>
           <mat-list-item class="contact-phone-container" *ngIf="contact.phones && contact.phones.length">
             <mat-icon mat-list-icon>phone</mat-icon>
             <div class="d-inline-flex">
               <mat-list-item class="contact-phone col-xs-5" *ngFor="let phone of contact.phones">
                 <h4 mat-line *ngIf="phone.type !== ''">
-                  <input size="8" type="text" value="{{ phone.type | titlecase}}">
+                  {{ phone.type | titlecase}}
                 </h4>
-                <p mat-line>
-                    <input size="10" type="text" value="{{ phone.number }}">
-                </p>
+                <p mat-line>{{ phone.number }}</p>
               </mat-list-item>
             </div>
           </mat-list-item>
-          <mat-list-item>
+          <mat-list-item *ngIf="contact.email && contact.email !== ''">
             <mat-icon mat-list-icon>email</mat-icon>
-              <input size="10" type="text" value="{{ contact.email }}">
+            <h4 mat-line>{{ contact.email }}</h4>
           </mat-list-item>
         </mat-list>
       </mat-card-content>
       <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
         <button mat-button (click)="contact.editable = true">
           <mat-icon>edit</mat-icon>
+        </button>
+      </mat-card-footer>
+    </div>
+    <!-- EDIT CONTACT -->
+    <div *ngIf="contact.editable">
+      <mat-card-title>
+        <input size="20" [(ngModel)]="contact.name">
+      </mat-card-title>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item>
+            <mat-icon mat-list-icon>home</mat-icon>
+            <h4 mat-line>
+              <input size="25" [(ngModel)]="contact.street">
+            </h4>
+            <p mat-line>
+              <input size="18" [(ngModel)]="contact.city">,
+              <input size="1" [(ngModel)]="contact.state">
+              <input size="3" [(ngModel)]="contact.zip">
+            </p>
+          </mat-list-item>
+          <mat-list-item class="contact-phone-container">
+            <mat-icon mat-list-icon>phone</mat-icon>
+            <div class="d-inline-flex">
+              <mat-list-item class="contact-phone col-xs-5">
+                <h4 mat-line>
+                  <input size="4" [(ngModel)]="contact.phones[0].type">
+                </h4>
+                <p mat-line>
+                  <input size="10" [(ngModel)]="contact.phones[0].number">
+                </p>
+              </mat-list-item>
+              <mat-list-item class="contact-phone col-xs-5">
+                <h4 mat-line>
+                  <input size="4" [(ngModel)]="contact.phones[1].type">
+                </h4>
+                <p mat-line>
+                  <input size="10" [(ngModel)]="contact.phones[1].number">
+                </p>
+              </mat-list-item>
+            </div>
+          </mat-list-item>
+          <mat-list-item>
+            <mat-icon mat-list-icon>email</mat-icon>
+            <h4 mat-line>
+              <input size="25" [(ngModel)]="contact.emails[0]">
+            </h4>
+            <h4 mat-line>
+              <input size="29" [(ngModel)]="contact.emails[1]">
+            </h4>
+          </mat-list-item>
+          <mat-list-item>
+            <mat-icon mat-list-icon>info</mat-icon>
+            <h4 mat-line>
+              <input size="25" [(ngModel)]="contact.info">
+            </h4>
+          </mat-list-item>
+
+        </mat-list>
+      </mat-card-content>
+      <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
+        <button mat-button (click)="contact.editable = false;updateContact(contact)">
+          <mat-icon>save</mat-icon>
         </button>
       </mat-card-footer>
     </div>
