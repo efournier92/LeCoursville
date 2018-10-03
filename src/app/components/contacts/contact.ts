@@ -3,11 +3,16 @@ export class Phone {
     type: string = '';
 }
 
+export class Email {
+    address: string = '';
+    info: string = '';
+}
+
 export class Contact {
     id: string = '';
     name: string = '';
     family: string = '';
-    emails: string[] = ['', ''];
+    emails: Email[] = [new Email(), new Email()];
     street: string = '';
     city: string = '';
     state: string = '';

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { Contact, Phone } from './contact';
+import { Contact, Phone, Email } from './contact';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -45,14 +45,25 @@ export class ContactsService {
     }
   }
 
-    changePhones(contacts) {
+  changePhones(contacts) {
     for (let contact of contacts) {
-      if (!contact.emails){
-        contact.emails = [];
-        contact.emails.push('');
-        contact.emails.push('');
-      }
+      // if (contact.email === undefined) {
+      //   console.log(contact);
+      // }
+
+      if (contact && contact.email && contact.email[0] && contact.email[0][0] && contact.email[0][0][0]) {
+        let oldEmail = contact.email[0][0][0];
+        contact.emails = new Array<Email>();
+      let email = new Email();
+      email.address = oldEmail;
+      email.info = '';
+      contact.emails.push(email);
+      email = new Email();
+      email.address = '';
+      email.info = '';
+      contact.emails.push(email);
       this.updateContact(contact);
+      }
     }
   }
 
@@ -98,33 +109,20 @@ export class ContactsService {
 
     function buildEmailString(contact) {
       let emailString = '';
-      for (let email in contact.emails) {
-        emailString += `${contact.emails[0]}`;
-        email.type = phone.type.charAt(0).toUpperCase() + phone.type.substr(1);
-        if (email.type !== '') {
-          emailString += `${phone.type}: `;
+      for (let email of contact.emails) {
+        if (email.info !== '') {
+          emailString += `${email.info}: `;
         }
-        phoneString += phone.number;
-        phoneString += '  ';
+        emailString += `${email.address}   `;
       }
-      return phoneString;      
+      return emailString;
     }
-
 
     for (let contact of contacts) {
       if (contact.phones) buildPhoneString(contact)
 
-      let phoneString = '';
-      if (contact.phones) {
-        for (let phone of contact.phones) {
-          phone.type = phone.type.charAt(0).toUpperCase() + phone.type.substr(1);
-          if (phone.type !== '') {
-            phoneString += `${phone.type}: `;
-          }
-          phoneString += phone.number;
-          phoneString += '  ';
-        }
-      }
+      let phoneString = buildPhoneString(contact);
+      let emailString = buildEmailString(contact);
 
       pdf.setFontSize(14);
       pdf.setFontType("bold");
@@ -141,15 +139,17 @@ export class ContactsService {
         line += lineHeight;
         pdf.text(60, line, `${phoneString}`);
       }
+      line += 50;
+      pdf.text(60, line, `${emailString}`);
 
       onPage += 1;
       line += 50;
-      if (onPage === 6 && contacts.length ) {
+      if (onPage === 6 && contacts.length) {
         pdf.addPage();
         onPage = 0;
         line = 70;
       }
-      
+
     }
 
     if (method === 'print') {

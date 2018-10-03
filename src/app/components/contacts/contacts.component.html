@@ -74,24 +74,98 @@
         </button>
       </mat-card-footer>
     </div>
+
     <!-- EDIT CONTACT -->
     <div *ngIf="contact.editable">
+
+      <div class="input-group">
+        <input type="text" class="form-control" [(ngModel)]="contact.name" placeholder="Name">
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="form-control" [(ngModel)]="contact.street" placeholder="Street">
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="form-control" [(ngModel)]="contact.state" placeholder="State">
+        <input type="text" class="form-control" [(ngModel)]="contact.zip" placeholder="Zip">          <div class="input-group-append">
+            <button mat-button class="input-group-text">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group" *ngFor="let phone of contact.phones">
+            <input type="text" class="form-control" [(ngModel)]="phone.info" placeholder="Info">
+            <input type="text" class="form-control" [(ngModel)]="contact.number" placeholder="Number">          <div class="input-group-append">
+                <button mat-button class="input-group-text">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+        
+      <div class="input-group">
+        <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+        <div class="input-group-append">
+          <button mat-button class="input-group-text">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+
+
+
+      <div class="input-group">
+        <input type="text" class="form-control" [(ngModel)]="contact.name">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+
       <mat-card-title>
-        <input size="20" [(ngModel)]="contact.name">
+        <div class="input-group mb-3">
+        </div>
       </mat-card-title>
       <mat-card-content>
+
         <mat-list>
           <mat-list-item>
-            <mat-icon mat-list-icon>home</mat-icon>
             <h4 mat-line>
-              <input size="25" [(ngModel)]="contact.street">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" [(ngModel)]="contact.street">
+              </div>
             </h4>
-            <p mat-line>
-              <input size="18" [(ngModel)]="contact.city">,
-              <input size="1" [(ngModel)]="contact.state">
-              <input size="3" [(ngModel)]="contact.zip">
-            </p>
           </mat-list-item>
+          <mat-list-item>
+            <h4 mat-line>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" [(ngModel)]="contact.city">
+              </div>
+            </h4>
+          </mat-list-item>
+          <mat-list-item>
+            <h4 mat-line>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" [(ngModel)]="contact.state">
+                <input type="text" class="form-control" [(ngModel)]="contact.zip">
+                <input type="text" class="form-control" [(ngModel)]="contact.info">
+              </div>
+            </h4>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let phone of contact.phones">
+            <h4 mat-line>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" style="width:10%" [(ngModel)]="phone.type">
+                <input type="text" class="form-control" [(ngModel)]="phone.number">
+              </div>
+            </h4>
+          </mat-list-item>
+
           <mat-list-item class="contact-phone-container">
             <mat-icon mat-list-icon>phone</mat-icon>
             <div class="d-inline-flex">
@@ -116,10 +190,10 @@
           <mat-list-item>
             <mat-icon mat-list-icon>email</mat-icon>
             <h4 mat-line>
-              <input size="25" [(ngModel)]="contact.emails[0]">
-            </h4>
-            <h4 mat-line>
-              <input size="29" [(ngModel)]="contact.emails[1]">
+              <div *ngFor="let email of contact.emails">
+                <input size="3" [(ngModel)]="email.info">
+                <input size="19" [(ngModel)]="email.address">
+              </div>
             </h4>
           </mat-list-item>
           <mat-list-item>
@@ -128,7 +202,22 @@
               <input size="25" [(ngModel)]="contact.info">
             </h4>
           </mat-list-item>
+          <mat-list-item>
+            <mat-icon mat-list-icon>group</mat-icon>
+            <h4 mat-line>
+              <div class="d-flex justify-content-center col-xs-4">
+                <button mat-button class="" [matMenuTriggerFor]="byFamilyMenu">
+                  Family <mat-icon>keyboard_arrow_down</mat-icon>
+                </button>
+              </div>
 
+              <mat-menu #chooseFamilyMenu="matMenu" class="col-xs-6">
+                <button mat-menu-item *ngFor="let family of families" (click)="contact.family = family">
+                  {{ family }}
+                </button>
+              </mat-menu>
+            </h4>
+          </mat-list-item>
         </mat-list>
       </mat-card-content>
       <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
