@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { Contact, Phone, Email } from './contact';
+import { Contact, Phone, Email, Address } from './contact';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -34,6 +34,21 @@ export class ContactsService {
 
   updateContactsEvent(contacts: Contact[]) {
     this.contactsSource.next(contacts);
+  }
+
+
+  changeAddresses(contacts) {
+    for (let contact of contacts) {
+      let address = new Address();
+      address.city = contact.city;
+      address.state = contact.state;
+      address.street = contact.street;
+      address.zip = contact.zip;
+      address.info = '';
+      contact.addresses = new Array<Address>();
+      contact.addresses.push(address);
+      this.updateContact(contact);
+    }
   }
 
   changeEmails(contacts) {

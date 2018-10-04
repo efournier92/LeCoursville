@@ -22,6 +22,8 @@ import { AuthComponent } from './components/auth/auth.component';
 import { ContactsComponent } from './components/contacts/contacts.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { PhotosComponent } from './components/photos/photos.component';
+import { EditContactComponent } from './components/contacts/edit-contact/edit-contact.component';
+import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +32,8 @@ import { PhotosComponent } from './components/photos/photos.component';
     ContactsComponent,
     CalendarComponent,
     PhotosComponent,
+    EditContactComponent,
+    ViewContactComponent,
   ],
   imports: [
     AppRoutingModule,

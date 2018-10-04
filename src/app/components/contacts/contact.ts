@@ -1,3 +1,11 @@
+export class Address {
+    street: string = '';
+    city: string = '';
+    state: string = '';
+    zip: string = '';
+    info: string = '';
+}
+
 export class Phone {
     number: string = '';
     type: string = '';
@@ -11,6 +19,7 @@ export class Email {
 export class Contact {
     id: string = '';
     name: string = '';
+    addresses: Address[];
     family: string = '';
     emails: Email[] = [new Email(), new Email()];
     street: string = '';

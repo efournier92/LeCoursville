@@ -34,8 +34,6 @@ export class ContactsComponent implements OnInit {
       this.contacts = contacts;
 
       this.filteredContacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-      // this.contactsService.changeEmails(this.contacts);
-      // this.contactsService.changePhones(this.contacts);
       this.getFamilies();
     })
   }
