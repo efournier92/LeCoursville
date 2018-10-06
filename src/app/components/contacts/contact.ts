@@ -8,7 +8,7 @@ export class Address {
 
 export class Phone {
     number: string = '';
-    type: string = '';
+    info: string = '';
 }
 
 export class Email {

@@ -68,15 +68,15 @@ export class ContactsService {
       if (contact && contact.email && contact.email[0] && contact.email[0][0] && contact.email[0][0][0]) {
         let oldEmail = contact.email[0][0][0];
         contact.emails = new Array<Email>();
-      let email = new Email();
-      email.address = oldEmail;
-      email.info = '';
-      contact.emails.push(email);
-      email = new Email();
-      email.address = '';
-      email.info = '';
-      contact.emails.push(email);
-      this.updateContact(contact);
+        let email = new Email();
+        email.address = oldEmail;
+        email.info = '';
+        contact.emails.push(email);
+        email = new Email();
+        email.address = '';
+        email.info = '';
+        contact.emails.push(email);
+        this.updateContact(contact);
       }
     }
   }
@@ -101,43 +101,16 @@ export class ContactsService {
   }
 
   printPdf(contacts: Contact[], method: string) {
+    const totalContacts = contacts.length;
     let pdf = new jsPDF('p', 'pt', 'letter');
 
-    pdf.setFontSize(12);
-    let line = 70;
-    let lineHeight = 22;
+    const lineHeight = 22;
+    let line = 80;
     let onPage = 0;
+    pdf.setFontSize(12);
 
-    function buildPhoneString(contact) {
-      let phoneString = '';
-      for (let phone of contact.phones) {
-        phone.type = phone.type.charAt(0).toUpperCase() + phone.type.substr(1);
-        if (phone.type !== '') {
-          phoneString += `${phone.type}: `;
-        }
-        phoneString += phone.number;
-        phoneString += '  ';
-      }
-      return phoneString;
-    }
-
-    function buildEmailString(contact) {
-      let emailString = '';
-      for (let email of contact.emails) {
-        if (email.info !== '') {
-          emailString += `${email.info}: `;
-        }
-        emailString += `${email.address}   `;
-      }
-      return emailString;
-    }
-
+    let i = 0;
     for (let contact of contacts) {
-      if (contact.phones) buildPhoneString(contact)
-
-      let phoneString = buildPhoneString(contact);
-      let emailString = buildEmailString(contact);
-
       pdf.setFontSize(14);
       pdf.setFontType("bold");
       pdf.text(60, line, contact.name);
@@ -145,25 +118,49 @@ export class ContactsService {
       pdf.setFontSize(12);
       line += lineHeight;
 
-      pdf.text(60, line, contact.street);
-      line += lineHeight;
-      pdf.text(60, line, `${contact.city}, ${contact.state}, ${contact.zip}`);
-
-      if (phoneString !== '') {
-        line += lineHeight;
-        pdf.text(60, line, `${phoneString}`);
+      if (contact.addresses) {
+        for (let address of contact.addresses) {
+          pdf.text(60, line, address.street);
+          line += lineHeight;
+          pdf.text(60, line, `${address.city}, ${address.state}, ${address.zip}`);
+          line += lineHeight;
+        }
       }
-      line += 50;
-      pdf.text(60, line, `${emailString}`);
 
-      onPage += 1;
+      if (contact.phones) {
+        for (let phone of contact.phones) {
+          if (!phone || !phone.number)
+            continue;
+          let phoneString = '';
+          if (phone.info && phone.info !== '')
+            phoneString += `${phone.info}: `;
+          phoneString += phone.number;
+          pdf.text(60, line, phoneString);
+          line += lineHeight;
+        }
+      }
+
+      if (contact.emails) {
+        for (let email of contact.emails) {
+          if (!email || !email.address)
+            continue;
+          let emailString;
+          if (email.info && email.info !== '')
+            emailString += `${email.info}: `;
+          emailString += email.address;
+          pdf.text(60, line, emailString);
+          line += lineHeight;
+        }
+      }
+
+      i++;
       line += 50;
-      if (onPage === 6 && contacts.length) {
+      onPage += 1;
+      if (line >= 600 && i !== totalContacts) {
         pdf.addPage();
         onPage = 0;
-        line = 70;
+        line = 80;
       }
-
     }
 
     if (method === 'print') {
@@ -171,6 +168,5 @@ export class ContactsService {
     } else if (method === 'download') {
       pdf.save('LeCoursville_Directory.pdf');
     }
-
   }
 }

@@ -18,13 +18,21 @@ export class PhotosService {
     private db: AngularFireDatabase,
   ) {
     // this.auth.authState.subscribe(user => {
-      // if (user) this.userId = user.uid;
-      this.getPhotos().valueChanges().subscribe(
-        (photos: Photo[]) => {
-          this.updatePhotosEvent(photos);
-        }
-      );
+    // if (user) this.userId = user.uid;
+    this.getPhotos().valueChanges().subscribe(
+      (photos: Photo[]) => {
+        this.updatePhotosEvent(photos);
+      }
+    );
     // });
+  }
+
+  getYears() {
+    let years = Array<Number>();
+    for (let i = 1880; i <= 2000; i++) {
+      years.push(i);
+    }
+    return years;
   }
 
   private photosSource = new BehaviorSubject([]);
@@ -44,20 +52,20 @@ export class PhotosService {
     photo.id = this.db.createPushId();
     photo.extension = file.name.split('.').pop();
     photo.path = `photos/${photo.id}.${photo.extension}`;
-    
+
     const fileRef = this.storage.ref(photo.path);
     const task = this.storage.upload(photo.path, file);
     task.snapshotChanges().pipe(
-        finalize(() => {
-          fileRef.getDownloadURL().subscribe(
-            url => {
-              const photosDb = this.db.list(`photos`);
-              photo.url = url;
-              photosDb.set(photo.id, photo);
-            }
-          )
-        })
-      ).subscribe()
+      finalize(() => {
+        fileRef.getDownloadURL().subscribe(
+          url => {
+            const photosDb = this.db.list(`photos`);
+            photo.url = url;
+            photosDb.set(photo.id, photo);
+          }
+        )
+      })
+    ).subscribe()
   }
 
   updatePhoto(photo: Photo) {

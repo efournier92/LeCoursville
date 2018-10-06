@@ -20,27 +20,26 @@ export class PhotosComponent implements OnInit {
   photos: Photo[];
   url: string;
   loading: boolean = true;
-  
+  years: Number[];
+
   constructor(
     private photosService: PhotosService,
     private auth: AuthService,
-    ) {
-      this.auth.userObservable.subscribe(
-        (user: User) => {
-          this.user = user;
-        }
-      )
-      // let download = require('download');
-      // download('./assets/calendars/2018.pdf');
-     }
-     
+  ) {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+      }
+    )
+  }
 
   ngOnInit() {
+    this.years = this.photosService.getYears();
     this.photosService.photosObservable.subscribe(photos => {
       this.photos = photos;
     })
   }
-  
+
   addPhotos(event) {
     for (let file of event.currentTarget.files) {
       this.photosService.addPhotos(file)
@@ -52,7 +51,14 @@ export class PhotosComponent implements OnInit {
       (photos: Photo[]) => {
         this.photos = photos;
       }
-
     );
+  }
+
+  updatePhoto(photo) {
+
+  }
+
+  deletePhoto(photo) {
+
   }
 }
