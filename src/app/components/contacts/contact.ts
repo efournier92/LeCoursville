@@ -19,16 +19,12 @@ export class Email {
 export class Contact {
     id: string = '';
     name: string = '';
-    addresses: Address[];
+    addresses: Address[] = [];
     family: string = '';
-    emails: Email[] = [new Email(), new Email()];
-    street: string = '';
-    city: string = '';
-    state: string = '';
-    zip: string = '';
-    info: string = '';
-    phones: Phone[] = [new Phone(), new Phone()];
+    emails: Email[] = [];
+    phones: Phone[] = [];
     editable: boolean = false;
 
     constructor() { }
 }
+

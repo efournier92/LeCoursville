@@ -64,6 +64,9 @@ import { ViewContactComponent } from './components/contacts/view-contact/view-co
   bootstrap: [
     AppComponent,
   ],
+  exports: [
+    EditContactComponent,
+]
 })
 
 export class AppModule { }

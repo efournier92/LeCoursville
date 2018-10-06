@@ -36,7 +36,6 @@ export class ContactsService {
     this.contactsSource.next(contacts);
   }
 
-
   changeAddresses(contacts) {
     for (let contact of contacts) {
       let address = new Address();
@@ -97,7 +96,7 @@ export class ContactsService {
     this.contacts.update(contact.id, contact);
   }
 
-  deleteUserContact(contact: Contact) {
+  deleteContact(contact: Contact) {
     this.contacts.remove(contact.id);
   }
 

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FilterPipe } from 'ngx-filter-pipe';
-import { AuthService } from '../auth/auth.service';
-import { User } from '../auth/user';
 import { Contact } from 'src/app/components/contacts/contact';
-import { ContactsService } from './contacts.service';
+import { families } from 'src/app/components/contacts/families';
+import { AuthService } from 'src/app/components/auth/auth.service';
+import { ContactsService } from 'src/app/components/contacts/contacts.service';
+import { User } from 'src/app/components/auth/user';
 
 @Component({
   selector: 'app-contacts',
@@ -16,7 +17,7 @@ export class ContactsComponent implements OnInit {
   searchTerm: string = '';
   filteredContacts: Contact[] = [];
   family: string = '';
-  families: string[] = [];
+  families: string[] = families;
 
   constructor(
     private contactsService: ContactsService,
@@ -32,16 +33,8 @@ export class ContactsComponent implements OnInit {
 
     this.contactsService.userContacts.subscribe(contacts => {
       this.contacts = contacts;
-
       this.filteredContacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-      this.getFamilies();
     })
-  }
-
-  getFamilies() {
-    for (let contact of this.contacts) {
-      if (!this.families.includes(contact.family)) this.families.push(contact.family);
-    }
   }
 
   switchFamily(family: string) {
@@ -59,11 +52,6 @@ export class ContactsComponent implements OnInit {
 
   clearFamily() {
     this.family = '';
-  }
-
-  updateContact(contact) {
-    console.log(contact);
-    this.contactsService.updateContact(contact);
   }
 
   printPdf() {

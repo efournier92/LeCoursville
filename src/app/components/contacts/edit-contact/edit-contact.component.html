@@ -1,62 +1,121 @@
 <mat-card>
-  <div *ngIf="contact.editable">
-    <mat-card-content>
-
+  <mat-card-content>
+    <div class="input-group mb-1">
+      <input type="text" class="form-control" [(ngModel)]="contact.name" placeholder="Name">
+    </div>
+    <div class="mb-3"></div>
+    <div class="input-group">
+      <select class="form-control" [(ngModel)]="contact.family">
+        <option *ngFor="let family of families">{{family}}</option>
+      </select>
+    </div>
+    <div class="mb-3"></div>
+    <div *ngFor="let address of contact.addresses; let last = last; let index = index" class="input-row">
+      <div class="input-group mb-1" *ngIf="contact.addresses.length > 1">
+        <input type="text" class="form-control" [(ngModel)]="address.info" placeholder="Info">
+      </div>
       <div class="input-group mb-1">
-        <input type="text" class="form-control" [(ngModel)]="contact.name" placeholder="Name">
+        <input type="text" class="form-control" [(ngModel)]="address.street" placeholder="Street">
       </div>
-      <div class="mb-3"></div>
-      <div class="input-group">
-        <select class="form-control" [(ngModel)]="contact.family">
-          <option *ngFor="let family of families">{{family}}</option>
-        </select>
+      <div class="input-group mb-1">
+        <form>
+          <div class="form-row">
+            <div class="form-group col-5">
+              <input type="text" class="form-control" name="addressCity" [(ngModel)]="address.city" placeholder="City">
+            </div>
+            <div class="form-group col-2">
+              <input type="text" class="form-control" name="addressState" [(ngModel)]="address.state" placeholder="State">
+            </div>
+            <div class="form-group col-3">
+              <input type="text" class="form-control" name="addressZip" [(ngModel)]="address.zip" placeholder="Zip">
+            </div>
+
+            <div class="form-group col-1">
+              <button mat-button class="input-group-text" (click)="removeAddress(contact.addresses)" style="min-width:0;padding:0">
+                <mat-icon>remove</mat-icon>
+              </button>
+            </div>
+            <div class="form-group col-1">
+              <button mat-button class="input-group-text" (click)="addAddress(contact)" style="min-width:0;padding:0">
+                <mat-icon *ngIf="last">add</mat-icon>
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-      <div class="mb-3"></div>
-      <div *ngFor="let address of contact.addresses">
-        <div class="input-group mb-1">
-          <input type="text" class="form-control" [(ngModel)]="address.info" placeholder="Info">
-        </div>
-        <div class="input-group mb-1">
-          <input type="text" class="form-control" [(ngModel)]="address.street" placeholder="Street">
-        </div>
-        <div class="input-group mb-1">
-          <input type="text" class="form-control" [(ngModel)]="address.state" placeholder="State">
-          <input type="text" class="form-control" [(ngModel)]="address.zip" placeholder="Zip">
-          <div class="input-group-append">
-            <button mat-button class="input-group-text">
-              <mat-icon>add</mat-icon>
+    <div class="mb-3"></div>
+  </div>
+    <div class="form-group col-1" *ngIf="!contact.addresses || !contact.addresses.length">
+        <button mat-button class="input-group-text" (click)="addAddress(contact)" style="min-width:0;padding:0">
+          <mat-icon><span>add</span></mat-icon> Address
+        </button>
+      </div>
+    <div class="input-group mb-1" *ngFor="let phone of contact.phones; let last = last; let index = index">
+      <form>
+        <div class="form-row">
+          <div class="form-group col-3">
+            <input type="text" class="form-control" name="phoneInfo" [(ngModel)]="phone.info" placeholder="Info">
+          </div>
+          <div class="form-group col-7">
+            <input type="text" class="form-control" name="phoneNumber" [(ngModel)]="phone.number" placeholder="Phone Number">
+          </div>
+          <div class="form-group col-1">
+            <button mat-button class="input-group-text" (click)="removePhone(contact.phones, index)" style="min-width:0;padding:0">
+              <mat-icon>remove</mat-icon>
+            </button>
+          </div>
+          <div class="form-group col-1">
+            <button mat-button class="input-group-text" (click)="addPhone(contact)" style="min-width:0;padding:0">
+              <mat-icon><span *ngIf="last">add</span></mat-icon>
             </button>
           </div>
         </div>
-      </div>
+      </form>
       <div class="mb-3"></div>
-      <div class="input-group mb-1" *ngFor="let phone of contact.phones; let last = last">
-        <input type="text" class="form-control" [(ngModel)]="phone.info" placeholder="Info">
-        <input type="text" class="form-control" [(ngModel)]="contact.number" placeholder="Number">
-        <div class="input-group-append">
-          <button mat-button class="input-group-text">
-            <mat-icon *ngIf="last">add</mat-icon>
-          </button>
-        </div>
+    </div>
+    <div class="form-group col-1" *ngIf="!contact.phones || !contact.phones.length">
+        <button mat-button class="input-group-text" (click)="addPhone(contact)" style="min-width:0;padding:0">
+          <mat-icon><span>add</span></mat-icon> Phone
+        </button>
       </div>
+    <div class="input-group mt-3 mb-1" *ngFor="let email of contact.emails; let last = last; let index = index">
+      <form>
+        <div class="form-row">
+          <div class="form-group col-3">
+            <input type="text" class="form-control" name="emailInfo" [(ngModel)]="email.info" placeholder="Info">
+          </div>
+          <div class="form-group col-7">
+            <input type="text" class="form-control" name="emailAddress" [(ngModel)]="email.address" placeholder="Email Address">
+          </div>
+          <div class="form-group col-1">
+            <button mat-button class="input-group-text" (click)="removeEmail(contact.emails, index)" style="min-width:0;padding:0">
+              <mat-icon>remove</mat-icon>
+            </button>
+          </div>
+          <div class="form-group col-1">
+            <button mat-button class="input-group-text" [disabled]="!last" (click)="addEmail(contact)" style="min-width:0;padding:0">
+              <mat-icon><span *ngIf="last">add</span></mat-icon>
+            </button>
+          </div>
+        </div>
+      </form>
       <div class="mb-3"></div>
-      <div class="input-group" *ngFor="let email of contact.emails; let last = last">
-        <input type="text" class="form-control" [(ngModel)]="email.info" placeholder="Info">
-        <input type="text" class="form-control" [(ngModel)]="contact.address" placeholder="Address">
-        <div class="input-group-append">
-          <button mat-button class="input-group-text">
-            <mat-icon>remove</mat-icon>
-          </button>
-          <button mat-button class="input-group-text">
-            <mat-icon *ngIf="last">add</mat-icon>
-          </button>
-        </div>
+    </div>
+    <div class="form-group col-1" *ngIf="!contact.emails || !contact.emails.length">
+        <button mat-button class="input-group-text" (click)="addEmail(contact)" style="min-width:0;padding:0">
+          <mat-icon><span>add</span></mat-icon> Email
+        </button>
       </div>
-    </mat-card-content>
-    <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
-      <button mat-button (click)="contact.editable = false;updateContact(contact)">
-        <mat-icon>save</mat-icon>
-      </button>
-    </mat-card-footer>
-  </div>
+  </mat-card-content>
+  <mat-card-footer *ngIf="user.roles.admin" class="contact-controls-container d-flex justify-content-end">
+    <button mat-button (click)="deleteContact(contact)">
+      <mat-icon>delete</mat-icon>
+    </button>
+    <button mat-button (click)="contact.editable = false">
+      <mat-icon>cancel</mat-icon>
+    </button>
+    <button mat-button (click)="updateContact(contact)">
+      <mat-icon>save</mat-icon>
+    </button>
+  </mat-card-footer>
 </mat-card>
