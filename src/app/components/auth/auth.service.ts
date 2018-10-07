@@ -42,7 +42,7 @@ export class AuthService {
     } else {
       this.user = user;
     }
-    this.updatedUser(this.user)
+    this.updatedUser(this.user);
   }
 
   createUser(authData: any) {

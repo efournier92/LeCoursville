@@ -44,7 +44,8 @@ export class PhotosService {
 
   getPhotos() {
     this.photoCount = this.photoCount + this.increment;
-    return this.db.list('photos', ref => ref.limitToFirst(this.photoCount));
+    this.photos = this.db.list('photos', ref => ref.limitToFirst(this.photoCount));
+    return this.photos;
   }
 
   addPhotos(file: any) {

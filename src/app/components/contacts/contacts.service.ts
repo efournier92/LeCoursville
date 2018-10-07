@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { Contact, Phone, Email, Address } from './contact';
+import { Contact } from './contact';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -29,56 +29,11 @@ export class ContactsService {
         );
       });
   }
+
   private contactsSource = new BehaviorSubject([]);
   userContacts = this.contactsSource.asObservable();
-
   updateContactsEvent(contacts: Contact[]) {
     this.contactsSource.next(contacts);
-  }
-
-  changeAddresses(contacts) {
-    for (let contact of contacts) {
-      let address = new Address();
-      address.city = contact.city;
-      address.state = contact.state;
-      address.street = contact.street;
-      address.zip = contact.zip;
-      address.info = '';
-      contact.addresses = new Array<Address>();
-      contact.addresses.push(address);
-      this.updateContact(contact);
-    }
-  }
-
-  changeEmails(contacts) {
-    for (let contact of contacts) {
-      let email = contact.email[0][0][0];
-      contact.emails = [];
-      contact.emails.push(email);
-      this.updateContact(contact);
-    }
-  }
-
-  changePhones(contacts) {
-    for (let contact of contacts) {
-      // if (contact.email === undefined) {
-      //   console.log(contact);
-      // }
-
-      if (contact && contact.email && contact.email[0] && contact.email[0][0] && contact.email[0][0][0]) {
-        let oldEmail = contact.email[0][0][0];
-        contact.emails = new Array<Email>();
-        let email = new Email();
-        email.address = oldEmail;
-        email.info = '';
-        contact.emails.push(email);
-        email = new Email();
-        email.address = '';
-        email.info = '';
-        contact.emails.push(email);
-        this.updateContact(contact);
-      }
-    }
   }
 
   getContacts(): AngularFireList<Contact> {
@@ -144,7 +99,7 @@ export class ContactsService {
         for (let email of contact.emails) {
           if (!email || !email.address)
             continue;
-          let emailString;
+          let emailString = '';
           if (email.info && email.info !== '')
             emailString += `${email.info}: `;
           emailString += email.address;
@@ -152,7 +107,6 @@ export class ContactsService {
           line += lineHeight;
         }
       }
-
       i++;
       line += 50;
       onPage += 1;
@@ -162,7 +116,7 @@ export class ContactsService {
         line = 80;
       }
     }
-
+    
     if (method === 'print') {
       window.open(pdf.output('bloburl'), '_blank');
     } else if (method === 'download') {

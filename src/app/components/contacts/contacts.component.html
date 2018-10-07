@@ -1,18 +1,16 @@
-<mat-toolbar class="d-flex justify-content-around flex-row">
+<mat-toolbar class="d-flex justify-content-around">
   <mat-form-field class="search-field col-xs-4">
     <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
   </mat-form-field>
-  <div class="d-flex justify-content-center col-xs-4">
-    <button mat-button class="" [matMenuTriggerFor]="byFamilyMenu">
-      By Family <mat-icon>keyboard_arrow_down</mat-icon>
-    </button>
-  </div>
-  <mat-menu #byFamilyMenu="matMenu" class="col-xs-6">
+  <button mat-button [matMenuTriggerFor]="byFamilyMenu">
+    By Family <mat-icon>keyboard_arrow_down</mat-icon>
+  </button>
+  <mat-menu #byFamilyMenu="matMenu">
     <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">
       {{ family }}
     </button>
   </mat-menu>
-  <div class="d-flex justify-content-center col-xs-2">
+  <div class="col-xs-6">
     <button mat-button (click)="printPdf()">
       <mat-icon>print</mat-icon>
     </button>
@@ -21,7 +19,7 @@
     </button>
   </div>
 </mat-toolbar>
-<mat-toolbar class="d-flex justify-content-around flex-row" *ngIf="user && user.roles && user.roles.admin">
+<mat-toolbar *ngIf="user && user.roles && user.roles.admin">
   <button mat-button (click)="newContact()">
     <mat-icon>add</mat-icon>
   </button>

@@ -25,11 +25,11 @@ export class AuthComponent implements OnInit {
       }
     );
   }
-  
-  successCallback($event) {
+
+  signInSuccess($event) {
     this.router.navigate(['/calendar'])
   }
-  
+
   signOut() {
     this.fireAuth.auth.signOut();
     this.user = undefined;

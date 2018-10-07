@@ -8,6 +8,10 @@ import { AuthComponent } from './components/auth/auth.component';
 const routes : Routes =
   [
     {
+      path: '',
+      component: AuthComponent,
+    },
+    {
       path: 'calendar',
       component: CalendarComponent,
     },
@@ -18,10 +22,6 @@ const routes : Routes =
     {
       path: 'contacts',
       component: ContactsComponent,
-    },
-    {
-      path: '',
-      component: AuthComponent,
     },
   ];
 

@@ -55,10 +55,11 @@ export class PhotosComponent implements OnInit {
   }
 
   updatePhoto(photo) {
-
+    photo.editable = false;
+    this.photosService.updatePhoto(photo);
   }
 
   deletePhoto(photo) {
-
+    this.photosService.deletePhoto(photo);
   }
 }

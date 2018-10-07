@@ -1,18 +1,3 @@
-.container {
-    background-image: "./assets/icons/LeCours_Crest_Large_Black.png";
-}
-
-li.firebaseui-list-item {
-    margin: 10%;
-}
-
-.auth-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-}
-
 .auth-image {
     margin: auto;
     padding-top: 50px; 
@@ -21,8 +6,4 @@ li.firebaseui-list-item {
 
 .auth-button {
     margin: auto;    
-}
-
-.spacer {
-    flex: 1 1 auto;
 }
