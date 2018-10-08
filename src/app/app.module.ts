@@ -24,6 +24,7 @@ import { CalendarComponent } from './components/calendar/calendar.component';
 import { PhotosComponent } from './components/photos/photos.component';
 import { EditContactComponent } from './components/contacts/edit-contact/edit-contact.component';
 import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
+import { ChatComponent } from './components/chat/chat.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { ViewContactComponent } from './components/contacts/view-contact/view-co
     PhotosComponent,
     EditContactComponent,
     ViewContactComponent,
+    ChatComponent,
   ],
   imports: [
     AppRoutingModule,
