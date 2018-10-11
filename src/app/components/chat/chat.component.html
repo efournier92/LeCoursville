@@ -1,3 +1,57 @@
-<mat-card>
+<mat-toolbar class="d-flex flex-row" *ngIf="user && user.roles && user.roles.admin">
+    <button mat-button style="height:75%">
+      <label class="" style="margin-bottom:0">
+        <mat-icon style="padding-top:38%">add</mat-icon>
+        <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
+      </label>
+    </button>
+  </mat-toolbar>
   
-</mat-card>
+  <mat-card class="photo-card col-xl-5" *ngFor="let photo of photos">
+    <img mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}" style="padding:15px">
+    <button mat-button (click)="button.editable = true">
+      <mat-card-content>
+        {{ photo.info }}
+      </mat-card-content>
+    </button>
+    <mat-card-footer *ngIf="user.roles && user.roles.admin && !photo.editable" class="contact-controls-container d-flex justify-content-end">
+      <button mat-button (click)="photo.editable = true">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </mat-card-footer>
+    <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.editable" class="contact-controls-container d-flex justify-content-end">
+      <div class="input-group mb-1">
+        <form>
+          <div class="form-row justify-content-center">
+            <div class="form-group col-11">
+              <input type="text" class="form-control" name="addressCity" [(ngModel)]="photo.info" placeholder="Info">
+            </div>
+            <div class="form-row justify-content-center">
+              <div class="form-group col-4">
+                <select class="form-control" name="photoYear" [(ngModel)]="photo.year">
+                  <option *ngFor="let year of years">{{ year }}</option>
+                </select>
+              </div>
+              <div class="form-group col-7">
+                <input type="text" class="form-control" name="addressZip" [(ngModel)]="photo.location" placeholder="Location">
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-1 justify-content-end">
+            <button mat-button (click)="deletePhoto(photo)">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <button mat-button (click)="photo.editable = false">
+              <mat-icon>cancel</mat-icon>
+            </button>
+            <button mat-button (click)="updatePhoto(photo)">
+              <mat-icon>save</mat-icon>
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-card-footer>
+  </mat-card>
+  
+  <div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="1000" (scrolled)="loadMore()"></div>
+  
