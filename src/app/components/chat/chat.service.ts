@@ -20,9 +20,9 @@ export class ChatService {
   ) {
     // this.auth.authState.subscribe(user => {
     // if (user) this.userId = user.uid;
-    this.getPhotos().valueChanges().subscribe(
+    this.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
-        this.updatePhotosEvent(messages);
+        this.updateMessagesEvent(messages);
       }
     );
     // });
@@ -36,46 +36,31 @@ export class ChatService {
     return years;
   }
 
-  private photosSource = new BehaviorSubject([]);
-  photosObservable = this.photosSource.asObservable();
+  private messagesSource = new BehaviorSubject([]);
+  chatObservable = this.messagesSource.asObservable();
 
-  updatePhotosEvent(photos: Message[]) {
-    this.photosSource.next(photos);
+  updateMessagesEvent(messages: Message[]) {
+    this.messagesSource.next(messages);
   }
 
-  getPhotos() {
+  getMessages() {
     this.messageCount = this.messageCount + this.increment;
-    this.photos = this.db.list('photos', ref => ref.limitToFirst(this.messageCount));
-    return this.photos;
+    this.messages = this.db.list('messages', ref => ref.limitToFirst(this.messageCount));
+    return this.messages;
   }
 
-  addMessage(title, body) {
-    let author = this.auth.user.id;
+  addMessage(title, body, author) {
     let message = new Message(title, body, author);
     message.id = this.db.createPushId();
-    this.messages = this.db.list('photos', ref => ref.limitToFirst(this.messageCount));
-
-    const fileRef = this.storage.ref(photo.path);
-    const task = this.storage.upload(photo.path, file);
-    task.snapshotChanges().pipe(
-      finalize(() => {
-        fileRef.getDownloadURL().subscribe(
-          url => {
-            const photosDb = this.db.list(`photos`);
-            photo.url = url;
-            photosDb.set(photo.id, photo);
-          }
-        )
-      })
-    ).subscribe()
+    this.messages.push(message);
   }
 
   updateMessage(message: Message) {
-    this.messages.update(photo.id, photo);
+    this.messages.update(message.id, message);
   }
 
-  deletePhoto(photo: Photo) {
-    this.photos.remove(photo.id);
+  deleteMessage(message: Message) {
+    this.messages.remove(message.id);
   }
 
 }

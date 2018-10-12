@@ -3,14 +3,15 @@ export class Message {
 	title: string;
 	body: string;
 	author: string;
-	date: Date;
+	timestamp: number;
 	likes: string[];
 
 	constructor(author, title, body) {
 		this.title = title;
 		this.body = body;
 		this.author = author;
-		this.date = new Date();
+		this.timestamp = new Date().getTime();
+		
 		this.likes = new Array<string>();
 	}
 }
