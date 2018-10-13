@@ -16,6 +16,7 @@ import {
   MatButtonToggleModule,
   MatMenuModule,
   MatListModule,
+  MatBadgeModule,
 } from '@angular/material';
 
 @NgModule({
@@ -34,6 +35,7 @@ import {
     MatFormFieldModule,
     MatMenuModule,
     MatListModule,
+    MatBadgeModule,
   ],
   exports: [
     MatToolbarModule,
@@ -51,6 +53,7 @@ import {
     MatButtonToggleModule,
     MatMenuModule,
     MatListModule,
+    MatBadgeModule,
   ],
 })
 

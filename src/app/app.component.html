@@ -3,6 +3,7 @@
         <img src="./assets/icons/LeCours_Crest_Medium_White.png" routerLink="/" alt="LeCoursville" height="80%">
         <span class="spacer"></span>
         <div *ngIf="user.id">
+            <button mat-button routerLink="/chat">Chat</button>
             <button mat-button routerLink="/contacts">Contacts</button>
             <button mat-button routerLink="/calendar">Calendar</button>
             <button mat-button routerLink="/photos">Photos</button>

@@ -3,6 +3,8 @@ import { AuthService } from '../auth/auth.service';
 import { ChatService } from './chat.service';
 import { User } from 'src/app/components/auth/user';
 import { Message } from 'src/app/components/chat/message';
+import { MatDialog } from '@angular/material';
+import { NamePrompt } from '../auth/name-prompt/name-prompt';
 
 @Component({
   selector: 'app-chat',
@@ -19,6 +21,7 @@ export class ChatComponent implements OnInit {
   constructor(
     private chatService: ChatService,
     private auth: AuthService,
+    public dialog: MatDialog,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
@@ -29,14 +32,22 @@ export class ChatComponent implements OnInit {
 
   ngOnInit() {
     this.chatService.chatObservable.subscribe(messages => {
+      // for (const message of messages) {
+      //   message.
+      // }
       this.messages = messages;
       console.log(messages);
     })
   }
 
+  getUserNameById(userId) {
+    this.auth.getUserNameById(userId);
+  }
+
   addMessage() {
-    let author = this.auth.user.id;
-    this.chatService.addMessage('Test Title', 'Test Body', author);
+    let authorId = this.auth.user.id;
+    let authorName = this.auth.user.name;
+    this.chatService.addMessage('Test Title', 'Test Body', authorId, authorName);
   }
 
   loadMore() {
@@ -54,6 +65,17 @@ export class ChatComponent implements OnInit {
 
   deleteMessage(message) {
     this.chatService.deleteMessage(message);
+  }
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(NamePrompt, {
+      width: '250px',
+      data: {name: 'this.name', animal: 'this.animal'}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed', result);
+    });
   }
 
 }

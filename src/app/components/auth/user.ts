@@ -6,6 +6,7 @@ export interface AuthRoles {
 
 export class User {
     id: string;
+    name: string;
     email: string;
     roles: AuthRoles;
 

@@ -32,6 +32,18 @@ export class AuthService {
     )
   }
 
+  getUserNameById(userId: string): String {
+    let userObj = this.db.object(`users/${userId}`);
+    let user;
+    userObj.valueChanges().subscribe(
+      (user: User) => {
+        user = user;
+      }
+    )
+    return user.name;
+  }
+
+
   updatedUser(user: any) {
     this.userSource.next(user);
   }

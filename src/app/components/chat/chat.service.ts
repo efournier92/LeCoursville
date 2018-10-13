@@ -49,8 +49,8 @@ export class ChatService {
     return this.messages;
   }
 
-  addMessage(title, body, author) {
-    let message = new Message(title, body, author);
+  addMessage(title, body, authorId, authorName) {
+    let message = new Message(title, body, authorId, authorName);
     message.id = this.db.createPushId();
     this.messages.push(message);
   }
