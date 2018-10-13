@@ -1,0 +1,20 @@
+<div class="d-flex flex-row col-12">
+  <mat-card-content class="col-12">
+    <mat-card-title *ngIf="!message.isReply">
+      {{ message.title }}
+      <mat-card-subtitle>
+        {{ message.timestamp | date:'short' }}
+      </mat-card-subtitle>
+    </mat-card-title>
+    {{ message.body }}
+  </mat-card-content>
+</div>
+<mat-card-content class="col-11" *ngFor="let reply of message.replies">
+		<app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message"></app-chat-view>
+		<app-chat-edit *ngIf="reply.editable" [message]="reply" [parent]="message"></app-chat-edit>
+	</mat-card-content>
+<mat-card-footer class="d-flex justify-content-end">
+  <button mat-button class="mb-1" *ngIf="!message.editable" (click)="replyMessage(message);">
+    <mat-icon>reply_all</mat-icon>
+  </button>
+</mat-card-footer>

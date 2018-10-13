@@ -1,13 +1,10 @@
-<ol>
-    <li>
-        <mat-form-field>
-            <input matInput [(ngModel)]="name" placeholder="What's your name?">
-        </mat-form-field>
-    </li>
-    <li>
-        <button mat-raised-button (click)="openDialog()">Pick one</button>
-    </li>
-    <li *ngIf="animal">
-        You chose: <i>{{animal}}</i>
-    </li>
-</ol>
+<label for="basic-url">
+  <h5>
+    Enter your name to post messages
+  </h5>
+</label>
+<div class="input-group mb-3">
+  <input type="text" class="form-control" [(ngModel)]="userName">
+</div>
+
+<button mat-raised-button (click)="saveUserName()">Submit</button>

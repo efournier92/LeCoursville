@@ -21,7 +21,7 @@ export class ChatComponent implements OnInit {
   constructor(
     private chatService: ChatService,
     private auth: AuthService,
-    public dialog: MatDialog,
+    public namePrompt: MatDialog,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
@@ -45,9 +45,12 @@ export class ChatComponent implements OnInit {
   }
 
   addMessage() {
+    if (!this.auth.user.name) {
+      this.openNamePrompt();
+    }
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
-    this.chatService.addMessage('Test Title', 'Test Body', authorId, authorName);
+    this.messages.unshift(new Message('', '', authorId, authorName, false, true));
   }
 
   loadMore() {
@@ -67,13 +70,13 @@ export class ChatComponent implements OnInit {
     this.chatService.deleteMessage(message);
   }
 
-  openDialog(): void {
-    const dialogRef = this.dialog.open(NamePrompt, {
-      width: '250px',
-      data: {name: 'this.name', animal: 'this.animal'}
+  openNamePrompt(): void {
+    console.log('hit');
+    const namePromptRef = this.namePrompt.open(NamePrompt, {
+      data: { name: 'this.name', animal: 'this.animal' }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    namePromptRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', result);
     });
   }

@@ -1,0 +1,23 @@
+<div class="d-flex flex-row col-12">
+
+  <mat-card-content class="col-12">
+    <mat-card-title *ngIf="!message.isReply">
+      <div class="form-group">
+        <input type="email" class="form-control" placeholder="Title" [(ngModel)]="message.title">
+      </div>
+    </mat-card-title>
+    <div class="form-group">
+      <textarea class="form-control" style="min-height:38px; overflow:hidden" cdkTextareaAutosize rows="3" #autosize="cdkTextareaAutosize"
+        #input [(ngModel)]="message.body"></textarea>
+    </div>
+  </mat-card-content>
+</div>
+<div *ngFor="let reply of message.replies">
+  <app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message"></app-chat-view>
+  <app-chat-edit *ngIf="reply.editable" [message]="reply" [parent]="message"></app-chat-edit>
+</div>
+<mat-card-footer class="d-flex justify-content-end">
+  <button mat-button class="mb-1" (click)="saveMessage(message);updateParent()">
+    <mat-icon>save</mat-icon>
+  </button>
+</mat-card-footer>

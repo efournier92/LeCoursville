@@ -25,6 +25,9 @@ import { PhotosComponent } from './components/photos/photos.component';
 import { EditContactComponent } from './components/contacts/edit-contact/edit-contact.component';
 import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
 import { ChatComponent } from './components/chat/chat.component';
+import { NamePrompt } from './components/auth/name-prompt/name-prompt';
+import { ChatViewComponent } from './components/chat/chat-view/chat-view.component';
+import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +39,9 @@ import { ChatComponent } from './components/chat/chat.component';
     EditContactComponent,
     ViewContactComponent,
     ChatComponent,
+    NamePrompt,
+    ChatViewComponent,
+    ChatEditComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -65,6 +71,9 @@ import { ChatComponent } from './components/chat/chat.component';
   ],
   bootstrap: [
     AppComponent,
+  ],
+  entryComponents: [
+    NamePrompt,
   ],
   exports: [
     EditContactComponent,

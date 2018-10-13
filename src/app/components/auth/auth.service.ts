@@ -43,9 +43,9 @@ export class AuthService {
     return user.name;
   }
 
-
-  updatedUser(user: any) {
+  updateUser(user: User): void {
     this.userSource.next(user);
+    this.db.object(`users/${user.id}`).update(user);
   }
 
   setUser(user: User, authData: any) {
@@ -54,7 +54,8 @@ export class AuthService {
     } else {
       this.user = user;
     }
-    this.updatedUser(this.user);
+    this.updateUser(this.user);
+    this.updateUser(this.user);
   }
 
   createUser(authData: any) {
@@ -62,4 +63,5 @@ export class AuthService {
     this.userObj.set(user);
     this.user = user;
   }
+  
 }
