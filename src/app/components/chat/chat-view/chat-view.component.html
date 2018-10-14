@@ -1,5 +1,18 @@
-<div class="d-flex flex-row col-12">
-  <mat-card-content class="col-12">
+<div class="row mb-3" [ngStyle]="{'margin-left.px': message.replyLevel * 32}">
+  <div class="col-1">
+
+    <div>
+      <fa name="heart" style="color:pink;position: absolute;font-size: 2em"></fa>
+      <div style="color:black;position: absolute;font-size: 1em">8</div>
+    </div>
+    <!-- <button mat-button style="min-width:0"> -->
+    <!-- <div class="glyphicon glyphicon-heart"></div> -->
+    <!-- <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span> -->
+    <!-- </button> -->
+    <!-- <div matBadge="22" matBadgePosition="below after"></div> -->
+  </div>
+  <mat-divider [vertical]="true" style="margin-left:10px"></mat-divider>
+  <mat-card-content class="col-9">
     <mat-card-title *ngIf="!message.isReply">
       {{ message.title }}
       <mat-card-subtitle>
@@ -8,13 +21,14 @@
     </mat-card-title>
     {{ message.body }}
   </mat-card-content>
+  <div class="col-1" style="text-align:center">
+    <button mat-button class="mb-1" *ngIf="!message.editable" (click)="replyMessage(message)">
+      <!-- <mat-icon>reply_all</mat-icon> -->
+      <div class="glyphicon glyphicon-heart"></div>
+    </button>
+  </div>
 </div>
-<mat-card-content class="col-11" *ngFor="let reply of message.replies">
-		<app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message"></app-chat-view>
-		<app-chat-edit *ngIf="reply.editable" [message]="reply" [parent]="message"></app-chat-edit>
-	</mat-card-content>
-<mat-card-footer class="d-flex justify-content-end">
-  <button mat-button class="mb-1" *ngIf="!message.editable" (click)="replyMessage(message);">
-    <mat-icon>reply_all</mat-icon>
-  </button>
-</mat-card-footer>
+<mat-card-content *ngFor="let reply of message.replies">
+  <app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-view>
+  <app-chat-edit *ngIf="reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-edit>
+</mat-card-content>

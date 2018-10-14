@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Message } from 'src/app/components/chat/message';
 import { AuthService } from '../../auth/auth.service';
 import { MatDialog } from '@angular/material';
@@ -12,6 +12,7 @@ import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
 export class ChatViewComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
+  @Output() updateParentEvent = new EventEmitter();
   
   constructor(
     public auth: AuthService,
@@ -27,9 +28,10 @@ export class ChatViewComponent implements OnInit {
     }
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
+    let replyLevel = this.parent.replyLevel + 1;
     if (!message.replies)
       message.replies = new Array<Message>();
-    message.replies.unshift(new Message('', '', authorId, authorName, true, true));
+    message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
   }
 
   openNamePrompt(): void {
@@ -40,5 +42,9 @@ export class ChatViewComponent implements OnInit {
     namePromptRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed', result);
     });
+  }
+  updateParent() {
+    console.log(this.message);
+    this.updateParentEvent.emit(this.parent);
   }
 }

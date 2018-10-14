@@ -13,7 +13,7 @@ import { ChatService } from 'src/app/components/chat/chat.service';
 export class ChatEditComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
-  @Output() updateParentEvent = new EventEmitter;
+  @Output() updateParentEvent = new EventEmitter();
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
@@ -25,9 +25,9 @@ export class ChatEditComponent implements OnInit {
 
   saveMessage(message: Message) {
     message.editable = false;
-    if (message.isReply && this.parent) {
-      this.parent.replies.push(message);
-      this.updateParent();
+    if (message.isReply) {
+      if (this.parent)
+        this.updateParent();
     } else if (!message.id) {
       this.chatService.addMessage(message);
     } else {
@@ -36,8 +36,7 @@ export class ChatEditComponent implements OnInit {
 }
 
   updateParent() {
-    console.log(this.message);
-    this.updateParentEvent.emit(this.message);
+    this.updateParentEvent.emit(this.parent);
   }
 
 }

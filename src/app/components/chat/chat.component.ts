@@ -50,7 +50,7 @@ export class ChatComponent implements OnInit {
     }
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
-    this.messages.unshift(new Message('', '', authorId, authorName, false, true));
+    this.messages.unshift(new Message('', '', authorId, authorName, false, true, 0));
   }
 
   loadMore() {
@@ -63,6 +63,10 @@ export class ChatComponent implements OnInit {
 
   updateMessage(message) {
     message.editable = false;
+    this.chatService.updateMessage(message);
+  }
+
+  updateMessages(message) {
     this.chatService.updateMessage(message);
   }
 

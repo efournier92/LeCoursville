@@ -28,6 +28,7 @@ import { ChatComponent } from './components/chat/chat.component';
 import { NamePrompt } from './components/auth/name-prompt/name-prompt';
 import { ChatViewComponent } from './components/chat/chat-view/chat-view.component';
 import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.component';
+import { AngularFontAwesomeModule } from 'angular-font-awesome';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.compone
     FormsModule,
     MaterialModule,
     PdfViewerModule,
+    AngularFontAwesomeModule,
     InfiniteScrollModule,
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",

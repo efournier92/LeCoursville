@@ -5,8 +5,8 @@
 </mat-toolbar>
 
 <mat-card *ngFor="let message of messages" style="margin: 10px auto">
-	<app-chat-view *ngIf="!message.editable" [message]=message></app-chat-view>
-	<app-chat-edit *ngIf="message.editable" [message]=message (updateParentEvent)="updateMessages(message)"></app-chat-edit>
+	<app-chat-view *ngIf="!message.editable" [message]=message [parent]="message" (updateParentEvent)="updateMessages($event)"></app-chat-view>
+	<app-chat-edit *ngIf="message.editable" [message]=message [parent]="message" (updateParentEvent)="updateMessages($event)"></app-chat-edit>
 	<!-- <mat-card-footer class="d-flex justify-content-end">
 		<button mat-button>
 			<mat-icon>reply_all</mat-icon>
