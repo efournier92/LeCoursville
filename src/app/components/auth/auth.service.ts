@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { User } from './user';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/database';
 import { BehaviorSubject } from 'rxjs';
+import { Message } from 'src/app/components/chat/message';
 
 @Injectable({
   providedIn: 'root'
@@ -63,5 +64,5 @@ export class AuthService {
     this.userObj.set(user);
     this.user = user;
   }
-  
+
 }

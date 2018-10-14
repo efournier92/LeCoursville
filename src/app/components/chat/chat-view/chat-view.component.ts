@@ -3,6 +3,7 @@ import { Message } from 'src/app/components/chat/message';
 import { AuthService } from '../../auth/auth.service';
 import { MatDialog } from '@angular/material';
 import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
+import { User } from '../../auth/user';
 
 @Component({
   selector: 'app-chat-view',
@@ -10,6 +11,7 @@ import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
   styleUrls: ['./chat-view.component.scss']
 })
 export class ChatViewComponent implements OnInit {
+  user: User;
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
@@ -20,8 +22,15 @@ export class ChatViewComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.auth.userObservable.subscribe(
+      (user: User) => this.user = user
+    );
   }
 
+  likeMessage() {
+    console.log('liked');
+  }
+  
   replyMessage(message: Message) {
     if (!this.auth.user.name) {
       this.openNamePrompt();
@@ -46,5 +55,13 @@ export class ChatViewComponent implements OnInit {
   updateParent() {
     console.log(this.message);
     this.updateParentEvent.emit(this.parent);
+  }
+
+  isMessageAuthor(message: Message): boolean {
+    if (message.authorId === this.user.id) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

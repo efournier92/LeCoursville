@@ -4,6 +4,7 @@ import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { take } from 'rxjs/operators';
 import { AuthService } from '../../auth/auth.service';
 import { ChatService } from 'src/app/components/chat/chat.service';
+import { User } from 'src/app/components/auth/user';
 
 @Component({
   selector: 'app-chat-edit',
@@ -11,6 +12,7 @@ import { ChatService } from 'src/app/components/chat/chat.service';
   styleUrls: ['./chat-edit.component.scss']
 })
 export class ChatEditComponent implements OnInit {
+  user: User;
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
@@ -18,9 +20,13 @@ export class ChatEditComponent implements OnInit {
 
   constructor(
     private chatService: ChatService,
+    private authService: AuthService,
   ) { }
 
   ngOnInit() {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
+    )
   }
 
   saveMessage(message: Message) {
@@ -33,7 +39,15 @@ export class ChatEditComponent implements OnInit {
     } else {
       this.chatService.updateMessage(message);
     }
-}
+  }
+
+  isMessageAuthor(message: Message): boolean {
+    if (message.authorId === this.user.id) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   updateParent() {
     this.updateParentEvent.emit(this.parent);

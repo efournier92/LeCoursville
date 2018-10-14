@@ -1,32 +1,31 @@
-<div class="row mb-3" [ngStyle]="{'margin-left.px': message.replyLevel * 32}">
-  <div class="col-1">
-
-    <div>
-      <fa name="heart" style="color:pink;position: absolute;font-size: 2em"></fa>
-      <div style="color:black;position: absolute;font-size: 1em">8</div>
+<div class="row mb-3" [ngStyle]="{'margin-left.px': message.replyLevel * 32}" style="min-height: 155px;">
+  <div class="col-1" style="padding:0">
+    <div mat-button class="d-flex flex-row justify-content-end" ng-click="likeMessage()">
+      <fa name="heart" style="color:#CFD8DC;position: absolute;font-size: 38px"></fa>
+      <div class="like-icon-text" style="color:white;position: absolute;top:13px;right: 13px;font-size: 20px">8</div>
     </div>
-    <!-- <button mat-button style="min-width:0"> -->
-    <!-- <div class="glyphicon glyphicon-heart"></div> -->
-    <!-- <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span> -->
-    <!-- </button> -->
-    <!-- <div matBadge="22" matBadgePosition="below after"></div> -->
+    <div class="d-flex flex-row justify-content-end" *ngIf="isMessageAuthor(message)" (click)="likeMessage()">
+      <fa name="reply-all" (click)="replyMessage(message)" style="color:#CFD8DC;position: absolute;font-size: 33px;top:56px;right:5px"></fa>
+    </div>
+    <div class="d-flex flex-row justify-content-end" *ngIf="isMessageAuthor(message)" (click)="likeMessage()">
+      <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:110px;right:11px">edit</mat-icon>
+    </div>
   </div>
   <mat-divider [vertical]="true" style="margin-left:10px"></mat-divider>
   <mat-card-content class="col-9">
-    <mat-card-title *ngIf="!message.isReply">
-      {{ message.title }}
-      <mat-card-subtitle>
+    <mat-card-title>
+      <div *ngIf="!message.isReply" style="line-height: 1;">
+        {{ message.title }}
+      </div>
+      <mat-card-subtitle style="margin-bottom:0;margin-top:4px">
+        {{ message.authorName }}
+      </mat-card-subtitle>
+      <mat-card-subtitle style="font-size: 12px">
         {{ message.timestamp | date:'short' }}
       </mat-card-subtitle>
     </mat-card-title>
     {{ message.body }}
   </mat-card-content>
-  <div class="col-1" style="text-align:center">
-    <button mat-button class="mb-1" *ngIf="!message.editable" (click)="replyMessage(message)">
-      <!-- <mat-icon>reply_all</mat-icon> -->
-      <div class="glyphicon glyphicon-heart"></div>
-    </button>
-  </div>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
   <app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-view>
