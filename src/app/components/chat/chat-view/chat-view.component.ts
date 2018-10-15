@@ -64,4 +64,7 @@ export class ChatViewComponent implements OnInit {
       return false;
     }
   }
+  mouseEnter(element) {
+    console.log('hit', element);
+  }
 }

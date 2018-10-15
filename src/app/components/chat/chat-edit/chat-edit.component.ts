@@ -52,5 +52,7 @@ export class ChatEditComponent implements OnInit {
   updateParent() {
     this.updateParentEvent.emit(this.parent);
   }
-
+  mouseEnter(element) {
+    console.log('hit', element);
+  }
 }
