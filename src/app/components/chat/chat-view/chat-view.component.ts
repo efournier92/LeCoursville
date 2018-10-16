@@ -1,9 +1,17 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Message } from 'src/app/components/chat/message';
+import { Message, Like } from 'src/app/components/chat/message';
 import { AuthService } from '../../auth/auth.service';
 import { MatDialog } from '@angular/material';
 import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
 import { User } from '../../auth/user';
+
+export class Highlights {
+  like: boolean = false;
+  reply: boolean = false;
+  edit: boolean = false;
+  cancel: boolean = false;
+  send: boolean = false;
+}
 
 @Component({
   selector: 'app-chat-view',
@@ -12,6 +20,7 @@ import { User } from '../../auth/user';
 })
 export class ChatViewComponent implements OnInit {
   user: User;
+  highlights: Highlights = new Highlights();
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
@@ -28,7 +37,10 @@ export class ChatViewComponent implements OnInit {
   }
 
   likeMessage() {
-    console.log('liked');
+    if (!this.message.likes)
+      this.message.likes = new Array<Like>();
+    this.message.likes.push(new Like(this.user));
+    this.updateParent();
   }
   
   replyMessage(message: Message) {
@@ -52,8 +64,8 @@ export class ChatViewComponent implements OnInit {
       console.log('The dialog was closed', result);
     });
   }
+
   updateParent() {
-    console.log(this.message);
     this.updateParentEvent.emit(this.parent);
   }
 
@@ -66,5 +78,16 @@ export class ChatViewComponent implements OnInit {
   }
   mouseEnter(element) {
     console.log('hit', element);
+  }
+
+  highlightElement(element: string, value: boolean) {
+    if (!this.highlights || this.highlights[element] === undefined)
+      return;
+    this.highlights[element] = value;
+  }
+  getLikes(message) {
+    if (!message.likes)
+      return '';
+    return message.likes.length;
   }
 }

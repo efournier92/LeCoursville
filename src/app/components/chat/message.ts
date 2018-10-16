@@ -1,3 +1,19 @@
+import { User } from "src/app/components/auth/user";
+
+export class Like {
+	userId: string;
+	userName: string;
+
+	constructor(user: User) {
+		this.userId = user.id;
+		if (user.name) {
+			this.userName = user.name;
+		} else {
+			this.userName = user.email;
+		}
+	}
+}
+
 export class Message {
 	id: string;
 	title: string;
@@ -5,7 +21,7 @@ export class Message {
 	authorName: string;
 	authorId: string;
 	isReply: boolean;
-	likes: string[];
+	likes: Like[];
 	replies: Message[];
 	timestamp: number;
 	editable: boolean;

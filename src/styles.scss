@@ -44,6 +44,13 @@ html, body {
     padding: 0 !important;
 }
 
+.unselectable {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 // .mat-list-text.phone-item {
 //     padding: 0 !important;
 // }
