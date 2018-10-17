@@ -3,12 +3,18 @@
     <div class="d-flex justify-content-end mt-2">
       <span class="fa-stack mb-3" (click)="likeMessage()" (mouseover)="highlightElement('like', true)" (mouseleave)="highlightElement('like', false)">
         <span class="fa fa-heart-o fa-2x" [ngStyle]="{ color: highlights.like === true  ? 'pink' : '#CFD8DC' }"></span>
+        <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
+            <button mat-menu-item *ngFor="let liker of likers" disabled>
+              <!-- <mat-icon>thumb_up</mat-icon> -->
+              <span>{{ liker }}</span>
+            </button>
+          </mat-menu>
         <strong class="fa-stack-1x unselectable message-likes-container" [ngStyle]="{ color: highlights.like === true  ? 'pink' : '#CFD8DC' }">
           {{ getLikes(message) }}
         </strong>
       </span>
     </div>
-    <div class="d-flex flex-row mb-3 justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)" ng-click="likeMessage()">
+    <div class="d-flex flex-row mb-3 justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)" (click)="replyMessage()">
       <span class="fa fa-reply-all fa-2x" [ngStyle]="{ color: highlights.reply === true  ? 'green' : '#CFD8DC' }"></span>
     </div>
 

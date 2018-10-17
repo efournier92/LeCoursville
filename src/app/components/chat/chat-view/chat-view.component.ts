@@ -1,7 +1,7 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Message, Like } from 'src/app/components/chat/message';
 import { AuthService } from '../../auth/auth.service';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatMenuTrigger } from '@angular/material';
 import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
 import { User } from '../../auth/user';
 
@@ -21,9 +21,11 @@ export class Highlights {
 export class ChatViewComponent implements OnInit {
   user: User;
   highlights: Highlights = new Highlights();
+  likers: string[] = new Array<string>();
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
+  @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
   
   constructor(
     public auth: AuthService,
@@ -34,25 +36,47 @@ export class ChatViewComponent implements OnInit {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user
     );
+    this.likers = this.getLikers();
+    if (!this.message.likes)
+      this.message.likes = new Array<Like>();
   }
 
   likeMessage() {
     if (!this.message.likes)
       this.message.likes = new Array<Like>();
+    for (let like of this.message.likes) {
+      if (like.userId == this.user.id) {
+        this.trigger.openMenu();
+        return;
+      }
+    }
     this.message.likes.push(new Like(this.user));
-    this.updateParent();
+    this.trigger.openMenu();
+    this.trigger.menuClosed.subscribe(
+      () => this.updateParent()
+    );
+    this.likers = this.getLikers();
+  }
+
+  getLikers() {
+    let likers = new Array<string>();
+    if (!this.message.likes)
+      return likers;
+    for (const liker of this.message.likes) {
+      likers.push(liker.userName);
+    }
+    return likers;
   }
   
-  replyMessage(message: Message) {
-    if (!this.auth.user.name) {
+  replyMessage() {
+    if (!this.auth.user.name)
       this.openNamePrompt();
-    }
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
     let replyLevel = this.parent.replyLevel + 1;
-    if (!message.replies)
-      message.replies = new Array<Message>();
-    message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
+    if (!this.message.replies)
+    this.message.replies = new Array<Message>();
+    this.message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
   }
 
   openNamePrompt(): void {
@@ -66,7 +90,7 @@ export class ChatViewComponent implements OnInit {
   }
 
   updateParent() {
-    this.updateParentEvent.emit(this.parent);
+    this.updateParentEvent.emit(this.message);
   }
 
   isMessageAuthor(message: Message): boolean {
@@ -85,9 +109,10 @@ export class ChatViewComponent implements OnInit {
       return;
     this.highlights[element] = value;
   }
-  getLikes(message) {
-    if (!message.likes)
-      return '';
-    return message.likes.length;
+
+  getLikes(): number {
+    if (!this.message.likes)
+      return 0;
+    return this.message.likes.length;
   }
 }

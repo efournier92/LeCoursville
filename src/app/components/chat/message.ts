@@ -32,7 +32,7 @@ export class Message {
 		this.body = body;
 		this.authorId = authorId;
 		this.authorName = authorName;
-		this.likes = new Array<string>();
+		this.likes = new Array<Like>();
 		this.isReply = isReply;
 		this.replyLevel = replyLevel;
 		this.replies = new Array<Message>();

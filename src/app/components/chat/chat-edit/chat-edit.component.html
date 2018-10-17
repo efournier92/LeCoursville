@@ -1,41 +1,45 @@
-<div class="row mb-3" [ngStyle]="{'margin-left.px': message.replyLevel * 32}" style="min-height: 155px;">
-  <div class="col-1" style="padding:0">
-    <div mat-button class="d-flex flex-row justify-content-end" ng-click="likeMessage()">
-      <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:5px;right:11px">cancel</mat-icon>
-    </div>
-    <div class="d-flex flex-row justify-content-end" (click)="likeMessage()">
-      <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:55px;right:11px">send</mat-icon>
-
-      <!-- <fa name="" (click)="replyMessage(message)" style="color:#CFD8DC;position: absolute;font-size: 33px;top:56px;right:5px"></fa> -->
-    </div>
-    <div class="d-flex flex-row justify-content-end" *ngIf="isMessageAuthor(message)" (click)="likeMessage()">
-      <!-- <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:110px;right:11px"></mat-icon> -->
-    </div>
-  </div>
-  <mat-divider [vertical]="true" style="margin-left:10px"></mat-divider>
-  <mat-card-content class="col-9">
-    <mat-card-title>
-      <mat-card-subtitle style="margin-bottom:0;margin-top:4px">
-        {{ message.authorName }}
-      </mat-card-subtitle>
-      <mat-card-subtitle style="font-size: 12px">
-        {{ message.timestamp | date:'short' }}
-      </mat-card-subtitle>
-    </mat-card-title>
-    <div *ngIf="!message.isReply" style="line-height: 1;">
-        <form class="example-form">
-          <mat-form-field class="" style="width: 100%">
-            <input matInput placeholder="Title" [(ngModel)]="message.title">
-          </mat-form-field>
-        </form>
-        <!-- {{ message.title }} -->
+<div class="row mb-4 chat-card-content-container" [ngStyle]="{'margin-left.px': message.replyLevel * 25}">
+  <div class="col-1 chat-tools-container">
+    <div mat-button class="d-flex justify-content-end mt-2">
+      <div class="d-flex flex-row mb-3 justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)"
+        (click)="replyMessage()">
+        <span class="fa fa-reply-all fa-2x" [ngStyle]="{ color: highlights.reply === true  ? 'green' : '#CFD8DC' }"></span>
       </div>
+    </div>
+    <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:5px;right:11px">cancel</mat-icon>
+  </div>
+  <div class="d-flex flex-row justify-content-end" (click)="likeMessage()">
+    <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:55px;right:11px">send</mat-icon>
 
-    <mat-form-field class="" style="width: 100%">
-      <textarea matInput style="overflow:hidden; min-height: 20px" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
-        #input [(ngModel)]="message.body"></textarea>
-    </mat-form-field>
-  </mat-card-content>
+    <!-- <fa name="" (click)="replyMessage(message)" style="color:#CFD8DC;position: absolute;font-size: 33px;top:56px;right:5px"></fa> -->
+  </div>
+  <div class="d-flex flex-row justify-content-end" *ngIf="isMessageAuthor(message)" (click)="likeMessage()">
+    <!-- <mat-icon style="color:#CFD8DC;position: absolute;font-size: 35px;top:110px;right:11px"></mat-icon> -->
+  </div>
+<mat-divider [vertical]="true" style="margin-left:10px"></mat-divider>
+<mat-card-content class="col-9">
+  <mat-card-title>
+    <mat-card-subtitle style="margin-bottom:0;margin-top:4px">
+      {{ message.authorName }}
+    </mat-card-subtitle>
+    <mat-card-subtitle style="font-size: 12px">
+      {{ message.timestamp | date:'short' }}
+    </mat-card-subtitle>
+  </mat-card-title>
+  <div *ngIf="!message.isReply" style="line-height: 1;">
+    <form class="example-form">
+      <mat-form-field class="" style="width: 100%">
+        <input matInput placeholder="Title" [(ngModel)]="message.title">
+      </mat-form-field>
+    </form>
+    <!-- {{ message.title }} -->
+  </div>
+
+  <mat-form-field class="" style="width: 100%">
+    <textarea matInput style="overflow:hidden; min-height: 20px" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
+      #input [(ngModel)]="message.body"></textarea>
+  </mat-form-field>
+</mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
   <app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-view>
