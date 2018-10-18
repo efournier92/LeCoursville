@@ -85,4 +85,8 @@ export class ChatComponent implements OnInit {
     });
   }
 
+  deleteEdits(): void {
+    this.loadMore();
+  }
+
 }

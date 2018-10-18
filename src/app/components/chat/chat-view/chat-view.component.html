@@ -2,24 +2,30 @@
   <div class="col-1 chat-tools-container">
     <div class="d-flex justify-content-end mt-2">
       <span class="fa-stack mb-3" (click)="likeMessage()" (mouseover)="highlightElement('like', true)" (mouseleave)="highlightElement('like', false)">
-        <span class="fa fa-heart-o fa-2x" [ngStyle]="{ color: highlights.like === true  ? 'pink' : '#CFD8DC' }"></span>
+        <span class="fa fa-heart-o fa-2x" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }"></span>
         <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
-            <button mat-menu-item *ngFor="let liker of likers" disabled>
-              <!-- <mat-icon>thumb_up</mat-icon> -->
-              <span>{{ liker }}</span>
-            </button>
-          </mat-menu>
-        <strong class="fa-stack-1x unselectable message-likes-container" [ngStyle]="{ color: highlights.like === true  ? 'pink' : '#CFD8DC' }">
+          <div *ngFor="let liker of likers">
+            <button mat-menu-item disabled>
+          <!-- <mat-icon>thumb_up</mat-icon> -->
+          <span>{{ liker }}</span>
+          </button>
+          <mat-divider></mat-divider>
+
+        </div>
+        </mat-menu>
+        <strong class="fa-stack-1x unselectable message-likes-container" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">
           {{ getLikes(message) }}
         </strong>
       </span>
     </div>
-    <div class="d-flex flex-row mb-3 justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)" (click)="replyMessage()">
-      <span class="fa fa-reply-all fa-2x" [ngStyle]="{ color: highlights.reply === true  ? 'green' : '#CFD8DC' }"></span>
+    <div class="d-flex flex-row mb-3 justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)"
+      (click)="replyMessage()">
+      <span class="fa fa-reply-all fa-2x" [ngStyle]="{ color: highlights.reply === true  ? '#00c853' : '#CFD8DC' }"></span>
     </div>
 
-    <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)" ng-click="likeMessage()">
-      <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? 'blue' : '#CFD8DC' }"></span>
+    <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)"
+      (click)="editMessage()">
+      <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }"></span>
     </div>
   </div>
   <mat-divider [vertical]="true" class="ml-2"></mat-divider>

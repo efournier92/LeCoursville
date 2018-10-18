@@ -4,14 +4,7 @@ import { AuthService } from '../../auth/auth.service';
 import { MatDialog, MatMenuTrigger } from '@angular/material';
 import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
 import { User } from '../../auth/user';
-
-export class Highlights {
-  like: boolean = false;
-  reply: boolean = false;
-  edit: boolean = false;
-  cancel: boolean = false;
-  send: boolean = false;
-}
+import { HighlightService } from '../highlight.service';
 
 @Component({
   selector: 'app-chat-view',
@@ -20,7 +13,7 @@ export class Highlights {
 })
 export class ChatViewComponent implements OnInit {
   user: User;
-  highlights: Highlights = new Highlights();
+  highlights: object[] = new Array<object>();
   likers: string[] = new Array<string>();
   @Input() message: Message;
   @Input() parent: Message;
@@ -30,6 +23,7 @@ export class ChatViewComponent implements OnInit {
   constructor(
     public auth: AuthService,
     public namePrompt: MatDialog,
+    public highlightService: HighlightService,
   ) { }
 
   ngOnInit() {
@@ -105,14 +99,16 @@ export class ChatViewComponent implements OnInit {
   }
 
   highlightElement(element: string, value: boolean) {
-    if (!this.highlights || this.highlights[element] === undefined)
-      return;
-    this.highlights[element] = value;
+    this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 
   getLikes(): number {
     if (!this.message.likes)
       return 0;
     return this.message.likes.length;
+  }
+
+  editMessage(): void {
+    this.message.editable = true;
   }
 }

@@ -5,6 +5,8 @@ import { take } from 'rxjs/operators';
 import { AuthService } from '../../auth/auth.service';
 import { ChatService } from 'src/app/components/chat/chat.service';
 import { User } from 'src/app/components/auth/user';
+import { HighlightService } from '../highlight.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-edit',
@@ -13,6 +15,7 @@ import { User } from 'src/app/components/auth/user';
 })
 export class ChatEditComponent implements OnInit {
   user: User;
+  highlights: object[] = Array<object>();
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
@@ -21,6 +24,8 @@ export class ChatEditComponent implements OnInit {
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
+    private highlightService: HighlightService,
+    private router: Router,
   ) { }
 
   ngOnInit() {
@@ -49,10 +54,19 @@ export class ChatEditComponent implements OnInit {
     }
   }
 
+  cancelEdit() {
+    this.parent.replies.shift();
+  }
+
   updateParent() {
     this.updateParentEvent.emit(this.parent);
   }
-  mouseEnter(element) {
-    console.log('hit', element);
+
+  cancelMessage() {
+    this.router.navigateByUrl('/chat', {skipLocationChange: true});
+  }
+
+  highlightElement(element: string, value: boolean) {
+    this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 }
