@@ -19,6 +19,7 @@ export class ChatEditComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
+  @Output() deleteEditEvent = new EventEmitter();
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
@@ -55,11 +56,18 @@ export class ChatEditComponent implements OnInit {
   }
 
   cancelEdit() {
-    this.parent.replies.shift();
+    if (!this.message.isReply) {
+      this.deleteEditEvent.emit(this.parent);
+    } else {
+      this.parent.replies.shift();
+    }
   }
 
   updateParent() {
     this.updateParentEvent.emit(this.parent);
+  }
+
+  deleteEdit() {
   }
 
   cancelMessage() {

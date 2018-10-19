@@ -45,8 +45,11 @@ export class ChatComponent implements OnInit {
   }
 
   addMessage() {
-    if (!this.auth.user.name) {
+    if (!this.auth.user.name)
       this.openNamePrompt();
+    for (let message of this.messages) {
+      if (message.editable === true)
+        return;
     }
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
@@ -85,8 +88,8 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  deleteEdits(): void {
-    this.loadMore();
+  deleteEdit(): void {
+    this.messages.shift();
   }
 
 }

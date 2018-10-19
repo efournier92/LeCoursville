@@ -24,7 +24,7 @@
     </mat-card-title>
     <div *ngIf="!message.isReply" style="line-height: 1;">
         <mat-form-field class="w-100">
-            <input matInput placeholder="Input">
+            <input matInput placeholder="Title" [(ngModel)]="message.title">
           </mat-form-field>
     </div>
     <mat-form-field class="w-100" style="">

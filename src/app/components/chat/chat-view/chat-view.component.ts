@@ -50,6 +50,7 @@ export class ChatViewComponent implements OnInit {
       () => this.updateParent()
     );
     this.likers = this.getLikers();
+    console.log(this.likers);
   }
 
   getLikers() {
@@ -67,7 +68,8 @@ export class ChatViewComponent implements OnInit {
       this.openNamePrompt();
     let authorId = this.auth.user.id;
     let authorName = this.auth.user.name;
-    let replyLevel = this.parent.replyLevel + 1;
+    let replyLevel = this.message.replyLevel + 1;
+    let isSaved = false;
     if (!this.message.replies)
     this.message.replies = new Array<Message>();
     this.message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
@@ -83,7 +85,7 @@ export class ChatViewComponent implements OnInit {
     });
   }
 
-  updateParent() {
+  updateParent(): void {
     this.updateParentEvent.emit(this.message);
   }
 
@@ -93,9 +95,6 @@ export class ChatViewComponent implements OnInit {
     } else {
       return false;
     }
-  }
-  mouseEnter(element) {
-    console.log('hit', element);
   }
 
   highlightElement(element: string, value: boolean) {

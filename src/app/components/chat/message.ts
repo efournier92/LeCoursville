@@ -26,6 +26,7 @@ export class Message {
 	timestamp: number;
 	editable: boolean;
 	replyLevel: number;
+	isSaved: boolean;
 
 	constructor(title, body, authorId, authorName, isReply, editable, replyLevel) {
 		this.title = title;
