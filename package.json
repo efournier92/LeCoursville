@@ -29,6 +29,7 @@
     "download": "^7.1.0",
     "file-saver": "^2.0.0-rc.3",
     "firebase": "^5.5.1",
+    "firebase-tools": "^5.1.1",
     "firebaseui": "^3.4.1",
     "firebaseui-angular": "^3.3.2",
     "font-awesome": "^4.7.0",
