@@ -5,6 +5,7 @@ import { MatDialog, MatMenuTrigger } from '@angular/material';
 import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
 import { User } from '../../auth/user';
 import { HighlightService } from '../highlight.service';
+import { Highlight } from '../highlight';
 
 @Component({
   selector: 'app-chat-view',
@@ -13,7 +14,7 @@ import { HighlightService } from '../highlight.service';
 })
 export class ChatViewComponent implements OnInit {
   user: User;
-  highlights: object[] = new Array<object>();
+  highlights: Highlight = new Highlight();
   likers: string[] = new Array<string>();
   @Input() message: Message;
   @Input() parent: Message;

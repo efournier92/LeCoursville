@@ -7,6 +7,7 @@ import { ChatService } from 'src/app/components/chat/chat.service';
 import { User } from 'src/app/components/auth/user';
 import { HighlightService } from '../highlight.service';
 import { Router } from '@angular/router';
+import { Highlight } from '../highlight';
 
 @Component({
   selector: 'app-chat-edit',
@@ -15,7 +16,7 @@ import { Router } from '@angular/router';
 })
 export class ChatEditComponent implements OnInit {
   user: User;
-  highlights: object[] = Array<object>();
+  highlights: Highlight = new Highlight();
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
