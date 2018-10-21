@@ -1,8 +1,8 @@
 <body class="mat-app-background">
-    <mat-toolbar color="primary">
+    <mat-toolbar color="primary" class="mat-elevation-z4" style="z-index:1000">
         <img src="./assets/icons/LeCours_Crest_Medium_White.png" routerLink="/" alt="LeCoursville" height="80%">
         <span class="spacer"></span>
-        <div class="d-none d-sm-block">
+        <div class="d-none d-sm-block" *ngIf="user.id">
             <button mat-button routerLink="/chat">Chat</button>
             <button mat-button routerLink="/contacts">Contacts</button>
             <button mat-button routerLink="/calendar">Calendar</button>

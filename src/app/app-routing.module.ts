@@ -5,6 +5,7 @@ import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { ContactsComponent } from './components/contacts/contacts.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { PhotosComponent } from './components/photos/photos.component';
+import { AuthGuardService } from './components/auth/auth-guard.service';
 
 const routes : Routes =
   [
@@ -13,20 +14,24 @@ const routes : Routes =
       component: AuthComponent,
     },
     {
-      path: 'chat',
-      component: ChatComponent,
-    },
-    {
       path: 'contacts',
       component: ContactsComponent,
+      canActivate: [AuthGuardService],
     },
     {
       path: 'calendar',
       component: CalendarComponent,
+      canActivate: [AuthGuardService],
+    },
+    {
+      path: 'chat',
+      component: ChatComponent,
+      canActivate: [AuthGuardService],
     },
     {
       path: 'photos',
       component: PhotosComponent,
+      canActivate: [AuthGuardService],
     },
 
   ];

@@ -1,4 +1,4 @@
-<mat-toolbar class="d-flex justify-content-center">
+<div class="d-flex justify-content-center mt-3">
   <mat-menu #monthMenu="matMenu">
     <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
   </mat-menu>
@@ -27,9 +27,9 @@
         <mat-icon>get_app</mat-icon>
     </a>
   </div>
-</mat-toolbar>
+</div>
 
-<div class="calendar-container d-flex col-xl-8 col-md-9 col-xs-10 flex-column">
+<div class="calendar-container d-flex col-xl-8 col-md-9 col-xs-10 flex-column mt-3">
   <pdf-viewer [src]="pdfSrc" [render-text]="true" [show-all]="false" [original-size]="false" [autoresize]="true" [page]="page">
   </pdf-viewer>
   <div class="toolbar-admin d-flex justify-content-end" *ngIf="user && user.roles && user.roles.super">

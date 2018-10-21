@@ -61,23 +61,27 @@ export class ContactsService {
 
     const lineHeight = 22;
     let line = 80;
+    let left = 60;
+    let leftLine;
     let onPage = 0;
     pdf.setFontSize(12);
 
     let i = 0;
+    let side = 'left';
     for (let contact of contacts) {
+      let lastStartLine = line;
       pdf.setFontSize(14);
       pdf.setFontType("bold");
-      pdf.text(60, line, contact.name);
+      pdf.text(left, line, contact.name);
       pdf.setFontType("normal");
       pdf.setFontSize(12);
       line += lineHeight;
 
       if (contact.addresses) {
         for (let address of contact.addresses) {
-          pdf.text(60, line, address.street);
+          pdf.text(left, line, address.street);
           line += lineHeight;
-          pdf.text(60, line, `${address.city}, ${address.state}, ${address.zip}`);
+          pdf.text(left, line, `${address.city}, ${address.state}, ${address.zip}`);
           line += lineHeight;
         }
       }
@@ -90,7 +94,7 @@ export class ContactsService {
           if (phone.info && phone.info !== '')
             phoneString += `${phone.info}: `;
           phoneString += phone.number;
-          pdf.text(60, line, phoneString);
+          pdf.text(left, line, phoneString);
           line += lineHeight;
         }
       }
@@ -103,13 +107,25 @@ export class ContactsService {
           if (email.info && email.info !== '')
             emailString += `${email.info}: `;
           emailString += email.address;
-          pdf.text(60, line, emailString);
+          pdf.text(left, line, emailString);
           line += lineHeight;
         }
       }
       i++;
-      line += 50;
-      onPage += 1;
+      if (side === 'left') {
+        side = 'right';
+        leftLine = line;
+        line = lastStartLine;
+        left = 350;
+      } else {
+        side = 'left';
+        if (leftLine && leftLine > line)
+          line = leftLine;
+        left = 60;
+        line += 50;
+        onPage += 1;
+      }
+      
       if (line >= 600 && i !== totalContacts) {
         pdf.addPage();
         onPage = 0;
@@ -118,6 +134,7 @@ export class ContactsService {
     }
     
     if (method === 'print') {
+      pdf.autoPrint();
       window.open(pdf.output('bloburl'), '_blank');
     } else if (method === 'download') {
       pdf.save('LeCoursville_Directory.pdf');

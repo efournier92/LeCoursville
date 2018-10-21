@@ -6,7 +6,6 @@
         <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
           <div *ngFor="let liker of likers">
             <button mat-menu-item disabled>
-          <!-- <mat-icon>thumb_up</mat-icon> -->
           <span>{{ liker }}</span>
           </button>
           <mat-divider *ngIf="likers.length !== 1"></mat-divider>
@@ -24,7 +23,7 @@
     </div>
 
     <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)"
-      (click)="editMessage()">
+      (click)="editMessage()" *ngIf="message.authorId === user.id">
       <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }"></span>
     </div>
   </div>
