@@ -28,6 +28,7 @@ export class NamePrompt {
     saveUserName() {
         this.user.name = this.userName;
         this.auth.setUser(this.user, undefined);
+        this.dialogRef.close();
     }
 
 }
