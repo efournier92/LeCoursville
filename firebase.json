@@ -9,7 +9,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/lecoursville/index.html"
+        "destination": "/index.html"
       }
     ]
   }

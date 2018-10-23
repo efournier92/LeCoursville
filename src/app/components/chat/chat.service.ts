@@ -12,7 +12,7 @@ import { AuthService } from 'src/app/components/auth/auth.service';
 export class ChatService {
   messages: AngularFireList<Message>;
   messageCount: number = 0;
-  increment: number = 2;
+  increment: number = 8;
 
   constructor(
     private storage: AngularFireStorage,

@@ -1,11 +1,11 @@
-<mat-toolbar class="d-flex flex-row" *ngIf="user && user.roles && user.roles.admin">
-  <button mat-button style="height:75%">
-    <label class="" style="margin-bottom:0">
-      <mat-icon style="padding-top:38%">add</mat-icon>
+<div class="d-flex flex-row justify-content-center mt-3" *ngIf="user && user.roles && user.roles.admin">
+  <button mat-button style="">
+    <label style="height: 19px;width: 100%;">
+      <mat-icon>cloud_upload</mat-icon>
       <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
     </label>
   </button>
-</mat-toolbar>
+</div>
 
 <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of photos">
   <img mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}" style="padding:15px">

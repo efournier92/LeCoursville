@@ -28,11 +28,11 @@
     </a>
   </div>
 </div>
-<div class="toolbar-admin d-flex justify-content-center" *ngIf="user && user.roles && user.roles.super">
-    <button mat-button>
-      <label style="margin:0">
-        <mat-icon style="margin-top:10px">cloud_upload</mat-icon>
-        <input type="file" (change)="addCalendar($event)" accept=".png,.jpg" multiple />
+<div class="d-flex flex-row justify-content-center mt-3" *ngIf="user && user.roles && user.roles.admin">
+    <button mat-button style="width: 82px;">
+      <label style="height: 19px;width: 100%;">
+        <mat-icon>cloud_upload</mat-icon>
+        <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
       </label>
     </button>
   </div>

@@ -11,7 +11,6 @@
     </button>
   </mat-menu>
   <div class="col-xs-6 mt-3">
-
     <button mat-button (click)="printPdf()">
       <mat-icon>print</mat-icon>
     </button>
@@ -20,9 +19,9 @@
     </button>
   </div>
 </div>
-<div class="ml-6" *ngIf="user && user.roles && user.roles.admin">
+<div style="text-align:center" *ngIf="user && user.roles && user.roles.admin">
   <button mat-button (click)="newContact()">
-    <mat-icon>add</mat-icon> Contact
+    <mat-icon>add</mat-icon>
   </button>
 </div>
 <div class="contact-card-container d-flex justify-content-center row">
