@@ -14,10 +14,9 @@ export class ViewContactComponent implements OnInit {
 
   constructor(public auth: AuthService) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user
     )
   }
-
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { Contact } from './contact';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
 import jsPDF from 'jspdf';
@@ -23,16 +23,16 @@ export class ContactsService {
         this.user = user;
         if (!user || !user.id) return;
         this.getContacts().valueChanges().subscribe(
-          contacts => {
+          (contacts: Contact[]) => {
             this.updateContactsEvent(contacts);
           }
         );
       });
   }
 
-  private contactsSource = new BehaviorSubject([]);
-  userContacts = this.contactsSource.asObservable();
-  updateContactsEvent(contacts: Contact[]) {
+  private contactsSource: BehaviorSubject<any[]> = new BehaviorSubject([]);
+  userContacts: Observable<any[]> = this.contactsSource.asObservable();
+  updateContactsEvent(contacts: Contact[]): void {
     this.contactsSource.next(contacts);
   }
 
@@ -42,38 +42,38 @@ export class ContactsService {
     return this.contacts;
   }
 
-  newContact(contact: Contact) {
+  newContact(contact: Contact): void {
     contact.id = this.db.createPushId();
     this.contacts.set(contact.id, contact);
   }
 
-  updateContact(contact: Contact) {
+  updateContact(contact: Contact): void {
     this.contacts.update(contact.id, contact);
   }
 
-  deleteContact(contact: Contact) {
+  deleteContact(contact: Contact): void {
     this.contacts.remove(contact.id);
   }
 
-  printPdf(contacts: Contact[], method: string) {
-    const totalContacts = contacts.length;
-    let pdf = new jsPDF('p', 'pt', 'letter');
+  printPdf(contacts: Contact[], method: string): void {
+    const totalContacts: number = contacts.length;
+    let pdf: jsPDF = new jsPDF('p', 'pt', 'letter');
 
-    const lineHeight = 22;
-    let line = 80;
-    let left = 60;
+    const lineHeight: number = 22;
+    let line: number = 80;
+    let left: number = 60;
     let leftLine;
-    let onPage = 0;
+    let onPage: number = 0;
     pdf.setFontSize(12);
 
-    let i = 0;
-    let side = 'left';
+    let i: number = 0;
+    let side: string = 'left';
     for (let contact of contacts) {
-      let lastStartLine = line;
+      let lastStartLine: number = line;
       pdf.setFontSize(14);
-      pdf.setFontType("bold");
+      pdf.setFontType('bold');
       pdf.text(left, line, contact.name);
-      pdf.setFontType("normal");
+      pdf.setFontType('normal');
       pdf.setFontSize(12);
       line += lineHeight;
 
@@ -90,7 +90,7 @@ export class ContactsService {
         for (let phone of contact.phones) {
           if (!phone || !phone.number)
             continue;
-          let phoneString = '';
+          let phoneString: string = '';
           if (phone.info && phone.info !== '')
             phoneString += `${phone.info}: `;
           phoneString += phone.number;
@@ -103,7 +103,7 @@ export class ContactsService {
         for (let email of contact.emails) {
           if (!email || !email.address)
             continue;
-          let emailString = '';
+          let emailString: string = '';
           if (email.info && email.info !== '')
             emailString += `${email.info}: `;
           emailString += email.address;
@@ -125,14 +125,14 @@ export class ContactsService {
         line += 50;
         onPage += 1;
       }
-      
+
       if (line >= 600 && i !== totalContacts) {
         pdf.addPage();
         onPage = 0;
         line = 80;
       }
     }
-    
+
     if (method === 'print') {
       pdf.autoPrint();
       window.open(pdf.output('bloburl'), '_blank');

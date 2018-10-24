@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/storage';
-import { finalize } from 'rxjs/operators';
 import { Message } from './message';
-import { AuthService } from 'src/app/components/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
+import { User } from '../auth/user';
 
 @Injectable({
   providedIn: 'root'
@@ -17,27 +17,31 @@ export class ChatService {
   constructor(
     private storage: AngularFireStorage,
     private db: AngularFireDatabase,
+    private auth: AuthService,
   ) {
-    // this.auth.authState.subscribe(user => {
-    // if (user) this.userId = user.uid;
-    this.getMessages().valueChanges().subscribe(
-      (messages: Message[]) => {
-        this.updateMessagesEvent(messages);
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        if (user) {
+          this.getMessages().valueChanges().subscribe(
+            (messages: Message[]) => {
+              this.updateMessagesEvent(messages);
+            }
+          );
+        }
       }
-    );
-    // });
+    )
   }
 
-  getYears() {
-    let years = Array<Number>();
+  getYears(): number[] {
+    let years: number[] = Array<number>();
     for (let i = 1880; i <= 2000; i++) {
       years.push(i);
     }
     return years;
   }
 
-  private messagesSource = new BehaviorSubject([]);
-  chatObservable = this.messagesSource.asObservable();
+  private messagesSource: BehaviorSubject<Message[]> = new BehaviorSubject([]);
+  chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
 
   updateMessagesEvent(messages: Message[]) {
     this.messagesSource.next(messages);

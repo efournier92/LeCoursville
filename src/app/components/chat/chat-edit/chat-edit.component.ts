@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, ViewChild, NgZone, Output, EventEmitter } from '@angular/core';
 import { Message } from 'src/app/components/chat/message';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
-import { take } from 'rxjs/operators';
 import { AuthService } from '../../auth/auth.service';
 import { ChatService } from 'src/app/components/chat/chat.service';
 import { User } from 'src/app/components/auth/user';
@@ -19,8 +18,8 @@ export class ChatEditComponent implements OnInit {
   highlights: Highlight = new Highlight();
   @Input() message: Message;
   @Input() parent: Message;
-  @Output() updateParentEvent = new EventEmitter();
-  @Output() deleteEditEvent = new EventEmitter();
+  @Output() updateParentEvent: EventEmitter<{}> = new EventEmitter();
+  @Output() deleteEditEvent: EventEmitter<{}> = new EventEmitter();
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
@@ -30,13 +29,13 @@ export class ChatEditComponent implements OnInit {
     private router: Router,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     )
   }
 
-  saveMessage(message: Message) {
+  saveMessage(message: Message): void {
     message.editable = false;
     if (message.isReply) {
       if (this.parent)
@@ -56,7 +55,7 @@ export class ChatEditComponent implements OnInit {
     }
   }
 
-  cancelEdit() {
+  cancelEdit(): void {
     if (!this.message.isReply) {
       this.deleteEditEvent.emit(this.parent);
     } else {
@@ -64,18 +63,15 @@ export class ChatEditComponent implements OnInit {
     }
   }
 
-  updateParent() {
+  updateParent(): void {
     this.updateParentEvent.emit(this.parent);
   }
 
-  deleteEdit() {
+  cancelMessage(): void {
+    this.router.navigateByUrl('/chat', { skipLocationChange: true });
   }
 
-  cancelMessage() {
-    this.router.navigateByUrl('/chat', {skipLocationChange: true});
-  }
-
-  highlightElement(element: string, value: boolean) {
+  highlightElement(element: string, value: boolean): void {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 }

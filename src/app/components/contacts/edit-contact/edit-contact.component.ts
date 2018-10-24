@@ -3,7 +3,6 @@ import { Contact, Phone, Address, Email } from '../contact';
 import { AuthService } from '../../auth/auth.service';
 import { User } from '../../auth/user';
 import { families } from 'src/app/components/contacts/families';
-import { isType } from '@angular/core/src/type';
 import { ContactsService } from '../contacts.service';
 
 @Component({
@@ -28,45 +27,45 @@ export class EditContactComponent implements OnInit {
     )
   }
 
-  updateContact(contact) {
+  updateContact(contact: Contact) {
     contact.editable = false;
     this.contactsService.updateContact(contact);
   }
 
-  deleteContact(contact) {
+  deleteContact(contact: Contact) {
     this.contactsService.deleteContact(contact);
   }
 
-  addAddress(contact) {
+  addAddress(contact: Contact) {
     if (!contact.addresses)
       contact.addresses = new Array<Address>();
-    let address = new Address();
+    let address: Address = new Address();
     contact.addresses.push(address);
   }
 
-  removeAddress(addresses, index) {
+  removeAddress(addresses: any, index: number) {
     addresses.pop(index);
   }
 
-  addPhone(contact) {
+  addPhone(contact: Contact) {
     if (!contact.phones)
       contact.phones = new Array<Phone>();
-    let phone = new Phone();
+    let phone: Phone = new Phone();
     contact.phones.push(phone);
   }
 
-  removePhone(phones, index) {
-    phones.pop(index);
+  removePhone(phones: Phone[], index: number) {
+    phones.splice(index, 1);
   }
 
-  addEmail(contact) {
+  addEmail(contact: Contact) {
     if (!contact.emails)
       contact.emails = new Array<Email>();
-    let email = new Email();
+    let email: Email = new Email();
     contact.emails.push(email);
   }
 
-  removeEmail(emails, index) {
-    emails.pop(index);
+  removeEmail(emails: Email[], index: number) {
+    emails.splice(index, 1);
   }
 }

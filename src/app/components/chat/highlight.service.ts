@@ -8,7 +8,7 @@ export class HighlightService {
 
   constructor() { }
 
-  highlightElement(highlights: Highlight, element: string, value: boolean) {
+  highlightElement(highlights: Highlight, element: string, value: boolean): Highlight {
     highlights[element] = value;
     return highlights;
   }

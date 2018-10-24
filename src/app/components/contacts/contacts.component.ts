@@ -25,7 +25,7 @@ export class ContactsComponent implements OnInit {
     private auth: AuthService,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
@@ -37,28 +37,28 @@ export class ContactsComponent implements OnInit {
     })
   }
 
-  switchFamily(family: string) {
+  switchFamily(family: string): void {
     this.filteredContacts = this.filter.transform(this.contacts, { family: family });
   }
 
-  newContact() {
-    let contact = new Contact();
+  newContact(): void {
+    let contact: Contact = new Contact();
     this.contactsService.newContact(contact);
   }
 
-  filterContacts(event: any) {
+  filterContacts(event: any): void {
     this.filteredContacts = this.filter.transform(this.contacts, { name: event.target.value });
   }
 
-  clearFamily() {
+  clearFamily(): void {
     this.family = '';
   }
 
-  printPdf() {
+  printPdf(): void {
     this.contactsService.printPdf(this.filteredContacts, 'print');
   }
 
-  downloadPdf() {
+  downloadPdf(): void {
     this.contactsService.printPdf(this.filteredContacts, 'download');
   }
 }

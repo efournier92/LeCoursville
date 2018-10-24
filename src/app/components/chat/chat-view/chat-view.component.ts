@@ -20,14 +20,14 @@ export class ChatViewComponent implements OnInit {
   @Input() parent: Message;
   @Output() updateParentEvent = new EventEmitter();
   @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
-  
+
   constructor(
     public auth: AuthService,
     public namePrompt: MatDialog,
     public highlightService: HighlightService,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user
     );
@@ -36,7 +36,7 @@ export class ChatViewComponent implements OnInit {
       this.message.likes = new Array<Like>();
   }
 
-  likeMessage() {
+  likeMessage(): void {
     if (!this.message.likes)
       this.message.likes = new Array<Like>();
     for (let like of this.message.likes) {
@@ -51,11 +51,10 @@ export class ChatViewComponent implements OnInit {
       () => this.updateParent()
     );
     this.likers = this.getLikers();
-    console.log(this.likers);
   }
 
-  getLikers() {
-    let likers = new Array<string>();
+  getLikers(): string[] {
+    let likers: string[] = new Array<string>();
     if (!this.message.likes)
       return likers;
     for (const liker of this.message.likes) {
@@ -63,16 +62,15 @@ export class ChatViewComponent implements OnInit {
     }
     return likers;
   }
-  
-  replyMessage() {
+
+  replyMessage(): void {
     if (!this.auth.user.name)
       this.openNamePrompt();
-    let authorId = this.auth.user.id;
-    let authorName = this.auth.user.name;
-    let replyLevel = this.message.replyLevel + 1;
-    let isSaved = false;
+    let authorId: string = this.auth.user.id;
+    let authorName: string = this.auth.user.name;
+    let replyLevel: number = this.message.replyLevel + 1;
     if (!this.message.replies)
-    this.message.replies = new Array<Message>();
+      this.message.replies = new Array<Message>();
     this.message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
   }
 

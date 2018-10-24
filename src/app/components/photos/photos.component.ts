@@ -33,20 +33,20 @@ export class PhotosComponent implements OnInit {
     )
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.years = this.photosService.getYears();
     this.photosService.photosObservable.subscribe(photos => {
       this.photos = photos;
     })
   }
 
-  addPhotos(event) {
+  addPhotos(event: any): void {
     for (let file of event.currentTarget.files) {
       this.photosService.addPhotos(file)
     }
   }
 
-  loadMore() {
+  loadMore(): void {
     this.photosService.getPhotos().valueChanges().subscribe(
       (photos: Photo[]) => {
         this.photos = photos;
@@ -54,12 +54,12 @@ export class PhotosComponent implements OnInit {
     );
   }
 
-  updatePhoto(photo) {
+  updatePhoto(photo: Photo): void {
     photo.editable = false;
     this.photosService.updatePhoto(photo);
   }
 
-  deletePhoto(photo) {
+  deletePhoto(photo): void {
     this.photosService.deletePhoto(photo);
   }
 }

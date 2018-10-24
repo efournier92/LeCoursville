@@ -6,8 +6,8 @@ export const AuthConfig: firebaseui.auth.Config = {
     firebase.auth.GoogleAuthProvider.PROVIDER_ID,
     {
       requireDisplayName: false,
-      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID
+      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
     },
   ],
-  credentialHelper: firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM
+  credentialHelper: firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM,
 };

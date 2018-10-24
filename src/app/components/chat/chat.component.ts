@@ -30,33 +30,29 @@ export class ChatComponent implements OnInit {
     )
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.chatService.chatObservable.subscribe(messages => {
-      // for (const message of messages) {
-      //   message.
-      // }
       this.messages = messages;
-      console.log(messages);
     })
   }
 
-  getUserNameById(userId) {
+  getUserNameById(userId: string): void {
     this.auth.getUserNameById(userId);
   }
 
-  addMessage() {
+  addMessage(): void {
     if (!this.auth.user.name)
       this.openNamePrompt();
     for (let message of this.messages) {
       if (message.editable === true)
         return;
     }
-    let authorId = this.auth.user.id;
-    let authorName = this.auth.user.name;
+    let authorId: string = this.auth.user.id;
+    let authorName: string = this.auth.user.name;
     this.messages.unshift(new Message('', '', authorId, authorName, false, true, 0));
   }
 
-  loadMore() {
+  loadMore(): void {
     this.chatService.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
         this.messages = messages;
@@ -64,21 +60,20 @@ export class ChatComponent implements OnInit {
     );
   }
 
-  updateMessage(message) {
+  updateMessage(message: Message): void {
     message.editable = false;
     this.chatService.updateMessage(message);
   }
 
-  updateMessages(message) {
+  updateMessages(message: Message): void {
     this.chatService.updateMessage(message);
   }
 
-  deleteMessage(message) {
+  deleteMessage(message: Message): void {
     this.chatService.deleteMessage(message);
   }
 
   openNamePrompt(): void {
-    console.log('hit');
     const namePromptRef = this.namePrompt.open(NamePrompt, {
       data: { name: 'this.name', animal: 'this.animal' }
     });

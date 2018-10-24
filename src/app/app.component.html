@@ -1,40 +1,40 @@
 <body class="mat-app-background">
-    <mat-toolbar color="primary" class="mat-elevation-z5" style="z-index:1000">
-        <img src="./assets/icons/LeCours_Crest_Medium_White.png" routerLink="/" alt="LeCoursville" height="80%">
-        <span class="spacer"></span>
-        <div class="d-none d-sm-block" *ngIf="user.id">
-            <button mat-button routerLink="/chat">Chat</button>
-            <button mat-button routerLink="/contacts">Contacts</button>
-            <button mat-button routerLink="/calendar">Calendar</button>
-            <button mat-button routerLink="/photos">Photos</button>
-        </div>
-        <div *ngIf="user.id">
-            <button mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-                <button mat-menu-item routerLink="/contacts">
-                    <mat-icon>message</mat-icon>
-                    <span>Chat</span>
-                </button>
-                <button mat-menu-item routerLink="/contacts">
-                    <mat-icon>people</mat-icon>
-                    <span>Contacts</span>
-                </button>
-                <button mat-menu-item routerLink="/calendar">
-                    <mat-icon>calendar_today</mat-icon>
-                    <span>Calendar</span>
-                </button>
-                <button mat-menu-item routerLink="/photos">
-                    <mat-icon>photo</mat-icon>
-                    <span>Photos</span>
-                </button>
-                <button mat-menu-item routerLink="/">
-                    <mat-icon>account_circle</mat-icon>
-                    <span>Account</span>
-                </button>
-            </mat-menu>
-        </div>
-    </mat-toolbar>
-    <router-outlet></router-outlet>
+  <mat-toolbar color="primary" class="mat-elevation-z5" style="z-index:1000">
+    <img src="./assets/icons/LeCours_Crest_Medium_White.png" routerLink="/" alt="LeCoursville" height="80%">
+    <span class="spacer"></span>
+    <div class="d-none d-sm-block" *ngIf="user.id">
+      <button mat-button routerLink="/chat">Chat</button>
+      <button mat-button routerLink="/contacts">Contacts</button>
+      <button mat-button routerLink="/calendar">Calendar</button>
+      <button mat-button routerLink="/photos">Photos</button>
+    </div>
+    <div *ngIf="user.id">
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item routerLink="/contacts">
+          <mat-icon>message</mat-icon>
+          <span>Chat</span>
+        </button>
+        <button mat-menu-item routerLink="/contacts">
+          <mat-icon>people</mat-icon>
+          <span>Contacts</span>
+        </button>
+        <button mat-menu-item routerLink="/calendar">
+          <mat-icon>calendar_today</mat-icon>
+          <span>Calendar</span>
+        </button>
+        <button mat-menu-item routerLink="/photos">
+          <mat-icon>photo</mat-icon>
+          <span>Photos</span>
+        </button>
+        <button mat-menu-item routerLink="/">
+          <mat-icon>account_circle</mat-icon>
+          <span>Account</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+  <router-outlet></router-outlet>
 </body>
