@@ -31,9 +31,9 @@ export class ChatComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.chatService.chatObservable.subscribe(messages => {
-      this.messages = messages;
-    })
+    this.chatService.chatObservable.subscribe(
+      (messages: Message[]) => this.messages = messages
+    )
   }
 
   getUserNameById(userId: string): void {

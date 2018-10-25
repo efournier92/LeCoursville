@@ -50,6 +50,7 @@ export class ChatService {
   getMessages() {
     this.messageCount = this.messageCount + this.increment;
     this.messages = this.db.list('messages', ref => ref.limitToFirst(this.messageCount));
+    this.messages = this.messages.sort(function (a, b) { return b.likes - a.likes });
     return this.messages;
   }
 

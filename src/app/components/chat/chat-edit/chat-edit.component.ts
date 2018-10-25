@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, NgZone, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Message } from 'src/app/components/chat/message';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { AuthService } from '../../auth/auth.service';
@@ -18,8 +18,8 @@ export class ChatEditComponent implements OnInit {
   highlights: Highlight = new Highlight();
   @Input() message: Message;
   @Input() parent: Message;
-  @Output() updateParentEvent: EventEmitter<{}> = new EventEmitter();
-  @Output() deleteEditEvent: EventEmitter<{}> = new EventEmitter();
+  @Output() updateParentEvent: EventEmitter<Object> = new EventEmitter();
+  @Output() deleteEditEvent: EventEmitter<Object> = new EventEmitter();
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
@@ -59,7 +59,11 @@ export class ChatEditComponent implements OnInit {
     if (!this.message.isReply) {
       this.deleteEditEvent.emit(this.parent);
     } else {
-      this.parent.replies.shift();
+      if (!this.message.isSaved) {
+        this.parent.replies.shift();
+      } else {
+        this.message.editable = false;
+      }
     }
   }
 
