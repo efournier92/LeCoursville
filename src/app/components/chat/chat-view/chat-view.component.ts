@@ -34,6 +34,20 @@ export class ChatViewComponent implements OnInit {
     this.likers = this.getLikers();
     if (!this.message.likes)
       this.message.likes = new Array<Like>();
+    if (this.message.replies)
+      this.sortReplies();
+  }
+
+  compareReplies(a, b): any {
+    if (!a.likes)
+      a.likes = [];
+    if (!b.likes)
+      b.likes = [];
+    return b.likes.length - a.likes.length;
+  }
+
+  sortReplies(): void {
+    this.message.replies.sort(this.compareReplies);
   }
 
   likeMessage(): void {

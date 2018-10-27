@@ -32,8 +32,18 @@ export class ChatComponent implements OnInit {
 
   ngOnInit(): void {
     this.chatService.chatObservable.subscribe(
-      (messages: Message[]) => this.messages = messages
+      (messages: Message[]) => {
+        this.messages = messages.sort(this.compareMessages);
+      }
     )
+  }
+
+  compareMessages(a, b): any {
+    if (!a.likes)
+      a.likes = [];
+    if (!b.likes)
+      b.likes = [];
+    return b.likes.length - a.likes.length;
   }
 
   getUserNameById(userId: string): void {
@@ -55,7 +65,7 @@ export class ChatComponent implements OnInit {
   loadMore(): void {
     this.chatService.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
-        this.messages = messages;
+        this.messages = messages.sort(this.compareMessages);
       }
     );
   }
