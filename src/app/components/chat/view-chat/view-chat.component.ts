@@ -121,6 +121,6 @@ export class ViewChatComponent implements OnInit {
   }
 
   editMessage(): void {
-    this.message.editable = true;
+    this.message.isEditable = true;
   }
 }

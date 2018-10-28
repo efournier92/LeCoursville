@@ -26,7 +26,7 @@
 </div>
 <div class="contact-card-container d-flex justify-content-center row">
   <div *ngFor="let contact of filteredContacts" class="col-lg-5 col-xs-11 mt-2 mb-2">
-    <app-view-contact *ngIf="!contact.editable" [contact]="contact"></app-view-contact>
-    <app-edit-contact *ngIf="contact.editable" [contact]="contact"></app-edit-contact>
+    <app-view-contact *ngIf="!contact.isEditable" [contact]="contact"></app-view-contact>
+    <app-edit-contact *ngIf="contact.isEditable" [contact]="contact"></app-edit-contact>
   </div>
 </div>

@@ -25,11 +25,11 @@ export class Message {
   likes: Like[];
   replies: Message[];
   timestamp: number;
-  editable: boolean;
+  isEditable: boolean;
   isSaved: boolean;
   isDeleted: boolean;
 
-  constructor(title, body, authorId, authorName, isReply, editable, replyLevel) {
+  constructor(title, body, authorId, authorName, isReply, isEditable, replyLevel) {
     this.title = title;
     this.body = body;
     this.authorId = authorId;
@@ -39,7 +39,7 @@ export class Message {
     this.replyLevel = replyLevel;
     this.replies = new Array<Message>();
     this.timestamp = new Date().getTime();
-    this.editable = editable;
+    this.isEditable = isEditable;
     this.isSaved = false;
     this.isDeleted = false;
   }

@@ -36,7 +36,7 @@ export class EditChatComponent implements OnInit {
   }
 
   saveMessage(message: Message): void {
-    message.editable = false;
+    message.isEditable = false;
     message.isSaved = true;
     if (message.isReply) {
       if (this.parent)
@@ -63,13 +63,14 @@ export class EditChatComponent implements OnInit {
       if (!this.message.isSaved) {
         this.parent.replies.shift();
       } else {
-        this.message.editable = false;
+        this.message.isEditable = false;
       }
     }
   }
 
   deleteMessage(): void {
     this.message.isDeleted = true;
+    this.message.isEditable = false;
   }
 
   updateParent(): void {

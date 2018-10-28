@@ -6,5 +6,5 @@ export class Photo {
   info: string = '';
   location: string = '';
   year: number = 0;
-  editable: boolean = false;
+  isEditable: boolean = false;
 }

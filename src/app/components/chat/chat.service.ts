@@ -55,7 +55,7 @@ export class ChatService {
 
   addMessage(message: Message) {
     message.id = this.db.createPushId();
-    this.messages.push(message);
+    this.messages.update(message.id, message);
   }
 
   updateMessage(message: Message) {

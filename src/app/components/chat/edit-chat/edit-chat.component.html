@@ -1,16 +1,14 @@
 <div class="row mb-4 chat-card-content-container" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
   <div class="col-1 chat-tools-container">
     <div class="d-flex justify-content-end flex-column mt-2">
-      <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
-        (click)="deleteMessage()">
-        <span class="fa fa-ban fa-2x" [ngStyle]="{ color: highlights.cancel === true  ? '#d50000' : '#CFD8DC' }"></span>
+      <div class="d-flex flex-row justify-content-end mb-4" (mouseover)="highlightElement('trash', true)" (mouseleave)="highlightElement('trash', false)"
+        (click)="deleteMessage()" *ngIf="message.isSaved">
+        <span class="fa fa-trash fa-2x" [ngStyle]="{ color: highlights.trash === true  ? '#d50000' : '#CFD8DC' }"></span>
       </div>
-      <br />
-      <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
+      <div class="d-flex flex-row justify-content-end mb-4" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
         (click)="cancelEdit()">
-        <span class="fa fa-ban fa-2x" [ngStyle]="{ color: highlights.cancel === true  ? '#d50000' : '#CFD8DC' }"></span>
+        <span class="fa fa-ban fa-2x" [ngStyle]="{ color: highlights.cancel === true  ? '#ffd600' : '#CFD8DC' }"></span>
       </div>
-      <br />
       <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('send', true)" (mouseleave)="highlightElement('send', false)"
         (click)="saveMessage(message)">
         <span class="fa fa-share-square fa-2x" [ngStyle]="{ color: highlights.send === true  ? '#00c853' : '#CFD8DC' }"></span>
@@ -39,6 +37,6 @@
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
-  <app-view-chat *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
-  <app-edit-chat *ngIf="reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
+  <app-view-chat *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
+  <app-edit-chat *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
 </mat-card-content>

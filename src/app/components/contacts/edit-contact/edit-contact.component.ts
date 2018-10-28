@@ -28,7 +28,7 @@ export class EditContactComponent implements OnInit {
   }
 
   updateContact(contact: Contact): void {
-    contact.editable = false;
+    contact.isEditable = false;
     this.contactsService.updateContact(contact);
   }
 

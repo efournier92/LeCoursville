@@ -18,7 +18,7 @@ export class AuthComponent implements OnInit {
     private router: Router,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
@@ -26,8 +26,8 @@ export class AuthComponent implements OnInit {
     );
   }
 
-  signInSuccess($event) {
-    this.router.navigate(['/calendar'])
+  signInSuccess(): void {
+    this.router.navigate(['/chat'])
   }
 
   signOut() {

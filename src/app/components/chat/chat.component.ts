@@ -33,12 +33,16 @@ export class ChatComponent implements OnInit {
   ngOnInit(): void {
     this.chatService.chatObservable.subscribe(
       (messages: Message[]) => {
-        this.messages = messages.sort(this.compareMessages);
+        this.messages = messages.sort(this.compareMessagesByTimestamp);
       }
     )
   }
 
-  compareMessages(a, b): any {
+  compareMessagesByTimestamp(a: Message, b: Message): any {
+    return b.timestamp - a.timestamp
+  }
+
+  compareMessagesByLikes(a: Message, b: Message): any {
     if (!a.likes)
       a.likes = [];
     if (!b.likes)
@@ -54,7 +58,7 @@ export class ChatComponent implements OnInit {
     if (!this.auth.user.name)
       this.openNamePrompt();
     for (let message of this.messages) {
-      if (message.editable === true)
+      if (message.isEditable === true)
         return;
     }
     let authorId: string = this.auth.user.id;
@@ -65,13 +69,13 @@ export class ChatComponent implements OnInit {
   loadMore(): void {
     this.chatService.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
-        this.messages = messages.sort(this.compareMessages);
+        this.messages = messages.sort(this.compareMessagesByTimestamp);
       }
     );
   }
 
   updateMessage(message: Message): void {
-    message.editable = false;
+    message.isEditable = false;
     this.chatService.updateMessage(message);
   }
 
@@ -97,7 +101,7 @@ export class ChatComponent implements OnInit {
     if (!message.isSaved) {
       this.messages.shift();
     } else {
-      message.editable = false;
+      message.isEditable = false;
     }
   }
 }

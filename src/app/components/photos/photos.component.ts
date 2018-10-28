@@ -55,7 +55,7 @@ export class PhotosComponent implements OnInit {
   }
 
   updatePhoto(photo: Photo): void {
-    photo.editable = false;
+    photo.isEditable = false;
     this.photosService.updatePhoto(photo);
   }
 

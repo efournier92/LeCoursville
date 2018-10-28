@@ -11,7 +11,7 @@
             <mat-divider *ngIf="likers.length !== 1"></mat-divider>
           </div>
         </mat-menu>
-        <strong class="fa-stack-1x unselectable message-likes-container" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">
+        <strong class="fa-stack-1x unselectable message-likes-container" *ngIf="getLikes() !== 0" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">
           {{ getLikes() }}
         </strong>
       </span>
@@ -27,7 +27,14 @@
     </div>
   </div>
   <mat-divider [vertical]="true" class="ml-2"></mat-divider>
-  <mat-card-content class="col-9">
+  <mat-card-content class="col-9" *ngIf="message.isDeleted">
+    <mat-card-title>
+      <mat-card-subtitle class="chat-message-author-name">
+        <i>This message was deleted.</i>
+      </mat-card-subtitle>
+    </mat-card-title>
+  </mat-card-content>
+  <mat-card-content class="col-9" *ngIf="!message.isDeleted">
     <mat-card-title>
       <div class="chat-message-title" *ngIf="!message.isReply">
         {{ message.title }}
@@ -43,6 +50,6 @@
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
-  <app-view-chat *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
-  <app-edit-chat *ngIf="reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
+  <app-view-chat *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
+  <app-edit-chat *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
 </mat-card-content>

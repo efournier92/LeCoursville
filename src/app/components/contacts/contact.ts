@@ -23,7 +23,7 @@ export class Contact {
   family: string = '';
   emails: Email[] = [];
   phones: Phone[] = [];
-  editable: boolean = false;
+  isEditable: boolean = false;
 
   constructor() { }
 }

@@ -7,10 +7,10 @@
 
 <div class="d-flex flex-column justify-content-end align-items-center">
   <mat-card class="mt-3 mb-1 col-md-8" *ngFor="let message of messages">
-    <app-view-chat *ngIf="!message.editable && !message.isDeleted" [message]=message [parent]="message"
-      (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-view-chat>
-    <app-edit-chat *ngIf="message.editable && !message.isDeleted" [message]=message [parent]="message"
-      (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-edit-chat>
+    <app-view-chat *ngIf="!message.isEditable" [message]=message [parent]="message" (updateParentEvent)="updateMessages($event)"
+      (cancelEditEvent)="cancelEdit($event)"></app-view-chat>
+    <app-edit-chat *ngIf="message.isEditable" [message]=message [parent]="message" (updateParentEvent)="updateMessages($event)"
+      (cancelEditEvent)="cancelEdit($event)"></app-edit-chat>
   </mat-card>
 </div>
 
