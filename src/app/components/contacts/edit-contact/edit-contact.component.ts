@@ -27,45 +27,45 @@ export class EditContactComponent implements OnInit {
     )
   }
 
-  updateContact(contact: Contact) {
+  updateContact(contact: Contact): void {
     contact.editable = false;
     this.contactsService.updateContact(contact);
   }
 
-  deleteContact(contact: Contact) {
+  deleteContact(contact: Contact): void {
     this.contactsService.deleteContact(contact);
   }
 
-  addAddress(contact: Contact) {
+  addAddress(contact: Contact): void {
     if (!contact.addresses)
       contact.addresses = new Array<Address>();
     let address: Address = new Address();
     contact.addresses.push(address);
   }
 
-  removeAddress(addresses: any, index: number) {
+  removeAddress(addresses: any, index: number): void {
     addresses.pop(index);
   }
 
-  addPhone(contact: Contact) {
+  addPhone(contact: Contact): void {
     if (!contact.phones)
       contact.phones = new Array<Phone>();
     let phone: Phone = new Phone();
     contact.phones.push(phone);
   }
 
-  removePhone(phones: Phone[], index: number) {
+  removePhone(phones: Phone[], index: number): void {
     phones.splice(index, 1);
   }
 
-  addEmail(contact: Contact) {
+  addEmail(contact: Contact): void {
     if (!contact.emails)
       contact.emails = new Array<Email>();
     let email: Email = new Email();
     contact.emails.push(email);
   }
 
-  removeEmail(emails: Email[], index: number) {
+  removeEmail(emails: Email[], index: number): void {
     emails.splice(index, 1);
   }
 }

@@ -9,17 +9,17 @@ import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
 
 @Component({
-  selector: 'app-chat-edit',
-  templateUrl: './chat-edit.component.html',
-  styleUrls: ['./chat-edit.component.scss']
+  selector: 'app-edit-chat',
+  templateUrl: './edit-chat.component.html',
+  styleUrls: ['./edit-chat.component.scss']
 })
-export class ChatEditComponent implements OnInit {
+export class EditChatComponent implements OnInit {
   user: User;
   highlights: Highlight = new Highlight();
   @Input() message: Message;
   @Input() parent: Message;
   @Output() updateParentEvent: EventEmitter<Object> = new EventEmitter();
-  @Output() deleteEditEvent: EventEmitter<Object> = new EventEmitter();
+  @Output() cancelEditEvent: EventEmitter<Object> = new EventEmitter();
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
@@ -37,6 +37,7 @@ export class ChatEditComponent implements OnInit {
 
   saveMessage(message: Message): void {
     message.editable = false;
+    message.isSaved = true;
     if (message.isReply) {
       if (this.parent)
         this.updateParent();
@@ -57,7 +58,7 @@ export class ChatEditComponent implements OnInit {
 
   cancelEdit(): void {
     if (!this.message.isReply) {
-      this.deleteEditEvent.emit(this.parent);
+      this.cancelEditEvent.emit(this.parent);
     } else {
       if (!this.message.isSaved) {
         this.parent.replies.shift();
@@ -65,6 +66,10 @@ export class ChatEditComponent implements OnInit {
         this.message.editable = false;
       }
     }
+  }
+
+  deleteMessage(): void {
+    this.message.isDeleted = true;
   }
 
   updateParent(): void {

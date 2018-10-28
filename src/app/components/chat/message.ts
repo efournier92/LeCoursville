@@ -27,6 +27,7 @@ export class Message {
   timestamp: number;
   editable: boolean;
   isSaved: boolean;
+  isDeleted: boolean;
 
   constructor(title, body, authorId, authorName, isReply, editable, replyLevel) {
     this.title = title;
@@ -40,5 +41,6 @@ export class Message {
     this.timestamp = new Date().getTime();
     this.editable = editable;
     this.isSaved = false;
+    this.isDeleted = false;
   }
 }

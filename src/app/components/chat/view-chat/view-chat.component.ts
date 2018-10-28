@@ -8,11 +8,11 @@ import { HighlightService } from '../highlight.service';
 import { Highlight } from '../highlight';
 
 @Component({
-  selector: 'app-chat-view',
-  templateUrl: './chat-view.component.html',
-  styleUrls: ['./chat-view.component.scss']
+  selector: 'app-view-chat',
+  templateUrl: './view-chat.component.html',
+  styleUrls: ['./view-chat.component.scss']
 })
-export class ChatViewComponent implements OnInit {
+export class ViewChatComponent implements OnInit {
   user: User;
   highlights: Highlight = new Highlight();
   likers: string[] = new Array<string>();

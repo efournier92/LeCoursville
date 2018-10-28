@@ -6,11 +6,10 @@
         <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
           <div *ngFor="let liker of likers">
             <button mat-menu-item disabled>
-          <span>{{ liker }}</span>
-          </button>
-          <mat-divider *ngIf="likers.length !== 1"></mat-divider>
-
-        </div>
+              <span>{{ liker }}</span>
+            </button>
+            <mat-divider *ngIf="likers.length !== 1"></mat-divider>
+          </div>
         </mat-menu>
         <strong class="fa-stack-1x unselectable message-likes-container" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">
           {{ getLikes() }}
@@ -23,7 +22,7 @@
     </div>
 
     <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)"
-      (click)="editMessage()" *ngIf="message.authorId === user.id">
+      (click)="editMessage()" *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)">
       <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }"></span>
     </div>
   </div>
@@ -44,6 +43,6 @@
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
-  <app-chat-view *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-view>
-  <app-chat-edit *ngIf="reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-chat-edit>
+  <app-view-chat *ngIf="!reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
+  <app-edit-chat *ngIf="reply.editable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
 </mat-card-content>

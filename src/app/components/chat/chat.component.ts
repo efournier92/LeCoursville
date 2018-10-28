@@ -93,8 +93,11 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  deleteEdit(): void {
-    this.messages.shift();
+  cancelEdit(message): void {
+    if (!message.isSaved) {
+      this.messages.shift();
+    } else {
+      message.editable = false;
+    }
   }
-
 }

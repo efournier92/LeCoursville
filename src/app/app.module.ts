@@ -26,8 +26,8 @@ import { EditContactComponent } from './components/contacts/edit-contact/edit-co
 import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { NamePrompt } from './components/auth/name-prompt/name-prompt';
-import { ChatViewComponent } from './components/chat/chat-view/chat-view.component';
-import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.component';
+import { ViewChatComponent } from './components/chat/view-chat/view-chat.component';
+import { EditChatComponent } from './components/chat/edit-chat/edit-chat.component';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
 
 @NgModule({
@@ -41,8 +41,8 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
     ViewContactComponent,
     ChatComponent,
     NamePrompt,
-    ChatViewComponent,
-    ChatEditComponent,
+    ViewChatComponent,
+    EditChatComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -79,7 +79,7 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
   ],
   exports: [
     EditContactComponent,
-]
+  ]
 })
 
 export class AppModule { }
