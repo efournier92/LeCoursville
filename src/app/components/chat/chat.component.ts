@@ -26,6 +26,8 @@ export class ChatComponent implements OnInit {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
+        if (user.id && !user.name)
+          this.openNamePrompt();
       }
     )
   }
@@ -55,8 +57,6 @@ export class ChatComponent implements OnInit {
   }
 
   addMessage(): void {
-    if (!this.auth.user.name)
-      this.openNamePrompt();
     for (let message of this.messages) {
       if (message.isEditable === true)
         return;
