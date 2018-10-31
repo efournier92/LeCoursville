@@ -29,6 +29,9 @@ import { NamePrompt } from './components/auth/name-prompt/name-prompt';
 import { ViewChatComponent } from './components/chat/view-chat/view-chat.component';
 import { EditChatComponent } from './components/chat/edit-chat/edit-chat.component';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
+import { CalendarModule, DateAdapter } from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+import { CalendarHeaderComponent } from './components/calendar/calendar-header/calendar-header.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +46,7 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
     NamePrompt,
     ViewChatComponent,
     EditChatComponent,
+    CalendarHeaderComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -55,6 +59,10 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
     PdfViewerModule,
     AngularFontAwesomeModule,
     InfiniteScrollModule,
+    CalendarModule.forRoot({
+      provide: DateAdapter,
+      useFactory: adapterFactory,
+    }),
     AngularFireModule.initializeApp({
       apiKey: "AIzaSyDiFBDNhPId9SaEfIujumkGSySrs5vFAh4",
       authDomain: "lecoursville.firebaseapp.com",
@@ -69,7 +77,7 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
     FirebaseUIModule.forRoot(AuthConfig),
   ],
   providers: [
-    { provide: LocationStrategy, useClass: PathLocationStrategy }
+    { provide: LocationStrategy, useClass: PathLocationStrategy },
   ],
   bootstrap: [
     AppComponent,

@@ -17,28 +17,45 @@
       <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
-  
+
   <div class="d-flex justify-content-center col-2">
     <button mat-button (click)="printPdf('./assets/calendars/2018.pdf')">
       <mat-icon>print</mat-icon>
     </button>
-    
+
     <a mat-button href="./assets/calendars/2018.pdf" download>
-        <mat-icon>get_app</mat-icon>
+      <mat-icon>get_app</mat-icon>
     </a>
   </div>
 </div>
 <div class="d-flex flex-row justify-content-center mt-3" *ngIf="user && user.roles && user.roles.admin">
-    <button mat-button style="width: 82px;">
-      <label style="height: 19px;width: 100%;">
-        <mat-icon>cloud_upload</mat-icon>
-        <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
-      </label>
-    </button>
+  <button mat-button style="width: 82px;">
+    <label style="height: 19px;width: 100%;">
+      <mat-icon>cloud_upload</mat-icon>
+      <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
+    </label>
+  </button>
+</div>
+
+<app-calendar-header [(view)]="view" [(viewDate)]="viewDate">
+</app-calendar-header>
+
+<ng-template #customCellTemplate let-day="day" let-locale="locale">
+  <div class="cal-cell-top">
+    <!-- <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span> -->
+    <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
   </div>
-<div class="calendar-container d-flex col-xl-8 col-md-9 col-xs-10 flex-column mt-3">
+  <small style="margin: 5px" *ngFor="let event of day.events">{{ event.title }}</small>
+</ng-template>
 
-  <pdf-viewer [src]="pdfSrc" [render-text]="true" [show-all]="false" [original-size]="false" [autoresize]="true" [page]="page">
-  </pdf-viewer>
-
+<div [ngSwitch]="view">
+  <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [events]="events" [activeDayIsOpen]="true"
+    [refresh]="refresh" [cellTemplate]="customCellTemplate" (eventTimesChanged)="eventTimesChanged($event)">
+  </mwl-calendar-month-view>
+  <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" [events]="events" [refresh]="refresh"
+    (eventTimesChanged)="eventTimesChanged($event)">
+  </mwl-calendar-week-view>
+  <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" [events]="events" [refresh]="refresh"
+    (eventTimesChanged)="eventTimesChanged($event)">
+  </mwl-calendar-day-view>
 </div>

@@ -1,5 +1,6 @@
 @import '~@angular/material/theming';
 @import '~firebaseui/dist/firebaseui.css';
+@import "../node_modules/angular-calendar/css/angular-calendar.css";
 
 // always include only once per project
 @include mat-core();

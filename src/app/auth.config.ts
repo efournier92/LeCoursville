@@ -11,3 +11,4 @@ export const AuthConfig: firebaseui.auth.Config = {
   ],
   credentialHelper: firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM,
 };
+
