@@ -52,6 +52,10 @@ html, body {
     -ms-user-select: none;
 }
 
+.cal-month-view .cal-cell-top {
+  min-height: 42px;
+}
+
 // .mat-list-text.phone-item {
 //     padding: 0 !important;
 // }
