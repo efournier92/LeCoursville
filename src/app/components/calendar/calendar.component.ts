@@ -16,6 +16,8 @@ import {
 } from 'angular-calendar';
 import { colors } from './colors';
 import { ViewPeriod } from 'calendar-utils';
+import jsPDF from 'jspdf';
+import $ from 'jquery';
 
 // FIX
 // Bruce Emerson (Birthday)
@@ -78,6 +80,15 @@ export class CalendarComponent {
     console.log('Recurring Events:', this.recurringEvents);
 
   }
+
+  printPdf() {
+    var doc = new jsPDF();
+    doc.fromHTML($('#calendarView').html(), 15, 15, {
+      // 'width': 170,
+      //     'elementHandlers': specialElementHandlers
+    });
+    doc.save('sample-file.pdf');
+  };
 
   calendarEvents: RecurringEvent[] = [];
 

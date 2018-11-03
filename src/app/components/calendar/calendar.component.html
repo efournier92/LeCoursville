@@ -7,23 +7,72 @@
   </button>
 </div>
 
-<app-calendar-header [(view)]="view" [(viewDate)]="viewDate" style="width:90%;margin:auto;">
-</app-calendar-header>
+<div class="d-flex justify-content-center mt-3">
+  <mat-menu #monthMenu="matMenu">
+    <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
+  </mat-menu>
+
+  <div class="d-flex justify-content-center col-2">
+    <button mat-button [matMenuTriggerFor]="monthMenu">
+      Month <mat-icon>keyboard_arrow_down</mat-icon>
+    </button>
+  </div>
+
+  <div class="d-flex justify-content-center col-6">
+    <button class="arrow-button" mat-button (click)="pageBackward()" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate"
+      (viewDateChange)="viewDateChange.next(viewDate)">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <button class="arrow-button" mat-button (click)="pageForward()" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate"
+      (viewDateChange)="viewDateChange.next(viewDate)">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+  </div>
+
+  <div class="d-flex justify-content-center col-2">
+    <button mat-button (click)="printPdf()">
+      <mat-icon>print</mat-icon>
+    </button>
+
+    <a mat-button href="./assets/calendars/2018.pdf" download>
+      <mat-icon>get_app</mat-icon>
+    </a>
+  </div>
+</div>
+<br>
+<div class="d-flex justify-content-center col-12">
+  <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
+</div>
+
+<!-- <app-calendar-header [(view)]="view" [(viewDate)]="viewDate" style="width:90%;margin:auto;">
+</app-calendar-header> -->
 
 <ng-template #customCellTemplate let-day="day" let-locale="locale">
   <div class="cal-cell-top">
     <!-- <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span> -->
     <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
   </div>
-  <small style="margin: 5px" *ngFor="let event of day.events">
-    <mat-icon>cake</mat-icon> {{ event.title }} <i>{{ getYearsSince(event) }}</i>
+  <small style="" class="mb-1" *ngFor="let event of day.events">
+    <!-- <span class="fa fa-cake fa-2x"></span> -->
+    <div class="row mx-auto">
+      <div class="col-3 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center mx-auto">
+        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.5em;" *ngIf="event.type === 'birth'"></span>
+        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.5em;" *ngIf="event.type === 'anniversary'"></span>
+        <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
+      </div>
+      <div class="col-6 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
+        style="margin-left: -22px;line-height: 1em;margin-right: 0.2em;opacity: 0.8;">
+        {{ event.title }}
+      </div>
+    </div>
+
   </small>
 
 </ng-template>
 
-<div class="d-flex col-12 justify-content-center">
-  <div [ngSwitch]="view" class="col-xl-10 col-lg-11">
-    <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
+<div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
+  <div class="col-xl-10 col-lg-11" id="calendarView">
+    <mwl-calendar-month-view [viewDate]="viewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
       [cellTemplate]="customCellTemplate">
     </mwl-calendar-month-view>
   </div>
