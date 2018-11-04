@@ -52,12 +52,13 @@
     <!-- <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span> -->
     <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
   </div>
-  <small style="" class="mb-1" *ngFor="let event of day.events">
+  <small style="" [matMenuTriggerFor]="menu" class="mb-1" *ngFor="let event of day.events">
     <!-- <span class="fa fa-cake fa-2x"></span> -->
+
     <div class="row mx-auto">
       <div class="col-3 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center mx-auto">
-        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.5em;" *ngIf="event.type === 'birth'"></span>
-        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.5em;" *ngIf="event.type === 'anniversary'"></span>
+        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'birth'"></span>
+        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'anniversary'"></span>
         <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
       </div>
       <div class="col-6 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
@@ -65,9 +66,22 @@
         {{ event.title }}
       </div>
     </div>
-
   </small>
-
+  <mat-menu #menu="matMenu">
+    <div mat-menu-item *ngFor="let event of day.events">
+      <div class="row">
+        <div class="col-2 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center">
+          <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'birth'"></span>
+          <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'anniversary'"></span>
+          <span style="margin-top: -12px;">{{ getYearsSince(event) }}</span>
+        </div>
+        <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center" style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;margin-top: -14px;">
+          {{ event.title }}
+        </div>
+        <mat-divider></mat-divider>
+      </div>
+    </div>
+  </mat-menu>
 </ng-template>
 
 <div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
@@ -78,11 +92,11 @@
   </div>
 </div>
 
-<div class="col-xl-10 col-lg-11" id="calendarView" hidden>
-  <div class="d-flex justify-content-center col-12">
-    <h3>{{ printViewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
-  </div>
-  <mwl-calendar-month-view [viewDate]="printViewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
-    [cellTemplate]="customCellTemplate">
-  </mwl-calendar-month-view>
-</div>
+<!-- <div class="col-xl-10 col-lg-11" id="calendarView" hidden>
+    <div class="d-flex justify-content-center col-12">
+      <h3>{{ printViewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
+    </div>
+    <mwl-calendar-month-view [viewDate]="printViewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
+      [cellTemplate]="customCellTemplate">
+    </mwl-calendar-month-view>
+  </div> -->

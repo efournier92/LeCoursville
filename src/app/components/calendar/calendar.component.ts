@@ -107,6 +107,11 @@ export class CalendarComponent {
 
   viewPeriod: ViewPeriod;
 
+  showMenu() {
+
+    console.log('hit');
+  }
+
   buildEvents() {
     let events = new Array<Event>();
     events.push(new Event('Anselme LeCours', 'birth', '04 JAN 1904'));
