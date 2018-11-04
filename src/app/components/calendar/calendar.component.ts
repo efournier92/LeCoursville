@@ -16,8 +16,8 @@ import {
 } from 'angular-calendar';
 import { colors } from './colors';
 import { ViewPeriod } from 'calendar-utils';
-import jsPDF from 'jspdf';
-import $ from 'jquery';
+import * as jspdf from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // FIX
 // Bruce Emerson (Birthday)
@@ -58,7 +58,7 @@ export class CalendarComponent {
   view = CalendarView.Month;
 
   viewDate = moment().toDate();
-
+  printViewDate = new Date(`01-01-2018`);
   recurringEvents: RecurringEvent[] = [];
 
   ngOnInit(): void {
@@ -81,14 +81,27 @@ export class CalendarComponent {
 
   }
 
-  printPdf() {
-    var doc = new jsPDF();
-    doc.fromHTML($('#calendarView').html(), 15, 15, {
-      // 'width': 170,
-      //     'elementHandlers': specialElementHandlers
+  public printPdf() {
+    const year = new Date().getFullYear();
+    let month = 0;
+    this.printViewDate = new Date(`${month}-01-${year}`);
+    var data = document.getElementById('calendarView');
+    html2canvas(data).then(canvas => {
+      // Few necessary setting options  
+      var imgWidth = 208;
+      var pageHeight = 295;
+      var imgHeight = canvas.height * imgWidth / canvas.width;
+      var heightLeft = imgHeight;
+
+      const contentDataURL = canvas.toDataURL('image/png')
+      let doc = new jspdf('l', 'mm', 'letter'); // A4 size page of PDF
+      var width = doc.internal.pageSize.width;
+      var height = doc.internal.pageSize.height;
+      var position = 0;
+      doc.addImage(contentDataURL, 'PNG', 0, position, 270, 210)
+      doc.save('MYPdf.pdf'); // Generated PDF   
     });
-    doc.save('sample-file.pdf');
-  };
+  }
 
   calendarEvents: RecurringEvent[] = [];
 

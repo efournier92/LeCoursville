@@ -71,9 +71,18 @@
 </ng-template>
 
 <div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
-  <div class="col-xl-10 col-lg-11" id="calendarView">
+  <div class="col-xl-10 col-lg-11">
     <mwl-calendar-month-view [viewDate]="viewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
       [cellTemplate]="customCellTemplate">
     </mwl-calendar-month-view>
   </div>
+</div>
+
+<div class="col-xl-10 col-lg-11" id="calendarView" hidden>
+  <div class="d-flex justify-content-center col-12">
+    <h3>{{ printViewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
+  </div>
+  <mwl-calendar-month-view [viewDate]="printViewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
+    [cellTemplate]="customCellTemplate">
+  </mwl-calendar-month-view>
 </div>
