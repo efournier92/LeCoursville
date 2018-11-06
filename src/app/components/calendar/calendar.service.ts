@@ -1,59 +1,39 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Calendar } from './calendar';
+import { RecurringEvent } from './calendar';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
-import { finalize } from 'rxjs/operators';
 import { AngularFireStorage } from '@angular/fire/storage';
-import saveAs from 'file-saver';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CalendarService {
-  calendars: AngularFireList<Calendar>;
+  calendarEvents: AngularFireList<RecurringEvent>;
 
   constructor(
-    private storage: AngularFireStorage,
     private db: AngularFireDatabase,
-  ) { 
-      // this.auth.authState.subscribe(user => {
-      // if (user) this.userId = user.uid;
-      this.getCalendars().valueChanges().subscribe(
-        (calendars: Calendar[]) => {
-          this.updateCalendarsEvent(calendars);
-        }
-      );
-    // });
+  ) {
+    this.getCalendarEvents().valueChanges().subscribe(
+      (calendarEvents: RecurringEvent[]) => {
+        this.updateCalendarEventsEvent(calendarEvents);
+      }
+    );
   }
 
   private calendarsSource = new BehaviorSubject([]);
   calendarsObservable = this.calendarsSource.asObservable();
 
-  updateCalendarsEvent(calendars: Calendar[]) {
-    this.calendarsSource.next(calendars);
+  updateCalendarEventsEvent(calendarEvents: RecurringEvent[]) {
+    this.calendarsSource.next(calendarEvents);
   }
 
-  getCalendars() {
-    return this.db.list('calendars', ref => ref.limitToFirst(1));
+  getCalendarEvents(): AngularFireList<{}> {
+    this.calendarEvents = this.db.list('calendarEvents');
+    return this.calendarEvents;
   }
 
-  addCalendar(file: any) {
-    let calendar = new Calendar();
-    calendar.id = this.db.createPushId();
-    calendar.path = `calendars/${calendar.id}.pdf`;
-    
-    const fileRef = this.storage.ref(calendar.path);
-    const task = this.storage.upload(calendar.path, file);
-    task.snapshotChanges().pipe(
-        finalize(() => {
-          fileRef.getDownloadURL().subscribe(
-            url => {
-              const calendarsDb = this.db.list(`calendars`);
-              calendar.url = url;
-              calendarsDb.set(calendar.id, calendar);
-            }
-          )
-        })
-      ).subscribe()
+  addCalendarEvent(event: RecurringEvent): void {
+    event.id = this.db.createPushId();
+    this.calendarEvents.update(event.id, event);
   }
 }

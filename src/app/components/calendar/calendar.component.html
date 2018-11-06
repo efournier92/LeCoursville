@@ -34,9 +34,12 @@
       <mat-icon>print</mat-icon>
     </button>
 
-    <a mat-button href="./assets/calendars/2018.pdf" download>
+    <!-- <a mat-button href="./assets/calendars/2018.pdf" download>
       <mat-icon>get_app</mat-icon>
-    </a>
+    </a> -->
+    <button mat-button (click)="saveEvents()">
+      <mat-icon>get_app</mat-icon>
+    </button>
   </div>
 </div>
 <br>
@@ -52,33 +55,32 @@
     <!-- <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span> -->
     <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
   </div>
-  <small style="" [matMenuTriggerFor]="menu" class="mb-1" *ngFor="let event of day.events">
+  <small [matMenuTriggerFor]="menu" class="mb-1" *ngFor="let event of day.events">
     <!-- <span class="fa fa-cake fa-2x"></span> -->
 
     <div class="row mx-auto">
-      <div class="col-3 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center mx-auto">
-        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'birth'"></span>
-        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'anniversary'"></span>
+      <div class="col-1 d-flex flex-column align-items-center mx-auto">
+        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
+        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'anniversary'"></span>
         <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
       </div>
-      <div class="col-6 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
-        style="margin-left: -22px;line-height: 1em;margin-right: 0.2em;opacity: 0.8;">
+      <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
+        style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;">
         {{ event.title }}
       </div>
     </div>
   </small>
   <mat-menu #menu="matMenu">
-    <div mat-menu-item *ngFor="let event of day.events">
+    <div mat-menu-item *ngFor="let event of day.events" (click)="openDialog()">
       <div class="row">
-        <div class="col-2 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center">
-          <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'birth'"></span>
-          <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1em;" *ngIf="event.type === 'anniversary'"></span>
+        <div class="mt-2 mb-2 col-2 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center">
+          <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
+          <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'anniversary'"></span>
           <span style="margin-top: -12px;">{{ getYearsSince(event) }}</span>
         </div>
         <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center" style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;margin-top: -14px;">
           {{ event.title }}
         </div>
-        <mat-divider></mat-divider>
       </div>
     </div>
   </mat-menu>
