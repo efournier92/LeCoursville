@@ -33,13 +33,6 @@
     <button mat-button (click)="printPdf()">
       <mat-icon>print</mat-icon>
     </button>
-
-    <!-- <a mat-button href="./assets/calendars/2018.pdf" download>
-      <mat-icon>get_app</mat-icon>
-    </a> -->
-    <button mat-button (click)="saveEvents()">
-      <mat-icon>get_app</mat-icon>
-    </button>
   </div>
 </div>
 <br>
@@ -47,17 +40,11 @@
   <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
 </div>
 
-<!-- <app-calendar-header [(view)]="view" [(viewDate)]="viewDate" style="width:90%;margin:auto;">
-</app-calendar-header> -->
-
 <ng-template #customCellTemplate let-day="day" let-locale="locale">
   <div class="cal-cell-top">
-    <!-- <span class="cal-day-badge" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</span> -->
     <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
   </div>
   <small [matMenuTriggerFor]="menu" class="mb-1" *ngFor="let event of day.events">
-    <!-- <span class="fa fa-cake fa-2x"></span> -->
-
     <div class="row mx-auto">
       <div class="col-1 d-flex flex-column align-items-center mx-auto">
         <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
@@ -87,18 +74,9 @@
 </ng-template>
 
 <div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
-  <div class="col-xl-10 col-lg-11">
-    <mwl-calendar-month-view [viewDate]="viewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
+  <div class="col-xl-10 col-lg-11" [ngSwitch]="view">
+    <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [events]="events" [refresh]="refresh"
       [cellTemplate]="customCellTemplate">
     </mwl-calendar-month-view>
   </div>
 </div>
-
-<!-- <div class="col-xl-10 col-lg-11" id="calendarView" hidden>
-    <div class="d-flex justify-content-center col-12">
-      <h3>{{ printViewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
-    </div>
-    <mwl-calendar-month-view [viewDate]="printViewDate" [events]="calendarEvents" (beforeViewRender)="updateCalendarEvents($event)"
-      [cellTemplate]="customCellTemplate">
-    </mwl-calendar-month-view>
-  </div> -->
