@@ -49,7 +49,7 @@
       <div class="col-1 d-flex flex-column align-items-center mx-auto">
         <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
         <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'anniversary'"></span>
-        <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
+        <span style="margin-top: -2px;">{{ getYearsSince(event, day) }}</span>
       </div>
       <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
         style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;">

@@ -33,7 +33,8 @@ export class CalendarService {
   private calendarsSource = new BehaviorSubject([]);
   calendarsObservable = this.calendarsSource.asObservable();
 
-  getYearsSince(eventYear: number) {
+  getYearsSince(eventYear: number, date) {
+    console.log('date', date);
     let now: Date = new Date();
     let currentYear = now.getFullYear();
     return currentYear - eventYear;

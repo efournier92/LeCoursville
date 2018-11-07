@@ -60,9 +60,9 @@ export class CalendarComponent {
     this.refresh.next();
   }
 
-  getYearsSince(event) {
+  getYearsSince(event, date) {
     let eventYear: number = event.date.getUTCFullYear();
-    this.calendarService.getYearsSince(eventYear);
+    this.calendarService.getYearsSince(eventYear, date);
   }
 
   public printPdf() {
