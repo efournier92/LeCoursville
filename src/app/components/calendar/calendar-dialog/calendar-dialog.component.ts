@@ -7,12 +7,21 @@ export interface DialogData {
   name: string;
 }
 
+export interface Food {
+  value: string;
+  viewValue: string;
+}
+
 @Component({
   selector: 'app-calendar-dialog',
   templateUrl: './calendar-dialog.component.html',
   styleUrls: ['./calendar-dialog.component.scss']
 })
 export class CalendarDialogComponent implements OnInit {
+  eventTypes: string[] = [
+    'birth',
+    'anniversary',
+  ];
 
   constructor(
     public dialogRef: MatDialogRef<CalendarDialogComponent>,
@@ -20,7 +29,7 @@ export class CalendarDialogComponent implements OnInit {
 
   }
 
-  onNoClick(): void {
+  onCancel(): void {
     this.dialogRef.close();
   }
 

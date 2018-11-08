@@ -6,21 +6,10 @@ import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from './calendar-dialog/calendar-dialog.component';
 import { CalendarService } from './calendar.service'
 import { Subject } from 'rxjs';
+import { RecurringEvent } from './calendar';
 
 // FIX
 // Bruce Emerson (Birthday)
-interface RecurringEvent extends CalendarEvent {
-  title: string;
-  color: any;
-  date: Date;
-  type: string;
-  rrule?: {
-    freq: any;
-    bymonth?: number;
-    bymonthday?: number;
-    byweekday?: any;
-  };
-}
 
 @Component({
   selector: 'app-calendar',
@@ -29,7 +18,8 @@ interface RecurringEvent extends CalendarEvent {
 })
 export class CalendarComponent {
   view = CalendarView.Month;
-  viewDate = new Date();
+  viewDate: Date = new Date();
+  viewYear: number;
   events: RecurringEvent[] = new Array<RecurringEvent>();
   printViewDate = new Date(`01-01-2018`);
   refresh: Subject<any> = new Subject();
@@ -42,21 +32,32 @@ export class CalendarComponent {
   ngOnInit(): void {
     this.calendarService.calendarsObservable.subscribe(
       (events: RecurringEvent[]) => {
-        for (const event of events) {
-          let thisYear = new Date().getFullYear();
-          let date = new Date(event.date);
-          date.setFullYear(thisYear);
-          event.start = date;
-          event.date = new Date(event.date);
-          this.events.push(event);
-        }
-        console.log(this.events);
-        this.refreshView();
+        this.viewYear = new Date().getFullYear();
+        this.updateEvents(events, this.viewYear);
       }
     )
   }
 
-  private refreshView(): void {
+  updateEvents(events: RecurringEvent[], year: number) {
+    this.events = new Array<RecurringEvent>();
+    for (const event of events) {
+      let date = new Date(event.date);
+      date.setFullYear(year);
+      event.start = date;
+      event.date = new Date(event.date);
+      this.events.push(event);
+    }
+  }
+
+  changeView(viewDate) {
+    let viewYear = viewDate.getFullYear();
+    if (viewYear !== this.viewYear) {
+      this.viewYear = viewYear;
+      this.updateEvents(this.events, viewYear);
+    }
+  }
+
+  private refreshCalendarView(): void {
     this.refresh.next();
   }
 
@@ -86,19 +87,29 @@ export class CalendarComponent {
       doc.save('MYPdf.pdf'); // Generated PDF   
     });
   }
-  animal: string;
-  name: string;
 
-  openDialog(): void {
+  openDialog(event): void {
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
-      width: '250px',
-      data: { name: this.name, animal: this.animal }
+      width: '30%',
+      data: event,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      this.animal = result;
-    });
+    dialogRef.afterClosed().subscribe(
+      (result: RecurringEvent) => {
+        if (!result) return;
+        let event = result;
+        if (event.id) {
+          this.calendarService.updateCalendarEvent(event);
+        } else {
+          this.calendarService.addCalendarEvent(event);
+        }
+        this.refreshCalendarView;
+      });
+  }
+
+  newEvent(): void {
+    let event = new Object as RecurringEvent;
+    this.openDialog(event);
   }
 
   saveEvents(): void {

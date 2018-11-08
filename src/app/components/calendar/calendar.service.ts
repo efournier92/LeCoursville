@@ -34,7 +34,7 @@ export class CalendarService {
   calendarsObservable = this.calendarsSource.asObservable();
 
   getYearsSince(eventYear: number, date) {
-    console.log('date', date);
+    // console.log('date', date);
     let now: Date = new Date();
     let currentYear = now.getFullYear();
     return currentYear - eventYear;
@@ -51,6 +51,10 @@ export class CalendarService {
 
   addCalendarEvent(event: RecurringEvent): void {
     event.id = this.db.createPushId();
+    this.calendarEvents.update(event.id, event);
+  }
+
+  updateCalendarEvent(event: RecurringEvent): void {
     this.calendarEvents.update(event.id, event);
   }
 

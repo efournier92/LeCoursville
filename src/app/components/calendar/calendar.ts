@@ -8,6 +8,7 @@ export class Calendar {
 }
 
 export interface RecurringEvent extends CalendarEvent {
+  id: string;
   title: string;
   color: any;
   date: Date;
