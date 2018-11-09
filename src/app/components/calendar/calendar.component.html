@@ -7,21 +7,11 @@
   </button>
 </div>
 <div class="d-flex justify-content-center mt-3">
-  <mat-menu #monthMenu="matMenu">
-    <button mat-menu-item *ngFor="let month of months" (click)="changePage(month.page)">{{month.name}}</button>
-  </mat-menu>
-  <div class="d-flex justify-content-center col-2">
-    <button mat-button [matMenuTriggerFor]="monthMenu">
-      Month <mat-icon>keyboard_arrow_down</mat-icon>
-    </button>
-  </div>
   <div class="d-flex justify-content-center col-6">
-    <button class="arrow-button" mat-button mwlCalendarPreviousView (click)="changeView(viewDate)" [view]="view"
-      [(viewDate)]="viewDate">
+    <button class="arrow-button" mat-button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
       <mat-icon>keyboard_arrow_left</mat-icon>
     </button>
-    <button class="arrow-button" mat-button mwlCalendarNextView (click)="changeView(viewDate)" [view]="view"
-      [(viewDate)]="viewDate">
+    <button class="arrow-button" mat-button (click)="pageForward()" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
       <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
@@ -31,12 +21,44 @@
     </button>
   </div>
 </div>
-<div class="d-flex justify-content-end mt-3">
-  <button mat-button (click)="newEvent()">
-    <mat-icon>add</mat-icon> New Event
-  </button>
-</div>
 <br>
+<div class="d-flex mt-3">
+  <div class="d-flex col-6">
+    <mat-form-field style="width: 7em;">
+      <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
+        <div *ngFor="let month of months">
+          <mat-option value="{{ month }}">
+            {{ month }}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="ml-2" style="width: 4em;">
+      <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+        <div *ngFor="let year of years">
+          <mat-option value="{{ year }}">
+            {{ year }}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="d-flex col-2">
+    <mat-checkbox [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
+      Birthdays
+    </mat-checkbox>
+  </div>
+  <div class="d-flex col-2">
+    <mat-checkbox [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
+      Anniversaries
+    </mat-checkbox>
+  </div>
+  <div class="d-flex justify-content-end col-2">
+    <button mat-button (click)="newEvent()">
+      <mat-icon>add</mat-icon> New Event
+    </button>
+  </div>
+</div>
 <div class="d-flex justify-content-center col-12">
   <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
 </div>

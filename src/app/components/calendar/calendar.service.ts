@@ -14,6 +14,11 @@ class Event {
   }
 }
 
+export const Months: string[] = [
+  "January", "February", "March", "April", "May", "June", "July",
+  "August", "September", "October", "November", "December",
+]
+
 @Injectable({
   providedIn: 'root'
 })
@@ -56,6 +61,17 @@ export class CalendarService {
 
   updateCalendarEvent(event: RecurringEvent): void {
     this.calendarEvents.update(event.id, event);
+  }
+
+  getViewYears(): number[] {
+    const thisYear: number = new Date().getFullYear();
+    let year = thisYear - 1;
+    let years: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      years.push(year);
+      year += 1;
+    }
+    return years;
   }
 
   // let events = this.buildEvents();
