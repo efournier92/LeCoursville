@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CalendarView } from 'angular-calendar';
-import * as jspdf from 'jspdf';
-import html2canvas from 'html2canvas';
 import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from './calendar-dialog/calendar-dialog.component';
+import { CalendarPrinterService } from './calendar-printer/calendar-printer.service';
 import { CalendarService, Months } from './calendar.service'
 import { Subject } from 'rxjs';
-import { RecurringEvent } from './calendar';
+import { RecurringEvent } from './calendar.service';
 
 // FIX
 // Bruce Emerson (Birthday)
@@ -33,6 +32,7 @@ export class CalendarComponent {
   constructor(
     public dialog: MatDialog,
     private calendarService: CalendarService,
+    private calendarPrinterService: CalendarPrinterService,
   ) { }
 
   ngOnInit(): void {
@@ -88,7 +88,7 @@ export class CalendarComponent {
 
   changeView(viewDate) {
     this.viewMonth = this.months[viewDate.getMonth()];
-    let viewYear = viewDate.getFullYear();
+    let viewYear = viewDate.getFullYear().toString();
     if (viewYear !== this.viewYear) {
       this.viewYear = viewYear;
       this.updateEvents(this.events, viewYear, this.showBirthdays, this.showAnniversaries);
@@ -97,33 +97,6 @@ export class CalendarComponent {
 
   private refreshCalendarView(): void {
     this.refresh.next();
-  }
-
-  getYearsSince(event, date) {
-    let eventYear: number = event.date.getUTCFullYear();
-    this.calendarService.getYearsSince(eventYear, date);
-  }
-
-  public printPdf() {
-    const year = new Date().getFullYear();
-    let month = 0;
-    this.printViewDate = new Date(`${month}-01-${year}`);
-    var data = document.getElementById('calendarView');
-    html2canvas(data).then(canvas => {
-      // Few necessary setting options  
-      var imgWidth = 208;
-      var pageHeight = 295;
-      var imgHeight = canvas.height * imgWidth / canvas.width;
-      var heightLeft = imgHeight;
-
-      const contentDataURL = canvas.toDataURL('image/png')
-      let doc = new jspdf('l', 'mm', 'letter'); // A4 size page of PDF
-      var width = doc.internal.pageSize.width;
-      var height = doc.internal.pageSize.height;
-      var position = 0;
-      doc.addImage(contentDataURL, 'PNG', 0, position, 270, 210)
-      doc.save('MYPdf.pdf'); // Generated PDF   
-    });
   }
 
   openDialog(event): void {
@@ -154,6 +127,10 @@ export class CalendarComponent {
     for (const event of this.events) {
       this.calendarService.addCalendarEvent(event);
     }
+  }
+
+  printPdf(): void {
+    this.calendarPrinterService.printPdf();
   }
 
 }

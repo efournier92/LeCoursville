@@ -32,6 +32,9 @@ import { AngularFontAwesomeModule } from 'angular-font-awesome';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { CalendarDialogComponent } from './components/calendar/calendar-dialog/calendar-dialog.component';
+import { CalendarPrinterComponent } from './components/calendar/calendar-printer/calendar-printer.component';
+import { CalendarViewComponent } from './components/calendar/calendar-view/calendar-view.component';
+import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +50,9 @@ import { CalendarDialogComponent } from './components/calendar/calendar-dialog/c
     ViewChatComponent,
     EditChatComponent,
     CalendarDialogComponent,
+    CalendarPrinterComponent,
+    CalendarViewComponent,
+    CalendarCellComponent,
   ],
   imports: [
     AppRoutingModule,

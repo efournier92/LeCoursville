@@ -1,0 +1,10 @@
+<div class="row mx-auto">
+  <div class="col-1 d-flex flex-column align-items-center mx-auto">
+    <span class="fa fa-birthday-cake calendar-icon birthday-icon" *ngIf="event.type === 'birth'"></span>
+    <span class="fa fa-heart calendar-icon anniversary-icon" *ngIf="event.type === 'anniversary'"></span>
+    <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
+  </div>
+  <div id="event-title-container" class="col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
+    {{ event.title }}
+  </div>
+</div>

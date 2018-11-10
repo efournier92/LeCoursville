@@ -1,0 +1,29 @@
+<div class="d-flex justify-content-center col-12">
+  <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
+</div>
+<ng-template #customCellTemplate let-day="day" let-locale="locale">
+  <div [matMenuTriggerFor]="menu">
+    <div class="cal-cell-top">
+      <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+    </div>
+    <small class="mb-1" *ngFor="let event of day.events">
+      <app-calendar-cell [event]="event"></app-calendar-cell>
+    </small>
+  </div>
+
+
+  <mat-menu #menu="matMenu">
+    <div *ngFor="let event of day.events">
+      <app-calendar-cell [event]="event"></app-calendar-cell>
+    </div>
+  </mat-menu>
+  <!-- <mat-menu #menu="matMenu">
+    <app-calendar-cell [event]="event"></app-calendar-cell>
+  </mat-menu> -->
+</ng-template>
+<div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
+  <div class="col-xl-10 col-lg-11">
+    <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [refresh]="refresh" [cellTemplate]="customCellTemplate">
+    </mwl-calendar-month-view>
+  </div>
+</div>

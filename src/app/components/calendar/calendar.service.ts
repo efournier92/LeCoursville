@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { RecurringEvent } from './calendar';
+import { CalendarEvent } from 'angular-calendar';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
 
 class Event {
@@ -12,6 +12,13 @@ class Event {
     this.type = type;
     this.date = date;
   }
+}
+
+export interface RecurringEvent extends CalendarEvent {
+  id: string;
+  title: string;
+  date: Date;
+  type: string;
 }
 
 export const Months: string[] = [
@@ -38,8 +45,7 @@ export class CalendarService {
   private calendarsSource = new BehaviorSubject([]);
   calendarsObservable = this.calendarsSource.asObservable();
 
-  getYearsSince(eventYear: number, date) {
-    // console.log('date', date);
+  getYearsSince(eventYear: number) {
     let now: Date = new Date();
     let currentYear = now.getFullYear();
     return currentYear - eventYear;

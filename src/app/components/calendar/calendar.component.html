@@ -8,10 +8,12 @@
 </div>
 <div class="d-flex justify-content-center mt-3">
   <div class="d-flex justify-content-center col-6">
-    <button class="arrow-button" mat-button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
+    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+      [(viewDate)]="viewDate">
       <mat-icon>keyboard_arrow_left</mat-icon>
     </button>
-    <button class="arrow-button" mat-button (click)="pageForward()" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
+      [(viewDate)]="viewDate">
       <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
@@ -59,44 +61,7 @@
     </button>
   </div>
 </div>
-<div class="d-flex justify-content-center col-12">
-  <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):locale }}</h3>
-</div>
-<ng-template #customCellTemplate let-day="day" let-locale="locale">
-  <div class="cal-cell-top">
-    <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
-  </div>
-  <small [matMenuTriggerFor]="menu" class="mb-1" *ngFor="let event of day.events">
-    <div class="row mx-auto">
-      <div class="col-1 d-flex flex-column align-items-center mx-auto">
-        <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
-        <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'anniversary'"></span>
-        <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
-      </div>
-      <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block"
-        style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;">
-        {{ event.title }}
-      </div>
-    </div>
-  </small>
-  <mat-menu #menu="matMenu">
-    <div mat-menu-item *ngFor="let event of day.events" (click)="openDialog(event)">
-      <div class="row" style="margin-top: 0.55em;">
-        <div class="mt-2 mb-2 col-2 d-flex flex-column align-items-center align-content-center justify-content-center align-self-center">
-          <span class="fa fa-birthday-cake" style="color: #0d47a1;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'birth'"></span>
-          <span class="fa fa-heart" style="color: #880e4f;opacity: 0.8;font-size: 1.2em;" *ngIf="event.type === 'anniversary'"></span>
-          <span>{{ getYearsSince(event) }}</span>
-        </div>
-        <div class="col-8 p-0 flex-column align-items-center align-content-center align-self-center" style="line-height: 1em;margin-right: 0.2em;opacity: 0.8;">
-          {{ event.title }}
-        </div>
-      </div>
-    </div>
-  </mat-menu>
-</ng-template>
-<div class="d-flex col-12 justify-content-center" style="margin-bottom: 6%;">
-  <div class="col-xl-10 col-lg-11">
-    <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [refresh]="refresh" [cellTemplate]="customCellTemplate">
-    </mwl-calendar-month-view>
-  </div>
+<app-calendar-view [viewDate]="viewDate" [events]="events"></app-calendar-view>
+<div id="calendarPrintView">
+  <app-calendar-printer [viewDate]="viewDate" [events]="events"></app-calendar-printer>
 </div>
