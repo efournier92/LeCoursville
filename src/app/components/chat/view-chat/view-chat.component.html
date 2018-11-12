@@ -28,6 +28,7 @@
       (click)="editMessage()" *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)">
       <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }"></span>
     </div>
+    <span>Edit</span>
   </div>
   <mat-divider [vertical]="true" class="ml-2"></mat-divider>
   <mat-card-content class="col-9" *ngIf="message.isDeleted">

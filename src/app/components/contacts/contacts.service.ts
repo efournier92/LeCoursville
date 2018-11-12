@@ -135,7 +135,7 @@ export class ContactsService {
 
     if (method === 'print') {
       pdf.autoPrint();
-      window.open(pdf.output('bloburl'), '_blank');
+      window.open(pdf.output('bloburl'), 'pdfFrame');
     } else if (method === 'download') {
       pdf.save('LeCoursville_Directory.pdf');
     }

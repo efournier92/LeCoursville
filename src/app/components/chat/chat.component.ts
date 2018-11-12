@@ -26,8 +26,8 @@ export class ChatComponent implements OnInit {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
-        if (user.id && !user.name)
-          this.openNamePrompt();
+        // if (user.id && !user.name)
+        //   this.openNamePrompt();
       }
     )
   }

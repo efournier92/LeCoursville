@@ -61,4 +61,5 @@ export class ContactsComponent implements OnInit {
   downloadPdf(): void {
     this.contactsService.printPdf(this.filteredContacts, 'download');
   }
+
 }

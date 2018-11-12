@@ -69,7 +69,11 @@ export class EditChatComponent implements OnInit {
   }
 
   deleteMessage(): void {
-    this.message.isDeleted = true;
+    if (this.message.replies && this.message.replies.length !== 0) {
+      this.message.isDeleted = true;
+    } else {
+      this.chatService.deleteMessage(this.message);
+    }
     this.message.isEditable = false;
   }
 
@@ -84,4 +88,5 @@ export class EditChatComponent implements OnInit {
   highlightElement(element: string, value: boolean): void {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
+
 }
