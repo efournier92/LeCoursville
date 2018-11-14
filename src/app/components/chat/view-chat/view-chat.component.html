@@ -1,7 +1,7 @@
 <div class="row mb-4 chat-card-content-container" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
   <div class="col-1 chat-tools-container">
-    <div class="mb-2">
-      <div class="d-flex justify-content-end mt-2">
+    <div class="mb-3">
+      <div class="d-flex justify-content-center mt-2">
         <span class="fa-stack" (click)="likeMessage()" (mouseover)="highlightElement('like', true)" (mouseleave)="highlightElement('like', false)">
           <span class="fa fa-heart-o fa-2x" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }"></span>
           <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
@@ -17,21 +17,21 @@
           </strong>
         </span>
       </div>
-      <span class="d-flex justify-content-end" style="font-size: 0.8em;margin-right: 0.3em;margin-top: -4px;" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">Like</span>
+      <span class="calendar-icon-label d-flex justify-content-center" [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }">Like</span>
     </div>
-    <div class="mb-2">
-      <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)"
+    <div class="mb-3" [ngStyle]="{ color: highlights.reply === true  ? '#00c853' : '#CFD8DC' }">
+      <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('reply', true)" (mouseleave)="highlightElement('reply', false)"
         (click)="replyMessage()">
-        <span class="fa fa-reply-all fa-2x" [ngStyle]="{ color: highlights.reply === true  ? '#00c853' : '#CFD8DC' }"></span>
+        <span class="fa fa-reply-all fa-2x"></span>
       </div>
-      <span class="d-flex justify-content-end" style="font-size: 0.8em;margin-top: -4px;" [ngStyle]="{ color: highlights.reply === true  ? '#00c853' : '#CFD8DC' }">Reply</span>
+      <span class="calendar-icon-label d-flex justify-content-center">Reply</span>
     </div>
-    <div *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)">
-      <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)"
+    <div *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }">
+      <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('edit', true)" (mouseleave)="highlightElement('edit', false)"
         (click)="editMessage()">
-        <span class="fa fa-edit fa-2x" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }"></span>
+        <span class="fa fa-edit fa-2x"></span>
       </div>
-      <span class="d-flex justify-content-end" style="font-size: 0.8em;margin-right: 0.5em;margin-top: -4px;" [ngStyle]="{ color: highlights.edit === true  ? '#2962ff' : '#CFD8DC' }">Edit</span>
+      <span class="calendar-icon-label d-flex justify-content-centers">Edit</span>
     </div>
   </div>
   <mat-divider [vertical]="true" class="ml-2"></mat-divider>

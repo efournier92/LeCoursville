@@ -1,20 +1,30 @@
 <div class="row mb-4 chat-card-content-container" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
   <div class="col-1 chat-tools-container">
-    <div class="d-flex justify-content-end flex-column mt-2">
-      <div class="d-flex flex-row justify-content-end mb-4" (mouseover)="highlightElement('trash', true)" (mouseleave)="highlightElement('trash', false)"
-        (click)="deleteMessage()" *ngIf="message.isSaved">
-        <span class="fa fa-trash fa-2x" [ngStyle]="{ color: highlights.trash === true  ? '#d50000' : '#CFD8DC' }"></span>
+    <div class="d-flex justify-content-center flex-column mt-2">
+      <div class="mb-3" [ngStyle]="{ color: highlights.trash === true  ? '#d50000' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('trash', true)" (mouseleave)="highlightElement('trash', false)"
+          (click)="deleteMessage()" *ngIf="message.isSaved">
+          <span class="fa fa-trash fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Delete</span>
       </div>
-      <div class="d-flex flex-row justify-content-end mb-4" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
-        (click)="cancelEdit()">
-        <span class="fa fa-ban fa-2x" [ngStyle]="{ color: highlights.cancel === true  ? '#ffd600' : '#CFD8DC' }"></span>
+      <div class="mb-3" [ngStyle]="{ color: highlights.cancel === true  ? '#ffd600' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
+          (click)="cancelEdit()">
+          <span class="fa fa-ban fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Cancel</span>
       </div>
-      <div class="d-flex flex-row justify-content-end" (mouseover)="highlightElement('send', true)" (mouseleave)="highlightElement('send', false)"
-        (click)="saveMessage(message)">
-        <span class="fa fa-share-square fa-2x" [ngStyle]="{ color: highlights.send === true  ? '#00c853' : '#CFD8DC' }"></span>
+      <div class="mb-3" [ngStyle]="{ color: highlights.send === true  ? '#00c853' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('send', true)" (mouseleave)="highlightElement('send', false)"
+          (click)="saveMessage(message)">
+          <span class="fa fa-share-square fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Send</span>
       </div>
     </div>
   </div>
+
   <mat-divider [vertical]="true" class="ml-2"></mat-divider>
   <mat-card-content class="col-9">
     <mat-card-title>
