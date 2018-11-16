@@ -11,7 +11,7 @@
     </small>
   </div>
   <mat-menu #menu="matMenu">
-    <div *ngFor="let event of day.events">
+    <div *ngFor="let event of day.events" (click)="openDialog(event)">
       <app-calendar-cell [event]="event"></app-calendar-cell>
     </div>
   </mat-menu>

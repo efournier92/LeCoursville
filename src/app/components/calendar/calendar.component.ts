@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { CalendarView } from 'angular-calendar';
 import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from './calendar-dialog/calendar-dialog.component';
@@ -16,6 +16,10 @@ import { RecurringEvent } from './calendar.service';
   styleUrls: ['./calendar.component.scss']
 })
 export class CalendarComponent {
+  @Output()
+  refreshView = new EventEmitter();
+
+
   view = CalendarView.Month;
   months: string[] = Months;
   years: number[];

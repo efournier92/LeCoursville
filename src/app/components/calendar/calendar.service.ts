@@ -69,6 +69,10 @@ export class CalendarService {
     this.calendarEvents.update(event.id, event);
   }
 
+  deleteCalendarEvent(event: RecurringEvent): void {
+    this.calendarEvents.remove(event.id);
+  }
+
   getViewYears(): number[] {
     const thisYear: number = new Date().getFullYear();
     let year = thisYear - 1;
