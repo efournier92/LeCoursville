@@ -28,6 +28,7 @@ export class Message {
   isEditable: boolean;
   isSaved: boolean;
   isDeleted: boolean;
+  isSticky: boolean;
 
   constructor(title, body, authorId, authorName, isReply, isEditable, replyLevel) {
     this.title = title;
@@ -42,5 +43,6 @@ export class Message {
     this.isEditable = isEditable;
     this.isSaved = false;
     this.isDeleted = false;
+    this.isSticky = false;
   }
 }
