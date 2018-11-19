@@ -1,2 +1,30 @@
 # Lecoursville
 
+## Welcome Message
+__Welcome to LeCoursville__
+
+In an effort to keep our calendar and directory content current, we're hosting this site for everyone to access the data on demand. You can view the info online, and download or print it using the corresponding buttons in the top right. If you have content or feature suggestions, please feel free to email me at efournier92@gmail.com. I'll continue to add new features and content, so check back again soon!
+
+## TODO
+* [X] All typescript declarations
+* [X] Chat should be sorted newest first
+* [X] Chat message cancel deletes existing message
+* [X] Admin can edit any message
+* [X] Fix chat naming conventions
+* [X] Fix name prompt (chat.component)
+* [X] Add isSaved to message
+* [X] Edit contact Labels
+* [X] Contacts print should open in hidden iframe
+* [ ] Calendar should be uploadable
+* [ ] Multiple calendar years should be available[Print PDFs from FTM when home]
+* [X] Only Email option (test across browsers & devices)
+* [ ] Message sticky
+* [X] Label chat icons
+* [X] Chat delete if no replies
+* [ ] Endless scroll deletes message
+* [X] Upload calendar data to FireBase RTD
+* [~] Calendar event editability (Admin)
+* [ ] Diseased styling
+* [ ] Restore deleted message
+* [~] Opt-in flow, email only
+  - Collect name at time of opt-in
