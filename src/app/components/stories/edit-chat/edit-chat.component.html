@@ -1,0 +1,52 @@
+<div class="row mb-4 chat-card-content-container" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
+  <div class="col-1 chat-tools-container">
+    <div class="d-flex justify-content-center flex-column mt-2">
+      <div class="mb-3" *ngIf="message.isSaved" [ngStyle]="{ color: highlights.trash === true  ? '#d50000' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('trash', true)" (mouseleave)="highlightElement('trash', false)"
+          (click)="deleteMessage()">
+          <span class="fa fa-trash fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Delete</span>
+      </div>
+      <div class="mb-3" [ngStyle]="{ color: highlights.cancel === true  ? '#ffd600' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('cancel', true)" (mouseleave)="highlightElement('cancel', false)"
+          (click)="cancelEdit()">
+          <span class="fa fa-ban fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Cancel</span>
+      </div>
+      <div class="mb-3" [ngStyle]="{ color: highlights.send === true  ? '#00c853' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('send', true)" (mouseleave)="highlightElement('send', false)"
+          (click)="saveMessage(message)">
+          <span class="fa fa-share-square fa-2x"></span>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Send</span>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider [vertical]="true" class="ml-2"></mat-divider>
+  <mat-card-content class="col-9">
+    <mat-card-title>
+      <mat-card-subtitle class="chat-message-author-name">
+        {{ message.authorName }}
+      </mat-card-subtitle>
+      <mat-card-subtitle class="chat-message-timestamp">
+        {{ message.timestamp | date:'short' }}
+      </mat-card-subtitle>
+    </mat-card-title>
+    <div *ngIf="!message.isReply" style="line-height: 1;">
+      <mat-form-field class="w-100">
+        <input matInput placeholder="Title" [(ngModel)]="message.title">
+      </mat-form-field>
+    </div>
+    <mat-form-field class="w-100" style="">
+      <textarea matInput style="overflow:hidden; min-height: 20px" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
+        #input [(ngModel)]="message.body"></textarea>
+    </mat-form-field>
+  </mat-card-content>
+</div>
+<mat-card-content *ngFor="let reply of message.replies">
+  <app-view-chat *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-view-chat>
+  <app-edit-chat *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent($event)"></app-edit-chat>
+</mat-card-content>
