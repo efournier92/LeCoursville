@@ -27,7 +27,7 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [ ] Diseased styling
 * [ ] Restore deleted message
 * [~] Opt-in flow, email only
-  - Collect name at time of opt-in
+  - [~] Collect name at time of opt-in
 * [ ] Add `circa` feature to photos-edit component
 * [ ] Extend years in photos-edit component
 
