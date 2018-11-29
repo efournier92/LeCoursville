@@ -9,11 +9,11 @@ import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
 
 @Component({
-  selector: 'app-edit-chat',
-  templateUrl: './edit-chat.component.html',
-  styleUrls: ['./edit-chat.component.scss']
+  selector: 'app-stories-edit',
+  templateUrl: './stories-edit.component.html',
+  styleUrls: ['./stories-edit.component.scss']
 })
-export class EditChatComponent implements OnInit {
+export class StoriesEditComponent implements OnInit {
   user: User;
   highlights: Highlight = new Highlight();
   @Input() message: Message;

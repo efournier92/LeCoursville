@@ -9,7 +9,7 @@ import { User } from '../auth/user';
 @Injectable({
   providedIn: 'root'
 })
-export class ChatService {
+export class StoriesService {
   messages: AngularFireList<Message>;
   messageCount: number = 0;
   increment: number = 8;
