@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { StoriesViewComponent } from './stories-view.component';
 
-describe('ChatViewComponent', () => {
+describe('StoriesViewComponent', () => {
   let component: StoriesViewComponent;
   let fixture: ComponentFixture<StoriesViewComponent>;
 

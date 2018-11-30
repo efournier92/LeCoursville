@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { ChatService } from './chat.service';
+import { StoriesService } from './stories.service';
 import { User } from 'src/app/components/auth/user';
 import { Message } from 'src/app/components/chat/message';
 import { MatDialog } from '@angular/material';
@@ -11,7 +11,7 @@ import { NamePrompt } from '../auth/name-prompt/name-prompt';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements OnInit {
+export class StoriesComponent implements OnInit {
   user: User;
   messages: Message[];
   url: string;
@@ -19,7 +19,7 @@ export class ChatComponent implements OnInit {
   years: Number[];
 
   constructor(
-    private chatService: ChatService,
+    private chatService: StoriesService,
     private auth: AuthService,
     public namePrompt: MatDialog,
   ) {

@@ -1,20 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { StoriesEditComponent } from './stories-edit.component';
 
-import { EditChatComponent } from './edit-chat.component';
-
-describe('ChatEditComponent', () => {
-  let component: EditChatComponent;
-  let fixture: ComponentFixture<EditChatComponent>;
+describe('StoriesEditComponent', () => {
+  let component: StoriesEditComponent;
+  let fixture: ComponentFixture<StoriesEditComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [EditChatComponent]
+      declarations: [StoriesEditComponent]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EditChatComponent);
+    fixture = TestBed.createComponent(StoriesEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
