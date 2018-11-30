@@ -8,8 +8,8 @@ import { NamePrompt } from '../auth/name-prompt/name-prompt';
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  templateUrl: './stories.component.html',
+  styleUrls: ['./stories.component.scss']
 })
 export class StoriesComponent implements OnInit {
   user: User;

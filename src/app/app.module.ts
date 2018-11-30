@@ -29,8 +29,8 @@ import { ChatComponent } from './components/chat/chat.component';
 import { ViewChatComponent } from './components/chat/view-chat/view-chat.component';
 import { EditChatComponent } from './components/chat/edit-chat/edit-chat.component';
 import { StoriesComponent } from './components/stories/stories.component';
-import { ViewStoriesComponent } from './components/stories/view-stories/stories-view.component';
-import { EditStoriesComponent } from './components/stories/edit-stories/stories-edit.component';
+import { StoriesViewComponent } from './components/stories/stories-view/stories-view.component';
+import { StoriesEditComponent } from './components/stories/stories-edit/stories-edit.component';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -56,6 +56,9 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
     CalendarPrinterComponent,
     CalendarViewComponent,
     CalendarCellComponent,
+    StoriesComponent,
+    StoriesViewComponent,
+    StoriesEditComponent,
   ],
   imports: [
     AppRoutingModule,
