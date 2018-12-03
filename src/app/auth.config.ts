@@ -7,4 +7,3 @@ export const AuthConfig: firebaseui.auth.Config = {
   ],
   credentialHelper: firebaseui.auth.CredentialHelper.NONE,
 };
-
