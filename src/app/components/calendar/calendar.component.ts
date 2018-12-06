@@ -142,5 +142,4 @@ export class CalendarComponent {
       this.calendarService.addCalendarEvent(file)
     }
   }
-
 }
