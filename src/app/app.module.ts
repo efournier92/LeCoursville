@@ -7,13 +7,11 @@ import { FilterPipeModule } from 'ngx-filter-pipe';
 import { FormsModule } from '@angular/forms';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { FirebaseUIModule } from 'firebaseui-angular';
-
 import { AppRoutingModule } from './app-routing.module';
 import { MaterialModule } from './material.module';
 import { AuthConfig } from './auth.config'
@@ -26,8 +24,8 @@ import { EditContactComponent } from './components/contacts/edit-contact/edit-co
 import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
 import { NamePrompt } from './components/auth/name-prompt/name-prompt';
 import { ChatComponent } from './components/chat/chat.component';
-import { ViewChatComponent } from './components/chat/view-chat/view-chat.component';
-import { EditChatComponent } from './components/chat/edit-chat/edit-chat.component';
+import { ChatViewComponent } from './components/chat/chat-view/chat-view.component';
+import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.component';
 import { StoriesComponent } from './components/stories/stories.component';
 import { StoriesViewComponent } from './components/stories/stories-view/stories-view.component';
 import { StoriesEditComponent } from './components/stories/stories-edit/stories-edit.component';
@@ -50,8 +48,8 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
     ViewContactComponent,
     ChatComponent,
     NamePrompt,
-    ViewChatComponent,
-    EditChatComponent,
+    ChatViewComponent,
+    ChatEditComponent,
     CalendarDialogComponent,
     CalendarPrinterComponent,
     CalendarViewComponent,

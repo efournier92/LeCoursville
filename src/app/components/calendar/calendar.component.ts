@@ -137,4 +137,10 @@ export class CalendarComponent {
     this.calendarPrinterService.printPdf();
   }
 
+  addCalendar(event: any): void {
+    for (let file of event.currentTarget.files) {
+      this.calendarService.addCalendarEvent(file)
+    }
+  }
+
 }
