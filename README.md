@@ -18,10 +18,10 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [ ] Calendar should be uploadable
 * [ ] Multiple calendar years should be available[Print PDFs from FTM when home]
 * [X] Only Email option (test across browsers & devices)
-* [ ] Message sticky
+* [X] Message sticky
 * [X] Label chat icons
 * [X] Chat delete if no replies
-* [ ] Endless scroll deletes message
+* [X] Endless scroll deletes message
 * [X] Upload calendar data to FireBase RTD
 * [~] Calendar event editability (Admin)
 * [ ] Diseased styling
