@@ -22,6 +22,12 @@
         </div>
         <span class="calendar-icon-label d-flex justify-content-center">Send</span>
       </div>
+      <div class="mb-3" [ngStyle]="{ color: highlights.sticky === true  ? '#00c853' : '#CFD8DC' }">
+        <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('sticky', true)" (mouseleave)="highlightElement('sticky', false)">
+          <mat-checkbox [(ngModel)]="message.isSticky"></mat-checkbox>
+        </div>
+        <span class="calendar-icon-label d-flex justify-content-center">Sticky</span>
+      </div>
     </div>
   </div>
 

@@ -18,8 +18,6 @@ import { RecurringEvent } from './calendar.service';
 export class CalendarComponent {
   @Output()
   refreshView = new EventEmitter();
-
-
   view = CalendarView.Month;
   months: string[] = Months;
   years: number[];

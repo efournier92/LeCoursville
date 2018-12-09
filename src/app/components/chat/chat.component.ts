@@ -36,12 +36,17 @@ export class ChatComponent implements OnInit {
     this.chatService.chatObservable.subscribe(
       (messages: Message[]) => {
         this.messages = messages.sort(this.compareMessagesByTimestamp);
+        this.messages.sort(this.compareStickies);
       }
     )
   }
 
+  compareStickies(a: Message, b: Message): any {
+    return a.isSticky == true ? -1 : b.isSticky == false ? 1 : 0;
+  }
+
   compareMessagesByTimestamp(a: Message, b: Message): any {
-    return b.timestamp - a.timestamp
+    return b.timestamp - a.timestamp;
   }
 
   compareMessagesByLikes(a: Message, b: Message): any {
