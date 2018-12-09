@@ -14,7 +14,7 @@
       <button mat-button style="width: 82px;">
         <label style="height: 19px;width: 100%;">
           <mat-icon>cloud_upload</mat-icon>
-          <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
+          <input type="file" (change)="uploadCalendar($event)" accept=".png,.jpg" />
         </label>
       </button>
     </div>
@@ -24,7 +24,7 @@
   </div>
 </div>
 <div class="d-flex mt-3">
-  <div class="d-flex col-4">
+  <div class="d-flex col-4 justify-content-center">
     <mat-form-field style="width: 7em;">
       <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
         <div *ngFor="let month of months">

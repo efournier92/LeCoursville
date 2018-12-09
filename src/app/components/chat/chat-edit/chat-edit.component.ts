@@ -71,9 +71,22 @@ export class ChatEditComponent implements OnInit {
   deleteMessage(): void {
     if (this.message.replies && this.message.replies.length !== 0) {
       this.message.isDeleted = true;
+    } else if (this.message.isReply) {
+      let i = 0;
+      for (const reply of this.parent.replies) {
+        if (reply.id === this.message.id) {
+          this.parent.replies.splice(i, 1);
+        }
+        i += 1;
+      }
     } else {
       this.chatService.deleteMessage(this.message);
     }
+    this.message.isEditable = false;
+  }
+
+  restoreMessage(): void {
+    this.message.isDeleted = false;
     this.message.isEditable = false;
   }
 

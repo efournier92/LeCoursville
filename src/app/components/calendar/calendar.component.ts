@@ -52,12 +52,12 @@ export class CalendarComponent {
     )
   }
 
-  toggleBirthdays($event) {
+  toggleBirthdays($event): void {
     let showBirthdays = $event.checked;
     this.updateEvents(this.allEvents, this.viewYear, showBirthdays, this.showAnniversaries);
   }
 
-  toggleAnniversaries($event) {
+  toggleAnniversaries($event): void {
     let showAnniversaries = $event.checked;
     this.updateEvents(this.allEvents, this.viewYear, this.showBirthdays, showAnniversaries);
   }

@@ -1,5 +1,4 @@
 .calendar-icon {
-  opacity: 0.8;
   font-size: 1.2em;
 }
 
@@ -19,5 +18,12 @@
 #event-title-container {
   line-height: 1em;
   margin-right: 0.2em;
+}
+
+.event-not-living {
+  opacity: 0.4;
+}
+
+.event-living {
   opacity: 0.8;
 }

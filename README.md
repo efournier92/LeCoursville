@@ -23,11 +23,16 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Chat delete if no replies
 * [X] Endless scroll deletes message
 * [X] Upload calendar data to FireBase RTD
-* [~] Calendar event editability (Admin)
-* [ ] Diseased styling
-* [ ] Restore deleted message
+* [X] Calendar event editability (Admin)
+* [X] Diseased styling
+* [X] Restore deleted message
 * [~] Opt-in flow, email only
   - [~] Collect name at time of opt-in
-* [ ] Add `circa` feature to photos-edit component
-* [ ] Extend years in photos-edit component
+* [X] Add `circa` feature to photos-edit component
+* [X] Extend years in photos-edit component
 * [~] Add stories component
+March 21 - Miculcy
+
+July 15 - Conor Miculcy
+
+Aug 21 - Bruce Grandchamp age

@@ -9,11 +9,11 @@
 
 <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of photos">
   <img mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}" style="margin-bottom: -12px;padding:15px">
-  <button mat-button (click)="button.isEditable = true">
-    <mat-card-content>
-      {{ photo.info }}
-    </mat-card-content>
-  </button>
+  <mat-card-content>
+    <span *ngIf="photo.info">{{ photo.info }}<br></span>
+    <span *ngIf="photo.location">{{ photo.location }}<br></span>
+    <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
+  </mat-card-content>
   <mat-card-footer *ngIf="user.roles && user.roles.admin && !photo.isEditable" class="contact-controls-container d-flex justify-content-end">
     <button mat-button (click)="photo.isEditable = true">
       <mat-icon>edit</mat-icon>
@@ -32,7 +32,10 @@
                 <option *ngFor="let year of years">{{ year }}</option>
               </select>
             </div>
-            <div class="form-group col-7">
+            <div class="form-group col-2 d-flex align-items-end">
+              <mat-checkbox name="photoYearCirca" [(ngModel)]="photo.isYearCirca"><i>c.</i></mat-checkbox>
+            </div>
+            <div class="form-group col-6">
               <input type="text" class="form-control" name="addressZip" [(ngModel)]="photo.location" placeholder="Location">
             </div>
           </div>

@@ -8,6 +8,7 @@ export interface RecurringEvent extends CalendarEvent {
   title: string;
   date: Date;
   type: string;
+  isLiving: boolean;
 }
 
 export const Months: string[] = [

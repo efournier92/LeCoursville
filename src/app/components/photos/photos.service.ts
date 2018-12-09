@@ -34,8 +34,9 @@ export class PhotosService {
   }
 
   getYears(): Array<Number> {
+    let thisYear: number = new Date().getFullYear()
     let years: Array<Number> = Array<Number>();
-    for (let i = 1880; i <= 2000; i++) {
+    for (let i = 1800; i <= thisYear; i++) {
       years.push(i);
     }
     return years;

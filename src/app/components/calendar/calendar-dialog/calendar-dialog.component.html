@@ -10,10 +10,11 @@
     </mat-select>
   </mat-form-field>
   <mat-form-field class="example-full-width">
-    <input matInput [matDatepicker]="picker" [(ngModel)]="data.date" placeholder="Choose a date">
+    <input matInput [matDatepicker]="picker" [(ngModel)]="data.date" placeholder="Date">
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
     <mat-datepicker touchUi #picker></mat-datepicker>
   </mat-form-field>
+  <mat-checkbox [(ngModel)]="data.isLiving">Living</mat-checkbox>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="deleteEvent(data)">Delete</button>
