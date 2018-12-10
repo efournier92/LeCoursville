@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { CalendarEvent } from 'angular-calendar';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
+import { Calendar } from './calendar';
+import { AngularFireStorageReference, AngularFireStorage, AngularFireUploadTask } from '@angular/fire/storage';
+import { finalize } from 'rxjs/operators';
 
 export interface RecurringEvent extends CalendarEvent {
   id: string;
@@ -24,6 +27,7 @@ export class CalendarService {
 
   constructor(
     private db: AngularFireDatabase,
+    private storage: AngularFireStorage,
   ) {
     this.getCalendarEvents().valueChanges().subscribe(
       (calendarEvents: RecurringEvent[]) => {
@@ -55,6 +59,26 @@ export class CalendarService {
     this.calendarEvents.update(event.id, event);
   }
 
+  addCalendar(file: any): void {
+    let calendar: Calendar = new Calendar();
+    calendar.id = this.db.createPushId();
+    calendar.path = `calendars/${calendar.id}.pdf`;
+
+    const fileRef: AngularFireStorageReference = this.storage.ref(calendar.path);
+    const task: AngularFireUploadTask = this.storage.upload(calendar.path, file);
+    task.snapshotChanges().pipe(
+      finalize(() => {
+        fileRef.getDownloadURL().subscribe(
+          url => {
+            const calendarDb: AngularFireList<{}> = this.db.list('calendars');
+            calendar.url = url;
+            calendarDb.set(calendar.id, calendar);
+          }
+        )
+      })
+    ).subscribe()
+  }
+
   updateCalendarEvent(event: RecurringEvent): void {
     this.calendarEvents.update(event.id, event);
   }
@@ -65,9 +89,9 @@ export class CalendarService {
 
   getViewYears(): number[] {
     const thisYear: number = new Date().getFullYear();
-    let year = thisYear - 1;
+    let year = thisYear - 3;
     let years: number[] = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 7; i++) {
       years.push(year);
       year += 1;
     }
