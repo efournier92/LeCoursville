@@ -11,17 +11,17 @@
   </div>
   <div class="col-8 d-flex justify-content-end" style="margin-top:-5px">
     <div class="d-flex flex-row justify-content-center">
-      <mat-select placeholder="Upload" [(ngModel)]="uploadYear" style="width: 76px;margin-top: 7px;">
+      <mat-select placeholder="Upload" [(ngModel)]="uploadedCalendarYear" style="width: 76px;margin-top: 7px;">
         <div *ngFor="let year of years">
           <mat-option value="{{ year }}">
             {{ year }}
           </mat-option>
         </div>
       </mat-select>
-      <button mat-button style="width: 82px;" [disabled]="!uploadYear">
+      <button mat-button style="width: 82px;" [disabled]="!uploadedCalendarYear">
         <label style="height: 19px;width: 100%;">
           <mat-icon>cloud_upload</mat-icon>
-          <input type="file" (change)="uploadCalendar($event)" [disabled]="!uploadYear" accept=".png,.jpg" />
+          <input type="file" (change)="uploadCalendar($event)" accept=".pdf" />
         </label>
       </button>
     </div>

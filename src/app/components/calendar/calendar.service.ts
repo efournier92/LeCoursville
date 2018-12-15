@@ -59,10 +59,10 @@ export class CalendarService {
     this.calendarEvents.update(event.id, event);
   }
 
-  addCalendar(file: any): void {
+  addCalendar(file: any, year: string): void {
     let calendar: Calendar = new Calendar();
     calendar.id = this.db.createPushId();
-    calendar.path = `calendars/${calendar.id}.pdf`;
+    calendar.path = `calendars/${year}.pdf`;
 
     const fileRef: AngularFireStorageReference = this.storage.ref(calendar.path);
     const task: AngularFireUploadTask = this.storage.upload(calendar.path, file);

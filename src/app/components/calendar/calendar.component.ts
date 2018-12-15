@@ -30,7 +30,7 @@ export class CalendarComponent {
   refresh: Subject<any> = new Subject();
   showBirthdays: boolean = true;
   showAnniversaries: boolean = true;
-  uploadYear: number;
+  uploadedCalendarYear: number;
 
   constructor(
     public dialog: MatDialog,
@@ -123,7 +123,7 @@ export class CalendarComponent {
 
   uploadCalendar($event) {
     console.log($event.currentTarget.file);
-    this.calendarService.addCalendar($event.currentTarget.file)
+    this.calendarService.addCalendar($event.currentTarget.files[0], this.uploadedCalendarYear)
   }
 
   newEvent(): void {
