@@ -7,7 +7,7 @@
       <button mat-button routerLink="/contacts">Contacts</button>
       <button mat-button routerLink="/calendar">Calendar</button>
       <button mat-button routerLink="/photos">Photos</button>
-      <button mat-button routerLink="/photos">Stories</button>
+      <!-- <button mat-button routerLink="/stories">Stories</button> -->
     </div>
     <div *ngIf="user.id">
       <button mat-icon-button [matMenuTriggerFor]="menu">
@@ -30,10 +30,10 @@
           <mat-icon>photo</mat-icon>
           <span>Photos</span>
         </button>
-        <button mat-menu-item routerLink="/stories">
+        <!-- <button mat-menu-item routerLink="/stories">
           <mat-icon>library_books</mat-icon>
           <span>Stories</span>
-        </button>
+        </button> -->
         <button mat-menu-item routerLink="/">
           <mat-icon>account_circle</mat-icon>
           <span>Account</span>
