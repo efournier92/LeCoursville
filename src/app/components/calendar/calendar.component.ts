@@ -8,6 +8,7 @@ import { CalendarService, Months } from './calendar.service'
 import { Subject } from 'rxjs';
 import { RecurringEvent } from './calendar.service';
 import { HttpClient } from '@angular/common/http';
+import { Calendar } from './calendar';
 
 @Component({
   selector: 'app-calendar',
@@ -29,7 +30,8 @@ export class CalendarComponent {
   refresh: Subject<any> = new Subject();
   showBirthdays: boolean = true;
   showAnniversaries: boolean = true;
-  uploadedCalendarYear: number;
+  uploadedCalendarYear: string;
+  allCalendars: Array<Calendar>;
 
   constructor(
     public dialog: MatDialog,
@@ -49,6 +51,11 @@ export class CalendarComponent {
       (events: RecurringEvent[]) => {
         this.allEvents = events;
         this.updateEvents(events, this.viewYear, this.showBirthdays, this.showAnniversaries);
+      }
+    )
+    this.calendarService.calendarsObservable.subscribe(
+      (calendars: Array<Calendar>) => {
+        this.allCalendars = calendars;
       }
     )
   }
@@ -123,7 +130,16 @@ export class CalendarComponent {
 
   uploadCalendar($event): void {
     console.log($event.currentTarget.file);
-    this.calendarService.addCalendar($event.currentTarget.files[0], this.uploadedCalendarYear)
+    const selectedYearCalendar: Calendar = this.allCalendars.find(
+      (calendar: Calendar) => {
+        return calendar.year === this.uploadedCalendarYear;
+      }
+    );
+    if (selectedYearCalendar) {
+      this.calendarService.updateCalendar($event.currentTarget.files[0], selectedYearCalendar);
+    } else {
+      this.calendarService.addCalendar($event.currentTarget.files[0], this.uploadedCalendarYear);
+    }
   }
 
   newEvent(): void {

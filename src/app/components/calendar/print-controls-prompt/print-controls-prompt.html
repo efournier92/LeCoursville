@@ -5,19 +5,21 @@
 </label>
 <div class="input-group mb-3">
   <mat-form-field class="year-select-container ml-2">
-    <mat-select placeholder="Year" [(value)]="viewYear">
-      <div *ngFor="let year of viewYears">
-        <mat-option value="{{ year }}">
-          {{ year }}
+    <mat-select placeholder="Year" [(value)]="selectedYear">
+      <div *ngFor="let calendar of allCalendars">
+        <mat-option value="{{ calendar.year }}">
+          {{ calendar.year }}
         </mat-option>
       </div>
     </mat-select>
   </mat-form-field>
 </div>
-<div class="input-group mb-3">
+<!-- <div class="input-group mb-3">
   <mat-checkbox class="example-margin" [(ngModel)]="birthdayChecked">Birthdays</mat-checkbox>
 </div>
 <div class="input-group mb-3">
   <mat-checkbox class="example-margin" [(ngModel)]="anniversaryChecked">Anniversaries</mat-checkbox>
+</div> -->
+<div class="d-flex justify-content-center">
+  <button mat-raised-button color="primary" (click)="printFromFile()">Print</button>
 </div>
-<button mat-raised-button (click)="printFromFile()">Submit</button>

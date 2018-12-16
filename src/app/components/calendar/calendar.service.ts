@@ -35,6 +35,11 @@ export class CalendarService {
         this.updateCalendarEventsEvent(calendarEvents);
       }
     );
+    this.getCalendars().valueChanges().subscribe(
+      (calendars: Calendar[]) => {
+        this.updateCalendarsEvent(calendars);
+      }
+    );
   }
 
   private calendarEventsSource = new BehaviorSubject([]);
@@ -68,9 +73,14 @@ export class CalendarService {
     this.calendarEvents.update(event.id, event);
   }
 
-  addCalendar(file: any, year: number): void {
+  updateCalendarsEvent(calendars: Calendar[]) {
+    this.calendarsSource.next(calendars);
+  }
+
+  addCalendar(file: any, year: string): void {
     let calendar: Calendar = new Calendar();
     calendar.id = this.db.createPushId();
+    calendar.year = year;
     calendar.path = `calendars/${year}.pdf`;
 
     const fileRef: AngularFireStorageReference = this.storage.ref(calendar.path);
@@ -82,6 +92,21 @@ export class CalendarService {
             const calendarDb: AngularFireList<{}> = this.db.list('calendars');
             calendar.url = url;
             calendarDb.set(calendar.id, calendar);
+          }
+        )
+      })
+    ).subscribe()
+  }
+
+  updateCalendar(file: any, calendar: Calendar): void {
+    const fileRef: AngularFireStorageReference = this.storage.ref(calendar.path);
+    const task: AngularFireUploadTask = this.storage.upload(calendar.path, file);
+    task.snapshotChanges().pipe(
+      finalize(() => {
+        fileRef.getDownloadURL().subscribe(
+          url => {
+            calendar.url = url;
+            this.calendars.update(calendar.id, calendar);
           }
         )
       })

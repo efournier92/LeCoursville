@@ -15,8 +15,8 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Add isSaved to message
 * [X] Edit contact Labels
 * [X] Contacts print should open in hidden iframe
-* [ ] Calendar should be uploadable
-* [ ] Multiple calendar years should be available[Print PDFs from FTM when home]
+* [X] Calendar should be uploadable
+* [~] Multiple calendar years should be available[Print PDFs from FTM when home]
 * [X] Only Email option (test across browsers & devices)
 * [X] Message sticky
 * [X] Label chat icons
