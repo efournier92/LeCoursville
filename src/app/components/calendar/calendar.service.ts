@@ -24,6 +24,7 @@ export const Months: string[] = [
 })
 export class CalendarService {
   calendarEvents: AngularFireList<RecurringEvent>;
+  calendars: AngularFireList<Calendar>;
 
   constructor(
     private db: AngularFireDatabase,
@@ -36,8 +37,8 @@ export class CalendarService {
     );
   }
 
-  private calendarsSource = new BehaviorSubject([]);
-  calendarsObservable = this.calendarsSource.asObservable();
+  private calendarEventsSource = new BehaviorSubject([]);
+  calendarEventsObservable = this.calendarEventsSource.asObservable();
 
   getYearsSince(eventYear: number) {
     let now: Date = new Date();
@@ -46,12 +47,20 @@ export class CalendarService {
   }
 
   updateCalendarEventsEvent(calendarEvents: RecurringEvent[]) {
-    this.calendarsSource.next(calendarEvents);
+    this.calendarEventsSource.next(calendarEvents);
   }
 
-  getCalendarEvents(): AngularFireList<{}> {
+  getCalendarEvents(): AngularFireList<Object> {
     this.calendarEvents = this.db.list('calendarEvents');
     return this.calendarEvents;
+  }
+
+  private calendarsSource = new BehaviorSubject([]);
+  calendarsObservable = this.calendarsSource.asObservable();
+
+  getCalendars(): AngularFireList<Object> {
+    this.calendars = this.db.list('calendars');
+    return this.calendars;
   }
 
   addCalendarEvent(event: RecurringEvent): void {

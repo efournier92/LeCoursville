@@ -2,9 +2,23 @@
   margin: 10px auto;
 }
 
+.photo-image {
+  margin-bottom: -12px;
+  padding: 15px;
+}
+
+.photos-add-button-label {
+  width: 100%;
+  height: 19px;
+}
+
 .mat-button-wrapper {
   height: 100%;
   padding: 0px;
+}
+
+.photo-info-input-container {
+  margin-left: 17px;
 }
 
 input[type="file"] {

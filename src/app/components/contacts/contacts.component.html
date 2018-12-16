@@ -2,7 +2,7 @@
   <mat-form-field class="search-field col-xs-4 mt-1 ml-3">
     <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
   </mat-form-field>
-  <button mat-button class="mt-3" [matMenuTriggerFor]="byFamilyMenu" style="height:40px">
+  <button mat-button class="filter-family-expand-button mt-3" [matMenuTriggerFor]="byFamilyMenu">
     By Family <mat-icon>keyboard_arrow_down</mat-icon>
   </button>
   <mat-menu #byFamilyMenu="matMenu">
@@ -19,7 +19,7 @@
     </button>
   </div>
 </div>
-<div style="text-align:center" *ngIf="user && user.roles && user.roles.admin">
+<div class="contact-add-button-container" *ngIf="user && user.roles && user.roles.admin">
   <button mat-button (click)="newContact()">
     <mat-icon>add</mat-icon>
   </button>

@@ -34,13 +34,13 @@
         {{ message.timestamp | date:'short' }}
       </mat-card-subtitle>
     </mat-card-title>
-    <div *ngIf="!message.isReply" style="line-height: 1;">
+    <div *ngIf="!message.isReply" class="story-title-form-container">
       <mat-form-field class="w-100">
         <input matInput placeholder="Title" [(ngModel)]="message.title">
       </mat-form-field>
     </div>
-    <mat-form-field class="w-100" style="">
-      <textarea matInput style="overflow:hidden; min-height: 20px" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
+    <mat-form-field class="w-100">
+      <textarea matInput class="story-body-input-area" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
         #input [(ngModel)]="message.body"></textarea>
     </mat-form-field>
   </mat-card-content>

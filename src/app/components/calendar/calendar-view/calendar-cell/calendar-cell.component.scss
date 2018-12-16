@@ -1,3 +1,7 @@
+.calendar-cell-container {
+  margin-top: -12px;
+}
+
 .calendar-icon {
   font-size: 1.2em;
 }
@@ -14,7 +18,11 @@
   margin-top: 0.55em;
 }
 
-#event-title-container {
+.years-since-span {
+  margin-top: -2px;
+}
+
+.event-title-container {
   line-height: 1em;
   margin-right: 0.2em;
 }

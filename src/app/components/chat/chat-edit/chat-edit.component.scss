@@ -1,1 +1,10 @@
 @import '../chat.component.scss';
+
+.title-input-container {
+  line-height: 1;
+}
+
+.message-input-area {
+  overflow:hidden;
+  min-height: 20px;
+}

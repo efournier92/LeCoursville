@@ -1,1 +1,10 @@
 @import '../stories.component.scss';
+
+.story-title-form-container {
+  line-height: 1;
+}
+
+.story-body-input-area {
+  min-height: 20px;
+  overflow: hidden;
+}

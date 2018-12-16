@@ -1,11 +1,11 @@
 <br />
-<div class="row mx-auto" style="margin-top: -12px;" [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
+<div class="calendar-cell-container row mx-auto" [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
   <div class="col-1 d-flex flex-column align-items-center mx-auto">
     <span class="fa fa-birthday-cake calendar-icon birthday-icon" *ngIf="event.type === 'birth'"></span>
     <span class="fa fa-heart calendar-icon anniversary-icon" *ngIf="event.type === 'anniversary'"></span>
-    <span style="margin-top: -2px;">{{ getYearsSince(event) }}</span>
+    <span class="years-since-span">{{ getYearsSince(event) }}</span>
   </div>
-  <div id="event-title-container" class="col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
+  <div class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
     {{ event.title }}
   </div>
 </div>

@@ -45,7 +45,7 @@ export class CalendarComponent {
     const monthIndex: number = now.getMonth();
     let monthName = this.months[monthIndex];
     this.viewMonth = monthName;
-    this.calendarService.calendarsObservable.subscribe(
+    this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
         this.updateEvents(events, this.viewYear, this.showBirthdays, this.showAnniversaries);

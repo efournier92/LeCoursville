@@ -1,3 +1,16 @@
+.calendar-container {
+  margin: auto;
+}
+
+.upload-calendar-button {
+  width: 82px;
+}
+
+.upload-calendar-button-label {
+  height: 19px;
+  width: 100%;
+}
+
 .mat-button {
   min-width: 55px;
 }
@@ -7,8 +20,12 @@
   padding: 0px;
 }
 
-.calendar-container {
-  margin: auto;
+.month-select-container {
+  width: 7em;
+}
+
+.year-select-container {
+  width: 4em;
 }
 
 input[type="file"] {
