@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CalendarDialogComponent } from './calendar-dialog.component';
 
 describe('CalendarDialogComponent', () => {
@@ -8,9 +7,9 @@ describe('CalendarDialogComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CalendarDialogComponent ]
+      declarations: [CalendarDialogComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

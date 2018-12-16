@@ -13,7 +13,7 @@ export class AuthGuardService implements CanActivate {
     public auth: AuthService, public router: Router
   ) {
     this.auth.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => this.user = user,
     )
   }
 

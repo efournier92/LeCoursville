@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CalendarPrinterComponent } from './calendar-printer.component';
 
 describe('CalendarPrinterComponent', () => {
@@ -8,9 +7,9 @@ describe('CalendarPrinterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CalendarPrinterComponent ]
+      declarations: [CalendarPrinterComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

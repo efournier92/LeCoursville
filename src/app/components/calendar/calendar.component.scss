@@ -1,20 +1,20 @@
 .mat-button {
-    min-width: 55px;
-}
-
-.calendar-container {
-    margin: auto;
-}
-
-input[type="file"] {
-    display: none;
-}
-
-a[type="download"] {
-    display: none;
+  min-width: 55px;
 }
 
 .mat-button-wrapper {
-    height: 100%;
-    padding: 0px;
+  height: 100%;
+  padding: 0px;
+}
+
+.calendar-container {
+  margin: auto;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+a[type="download"] {
+  display: none;
 }

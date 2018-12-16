@@ -1,34 +1,31 @@
 .chat-card-content-container {
-    min-height: 155px;
-}
-
-.chat-tools-container {
-    padding: 0;
-}
-
-.message-likes-container {
-    color: #CFD8DC;
-    size: 0.8em;
+  min-height: 155px;
 }
 
 .chat-message-title {
-    line-height: 1;
+  line-height: 1;
 }
 
 .chat-message-author-name {
-    margin-bottom: 0;
-    margin-top: 4px;
+  margin-bottom: 0;
+  margin-top: 4px;
 }
 
 .chat-message-timestamp {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .message-likes-container {
-    font-size: 0.78em;
+  color: #CFD8DC;
+  size: 0.8em;
+  font-size: 0.78em;
+}
+
+.chat-tools-container {
+  padding: 0;
 }
 
 .calendar-icon-label {
-    font-size: 0.8em;
-    margin-right: 0.3em;
+  font-size: 0.8em;
+  margin-right: 0.3em;
 }

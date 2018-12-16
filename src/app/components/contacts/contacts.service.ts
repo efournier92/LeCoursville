@@ -27,7 +27,8 @@ export class ContactsService {
             this.updateContactsEvent(contacts);
           }
         );
-      });
+      }
+    );
   }
 
   private contactsSource: BehaviorSubject<any[]> = new BehaviorSubject([]);

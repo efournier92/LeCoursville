@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CalendarViewComponent } from './calendar-view.component';
 
 describe('CalendarViewComponent', () => {
@@ -8,9 +7,9 @@ describe('CalendarViewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CalendarViewComponent ]
+      declarations: [CalendarViewComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

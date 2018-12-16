@@ -10,24 +10,24 @@ import { CalendarDialogComponent } from '../calendar-dialog/calendar-dialog.comp
   styleUrls: ['./calendar-view.component.scss']
 })
 export class CalendarViewComponent implements OnInit {
-  view = CalendarView.Month;
+  view: string = CalendarView.Month;
   @Input()
   viewDate: Date;
   @Input()
   events: RecurringEvent[];
   @Output()
-  refreshView = new EventEmitter();
-
-  refreshCalendar() {
-    this.refreshView.emit(event);
-  }
+  refreshView: EventEmitter<Event> = new EventEmitter();
 
   constructor(
     public dialog: MatDialog,
     private calendarService: CalendarService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit(): void { }
+
+  refreshCalendar(): void {
+    this.refreshView.emit(event);
+  }
 
   openDialog(event): void {
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
@@ -45,6 +45,7 @@ export class CalendarViewComponent implements OnInit {
           this.calendarService.addCalendarEvent(event);
         }
         this.refreshCalendar();
-      });
+      }
+    );
   }
 }

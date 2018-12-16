@@ -3,6 +3,17 @@
     Enter your name to chat
   </h5>
 </label>
+
+<mat-form-field class="ml-2" style="width: 4em;">
+  <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+    <div *ngFor="let year of viewYears">
+      <mat-option value="{{ year }}">
+        {{ year }}
+      </mat-option>
+    </div>
+  </mat-select>
+</mat-form-field>
+
 <div class="input-group mb-3">
   <input type="text" class="form-control" (keyup.enter)="saveUserName()" [(ngModel)]="userName">
 </div>

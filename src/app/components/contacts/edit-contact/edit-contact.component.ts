@@ -11,7 +11,8 @@ import { ContactsService } from '../contacts.service';
   styleUrls: ['./edit-contact.component.scss']
 })
 export class EditContactComponent implements OnInit {
-  @Input() public contact: Contact;
+  @Input()
+  public contact: Contact;
   user: User;
   families: string[] = families;
 

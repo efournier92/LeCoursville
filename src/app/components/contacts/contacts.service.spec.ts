@@ -1,5 +1,4 @@
 import { TestBed, inject } from '@angular/core/testing';
-
 import { ContactsService } from './contacts.service';
 
 describe('ContactsService', () => {

@@ -101,5 +101,4 @@ export class ChatEditComponent implements OnInit {
   highlightElement(element: string, value: boolean): void {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
-
 }

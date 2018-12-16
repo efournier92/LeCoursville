@@ -3,7 +3,6 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { User } from './user';
 import { AngularFireDatabase, AngularFireObject } from '@angular/fire/database';
 import { BehaviorSubject } from 'rxjs';
-import { Message } from 'src/app/components/chat/message';
 
 @Injectable({
   providedIn: 'root'
@@ -33,7 +32,7 @@ export class AuthService {
     )
   }
 
-  getUserNameById(userId: string): String {
+  getUserNameById(userId: string): string {
     let userObj = this.db.object(`users/${userId}`);
     let user;
     userObj.valueChanges().subscribe(
@@ -60,7 +59,7 @@ export class AuthService {
   }
 
   createUser(authData: any) {
-    let user = new User(authData);
+    let user: User = new User(authData);
     this.userObj.set(user);
     this.user = user;
   }

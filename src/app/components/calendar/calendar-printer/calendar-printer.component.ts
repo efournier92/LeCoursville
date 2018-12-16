@@ -14,7 +14,5 @@ export class CalendarPrinterComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-  }
-
+  ngOnInit() { }
 }

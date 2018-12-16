@@ -27,10 +27,10 @@ export class AuthComponent implements OnInit {
   }
 
   signInSuccess(): void {
-    this.router.navigate(['/chat'])
+    this.router.navigate(['/chat']);
   }
 
-  signOut() {
+  signOut(): void {
     this.fireAuth.auth.signOut();
     this.user = undefined;
   }

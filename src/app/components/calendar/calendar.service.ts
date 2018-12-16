@@ -59,7 +59,7 @@ export class CalendarService {
     this.calendarEvents.update(event.id, event);
   }
 
-  addCalendar(file: any, year: string): void {
+  addCalendar(file: any, year: number): void {
     let calendar: Calendar = new Calendar();
     calendar.id = this.db.createPushId();
     calendar.path = `calendars/${year}.pdf`;
@@ -87,12 +87,12 @@ export class CalendarService {
     this.calendarEvents.remove(event.id);
   }
 
-  getViewYears(): number[] {
+  getViewYears(): Array<string> {
     const thisYear: number = new Date().getFullYear();
     let year = thisYear - 3;
-    let years: number[] = [];
+    let years: string[] = [];
     for (let i = 0; i < 7; i++) {
-      years.push(year);
+      years.push(year.toString());
       year += 1;
     }
     return years;

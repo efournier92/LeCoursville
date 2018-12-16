@@ -1,5 +1,4 @@
 import { TestBed, inject } from '@angular/core/testing';
-
 import { CalendarPrinterService } from './calendar-printer.service';
 
 describe('CalendarPrinterService', () => {

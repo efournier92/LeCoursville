@@ -1,9 +1,13 @@
 .auth-image {
-    margin: auto;
-    padding-top: 50px; 
-    opacity: 0.25;
+  margin: auto;
+  padding-top: 50px; 
+  opacity: 0.25;
 }
 
 .auth-button {
-    margin: auto;    
+  margin: auto;    
+}
+
+#auth-component-container {
+  height: 100%;
 }

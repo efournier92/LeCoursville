@@ -2,13 +2,12 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CalendarView } from 'angular-calendar';
 import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from './calendar-dialog/calendar-dialog.component';
+import { PrintControlsPrompt } from './print-controls-prompt/print-controls-prompt';
 import { CalendarPrinterService } from './calendar-printer/calendar-printer.service';
 import { CalendarService, Months } from './calendar.service'
 import { Subject } from 'rxjs';
 import { RecurringEvent } from './calendar.service';
-
-// FIX
-// Bruce Emerson (Birthday)
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-calendar',
@@ -20,7 +19,7 @@ export class CalendarComponent {
   refreshView = new EventEmitter();
   view = CalendarView.Month;
   months: string[] = Months;
-  years: number[];
+  years: string[];
   viewDate: Date = new Date();
   viewMonth: string;
   viewYear: string;
@@ -34,8 +33,9 @@ export class CalendarComponent {
 
   constructor(
     public dialog: MatDialog,
+    public printControlsPrompt: MatDialog,
+    public http: HttpClient,
     private calendarService: CalendarService,
-    private calendarPrinterService: CalendarPrinterService,
   ) { }
 
   ngOnInit(): void {
@@ -74,7 +74,7 @@ export class CalendarComponent {
     this.updateEvents(this.events, year, this.showBirthdays, this.showAnniversaries);
   }
 
-  updateEvents(events: RecurringEvent[], year: string, birthdays: boolean, anniversaries: boolean) {
+  updateEvents(events: RecurringEvent[], year: string, birthdays: boolean, anniversaries: boolean): void {
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false)
@@ -89,7 +89,7 @@ export class CalendarComponent {
     }
   }
 
-  changeView(viewDate) {
+  changeView(viewDate): void {
     this.viewMonth = this.months[viewDate.getMonth()];
     let viewYear = viewDate.getFullYear().toString();
     if (viewYear !== this.viewYear) {
@@ -121,7 +121,7 @@ export class CalendarComponent {
       });
   }
 
-  uploadCalendar($event) {
+  uploadCalendar($event): void {
     console.log($event.currentTarget.file);
     this.calendarService.addCalendar($event.currentTarget.files[0], this.uploadedCalendarYear)
   }
@@ -137,8 +137,19 @@ export class CalendarComponent {
     }
   }
 
+  openPrintControlsPrompt(): void {
+    const namePromptRef = this.printControlsPrompt.open(PrintControlsPrompt, {
+      data: { name: 'this.name', animal: 'this.animal' }
+    });
+
+    namePromptRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed', result);
+    });
+  }
+
   printPdf(): void {
-    this.calendarPrinterService.printPdf();
+    this.openPrintControlsPrompt();
+    // this.calendarPrinterService.printPdf();
   }
 
   addCalendar(event: any): void {

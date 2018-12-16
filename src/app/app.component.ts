@@ -7,7 +7,6 @@ import { User } from './components/auth/user';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-
 export class AppComponent {
   user: User;
 

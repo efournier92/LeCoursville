@@ -67,7 +67,7 @@ export class StoriesViewComponent implements OnInit {
     this.likers = this.getLikers();
   }
 
-  getLikers(): string[] {
+  getLikers(): Array<string> {
     let likers: string[] = new Array<string>();
     if (!this.message.likes)
       return likers;
@@ -110,7 +110,7 @@ export class StoriesViewComponent implements OnInit {
     }
   }
 
-  highlightElement(element: string, value: boolean) {
+  highlightElement(element: string, value: boolean): void {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 

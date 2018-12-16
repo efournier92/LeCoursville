@@ -65,5 +65,4 @@ import {
     MatSelectModule,
   ],
 })
-
 export class MaterialModule { }

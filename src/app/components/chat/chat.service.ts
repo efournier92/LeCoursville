@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { AngularFireStorage } from '@angular/fire/storage';
 import { Message } from './message';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -15,7 +14,6 @@ export class ChatService {
   increment: number = 8;
 
   constructor(
-    private storage: AngularFireStorage,
     private db: AngularFireDatabase,
     private auth: AuthService,
   ) {
@@ -43,26 +41,25 @@ export class ChatService {
   private messagesSource: BehaviorSubject<Message[]> = new BehaviorSubject([]);
   chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
 
-  updateMessagesEvent(messages: Message[]) {
+  updateMessagesEvent(messages: Message[]): void {
     this.messagesSource.next(messages);
   }
 
-  getMessages() {
+  getMessages(): AngularFireList<Message> {
     this.messageCount = this.messageCount + this.increment;
     this.messages = this.db.list('messages', ref => ref.limitToFirst(this.messageCount));
     return this.messages;
   }
 
-  addMessage(message: Message) {
+  addMessage(message: Message): void {
     this.messages.update(message.id, message);
   }
 
-  updateMessage(message: Message) {
+  updateMessage(message: Message): void {
     this.messages.update(message.id, message);
   }
 
-  deleteMessage(message: Message) {
+  deleteMessage(message: Message): void {
     this.messages.remove(message.id);
   }
-
 }

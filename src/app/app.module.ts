@@ -36,6 +36,7 @@ import { CalendarDialogComponent } from './components/calendar/calendar-dialog/c
 import { CalendarPrinterComponent } from './components/calendar/calendar-printer/calendar-printer.component';
 import { CalendarViewComponent } from './components/calendar/calendar-view/calendar-view.component';
 import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
+import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
     CalendarPrinterComponent,
     CalendarViewComponent,
     CalendarCellComponent,
+    PrintControlsPrompt,
     StoriesComponent,
     StoriesViewComponent,
     StoriesEditComponent,
@@ -94,11 +96,11 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
   ],
   entryComponents: [
     NamePrompt,
+    PrintControlsPrompt,
     CalendarDialogComponent,
   ],
   exports: [
     EditContactComponent,
   ]
 })
-
 export class AppModule { }

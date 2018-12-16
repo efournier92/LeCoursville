@@ -2,15 +2,9 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CalendarService, RecurringEvent } from '../calendar.service';
 
-
 export interface DialogData {
   animal: string;
   name: string;
-}
-
-export interface Food {
-  value: string;
-  viewValue: string;
 }
 
 @Component({
@@ -27,7 +21,10 @@ export class CalendarDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<CalendarDialogComponent>,
     private calendarService: CalendarService,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) { }
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+  ) { }
+
+  ngOnInit(): void { }
 
   deleteEvent(event: RecurringEvent): void {
     this.calendarService.deleteCalendarEvent(event);
@@ -37,8 +34,4 @@ export class CalendarDialogComponent implements OnInit {
   onCancel(): void {
     this.dialogRef.close();
   }
-
-  ngOnInit() {
-  }
-
 }

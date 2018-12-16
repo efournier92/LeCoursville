@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CalendarService, RecurringEvent } from '../../calendar.service';
-import { MatMenu } from '@angular/material';
 
 @Component({
   selector: 'app-calendar-cell',
@@ -15,12 +14,10 @@ export class CalendarCellComponent implements OnInit {
     private calendarService: CalendarService,
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   getYearsSince(event) {
     let eventYear: number = event.date.getUTCFullYear();
     return this.calendarService.getYearsSince(eventYear);
   }
-
 }

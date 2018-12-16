@@ -6,7 +6,6 @@
     </label>
   </button>
 </div>
-
 <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of photos">
   <img mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}" style="margin-bottom: -12px;padding:15px">
   <mat-card-content>
@@ -55,5 +54,4 @@
     </div>
   </mat-card-footer>
 </mat-card>
-
 <div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="1000" (scrolled)="loadMore()"></div>

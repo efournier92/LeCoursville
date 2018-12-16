@@ -1,0 +1,23 @@
+<label for="basic-url">
+  <h3>
+    Print Calendar
+  </h3>
+</label>
+<div class="input-group mb-3">
+  <mat-form-field class="ml-2" style="width: 100%;">
+    <mat-select placeholder="Year" [(value)]="viewYear">
+      <div *ngFor="let year of viewYears">
+        <mat-option value="{{ year }}">
+          {{ year }}
+        </mat-option>
+      </div>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div class="input-group mb-3">
+  <mat-checkbox class="example-margin" [(ngModel)]="birthdayChecked">Birthdays</mat-checkbox>
+</div>
+<div class="input-group mb-3">
+  <mat-checkbox class="example-margin" [(ngModel)]="anniversaryChecked">Anniversaries</mat-checkbox>
+</div>
+<button mat-raised-button (click)="printFromFile()">Submit</button>

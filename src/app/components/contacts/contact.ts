@@ -24,6 +24,4 @@ export class Contact {
   emails: Email[] = [];
   phones: Phone[] = [];
   isEditable: boolean = false;
-
-  constructor() { }
 }

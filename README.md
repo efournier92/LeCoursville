@@ -36,3 +36,4 @@ March 21 - Miculcy
 July 15 - Conor Miculcy
 
 Aug 21 - Bruce Grandchamp age
+Bruce Emerson (Birthday)
