@@ -17,7 +17,8 @@ export class PhotosComponent implements OnInit {
   task: AngularFireUploadTask;
   uploads: any[];
   allPercentage: Observable<any>;
-  photos: Photo[];
+  photos: Photo[] = new Array<Photo>();
+  allPhotos: Photo[];
   url: string;
   loading: boolean = true;
   years: Number[];
@@ -31,13 +32,16 @@ export class PhotosComponent implements OnInit {
         this.user = user;
       }
     )
+    this.loadAllPhotos();
   }
 
   ngOnInit(): void {
     this.years = this.photosService.getYears();
-    this.photosService.photosObservable.subscribe(photos => {
-      this.photos = photos;
-    })
+    this.loadMore();
+
+    // this.photosService.allPhotosObservable.subscribe(photos => {
+    //   this.photos = photos;
+    // })
   }
 
   addPhotos(event: any): void {
@@ -47,9 +51,35 @@ export class PhotosComponent implements OnInit {
   }
 
   loadMore(): void {
-    this.photosService.getPhotos().valueChanges().subscribe(
-      (photos: Photo[]) => {
-        this.photos = photos;
+    if (this.allPhotos && this.allPhotos.length) {
+      this.photos.push(this.allPhotos[this.photos.length]);
+    }
+
+
+    // this.photosService.getPhotos().valueChanges().subscribe(
+    //   (photos: Array<Photo>) => {
+    //     this.photos = photos;
+    //   }
+    // );
+  }
+
+  shufflePhotos(photos: Array<Photo>) {
+    for (let i = photos.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = photos[i];
+      photos[i] = photos[j];
+      photos[j] = temp;
+    }
+    return photos;
+  }
+
+  loadAllPhotos(): void {
+    this.photosService.getAllPhotos().valueChanges().subscribe(
+      (photos: Array<Photo>) => {
+        this.allPhotos = this.shufflePhotos(photos);
+        this.loadMore();
+        this.loadMore();
+        this.loadMore();
       }
     );
   }

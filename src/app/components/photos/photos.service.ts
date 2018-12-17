@@ -12,6 +12,7 @@ import { User } from '../auth/user';
 })
 export class PhotosService {
   photos: AngularFireList<Photo>;
+  allPhotos: AngularFireList<Photo>;
   photoCount: number = 0;
   increment: number = 2;
 
@@ -23,9 +24,9 @@ export class PhotosService {
     this.auth.userObservable.subscribe(
       (user: User) => {
         if (user) {
-          this.getPhotos().valueChanges().subscribe(
+          this.getAllPhotos().valueChanges().subscribe(
             (photos: Photo[]) => {
-              this.updatePhotosEvent(photos);
+              this.updateAllPhotosEvent(photos);
             }
           );
         }
@@ -42,17 +43,16 @@ export class PhotosService {
     return years;
   }
 
-  private photosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
-  photosObservable: Observable<Photo[]> = this.photosSource.asObservable();
+  private allPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
+  allPhotosObservable: Observable<Photo[]> = this.allPhotosSource.asObservable();
 
-  updatePhotosEvent(photos: Photo[]): void {
-    this.photosSource.next(photos);
+  updateAllPhotosEvent(photos: Photo[]): void {
+    this.allPhotosSource.next(photos);
   }
 
-  getPhotos(): AngularFireList<Photo> {
-    this.photoCount = this.photoCount + this.increment;
-    this.photos = this.db.list('photos', ref => ref.limitToFirst(this.photoCount));
-    return this.photos;
+  getAllPhotos(): AngularFireList<Photo> {
+    this.allPhotos = this.db.list('photos');
+    return this.allPhotos;
   }
 
   addPhotos(file: any): void {
@@ -82,5 +82,23 @@ export class PhotosService {
 
   deletePhoto(photo: Photo): void {
     this.photos.remove(photo.id);
+  }
+
+  shufflePhotos<Photo>(photos: Array<Photo>): Array<Photo> {
+    if (photos.length <= 1) return photos;
+
+    // For each index in array
+    for (let i = 0; i < photos.length; i++) {
+
+      // choose a random not-yet-placed item to place there
+      // must be an item AFTER the current item, because the stuff
+      // before has all already been placed
+      const randomChoiceIndex = getRandom(i, photos.length - 1);
+
+      // place our random choice in the spot by swapping
+      [photos[i], photos[randomChoiceIndex]] = [photos[randomChoiceIndex], photos[i]];
+    }
+
+    return photos;
   }
 }

@@ -16,7 +16,7 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Edit contact Labels
 * [X] Contacts print should open in hidden iframe
 * [X] Calendar should be uploadable
-* [~] Multiple calendar years should be available[Print PDFs from FTM when home]
+* [X] Multiple calendar years should be available[Print PDFs from FTM when home]
 * [X] Only Email option (test across browsers & devices)
 * [X] Message sticky
 * [X] Label chat icons
@@ -26,14 +26,13 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Calendar event editability (Admin)
 * [X] Diseased styling
 * [X] Restore deleted message
-* [~] Opt-in flow, email only
-  - [~] Collect name at time of opt-in
+* [X] Opt-in flow, email only
+  - [X] Collect name at time of opt-in
 * [X] Add `circa` feature to photos-edit component
 * [X] Extend years in photos-edit component
 * [~] Add stories component
+
 March 21 - Miculcy
-
 July 15 - Conor Miculcy
-
 Aug 21 - Bruce Grandchamp age
 Bruce Emerson (Birthday)

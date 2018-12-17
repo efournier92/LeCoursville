@@ -9,6 +9,8 @@ import { Subject } from 'rxjs';
 import { RecurringEvent } from './calendar.service';
 import { HttpClient } from '@angular/common/http';
 import { Calendar } from './calendar';
+import { AuthService } from '../auth/auth.service';
+import { User } from '../auth/user';
 
 @Component({
   selector: 'app-calendar',
@@ -18,6 +20,7 @@ import { Calendar } from './calendar';
 export class CalendarComponent {
   @Output()
   refreshView = new EventEmitter();
+  user: User;
   view = CalendarView.Month;
   months: string[] = Months;
   years: string[];
@@ -34,6 +37,7 @@ export class CalendarComponent {
   allCalendars: Array<Calendar>;
 
   constructor(
+    public auth: AuthService,
     public dialog: MatDialog,
     public printControlsPrompt: MatDialog,
     public http: HttpClient,
@@ -47,6 +51,11 @@ export class CalendarComponent {
     const monthIndex: number = now.getMonth();
     let monthName = this.months[monthIndex];
     this.viewMonth = monthName;
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+      }
+    )
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;

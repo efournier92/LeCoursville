@@ -9,7 +9,7 @@
       Anniversaries
     </mat-checkbox>
   </div>
-  <div class="upload-calendar-container col-8 d-flex justify-content-end">
+  <div class="upload-calendar-container col-8 d-flex justify-content-end" *ngIf="user && user.roles && user.roles.super">
     <div class="d-flex flex-row justify-content-center">
       <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">
         <div *ngFor="let year of years">
