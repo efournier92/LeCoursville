@@ -19,6 +19,7 @@ export class PhotosComponent implements OnInit {
   allPercentage: Observable<any>;
   photos: Photo[] = new Array<Photo>();
   allPhotos: Photo[];
+  newPhoto: Photo;
   url: string;
   loading: boolean = true;
   years: Number[];
@@ -37,9 +38,6 @@ export class PhotosComponent implements OnInit {
 
   ngOnInit(): void {
     this.years = this.photosService.getYears();
-    this.loadMore();
-
-
     // this.photosService.allPhotosObservable.subscribe(photos => {
     //   this.photos = photos;
     // })
@@ -52,11 +50,15 @@ export class PhotosComponent implements OnInit {
   }
 
   loadMore(): void {
-    if (this.allPhotos && this.allPhotos.length && this.photos.length < this.allPhotos.length) {
-      this.photos.push(this.allPhotos[this.photos.length]);
+
+
+
+    // expected output: true
+    let newPhoto = this.allPhotos[this.photos.length]
+    if (this.allPhotos && this.allPhotos.length && this.photos.length < this.allPhotos.length && !this.photos.some(photo => photo.id === newPhoto.id)) {
+      this.photos.push(newPhoto);
     }
-
-
+    console.log(this.photos);
     // this.photosService.getPhotos().valueChanges().subscribe(
     //   (photos: Array<Photo>) => {
     //     this.photos = photos;
@@ -100,7 +102,11 @@ export class PhotosComponent implements OnInit {
     this.photosService.updatePhoto(photo);
   }
 
-  deletePhoto(photo): void {
-    this.photosService.deletePhoto(photo);
+  deletePhoto(inputPhoto): void {
+    for (let i = 0; i < this.allPhotos.length; i++) {
+      if (this.photos && this.photos[i] && this.photos[i].id && this.photos[i].id === inputPhoto.id)
+        this.photos.splice(i, 1);
+    }
+    this.photosService.deletePhoto(inputPhoto);
   }
 }
