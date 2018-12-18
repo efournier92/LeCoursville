@@ -1,5 +1,6 @@
 export class Photo {
   id: string = '';
+  dateAdded: Date = new Date();
   path: string = '';
   extension: string = '';
   url: string = '';

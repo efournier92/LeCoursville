@@ -39,19 +39,20 @@ export class PhotosComponent implements OnInit {
     this.years = this.photosService.getYears();
     this.loadMore();
 
+
     // this.photosService.allPhotosObservable.subscribe(photos => {
     //   this.photos = photos;
     // })
   }
 
-  addPhotos(event: any): void {
+  addPhoto(event: any): void {
     for (let file of event.currentTarget.files) {
-      this.photosService.addPhotos(file)
+      this.photosService.addPhoto(file)
     }
   }
 
   loadMore(): void {
-    if (this.allPhotos && this.allPhotos.length) {
+    if (this.allPhotos && this.allPhotos.length && this.photos.length < this.allPhotos.length) {
       this.photos.push(this.allPhotos[this.photos.length]);
     }
 
@@ -80,8 +81,18 @@ export class PhotosComponent implements OnInit {
         this.loadMore();
         this.loadMore();
         this.loadMore();
+        // this.cleanPhotos();
+
+        console.log(this.allPhotos);
       }
     );
+  }
+
+  cleanPhotos() {
+    for (const photo of this.allPhotos) {
+      photo.dateAdded = new Date();
+      this.photosService.updatePhoto(photo);
+    }
   }
 
   updatePhoto(photo: Photo): void {

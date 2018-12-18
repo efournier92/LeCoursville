@@ -55,7 +55,7 @@ export class PhotosService {
     return this.allPhotos;
   }
 
-  addPhotos(file: any): void {
+  addPhoto(file: any): void {
     let photo: Photo = new Photo();
     photo.id = this.db.createPushId();
     photo.extension = file.name.split('.').pop();
@@ -67,7 +67,7 @@ export class PhotosService {
       finalize(() => {
         fileRef.getDownloadURL().subscribe(
           url => {
-            const photosDb: AngularFireList<{}> = this.db.list('photos');
+            const photosDb: AngularFireList<Object> = this.db.list('photos');
             photo.url = url;
             photosDb.set(photo.id, photo);
           }
@@ -77,28 +77,12 @@ export class PhotosService {
   }
 
   updatePhoto(photo: Photo): void {
-    this.photos.update(photo.id, photo);
+    this.allPhotos.update(photo.id, photo);
   }
+
 
   deletePhoto(photo: Photo): void {
-    this.photos.remove(photo.id);
-  }
-
-  shufflePhotos<Photo>(photos: Array<Photo>): Array<Photo> {
-    if (photos.length <= 1) return photos;
-
-    // For each index in array
-    for (let i = 0; i < photos.length; i++) {
-
-      // choose a random not-yet-placed item to place there
-      // must be an item AFTER the current item, because the stuff
-      // before has all already been placed
-      const randomChoiceIndex = getRandom(i, photos.length - 1);
-
-      // place our random choice in the spot by swapping
-      [photos[i], photos[randomChoiceIndex]] = [photos[randomChoiceIndex], photos[i]];
-    }
-
-    return photos;
+    this.allPhotos.remove(photo.id);
+    this.storage.storage.refFromURL(photo.url).delete();
   }
 }

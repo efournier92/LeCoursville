@@ -1,8 +1,8 @@
-<div class="d-flex flex-row justify-content-center mt-3" *ngIf="user && user.roles && user.roles.admin">
-  <button mat-button>
-    <label class="photos-add-button-label">
-      <mat-icon>cloud_upload</mat-icon>
-      <input type="file" (change)="addPhotos($event)" accept=".png,.jpg" multiple />
+<div class="d-flex flex-row justify-content-end mt-3" *ngIf="user && user.roles && user.roles.admin">
+  <button mat-button class="photos-add-button">
+    <label class="photos-add-button-label d-flex">
+      <mat-icon>add</mat-icon><span class="photos-add-icon-label">Add Photos</span>
+      <input type="file" (change)="addPhoto($event)" accept=".png,.jpg" multiple />
     </label>
   </button>
 </div>
