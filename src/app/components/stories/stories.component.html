@@ -1,5 +1,5 @@
 <div class="mt-3 ml-3">
-  <button mat-button (click)="addMessage()">
+  <button mat-button (click)="createMessage()">
     <mat-icon>add</mat-icon>
     <span class="ml-2">New Message</span>
   </button>
@@ -14,4 +14,4 @@
     </app-chat-edit>
   </mat-card>
 </div>
-<div *ngIf="isEditing" infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="1000" (scrolled)="loadMore()"></div>
+<div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="1000" (scrolled)="loadMore()"></div>

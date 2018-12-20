@@ -50,20 +50,10 @@ export class PhotosComponent implements OnInit {
   }
 
   loadMore(): void {
-
-
-
-    // expected output: true
     let newPhoto = this.allPhotos[this.photos.length]
     if (this.allPhotos && this.allPhotos.length && this.photos.length < this.allPhotos.length && !this.photos.some(photo => photo.id === newPhoto.id)) {
       this.photos.push(newPhoto);
     }
-    console.log(this.photos);
-    // this.photosService.getPhotos().valueChanges().subscribe(
-    //   (photos: Array<Photo>) => {
-    //     this.photos = photos;
-    //   }
-    // );
   }
 
   shufflePhotos(photos: Array<Photo>) {

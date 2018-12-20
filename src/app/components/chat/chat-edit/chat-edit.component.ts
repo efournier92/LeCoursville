@@ -42,7 +42,7 @@ export class ChatEditComponent implements OnInit {
       if (this.parent)
         this.updateParent();
     } else if (!message.id) {
-      this.chatService.addMessage(message);
+      this.chatService.createMessage(message);
     } else {
       this.chatService.updateMessage(message);
     }

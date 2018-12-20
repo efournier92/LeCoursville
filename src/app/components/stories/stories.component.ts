@@ -56,7 +56,7 @@ export class StoriesComponent implements OnInit {
     this.auth.getUserNameById(userId);
   }
 
-  addMessage(): void {
+  createMessage(): void {
     for (let message of this.messages) {
       if (message.isEditable === true)
         return;

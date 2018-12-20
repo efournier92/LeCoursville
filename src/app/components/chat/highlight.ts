@@ -4,4 +4,5 @@ export class Highlight {
   edit: boolean = false;
   cancel: boolean = false;
   send: boolean = false;
+  sticky: boolean = false;
 }

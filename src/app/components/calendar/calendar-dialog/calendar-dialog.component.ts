@@ -21,7 +21,7 @@ export class CalendarDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<CalendarDialogComponent>,
     private calendarService: CalendarService,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    @Inject(MAT_DIALOG_DATA) public data: RecurringEvent,
   ) { }
 
   ngOnInit(): void { }

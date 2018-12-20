@@ -33,8 +33,11 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [~] Add stories component
 * [ ] Caching
 * [ ] DB Rules
-
-March 21 - Miculcy
-July 15 - Conor Miculcy
-Aug 21 - Bruce Grandchamp age
-Bruce Emerson (Birthday)
+* [ ] Photos click lightbox with zoom
+* [ ] Phtos upload progress bar
+* [ ] Calendar Cell
+* [ ] Fix Birthdays
+  - March 21 - Miculcy
+  - July 15 - Conor Miculcy
+  - Aug 21 - Bruce Grandchamp age
+  - Bruce Emerson (Birthday)
