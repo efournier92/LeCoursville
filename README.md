@@ -41,3 +41,4 @@ In an effort to keep our calendar and directory content current, we're hosting t
   - July 15 - Conor Miculcy
   - Aug 21 - Bruce Grandchamp age
   - Bruce Emerson (Birthday)
+
