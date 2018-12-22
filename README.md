@@ -31,7 +31,7 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Add `circa` feature to photos-edit component
 * [X] Extend years in photos-edit component
 * [~] Add stories component
-* [ ] Caching
+* [X] Caching
 * [ ] DB Rules
 * [ ] Photos click lightbox with zoom
 * [ ] Phtos upload progress bar
@@ -39,6 +39,4 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [ ] Fix Birthdays
   - March 21 - Miculcy
   - July 15 - Conor Miculcy
-  - Aug 21 - Bruce Grandchamp age
-  - Bruce Emerson (Birthday)
 
