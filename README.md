@@ -32,11 +32,11 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Extend years in photos-edit component
 * [~] Add stories component
 * [X] Caching
+* [X] Fix Birthdays
+* [X] Calendar Cell Dialog always show title
+* [X] IE Compatibility
 * [ ] DB Rules
+* [ ] Photos Loading spinner
 * [ ] Photos click lightbox with zoom
-* [ ] Phtos upload progress bar
-* [ ] Calendar Cell
-* [ ] Fix Birthdays
-  - March 21 - Miculcy
-  - July 15 - Conor Miculcy
-
+* [ ] Photos upload progress bar
+* [ ] Admin tools (super user)

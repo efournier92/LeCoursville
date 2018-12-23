@@ -80,13 +80,13 @@ export class CalendarComponent {
   }
 
   changeViewMonth($event): void {
-    let monthNumber = this.months.indexOf($event.value) + 1;
-    this.viewDate = new Date(`${monthNumber}-01-${this.viewYear}`);
+    let monthName = $event.value;
+    this.viewDate = new Date(monthName + '1,' + this.viewYear);
   }
 
   changeViewYear($event): void {
     let year = $event.value;
-    this.viewDate = new Date(`${this.viewMonth}-01-${year}`);
+    this.viewDate = new Date(this.viewMonth + '1,' + year);
     this.updateEvents(this.events, year, this.showBirthdays, this.showAnniversaries);
   }
 
@@ -138,7 +138,6 @@ export class CalendarComponent {
   }
 
   uploadCalendar($event): void {
-    console.log($event.currentTarget.file);
     const selectedYearCalendar: Calendar = this.allCalendars.find(
       (calendar: Calendar) => {
         return calendar.year === this.uploadedCalendarYear;
@@ -153,6 +152,7 @@ export class CalendarComponent {
 
   newEvent(): void {
     let event = new Object as RecurringEvent;
+    event.isLiving = true;
     this.openDialog(event);
   }
 
@@ -168,7 +168,7 @@ export class CalendarComponent {
     });
 
     namePromptRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', result);
+      // console.log('The dialog was closed', result);
     });
   }
 

@@ -5,7 +5,10 @@
     <span class="fa fa-heart calendar-icon anniversary-icon" *ngIf="event.type === 'anniversary'"></span>
     <span class="years-since-span">{{ getYearsSince(event) }}</span>
   </div>
-  <div class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
+  <div *ngIf="!isDialog" class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
+    {{ event.title }}
+  </div>
+  <div *ngIf="isDialog" class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center">
     {{ event.title }}
   </div>
 </div>

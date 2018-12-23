@@ -9,6 +9,8 @@ import { CalendarService, RecurringEvent } from '../../calendar.service';
 export class CalendarCellComponent implements OnInit {
   @Input()
   event: RecurringEvent;
+  @Input()
+  isDialog: boolean;
 
   constructor(
     private calendarService: CalendarService,

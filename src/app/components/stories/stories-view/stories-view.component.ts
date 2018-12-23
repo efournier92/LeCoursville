@@ -94,7 +94,7 @@ export class StoriesViewComponent implements OnInit {
     });
 
     namePromptRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed', result);
+      // console.log('The dialog was closed', result);
     });
   }
 

@@ -3,6 +3,8 @@ import { RecurringEvent, CalendarService } from '../calendar.service';
 import { CalendarView } from 'angular-calendar';
 import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from '../calendar-dialog/calendar-dialog.component';
+import { AuthService } from '../../auth/auth.service';
+import { User } from '../../auth/user';
 
 @Component({
   selector: 'app-calendar-view',
@@ -10,6 +12,7 @@ import { CalendarDialogComponent } from '../calendar-dialog/calendar-dialog.comp
   styleUrls: ['./calendar-view.component.scss']
 })
 export class CalendarViewComponent implements OnInit {
+  user: User;
   view: string = CalendarView.Month;
   @Input()
   viewDate: Date;
@@ -20,16 +23,26 @@ export class CalendarViewComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
+    private auth: AuthService,
     private calendarService: CalendarService,
   ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+      }
+    )
+  }
 
   refreshCalendar(): void {
     this.refreshView.emit(event);
   }
 
   openDialog(event): void {
+    if (!this.user || !this.user.roles || this.user.roles.admin !== true)
+      return;
+
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
       width: '30%',
       data: event,

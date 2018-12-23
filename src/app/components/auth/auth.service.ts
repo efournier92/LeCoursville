@@ -55,7 +55,6 @@ export class AuthService {
       this.user = user;
     }
     this.updateUser(this.user);
-    this.updateUser(this.user);
   }
 
   createUser(authData: any) {
