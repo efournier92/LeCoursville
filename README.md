@@ -37,6 +37,7 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] IE Compatibility
 * [ ] DB Rules
 * [ ] Photos Loading spinner
+* [ ] Photos Sortability
 * [ ] Photos click lightbox with zoom
 * [ ] Photos upload progress bar
 * [ ] Admin tools (super user)
