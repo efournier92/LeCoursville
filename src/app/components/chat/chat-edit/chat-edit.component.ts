@@ -16,11 +16,16 @@ import { Highlight } from '../highlight';
 export class ChatEditComponent implements OnInit {
   user: User;
   highlights: Highlight = new Highlight();
-  @Input() message: Message;
-  @Input() parent: Message;
-  @Output() updateParentEvent: EventEmitter<Object> = new EventEmitter();
-  @Output() cancelEditEvent: EventEmitter<Object> = new EventEmitter();
-  @ViewChild('autosize') autosize: CdkTextareaAutosize;
+  @Input()
+  message: Message;
+  @Input()
+  parent: Message;
+  @Output()
+  updateParentEvent: EventEmitter<Object> = new EventEmitter();
+  @Output()
+  cancelEditEvent: EventEmitter<Object> = new EventEmitter();
+  @ViewChild('autosize')
+  autosize: CdkTextareaAutosize;
 
   constructor(
     private chatService: ChatService,
@@ -76,6 +81,7 @@ export class ChatEditComponent implements OnInit {
       for (const reply of this.parent.replies) {
         if (reply.id === this.message.id) {
           this.parent.replies.splice(i, 1);
+          this.updateParent();
         }
         i += 1;
       }
