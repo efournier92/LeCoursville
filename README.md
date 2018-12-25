@@ -3,7 +3,9 @@
 ## Welcome Message
 __Welcome to LeCoursville__
 
-In an effort to keep our calendar and directory content current, we're hosting this site for everyone to access the data on demand. You can view the info online, and download or print it using the corresponding buttons in the top right. If you have content or feature suggestions, please feel free to email me at efournier92@gmail.com. I'll continue to add new features and content, so check back again soon!
+Merry Christmas LeCoursville! In an effort to keep our calendar and directory content current, we're hosting this website for everyone to access the data on-demand. You can view the info online, then download or print it using the corresponding buttons in the top right. Please excuse the bugs: this app is still rough around the edges.
+
+If you have content or feature suggestions, please email me at efournier92@gmail.com. we'll continue to add new features regularly, so check back again soon!
 
 ## TODO
 * [X] All typescript declarations
@@ -35,7 +37,7 @@ In an effort to keep our calendar and directory content current, we're hosting t
 * [X] Fix Birthdays
 * [X] Calendar Cell Dialog always show title
 * [X] IE Compatibility
-* [ ] DB Rules
+* [X] DB Rules
 * [ ] Photos Loading spinner
 * [ ] Photos Sortability
 * [ ] Photos click lightbox with zoom
