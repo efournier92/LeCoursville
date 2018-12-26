@@ -32,7 +32,6 @@ If you have content or feature suggestions, please email me at efournier92@gmail
   - [X] Collect name at time of opt-in
 * [X] Add `circa` feature to photos-edit component
 * [X] Extend years in photos-edit component
-* [~] Add stories component
 * [X] Caching
 * [X] Fix Birthdays
 * [X] Calendar Cell Dialog always show title
@@ -43,3 +42,5 @@ If you have content or feature suggestions, please email me at efournier92@gmail
 * [ ] Photos click lightbox with zoom
 * [ ] Photos upload progress bar
 * [ ] Admin tools (super user)
+* [~] Add stories component
+
