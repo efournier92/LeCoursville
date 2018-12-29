@@ -37,10 +37,9 @@ If you have content or feature suggestions, please email me at efournier92@gmail
 * [X] Calendar Cell Dialog always show title
 * [X] IE Compatibility
 * [X] DB Rules
+* [~] Add stories component
 * [ ] Photos Loading spinner
 * [ ] Photos Sortability
 * [ ] Photos click lightbox with zoom
 * [ ] Photos upload progress bar
 * [ ] Admin tools (super user)
-* [~] Add stories component
-
