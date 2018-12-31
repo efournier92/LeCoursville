@@ -1,57 +1,60 @@
-<div class="d-flex mt-3">
-  <div class="col-2">
-    <mat-checkbox [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
+<div class="upload-calendar-container d-flex justify-content-around" *ngIf="user && user.roles && user.roles.super">
+  <div class="d-flex flex-row justify-content-center" style="margin-top:6px;">
+    <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">
+      <div *ngFor="let year of years">
+        <mat-option value="{{ year }}">
+          {{ year }}
+        </mat-option>
+      </div>
+    </mat-select>
+    <button mat-button [disabled]="!uploadedCalendarYear">
+      <label class="upload-calendar-button-label">
+        <mat-icon>cloud_upload</mat-icon>
+        <input type="file" (change)="uploadCalendar($event)" accept=".pdf" />
+      </label>
+    </button>
+  </div>
+</div>
+<div class="d-flex mt-2" style="margin-left: 6px">
+  <div class="col-xs-8" style="padding-top: 4px;">
+    <mat-checkbox class="calendar-checkbox" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
       Birthdays
     </mat-checkbox>
-  </div>
-  <div class="col-2">
-    <mat-checkbox [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
+    <mat-checkbox class="calendar-checkbox" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)"
+      style="margin-left: 12px">
       Anniversaries
     </mat-checkbox>
   </div>
-  <div class="upload-calendar-container col-8 d-flex justify-content-end" *ngIf="user && user.roles && user.roles.super">
-    <div class="d-flex flex-row justify-content-center">
-      <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">
-        <div *ngFor="let year of years">
-          <mat-option value="{{ year }}">
-            {{ year }}
-          </mat-option>
-        </div>
-      </mat-select>
-      <button mat-button class="upload-calendar-button" [disabled]="!uploadedCalendarYear">
-        <label class="upload-calendar-button-label">
-          <mat-icon>cloud_upload</mat-icon>
-          <input type="file" (change)="uploadCalendar($event)" accept=".pdf" />
-        </label>
-      </button>
-    </div>
+
+  <span class="spacer"></span>
+
+  <div class="col-xs-2">
     <button mat-button (click)="newEvent()">
       <mat-icon>add</mat-icon> New Event
     </button>
   </div>
 </div>
-<div class="d-flex mt-3">
-  <div class="d-flex col-4 justify-content-center">
-    <mat-form-field class="month-select-container">
-      <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
-        <div *ngFor="let month of months">
-          <mat-option value="{{ month }}">
-            {{ month }}
-          </mat-option>
-        </div>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field class="year-select-container ml-2">
-      <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
-        <div *ngFor="let year of years">
-          <mat-option value="{{ year }}">
-            {{ year }}
-          </mat-option>
-        </div>
-      </mat-select>
-    </mat-form-field>
-  </div>
-  <div class="d-flex justify-content-center col-4">
+<div class="d-flex mt-1" style="margin-left: 6px">
+  <mat-form-field class="month-select-container">
+    <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
+      <div *ngFor="let month of months">
+        <mat-option value="{{ month }}">
+          {{ month }}
+        </mat-option>
+      </div>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field class="year-select-container ml-2">
+    <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+      <div *ngFor="let year of years">
+        <mat-option value="{{ year }}">
+          {{ year }}
+        </mat-option>
+      </div>
+    </mat-select>
+  </mat-form-field>
+</div>
+<!-- <div class="d-flex justify-content-center col-4">
     <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
       [(viewDate)]="viewDate">
       <mat-icon>keyboard_arrow_left</mat-icon>
@@ -66,5 +69,5 @@
       <mat-icon>print</mat-icon>
     </button>
   </div>
-</div>
+</div> -->
 <app-calendar-view [viewDate]="viewDate" [events]="events"></app-calendar-view>

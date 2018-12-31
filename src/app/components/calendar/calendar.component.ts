@@ -120,7 +120,6 @@ export class CalendarComponent {
 
   openDialog(event): void {
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
-      width: '30%',
       data: event,
     });
 

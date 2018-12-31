@@ -38,6 +38,7 @@ If you have content or feature suggestions, please email me at efournier92@gmail
 * [X] IE Compatibility
 * [X] DB Rules
 * [~] Add stories component
+* [ ] PhotoBy
 * [ ] Photos Loading spinner
 * [ ] Photos Sortability
 * [ ] Photos click lightbox with zoom
