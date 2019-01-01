@@ -23,6 +23,7 @@ export class PhotosComponent implements OnInit {
   url: string;
   loading: boolean = true;
   years: Number[];
+  showSpinner: boolean = true;
 
   constructor(
     private photosService: PhotosService,
@@ -73,9 +74,9 @@ export class PhotosComponent implements OnInit {
         this.loadMore();
         this.loadMore();
         this.loadMore();
-        // this.cleanPhotos();
-
-        console.log(this.allPhotos);
+        setTimeout(() => {
+          this.showSpinner = false;
+        }, 1000);
       }
     );
   }
