@@ -39,8 +39,9 @@ If you have content or feature suggestions, please email me at efournier92@gmail
 * [X] DB Rules
 * [~] Add stories component
 * [ ] PhotoBy
-* [ ] Photos Loading spinner
-* [ ] Photos Sortability
+* [ ] Encrypt Strings
+* [X] Photos Loading spinner
+* [X] Photos Sortability
 * [ ] Photos click lightbox with zoom
 * [ ] Photos upload progress bar
 * [ ] Admin tools (super user)

@@ -29,6 +29,10 @@
   margin-left: 17px;
 }
 
+.spacer {
+  flex: 1 1 auto;
+}
+
 input[type="file"] {
   display: none;
 }

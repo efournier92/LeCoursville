@@ -1,3 +1,37 @@
+<div class="d-flex" style="margin: 0 20px">
+  <form (ngSubmit)="searchPhotos(searchTerm)">
+    <mat-form-field>
+      <input matInput [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search">
+    </mat-form-field>
+  </form>
+  <mat-icon *ngIf="searchTerm !== ''" (click)="clearSearch()" style="margin-top: 20px;opacity: 0.4;cursor: pointer;">clear</mat-icon>
+
+  <span class="spacer"></span>
+
+  <div class="justify-content-end">
+    <div class="d-md-none mt-3">
+      <button mat-raised-button [matMenuTriggerFor]="menu">Sort</button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="sortPhotosRandomly()">Random</button>
+        <button mat-menu-item (click)="sortPhotosBy(sortPhotosByYearTaken)">Date Taken</button>
+        <button mat-menu-item (click)="sortPhotosBy(sortPhotosByDateAdded)">Recently Added</button>
+      </mat-menu>
+    </div>
+
+    <div class="d-none d-md-block">
+      <div class="row justify-content-center" style="opacity: 0.3;font-size: 0.9em;">Sort</div>
+      <div class="row justify-content-center">
+        <mat-button-toggle-group name="photoSort" [value]="sortType" aria-label="Sort">
+          <mat-button-toggle (click)="sortPhotosRandomly()" value="random">Random</mat-button-toggle>
+          <mat-button-toggle (click)="sortPhotosBy(sortPhotosByYearTaken)" value="taken">Year Taken</mat-button-toggle>
+          <mat-button-toggle (click)="sortPhotosBy(sortPhotosByDateAdded)" value="added">Recently Added</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="d-flex flex-row justify-content-end mt-3" *ngIf="user && user.roles && user.roles.admin">
   <button mat-button class="photos-add-button">
     <label class="photos-add-button-label d-flex">
@@ -11,7 +45,7 @@
 </div>
 
 <div [hidden]="showSpinner">
-  <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of photos">
+  <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
     <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
     <mat-card-content>
       <span *ngIf="photo.info">{{ photo.info }}<br></span>
@@ -60,4 +94,4 @@
     </mat-card-footer>
   </mat-card>
 </div>
-<div infiniteScroll [infiniteScrollDistance]="1" [infiniteScrollThrottle]="150" (scrolled)="loadMore()"></div>
+<div infiniteScroll [infiniteScrollDistance]="1" [infiniteScrollThrottle]="150" (scrolled)="loadAnotherPhoto()"></div>

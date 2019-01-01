@@ -17,13 +17,17 @@ export class PhotosComponent implements OnInit {
   task: AngularFireUploadTask;
   uploads: any[];
   allPercentage: Observable<any>;
-  photos: Photo[] = new Array<Photo>();
   allPhotos: Photo[];
+  loadablePhotos: Photo[] = new Array<Photo>();
+  loadedPhotos: Photo[] = new Array<Photo>();
+  foundPhotos: Photo[];
   newPhoto: Photo;
   url: string;
+  searchTerm: string = '';
   loading: boolean = true;
   years: Number[];
   showSpinner: boolean = true;
+  sortType: string = 'random';
 
   constructor(
     private photosService: PhotosService,
@@ -50,11 +54,27 @@ export class PhotosComponent implements OnInit {
     }
   }
 
-  loadMore(): void {
-    let newPhoto = this.allPhotos[this.photos.length]
-    if (this.allPhotos && this.allPhotos.length && this.photos.length < this.allPhotos.length && !this.photos.some(photo => photo.id === newPhoto.id)) {
-      this.photos.push(newPhoto);
+  loadAnotherPhoto(): void {
+    let newPhoto = this.loadablePhotos[this.loadedPhotos.length]
+    if (this.loadablePhotos && this.loadablePhotos.length && this.loadedPhotos.length < this.loadablePhotos.length && !this.loadedPhotos.some(photo => photo.id === newPhoto.id)) {
+      this.loadedPhotos.push(newPhoto);
     }
+  }
+
+  loadNumMorePhotos(numToLoad): void {
+    for (let i = 0; i < numToLoad; i++) {
+      this.loadAnotherPhoto();
+    }
+    setTimeout(() => {
+      this.showSpinner = false;
+    }, 1000);
+  }
+
+  sortPhotosRandomly() {
+    this.showSpinner = true;
+    this.loadedPhotos = [];
+    this.loadablePhotos = this.shufflePhotos(this.allPhotos);
+    this.loadNumMorePhotos(3);
   }
 
   shufflePhotos(photos: Array<Photo>) {
@@ -67,25 +87,59 @@ export class PhotosComponent implements OnInit {
     return photos;
   }
 
+  sortPhotosBy(sortFunction) {
+    this.showSpinner = true;
+    this.loadablePhotos = this.allPhotos.sort(sortFunction);
+    this.loadedPhotos = [];
+    this.loadNumMorePhotos(3);
+    console.log(this.loadablePhotos)
+  }
+
+  sortPhotosByDateAdded(a: Photo, b: Photo) {
+    return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+  }
+
+  sortPhotosByYearTaken(a: Photo, b: Photo) {
+    return new Date(a.year).getFullYear() - new Date(b.year).getFullYear();
+  }
+
+  sortPhotosByYearTakenDown(a: Photo, b: Photo) {
+    return new Date(b.year).getFullYear() - new Date(a.year).getFullYear();
+  }
+
+  searchPhotos(searchTerm): void {
+    this.showSpinner = true;
+    this.loadablePhotos = [];
+    searchTerm = searchTerm.toLowerCase();
+    for (const photo of this.allPhotos) {
+      let info = photo.info.toLowerCase();
+      let location = photo.location.toLowerCase();
+      let year = photo.year.toString();
+      if (
+        info.includes(searchTerm) ||
+        location.includes(searchTerm) ||
+        year.includes(searchTerm)
+      ) {
+        this.loadablePhotos.push(photo);
+      }
+    }
+    this.loadedPhotos = [];
+    this.loadNumMorePhotos(3);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.sortPhotosRandomly();
+  }
+
   loadAllPhotos(): void {
     this.photosService.getAllPhotos().valueChanges().subscribe(
       (photos: Array<Photo>) => {
-        this.allPhotos = this.shufflePhotos(photos);
-        this.loadMore();
-        this.loadMore();
-        this.loadMore();
-        setTimeout(() => {
-          this.showSpinner = false;
-        }, 1000);
+        this.allPhotos = photos;
+        this.sortPhotosRandomly();
+        this.loadNumMorePhotos(3);
       }
     );
-  }
-
-  cleanPhotos() {
-    for (const photo of this.allPhotos) {
-      photo.dateAdded = new Date();
-      this.photosService.updatePhoto(photo);
-    }
   }
 
   updatePhoto(photo: Photo): void {
@@ -95,8 +149,8 @@ export class PhotosComponent implements OnInit {
 
   deletePhoto(inputPhoto): void {
     for (let i = 0; i < this.allPhotos.length; i++) {
-      if (this.photos && this.photos[i] && this.photos[i].id && this.photos[i].id === inputPhoto.id)
-        this.photos.splice(i, 1);
+      if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
+        this.loadedPhotos.splice(i, 1);
     }
     this.photosService.deletePhoto(inputPhoto);
   }
