@@ -7,7 +7,7 @@
   <mat-form-field class="year-select-container ml-2">
     <mat-select placeholder="Year" [(value)]="selectedYear">
       <div *ngFor="let calendar of allCalendars">
-        <mat-option value="{{ calendar.year }}">
+        <mat-option [value]="calendar.year">
           {{ calendar.year }}
         </mat-option>
       </div>

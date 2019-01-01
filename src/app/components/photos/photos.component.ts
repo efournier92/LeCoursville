@@ -43,9 +43,6 @@ export class PhotosComponent implements OnInit {
 
   ngOnInit(): void {
     this.years = this.photosService.getYears();
-    // this.photosService.allPhotosObservable.subscribe(photos => {
-    //   this.photos = photos;
-    // })
   }
 
   addPhoto(event: any): void {
@@ -92,7 +89,6 @@ export class PhotosComponent implements OnInit {
     this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
     this.loadNumMorePhotos(3);
-    console.log(this.loadablePhotos)
   }
 
   sortPhotosByDateAdded(a: Photo, b: Photo) {

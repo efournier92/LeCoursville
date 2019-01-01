@@ -2,7 +2,7 @@
   <div class="d-flex flex-row justify-content-center" style="margin-top:6px;">
     <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">
       <div *ngFor="let year of years">
-        <mat-option value="{{ year }}">
+        <mat-option [value]="year">
           {{ year }}
         </mat-option>
       </div>
@@ -25,49 +25,47 @@
       Anniversaries
     </mat-checkbox>
   </div>
-
   <span class="spacer"></span>
-
   <div class="col-xs-2">
     <button mat-button (click)="newEvent()">
       <mat-icon>add</mat-icon> New Event
     </button>
   </div>
 </div>
-<div class="d-flex mt-1" style="margin-left: 6px">
-  <mat-form-field class="month-select-container">
-    <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
-      <div *ngFor="let month of months">
-        <mat-option value="{{ month }}">
-          {{ month }}
-        </mat-option>
-      </div>
-    </mat-select>
-  </mat-form-field>
-  <mat-form-field class="year-select-container ml-2">
-    <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
-      <div *ngFor="let year of years">
-        <mat-option value="{{ year }}">
-          {{ year }}
-        </mat-option>
-      </div>
-    </mat-select>
-  </mat-form-field>
-</div>
-<!-- <div class="d-flex justify-content-center col-4">
-    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
-      [(viewDate)]="viewDate">
-      <mat-icon>keyboard_arrow_left</mat-icon>
-    </button>
-    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
-      [(viewDate)]="viewDate">
-      <mat-icon>keyboard_arrow_right</mat-icon>
-    </button>
+<div class="d-flex mt-1 justify-content-between" style="margin-left: 6px">
+  <div>
+    <mat-form-field class="month-select-container">
+      <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
+        <div *ngFor="let month of months">
+          <mat-option [value]="month">
+            {{ month }}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="year-select-container ml-2">
+      <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+        <div *ngFor="let year of years">
+          <mat-option [value]="year">
+            {{ year }}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
   </div>
-  <div class="d-flex justify-content-center col-4">
+  <div class="d-flex justify-content-center calendar-print-button-container">
     <button mat-button (click)="printPdf()">
       <mat-icon>print</mat-icon>
     </button>
   </div>
-</div> -->
+</div>
+<div class="d-flex justify-content-center">
+  <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+    [(viewDate)]="viewDate">
+    <mat-icon>keyboard_arrow_left</mat-icon>
+  </button>
+  <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+    <mat-icon>keyboard_arrow_right</mat-icon>
+  </button>
+</div>
 <app-calendar-view [viewDate]="viewDate" [events]="events"></app-calendar-view>
