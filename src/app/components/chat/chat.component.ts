@@ -4,7 +4,6 @@ import { ChatService } from './chat.service';
 import { User } from 'src/app/components/auth/user';
 import { Message } from 'src/app/components/chat/message';
 import { MatDialog } from '@angular/material';
-import { NamePrompt } from '../auth/name-prompt/name-prompt';
 
 @Component({
   selector: 'app-chat',
@@ -21,7 +20,6 @@ export class ChatComponent implements OnInit {
   constructor(
     private chatService: ChatService,
     private auth: AuthService,
-    public namePrompt: MatDialog,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
@@ -88,16 +86,6 @@ export class ChatComponent implements OnInit {
 
   deleteMessage(message: Message): void {
     this.chatService.deleteMessage(message);
-  }
-
-  openNamePrompt(): void {
-    const namePromptRef = this.namePrompt.open(NamePrompt, {
-      data: { name: 'this.name', animal: 'this.animal' }
-    });
-
-    namePromptRef.afterClosed().subscribe(result => {
-      // console.log('The dialog was closed', result);
-    });
   }
 
   cancelEdit(message): void {

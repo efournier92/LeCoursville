@@ -162,12 +162,8 @@ export class CalendarComponent {
   }
 
   openPrintControlsPrompt(): void {
-    const namePromptRef = this.printControlsPrompt.open(PrintControlsPrompt, {
-      data: { name: 'this.name', animal: 'this.animal' }
-    });
-
-    namePromptRef.afterClosed().subscribe(result => {
-      // console.log('The dialog was closed', result);
+    this.printControlsPrompt.open(PrintControlsPrompt, {
+      data: {},
     });
   }
 

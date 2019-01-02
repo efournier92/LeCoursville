@@ -22,7 +22,6 @@ import { CalendarComponent } from './components/calendar/calendar.component';
 import { PhotosComponent } from './components/photos/photos.component';
 import { EditContactComponent } from './components/contacts/edit-contact/edit-contact.component';
 import { ViewContactComponent } from './components/contacts/view-contact/view-contact.component';
-import { NamePrompt } from './components/auth/name-prompt/name-prompt';
 import { ChatComponent } from './components/chat/chat.component';
 import { ChatViewComponent } from './components/chat/chat-view/chat-view.component';
 import { ChatEditComponent } from './components/chat/chat-edit/chat-edit.component';
@@ -37,6 +36,7 @@ import { CalendarPrinterComponent } from './components/calendar/calendar-printer
 import { CalendarViewComponent } from './components/calendar/calendar-view/calendar-view.component';
 import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
 import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
+import { NgxGalleryModule } from 'ngx-gallery';
 
 @NgModule({
   declarations: [
@@ -48,7 +48,6 @@ import { PrintControlsPrompt } from './components/calendar/print-controls-prompt
     EditContactComponent,
     ViewContactComponent,
     ChatComponent,
-    NamePrompt,
     ChatViewComponent,
     ChatEditComponent,
     CalendarDialogComponent,
@@ -70,6 +69,7 @@ import { PrintControlsPrompt } from './components/calendar/print-controls-prompt
     MaterialModule,
     PdfViewerModule,
     AngularFontAwesomeModule,
+    NgxGalleryModule,
     InfiniteScrollModule,
     CalendarModule.forRoot({
       provide: DateAdapter,
@@ -95,7 +95,6 @@ import { PrintControlsPrompt } from './components/calendar/print-controls-prompt
     AppComponent,
   ],
   entryComponents: [
-    NamePrompt,
     PrintControlsPrompt,
     CalendarDialogComponent,
   ],

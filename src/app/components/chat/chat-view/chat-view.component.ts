@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Message, Like } from 'src/app/components/chat/message';
 import { AuthService } from '../../auth/auth.service';
-import { MatDialog, MatMenuTrigger } from '@angular/material';
-import { NamePrompt } from 'src/app/components/auth/name-prompt/name-prompt';
+import { MatMenuTrigger } from '@angular/material';
 import { User } from '../../auth/user';
 import { HighlightService } from '../highlight.service';
 import { Highlight } from '../highlight';
@@ -23,7 +22,6 @@ export class ChatViewComponent implements OnInit {
 
   constructor(
     public auth: AuthService,
-    public namePrompt: MatDialog,
     public highlightService: HighlightService,
   ) { }
 
@@ -78,24 +76,12 @@ export class ChatViewComponent implements OnInit {
   }
 
   replyMessage(): void {
-    if (!this.auth.user.name)
-      this.openNamePrompt();
     let authorId: string = this.auth.user.id;
     let authorName: string = this.auth.user.name;
     let replyLevel: number = this.message.replyLevel + 1;
     if (!this.message.replies)
       this.message.replies = new Array<Message>();
     this.message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
-  }
-
-  openNamePrompt(): void {
-    const namePromptRef = this.namePrompt.open(NamePrompt, {
-      data: { name: 'this.name', animal: 'this.animal' }
-    });
-
-    namePromptRef.afterClosed().subscribe(result => {
-      // console.log('The dialog was closed', result);
-    });
   }
 
   updateParent(): void {

@@ -5,6 +5,7 @@ import { PhotosService } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
+import { NgxGalleryOptions, NgxGalleryImage, NgxGalleryAnimation } from 'ngx-gallery';
 
 @Component({
   selector: 'app-photos',
@@ -29,6 +30,8 @@ export class PhotosComponent implements OnInit {
   showSpinner: boolean = true;
   sortType: string = 'random';
 
+
+
   constructor(
     private photosService: PhotosService,
     private auth: AuthService,
@@ -43,6 +46,7 @@ export class PhotosComponent implements OnInit {
 
   ngOnInit(): void {
     this.years = this.photosService.getYears();
+    console.log("tr", PhotoSwipe);
   }
 
   addPhoto(event: any): void {
