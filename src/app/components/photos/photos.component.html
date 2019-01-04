@@ -11,17 +11,17 @@
       <button mat-raised-button [matMenuTriggerFor]="menu">Sort</button>
       <mat-menu #menu="matMenu">
         <button mat-menu-item (click)="sortPhotosRandomly()">Random</button>
-        <button mat-menu-item (click)="sortPhotosBy(sortPhotosByYearTaken)">Date Taken</button>
-        <button mat-menu-item (click)="sortPhotosBy(sortPhotosByDateAdded)">Recently Added</button>
+        <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken)">Date Taken</button>
+        <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded)">Recently Added</button>
       </mat-menu>
     </div>
     <div class="d-none d-md-block">
       <div class="photos-sort-select-label row justify-content-center">Sort</div>
       <div class="row justify-content-center">
         <mat-button-toggle-group name="photoSort" [value]="sortType" aria-label="Sort">
-          <mat-button-toggle (click)="sortPhotosRandomly()" value="random">Random</mat-button-toggle>
-          <mat-button-toggle (click)="sortPhotosBy(sortPhotosByYearTaken)" value="taken">Year Taken</mat-button-toggle>
-          <mat-button-toggle (click)="sortPhotosBy(sortPhotosByDateAdded)" value="added">Recently Added</mat-button-toggle>
+          <mat-button-toggle (click)="sortPhotosBy(sortRandomly)" value="random">Random</mat-button-toggle>
+          <mat-button-toggle (click)="sortPhotosBy(sortByYearTaken)" value="taken">Year Taken</mat-button-toggle>
+          <mat-button-toggle (click)="sortPhotosBy(sortByDateAdded)" value="added">Recently Added</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
     </div>

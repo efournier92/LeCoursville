@@ -30,7 +30,9 @@
               "src/styles.scss"
             ],
             "scripts": [
-              "src/assets/lightgallery/*.js"
+              "src/assets/lightgallery/lightgallery.js",
+              "src/assets/lightgallery/lg-zoom.js",
+              "src/assets/lightgallery/lg-autoplay.js"
             ]
           },
           "configurations": {
