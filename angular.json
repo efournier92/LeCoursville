@@ -29,7 +29,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/lightgallery/*.js"
+            ]
           },
           "configurations": {
             "production": {

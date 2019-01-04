@@ -38,10 +38,14 @@
 <div class="d-flex justify-content-center align-items-center mt-5" *ngIf="showSpinner">
   <mat-spinner></mat-spinner>
 </div>
-<div [hidden]="showSpinner">
-  <div id="lightgallery">
+
+
+<div id="lightgallery">
+  <div [hidden]="showSpinner">
     <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
-      <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
+      <a href="{{ photo.url }}" class="light-link">
+        <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
+      </a>
       <mat-card-content>
         <span *ngIf="photo.info">{{ photo.info }}<br></span>
         <span *ngIf="photo.location">{{ photo.location }}<br></span>
@@ -90,4 +94,4 @@
     </mat-card>
   </div>
 </div>
-<div infiniteScroll [infiniteScrollDistance]="1" [infiniteScrollThrottle]="150" (scrolled)="loadAnotherPhoto()"></div>
+<div infiniteScroll [infiniteScrollDistance]="1" [infiniteScrollThrottle]="150" (scrolled)="loadMorePhotos(1)"></div>
