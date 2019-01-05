@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
-import { Observable } from 'rxjs';
+import { Observable, from, BehaviorSubject } from 'rxjs';
 import { PhotosService } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
@@ -43,14 +43,26 @@ export class PhotosComponent implements OnInit {
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
-        this.updatePhotoGallery();
       }
     )
     this.loadAllPhotos();
   }
 
+  private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
+  loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
+
+  updateLoadedPhotos(photos: Photo[]): void {
+    this.loadedPhotosSource.next(photos);
+  }
+
   ngOnInit(): void {
     this.years = this.photosService.getYears();
+    this.loadedPhotosObservable.subscribe(
+      () => {
+        this.updatePhotoGallery();
+        console.log('subscribe');
+      }
+    )
   }
 
   addPhoto(event: any): void {
@@ -70,10 +82,15 @@ export class PhotosComponent implements OnInit {
     for (let i = 0; i < numToLoad; i++) {
       this.loadAnotherPhoto();
     }
-    setTimeout(() => {
-      this.showSpinner = false;
-    }, 1000);
-    this.updatePhotoGallery();
+    if (this.showSpinner) {
+      setTimeout(() => {
+        this.showSpinner = false;
+        this.updateLoadedPhotos(this.loadedPhotos);
+      }, 800);
+    } else {
+      this.updateLoadedPhotos(this.loadedPhotos);
+    }
+
   }
 
   shufflePhotos(photos: Array<Photo>) {
@@ -131,10 +148,10 @@ export class PhotosComponent implements OnInit {
   }
 
   updatePhotoGallery() {
-    if (this.photoGallery) {
-      const galleryId = this.photoGallery.getAttribute('lg-uid')
+    const photoGallery = document.getElementById('lightgallery');
+    const galleryId = photoGallery.getAttribute('lg-uid');
+    if (galleryId)
       window.lgData[galleryId].destroy(true);
-    }
 
     const galleryOptions = {
       selector: '.light-link',
@@ -143,8 +160,10 @@ export class PhotosComponent implements OnInit {
       progressBar: false,
     };
 
-    this.photoGallery = document.getElementById('lightgallery');
-    lightGallery(this.photoGallery, galleryOptions);
+    if (this.loadablePhotos && this.loadablePhotos.length > 0) {
+      this.photoGallery = document.getElementById('lightgallery');
+      lightGallery(this.photoGallery, galleryOptions);
+    }
   }
 
   loadAllPhotos(): void {

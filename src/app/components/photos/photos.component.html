@@ -10,7 +10,7 @@
     <div class="d-md-none mt-3">
       <button mat-raised-button [matMenuTriggerFor]="menu">Sort</button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="sortPhotosRandomly()">Random</button>
+        <button mat-menu-item (click)="sortPhotosBy(sortRandomly)">Random</button>
         <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken)">Date Taken</button>
         <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded)">Recently Added</button>
       </mat-menu>
