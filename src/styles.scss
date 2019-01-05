@@ -12,33 +12,31 @@ $my-theme-accent: mat-palette($mat-green, 500);
 $my-theme-warn: mat-palette($mat-green, A400);
 
 $my-theme: mat-light-theme(
-    $my-theme-primary,
-    $my-theme-accent,
-    $my-theme-warn
+  $my-theme-primary,
+  $my-theme-accent,
+  $my-theme-warn,
 );
 
 html, body {
-    margin: 0;
-    height: 100%;
-    // background-color:  mat-palette($mat-light-green);
-    @include angular-material-theme($my-theme);
-    background-color: #fafafa;
-
+  @include angular-material-theme($my-theme);
+  margin: 0;
+  height: 100%;
+  background-color: #fafafa;
 }
 
 .ng2-pdf-viewer-container {
-    overflow-x: hidden !important;
+  overflow-x: hidden !important;
 }
 
 .mat-list-item-content {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .unselectable {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .cal-month-view .cal-cell-top {

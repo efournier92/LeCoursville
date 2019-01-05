@@ -36,7 +36,8 @@ import { CalendarPrinterComponent } from './components/calendar/calendar-printer
 import { CalendarViewComponent } from './components/calendar/calendar-view/calendar-view.component';
 import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
 import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
-import { NgxGalleryModule } from 'ngx-gallery';
+import { AdminComponent } from './components/admin/admin.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,8 @@ import { NgxGalleryModule } from 'ngx-gallery';
     StoriesComponent,
     StoriesViewComponent,
     StoriesEditComponent,
+    AdminComponent,
+    ConfirmDialogComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -69,7 +72,6 @@ import { NgxGalleryModule } from 'ngx-gallery';
     MaterialModule,
     PdfViewerModule,
     AngularFontAwesomeModule,
-    NgxGalleryModule,
     InfiniteScrollModule,
     CalendarModule.forRoot({
       provide: DateAdapter,

@@ -9,6 +9,7 @@ export class User {
   name: string;
   email: string;
   roles: AuthRoles;
+  isEditable: boolean;
 
   constructor(authData: any) {
     this.id = authData.uid;

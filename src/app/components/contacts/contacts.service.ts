@@ -33,6 +33,7 @@ export class ContactsService {
 
   private contactsSource: BehaviorSubject<any[]> = new BehaviorSubject([]);
   userContacts: Observable<any[]> = this.contactsSource.asObservable();
+
   updateContactsEvent(contacts: Contact[]): void {
     this.contactsSource.next(contacts);
   }
