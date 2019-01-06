@@ -38,6 +38,7 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
 import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
 import { AdminComponent } from './components/admin/admin.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { PhotoUploadProgressComponent } from './components/photos/photo-upload-progress/photo-upload-progress.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
     StoriesEditComponent,
     AdminComponent,
     ConfirmDialogComponent,
+    PhotoUploadProgressComponent,
   ],
   imports: [
     AppRoutingModule,

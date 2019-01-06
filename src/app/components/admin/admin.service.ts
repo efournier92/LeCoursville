@@ -40,10 +40,12 @@ export class AdminService {
     return this.allUsers;
   }
 
+  updateUser(user: User): void {
+    this.allUsers.update(user.id, user);
+  }
+
   deleteUser(user: User): void {
-    console.log(user);
-    // this.allUsers.remove(user.id);
-    // this.storage.storage.refFromURL(photo.url).delete();
+    this.allUsers.remove(user.id);
   }
 
 }

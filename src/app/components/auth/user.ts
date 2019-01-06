@@ -9,6 +9,7 @@ export class User {
   name: string;
   email: string;
   roles: AuthRoles;
+  dateRegistered: Date = new Date();
   isEditable: boolean;
 
   constructor(authData: any) {

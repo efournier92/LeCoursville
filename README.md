@@ -4,9 +4,8 @@
 * [ ] Chat photo in message
 * [ ] Admin tools (super user)
 * [ ] Photos upload progress bar
-* [ ] Photos click lightbox with zoom
+* [X] Photos click lightbox with zoom
 * [X] Photos Sortability
-* [ ] Encrypt Strings
 * [ ] PhotoBy
 * [~] Add stories component
 * [X] DB Rules

@@ -59,8 +59,7 @@ export class AuthService {
 
   createUser(authData: any) {
     let user: User = new User(authData);
-    this.userObj.set(user);
-    this.user = user;
+    this.userObj.update(user);
   }
 
 }

@@ -1,0 +1,12 @@
+<mat-card color="primary" [ngClass]="{'upload-card-success': uploadFinished}">
+  <div>
+    <progress max="100" class="photo-upload-progress" [value]="(uploadProgress | async)"></progress>
+  </div>
+  <div class="upload-success-container" *ngIf="photo && photo.url">
+    <span class="upload-success-message">Upload Complete</span>
+    <br>
+    <a class="photo-upload-link" [href]="photo.url">
+      Upload Link
+    </a>
+  </div>
+</mat-card>

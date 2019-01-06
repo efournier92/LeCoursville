@@ -7,6 +7,11 @@ import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
 
+export interface PhotoUpload {
+  photo: Photo;
+  task: AngularFireUploadTask;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -55,9 +60,29 @@ export class PhotosService {
     return this.allPhotos;
   }
 
-  addPhoto(file: any): void {
+  getPhotoById(photoId: string): Observable<Photo> {
+    let photoObj = this.db.object(`photos/${photoId}`);
+    const photoByIdSource: BehaviorSubject<Photo> = new BehaviorSubject<Photo>(new Photo());
+    const photoByIdObservable: Observable<Photo> = photoByIdSource.asObservable();
+
+    function updatePhotoEvent(photo: Photo): void {
+      photoByIdSource.next(photo);
+    }
+
+    photoObj.valueChanges().subscribe(
+      (photo: Photo) => {
+        if (photo && photo.id)
+          updatePhotoEvent(photo);
+      }
+    )
+
+    return photoByIdObservable;
+  }
+
+  uploadPhoto(file: any): PhotoUpload {
     let photo: Photo = new Photo();
     photo.id = this.db.createPushId();
+    photo.dateAdded = new Date();
     photo.extension = file.name.split('.').pop();
     photo.path = `photos/${photo.id}.${photo.extension}`;
 
@@ -69,11 +94,18 @@ export class PhotosService {
           url => {
             const photosDb: AngularFireList<Object> = this.db.list('photos');
             photo.url = url;
-            photosDb.set(photo.id, photo);
+            photosDb.update(photo.id, photo);
+            console.log(photo);
           }
         )
       })
     ).subscribe()
+
+    let upload = new Object as PhotoUpload;
+    upload.task = task;
+    upload.photo = photo;
+
+    return upload;
   }
 
   updatePhoto(photo: Photo): void {

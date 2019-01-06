@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
-import { Observable, from, BehaviorSubject } from 'rxjs';
-import { PhotosService } from './photos.service'
+import { Observable, BehaviorSubject } from 'rxjs';
+import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
@@ -35,6 +35,7 @@ export class PhotosComponent implements OnInit {
   showSpinner: boolean = true;
   sortType: string = 'random';
   photoGallery: Element;
+  photoUploads: PhotoUpload[] = new Array<PhotoUpload>();
 
   constructor(
     private photosService: PhotosService,
@@ -65,9 +66,19 @@ export class PhotosComponent implements OnInit {
     )
   }
 
-  addPhoto(event: any): void {
+  completePhotoUpload(photo: Photo) {
+    this.photoUploads = this.photoUploads.filter(
+      (value) => {
+        return value.photo.id !== photo.id;
+      }
+    );
+  }
+
+  uploadPhotos(event: any): void {
     for (let file of event.currentTarget.files) {
-      this.photosService.addPhoto(file)
+      const upload = this.photosService.uploadPhoto(file);
+      this.photoUploads.push(upload);
+      // file.uploadPercent = uploadTask.percentageChanges();
     }
   }
 
@@ -86,7 +97,7 @@ export class PhotosComponent implements OnInit {
       setTimeout(() => {
         this.showSpinner = false;
         this.updateLoadedPhotos(this.loadedPhotos);
-      }, 800);
+      }, 1000);
     } else {
       this.updateLoadedPhotos(this.loadedPhotos);
     }
@@ -105,16 +116,21 @@ export class PhotosComponent implements OnInit {
 
   sortPhotosBy(sortFunction) {
     this.showSpinner = true;
-    if (sortFunction === 'sortRandomly') {
-      this.loadablePhotos = this.shufflePhotos(this.allPhotos);
-    } else {
-      this.loadablePhotos = this.allPhotos.sort(sortFunction);
-    }
+    this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
   }
 
+  sortRandomly(a: Photo, b: Photo) {
+    var randomNumber = Math.floor(Math.random() * 21) - 10;
+    return randomNumber;
+  }
+
   sortByDateAdded(a: Photo, b: Photo) {
+    if (!a.dateAdded)
+      a.dateAdded = new Date(0);
+    if (!b.dateAdded)
+      b.dateAdded = new Date(0);
     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
   }
 
@@ -144,7 +160,7 @@ export class PhotosComponent implements OnInit {
 
   clearSearch() {
     this.searchTerm = '';
-    this.sortPhotosBy('sortRandomly');
+    this.sortPhotosBy(this.sortRandomly);
   }
 
   updatePhotoGallery() {
@@ -170,7 +186,7 @@ export class PhotosComponent implements OnInit {
     this.photosService.getAllPhotos().valueChanges().subscribe(
       (photos: Array<Photo>) => {
         this.allPhotos = photos;
-        this.sortPhotosBy('sortRandomly');
+        this.sortPhotosBy(this.sortRandomly);
         this.loadMorePhotos(3);
       }
     );
@@ -187,5 +203,7 @@ export class PhotosComponent implements OnInit {
         this.loadedPhotos.splice(i, 1);
     }
     this.photosService.deletePhoto(inputPhoto);
+    this.sortType = 'added';
+    this.sortPhotosBy(this.sortByDateAdded);
   }
 }

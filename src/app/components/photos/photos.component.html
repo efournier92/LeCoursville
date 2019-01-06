@@ -16,30 +16,33 @@
       </mat-menu>
     </div>
     <div class="d-none d-md-block">
-      <div class="photos-sort-select-label row justify-content-center">Sort</div>
-      <div class="row justify-content-center">
+      <p class="photos-sort-select-container">
+        <span class="photos-sort-select-label">Sort</span>
         <mat-button-toggle-group name="photoSort" [value]="sortType" aria-label="Sort">
           <mat-button-toggle (click)="sortPhotosBy(sortRandomly)" value="random">Random</mat-button-toggle>
           <mat-button-toggle (click)="sortPhotosBy(sortByYearTaken)" value="taken">Year Taken</mat-button-toggle>
           <mat-button-toggle (click)="sortPhotosBy(sortByDateAdded)" value="added">Recently Added</mat-button-toggle>
         </mat-button-toggle-group>
-      </div>
+      </p>
     </div>
   </div>
 </div>
 <div class="d-flex flex-row justify-content-end mt-3" *ngIf="user && user.roles && user.roles.admin">
-  <button mat-button class="photos-add-button">
-    <label class="photos-add-button-label d-flex">
-      <mat-icon>add</mat-icon><span class="photos-add-icon-label">Add Photos</span>
-      <input type="file" (change)="addPhoto($event)" accept=".png,.jpg" multiple />
-    </label>
-  </button>
+  <div class="d-flex flex-column">
+
+    <button mat-button class="photos-add-button">
+      <label class="photos-add-button-label d-flex">
+        <mat-icon>add</mat-icon><span class="photos-add-icon-label">Upload Photos</span>
+        <input type="file" (change)="uploadPhotos($event)" accept=".png,.jpg" multiple />
+      </label>
+    </button>
+    <br>
+    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(photo)"></app-photo-upload-progress>
+  </div>
 </div>
 <div class="d-flex justify-content-center align-items-center mt-5" *ngIf="showSpinner">
   <mat-spinner></mat-spinner>
 </div>
-
-
 <div id="lightgallery">
   <div [hidden]="showSpinner">
     <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
