@@ -4,7 +4,7 @@
       <input matInput [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search">
     </mat-form-field>
   </form>
-  <mat-icon class="clear-search-icon" *ngIf="searchTerm !== ''" (click)="clearSearch()">clear</mat-icon>
+  <mat-icon class="clear-search-icon" *ngIf="searchTerm !== ''" (click)="clearSearchTerm()">clear</mat-icon>
   <span class="spacer"></span>
   <div class="justify-content-end">
     <div class="d-md-none mt-3">
@@ -27,10 +27,9 @@
     </div>
   </div>
 </div>
-<div class="d-flex flex-row justify-content-end mt-3" *ngIf="user && user.roles && user.roles.admin">
+<div class="photo-upload-input-container d-flex flex-row justify-content-end" *ngIf="user && user.roles && user.roles.admin">
   <div class="d-flex flex-column">
-
-    <button mat-button class="photos-add-button">
+    <button mat-button class="photos-upload-button">
       <label class="photos-add-button-label d-flex">
         <mat-icon>add</mat-icon><span class="photos-add-icon-label">Upload Photos</span>
         <input type="file" (change)="uploadPhotos($event)" accept=".png,.jpg" multiple />

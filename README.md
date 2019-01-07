@@ -2,8 +2,8 @@
 
 ## TODO
 * [ ] Chat photo in message
-* [ ] Admin tools (super user)
-* [ ] Photos upload progress bar
+* [X] Admin tools (super user)
+* [X] Photos upload progress bar
 * [X] Photos click lightbox with zoom
 * [X] Photos Sortability
 * [ ] PhotoBy

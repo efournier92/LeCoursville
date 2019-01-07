@@ -39,13 +39,13 @@ export class PhotosService {
     )
   }
 
-  getYears(): Array<Number> {
-    let thisYear: number = new Date().getFullYear()
-    let years: Array<Number> = Array<Number>();
-    for (let i = 1800; i <= thisYear; i++) {
-      years.push(i);
-    }
-    return years;
+  updatePhoto(photo: Photo): void {
+    this.allPhotos.update(photo.id, photo);
+  }
+
+  deletePhoto(photo: Photo): void {
+    this.allPhotos.remove(photo.id);
+    this.storage.storage.refFromURL(photo.url).delete();
   }
 
   private allPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
@@ -68,14 +68,12 @@ export class PhotosService {
     function updatePhotoEvent(photo: Photo): void {
       photoByIdSource.next(photo);
     }
-
     photoObj.valueChanges().subscribe(
       (photo: Photo) => {
         if (photo && photo.id)
           updatePhotoEvent(photo);
       }
     )
-
     return photoByIdObservable;
   }
 
@@ -95,7 +93,6 @@ export class PhotosService {
             const photosDb: AngularFireList<Object> = this.db.list('photos');
             photo.url = url;
             photosDb.update(photo.id, photo);
-            console.log(photo);
           }
         )
       })
@@ -108,13 +105,12 @@ export class PhotosService {
     return upload;
   }
 
-  updatePhoto(photo: Photo): void {
-    this.allPhotos.update(photo.id, photo);
-  }
-
-
-  deletePhoto(photo: Photo): void {
-    this.allPhotos.remove(photo.id);
-    this.storage.storage.refFromURL(photo.url).delete();
+  getYears(): Array<Number> {
+    let thisYear: number = new Date().getFullYear()
+    let years: Array<Number> = Array<Number>();
+    for (let i = 1800; i <= thisYear; i++) {
+      years.push(i);
+    }
+    return years;
   }
 }

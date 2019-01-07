@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
@@ -19,23 +18,16 @@ declare global {
 })
 export class PhotosComponent implements OnInit {
   user: User;
-  ref: AngularFireStorageReference;
-  task: AngularFireUploadTask;
-  uploads: any[];
-  allPercentage: Observable<any>;
   allPhotos: Photo[];
   loadablePhotos: Photo[] = new Array<Photo>();
   loadedPhotos: Photo[] = new Array<Photo>();
   foundPhotos: Photo[];
-  newPhoto: Photo;
-  url: string;
   searchTerm: string = '';
-  loading: boolean = true;
   years: Number[];
   showSpinner: boolean = true;
-  sortType: string = 'random';
   photoGallery: Element;
   photoUploads: PhotoUpload[] = new Array<PhotoUpload>();
+  sortType: string = 'random';
 
   constructor(
     private photosService: PhotosService,
@@ -46,24 +38,38 @@ export class PhotosComponent implements OnInit {
         this.user = user;
       }
     )
-    this.loadAllPhotos();
-  }
-
-  private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
-  loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
-
-  updateLoadedPhotos(photos: Photo[]): void {
-    this.loadedPhotosSource.next(photos);
   }
 
   ngOnInit(): void {
+    this.loadAllPhotos();
     this.years = this.photosService.getYears();
     this.loadedPhotosObservable.subscribe(
       () => {
         this.updatePhotoGallery();
-        console.log('subscribe');
       }
     )
+  }
+
+  updatePhoto(photo: Photo): void {
+    photo.isEditable = false;
+    this.photosService.updatePhoto(photo);
+  }
+
+  deletePhoto(inputPhoto): void {
+    for (let i = 0; i < this.allPhotos.length; i++) {
+      if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
+        this.loadedPhotos.splice(i, 1);
+    }
+    this.photosService.deletePhoto(inputPhoto);
+    this.sortType = 'added';
+    this.sortPhotosBy(this.sortByDateAdded);
+  }
+
+  uploadPhotos(event: any): void {
+    for (let file of event.currentTarget.files) {
+      const upload = this.photosService.uploadPhoto(file);
+      this.photoUploads.push(upload);
+    }
   }
 
   completePhotoUpload(photo: Photo) {
@@ -74,12 +80,14 @@ export class PhotosComponent implements OnInit {
     );
   }
 
-  uploadPhotos(event: any): void {
-    for (let file of event.currentTarget.files) {
-      const upload = this.photosService.uploadPhoto(file);
-      this.photoUploads.push(upload);
-      // file.uploadPercent = uploadTask.percentageChanges();
-    }
+  loadAllPhotos(): void {
+    this.photosService.getAllPhotos().valueChanges().subscribe(
+      (photos: Array<Photo>) => {
+        this.allPhotos = photos;
+        this.sortPhotosBy(this.sortRandomly);
+        this.loadMorePhotos(3);
+      }
+    );
   }
 
   loadAnotherPhoto(): void {
@@ -101,32 +109,28 @@ export class PhotosComponent implements OnInit {
     } else {
       this.updateLoadedPhotos(this.loadedPhotos);
     }
-
   }
 
-  shufflePhotos(photos: Array<Photo>) {
-    for (let i = photos.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = photos[i];
-      photos[i] = photos[j];
-      photos[j] = temp;
-    }
-    return photos;
+  private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
+  loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
+
+  updateLoadedPhotos(photos: Photo[]): void {
+    this.loadedPhotosSource.next(photos);
   }
 
-  sortPhotosBy(sortFunction) {
+  sortPhotosBy(sortFunction: any): void {
     this.showSpinner = true;
     this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
   }
 
-  sortRandomly(a: Photo, b: Photo) {
+  sortRandomly(a: Photo, b: Photo): number {
     var randomNumber = Math.floor(Math.random() * 21) - 10;
     return randomNumber;
   }
 
-  sortByDateAdded(a: Photo, b: Photo) {
+  sortByDateAdded(a: Photo, b: Photo): number {
     if (!a.dateAdded)
       a.dateAdded = new Date(0);
     if (!b.dateAdded)
@@ -134,11 +138,11 @@ export class PhotosComponent implements OnInit {
     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
   }
 
-  sortByYearTaken(a: Photo, b: Photo) {
+  sortByYearTaken(a: Photo, b: Photo): number {
     return new Date(a.year).getFullYear() - new Date(b.year).getFullYear();
   }
 
-  searchPhotos(searchTerm): void {
+  searchPhotos(searchTerm: string): void {
     this.showSpinner = true;
     this.loadablePhotos = [];
     searchTerm = searchTerm.toLowerCase();
@@ -158,12 +162,12 @@ export class PhotosComponent implements OnInit {
     this.loadMorePhotos(3);
   }
 
-  clearSearch() {
+  clearSearchTerm(): void {
     this.searchTerm = '';
     this.sortPhotosBy(this.sortRandomly);
   }
 
-  updatePhotoGallery() {
+  updatePhotoGallery(): void {
     const photoGallery = document.getElementById('lightgallery');
     const galleryId = photoGallery.getAttribute('lg-uid');
     if (galleryId)
@@ -180,30 +184,5 @@ export class PhotosComponent implements OnInit {
       this.photoGallery = document.getElementById('lightgallery');
       lightGallery(this.photoGallery, galleryOptions);
     }
-  }
-
-  loadAllPhotos(): void {
-    this.photosService.getAllPhotos().valueChanges().subscribe(
-      (photos: Array<Photo>) => {
-        this.allPhotos = photos;
-        this.sortPhotosBy(this.sortRandomly);
-        this.loadMorePhotos(3);
-      }
-    );
-  }
-
-  updatePhoto(photo: Photo): void {
-    photo.isEditable = false;
-    this.photosService.updatePhoto(photo);
-  }
-
-  deletePhoto(inputPhoto): void {
-    for (let i = 0; i < this.allPhotos.length; i++) {
-      if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
-        this.loadedPhotos.splice(i, 1);
-    }
-    this.photosService.deletePhoto(inputPhoto);
-    this.sortType = 'added';
-    this.sortPhotosBy(this.sortByDateAdded);
   }
 }

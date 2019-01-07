@@ -1,9 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
-import { AngularFireUploadTask } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
 import { PhotoUpload, PhotosService } from '../photos.service';
 import { Photo } from '../photo';
-
 
 @Component({
   selector: 'app-photo-upload-progress',
@@ -19,7 +17,6 @@ export class PhotoUploadProgressComponent implements OnInit {
   @Output()
   completeUploadEvent = new EventEmitter<Photo>();
 
-
   constructor(
     private photosService: PhotosService,
   ) { }
@@ -27,7 +24,6 @@ export class PhotoUploadProgressComponent implements OnInit {
   ngOnInit() {
     this.uploadProgress = this.upload.task.percentageChanges();
     this.photo = this.upload.photo;
-
     this.upload.task.percentageChanges().subscribe(
       (percentComplete: number) => {
         if (percentComplete === 100) {

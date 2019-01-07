@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { PhotoUploadProgressComponent } from './photo-upload-progress.component';
 
 describe('PhotoUploadProgressComponent', () => {
@@ -8,9 +7,9 @@ describe('PhotoUploadProgressComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PhotoUploadProgressComponent ]
+      declarations: [PhotoUploadProgressComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

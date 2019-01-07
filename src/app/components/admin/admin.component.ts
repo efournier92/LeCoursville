@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { AdminService } from './admin.service';
-// import { User } from '../auth/user';
-import { AngularFireAuth } from '@angular/fire/auth';
-import * as firebase from 'firebase';
 import { User } from '../auth/user';
 
 @Component({
@@ -18,23 +15,19 @@ export class AdminComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private adminService: AdminService,
-    private fireAuth: AngularFireAuth,
-    // private fireAdmin: Firebase,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.authService.userObservable.subscribe(
       (user: User) => {
         this.user = user;
-        console.log('USER: ', user)
         if (this.user.roles && this.user.roles.super)
           this.getAllUsers();
       }
     )
-
   }
 
-  getAllUsers() {
+  getAllUsers(): void {
     this.adminService.allUsersObservable.subscribe(
       (allUsers: User[]) => {
         this.allUsers = allUsers;
@@ -43,29 +36,29 @@ export class AdminComponent implements OnInit {
     )
   }
 
-  addUserRole(user: User, roleType: string) {
-    user.roles[roleType] = true;
-  }
-
-  removeUserRole(user: User, roleType: string) {
-    delete user.roles[roleType];
-  }
-
-  updateUser(user: User) {
+  updateUser(user: User): void {
     user.isEditable = false;
     this.adminService.updateUser(user);
   }
 
-  deleteUser(user: User) {
+  deleteUser(user: User): void {
     this.adminService.deleteUser(user);
   }
 
-  sortAllUsersBy(sortFunction) {
+  sortAllUsersBy(sortFunction: any): void {
     if (this.allUsers.constructor === Array)
       this.allUsers = this.allUsers.sort(sortFunction);
   }
 
-  sortByDateAdded(a: User, b: User) {
+  sortByDateAdded(a: User, b: User): number {
     return new Date(b.dateRegistered).getTime() - new Date(a.dateRegistered).getTime();
+  }
+
+  addUserRole(user: User, roleType: string): void {
+    user.roles[roleType] = true;
+  }
+
+  removeUserRole(user: User, roleType: string): void {
+    delete user.roles[roleType];
   }
 }
