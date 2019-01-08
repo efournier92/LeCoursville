@@ -50,19 +50,26 @@ export class PhotosComponent implements OnInit {
     )
   }
 
+  downloadPhoto(photo: Photo): void {
+    this.photosService.downloadPhoto(photo);
+  }
+
   updatePhoto(photo: Photo): void {
     photo.isEditable = false;
     this.photosService.updatePhoto(photo);
   }
 
-  deletePhoto(inputPhoto): void {
+  deletePhoto(inputPhoto: Photo): void {
     for (let i = 0; i < this.allPhotos.length; i++) {
       if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
         this.loadedPhotos.splice(i, 1);
     }
     this.photosService.deletePhoto(inputPhoto);
     this.sortType = 'added';
-    this.sortPhotosBy(this.sortByDateAdded);
+    setTimeout(() => {
+      this.showSpinner = false;
+      this.sortPhotosBy(this.sortByDateAdded);
+    }, 1000);
   }
 
   uploadPhotos(event: any): void {
@@ -70,12 +77,16 @@ export class PhotosComponent implements OnInit {
       const upload = this.photosService.uploadPhoto(file);
       this.photoUploads.push(upload);
     }
+    setTimeout(() => {
+      this.sortPhotosBy(this.sortByDateAdded);
+      this.sortType = 'added';
+    }, 1500);
   }
 
-  completePhotoUpload(photo: Photo) {
+  completePhotoUpload(upload: PhotoUpload) {
     this.photoUploads = this.photoUploads.filter(
       (value) => {
-        return value.photo.id !== photo.id;
+        return value.photo.id !== upload.photo.id;
       }
     );
   }
@@ -86,6 +97,7 @@ export class PhotosComponent implements OnInit {
         this.allPhotos = photos;
         this.sortPhotosBy(this.sortRandomly);
         this.loadMorePhotos(3);
+        this.downloadPhoto(this.allPhotos[0]);
       }
     );
   }

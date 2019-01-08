@@ -36,7 +36,7 @@
       </label>
     </button>
     <br>
-    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(photo)"></app-photo-upload-progress>
+    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
   </div>
 </div>
 <div class="d-flex justify-content-center align-items-center mt-5" *ngIf="showSpinner">

@@ -34,7 +34,7 @@ export class PhotoUploadProgressComponent implements OnInit {
               setTimeout(() => {
                 if (!this.photo.url) return;
                 this.completeUploadEvent.emit(this.photo);
-              }, 10000);
+              }, 7000);
             }
           );
         }
