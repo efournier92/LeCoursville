@@ -37,8 +37,8 @@ import { CalendarViewComponent } from './components/calendar/calendar-view/calen
 import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
 import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
 import { AdminComponent } from './components/admin/admin.component';
-import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { PhotoUploadProgressComponent } from './components/photos/photo-upload-progress/photo-upload-progress.component';
+import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prompt.component';
 
 @NgModule({
   declarations: [
@@ -61,8 +61,8 @@ import { PhotoUploadProgressComponent } from './components/photos/photo-upload-p
     StoriesViewComponent,
     StoriesEditComponent,
     AdminComponent,
-    ConfirmDialogComponent,
     PhotoUploadProgressComponent,
+    ConfirmPromptComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -101,6 +101,7 @@ import { PhotoUploadProgressComponent } from './components/photos/photo-upload-p
   entryComponents: [
     PrintControlsPrompt,
     CalendarDialogComponent,
+    ConfirmPromptComponent,
   ],
   exports: [
     EditContactComponent,

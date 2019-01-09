@@ -2,13 +2,26 @@
   margin: auto;
 }
 
-.upload-calendar-year-select {
-  width: 5em;
+.calendar-checkbox-tools-container {
+  margin-left: 6px;
+}
+
+.calendar-checkbox-container {
+  padding-top: 4px;
 }
 
 .calendar-checkbox {
-  font-size: 0.9em;
+  margin-left: 12px;
+  font-size: 0.8em;
   font-weight: 500;
+}
+
+.calendar-date-tools-container {
+  margin-left: 20px;
+}
+
+.upload-calendar-year-select {
+  width: 5em;
 }
 
 .calendar-print-button-container {

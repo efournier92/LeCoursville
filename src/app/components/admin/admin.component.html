@@ -1,63 +1,61 @@
-<div>
-  <div class="statistics-container">
-    <b>Total Users: </b>{{ allUsers.length }}
-  </div>
-  <div style="margin:auto" class="row justify-content-center" *ngIf="allUsers && allUsers.length && allUsers.length !== 0">
-    <mat-card class="user-card col-md-5 col-xl-3" *ngFor="let user of allUsers">
-      <!-- VIEW USER -->
-      <div *ngIf="!user.isEditable">
-        <mat-card-title class="user-view-name">{{ user.name }}</mat-card-title>
-        <mat-card-subtitle class="user-view-id">{{ user.id }}</mat-card-subtitle>
-        <mat-card-content>
-          <div><b>Email: </b>{{ user.email }}</div>
-          <div>
-            <span> <b>Roles: </b></span>
-            <span *ngIf="user.roles.user">User</span><span *ngIf="user.roles.admin">, </span>
-            <span *ngIf="user.roles.admin">Admin</span><span *ngIf="user.roles.super">, </span>
-            <span *ngIf="user.roles.super">Super</span>
-          </div>
-          <div><b>Registered: </b>{{ user.dateRegistered | date }}</div>
-        </mat-card-content>
-        <mat-card-footer class="d-flex justify-content-end user-card-footer">
-          <mat-icon class="mat-card-controls-icon" (click)="user.isEditable = true">edit</mat-icon>
-        </mat-card-footer>
-      </div>
-      <!-- EDIT USER -->
-      <div *ngIf="user.isEditable">
-        <form>
-          <mat-form-field class="user-edit-form-field">
-            <input matInput placeholder="Name" name="user-name" [(ngModel)]="user.name">
-          </mat-form-field>
-          <br>
-          <mat-form-field class="user-edit-form-field">
-            <input matInput placeholder="Email" name="user-email" [(ngModel)]="user.email">
-          </mat-form-field>
-          <br>
-          <mat-form-field class="user-edit-form-field">
-            <input matInput [matDatepicker]="dateRegisteredPicker" placeholder="Date Registered" name="user-date-registered"
-              [(ngModel)]="user.dateRegistered">
-            <mat-datepicker-toggle matSuffix [for]="dateRegisteredPicker"></mat-datepicker-toggle>
-            <mat-datepicker #dateRegisteredPicker></mat-datepicker>
-          </mat-form-field>
-          <br>
-          <div class="d-flex justify-content-around">
-            <!-- USER ROLE -->
-            <mat-checkbox name="user-roles-user" *ngIf="user.roles.user" [(ngModel)]="user.roles.user" (click)="removeUserRole(user, 'user')">User</mat-checkbox>
-            <mat-checkbox name="user-roles-user" *ngIf="!user.roles.user" (click)="addUserRole(user, 'user')">User</mat-checkbox>
-            <!-- ADMIN ROLE -->
-            <mat-checkbox name="user-roles-admin" *ngIf="user.roles.admin" [(ngModel)]="user.roles.admin" (click)="removeUserRole(user, 'admin')">Admin</mat-checkbox>
-            <mat-checkbox name="user-roles-admin" *ngIf="!user.roles.admin" (click)="addUserRole(user, 'admin')">Admin</mat-checkbox>
-            <!-- SUPER ROLE -->
-            <mat-checkbox name="user-roles-super" *ngIf="user.roles.super" [(ngModel)]="user.roles.super" (click)="removeUserRole(user, 'super')">Super</mat-checkbox>
-            <mat-checkbox name="user-roles-super" *ngIf="!user.roles.super" (click)="addUserRole(user, 'super')">Super</mat-checkbox>
-          </div>
-        </form>
-        <mat-card-footer class="d-flex justify-content-around user-card-footer">
-          <mat-icon class="user-card-controls-icon" (click)="deleteUser(user)">delete</mat-icon>
-          <mat-icon class="user-card-controls-icon" (click)="updateUser(user)">save</mat-icon>
-          <mat-icon class="user-card-controls-icon" (click)="user.isEditable = false">cancel</mat-icon>
-        </mat-card-footer>
-      </div>
-    </mat-card>
-  </div>
+<div class="statistics-container">
+  <b>Total Users: </b>{{ allUsers.length }}
+</div>
+<div class="row justify-content-center admin-user-card-container" *ngIf="allUsers && allUsers.length && allUsers.length !== 0">
+  <mat-card class="user-card col-md-5 col-xl-3" *ngFor="let user of allUsers">
+    <!-- VIEW USER -->
+    <div *ngIf="!user.isEditable">
+      <mat-card-title class="user-view-name">{{ user.name }}</mat-card-title>
+      <mat-card-subtitle class="user-view-id">{{ user.id }}</mat-card-subtitle>
+      <mat-card-content>
+        <div><b>Email: </b>{{ user.email }}</div>
+        <div>
+          <span> <b>Roles: </b></span>
+          <span *ngIf="user.roles.user">User</span><span *ngIf="user.roles.admin">, </span>
+          <span *ngIf="user.roles.admin">Admin</span><span *ngIf="user.roles.super">, </span>
+          <span *ngIf="user.roles.super">Super</span>
+        </div>
+        <div><b>Registered: </b>{{ user.dateRegistered | date }}</div>
+      </mat-card-content>
+      <mat-card-footer class="d-flex justify-content-end user-card-footer">
+        <mat-icon class="mat-card-controls-icon" (click)="user.isEditable = true">edit</mat-icon>
+      </mat-card-footer>
+    </div>
+    <!-- EDIT USER -->
+    <div *ngIf="user.isEditable">
+      <form>
+        <mat-form-field class="user-edit-form-field">
+          <input matInput placeholder="Name" name="user-name" [(ngModel)]="user.name">
+        </mat-form-field>
+        <br>
+        <mat-form-field class="user-edit-form-field">
+          <input matInput placeholder="Email" name="user-email" [(ngModel)]="user.email">
+        </mat-form-field>
+        <br>
+        <mat-form-field class="user-edit-form-field">
+          <input matInput [matDatepicker]="dateRegisteredPicker" placeholder="Date Registered" name="user-date-registered"
+            [(ngModel)]="user.dateRegistered">
+          <mat-datepicker-toggle matSuffix [for]="dateRegisteredPicker"></mat-datepicker-toggle>
+          <mat-datepicker #dateRegisteredPicker></mat-datepicker>
+        </mat-form-field>
+        <br>
+        <div class="d-flex justify-content-around">
+          <!-- USER ROLE -->
+          <mat-checkbox name="user-roles-user" *ngIf="user.roles.user" [(ngModel)]="user.roles.user" (click)="removeUserRole(user, 'user')">User</mat-checkbox>
+          <mat-checkbox name="user-roles-user" *ngIf="!user.roles.user" (click)="addUserRole(user, 'user')">User</mat-checkbox>
+          <!-- ADMIN ROLE -->
+          <mat-checkbox name="user-roles-admin" *ngIf="user.roles.admin" [(ngModel)]="user.roles.admin" (click)="removeUserRole(user, 'admin')">Admin</mat-checkbox>
+          <mat-checkbox name="user-roles-admin" *ngIf="!user.roles.admin" (click)="addUserRole(user, 'admin')">Admin</mat-checkbox>
+          <!-- SUPER ROLE -->
+          <mat-checkbox name="user-roles-super" *ngIf="user.roles.super" [(ngModel)]="user.roles.super" (click)="removeUserRole(user, 'super')">Super</mat-checkbox>
+          <mat-checkbox name="user-roles-super" *ngIf="!user.roles.super" (click)="addUserRole(user, 'super')">Super</mat-checkbox>
+        </div>
+      </form>
+      <mat-card-footer class="d-flex justify-content-around user-card-footer">
+        <mat-icon class="user-card-controls-icon" (click)="deleteUser(user)">delete</mat-icon>
+        <mat-icon class="user-card-controls-icon" (click)="updateUser(user)">save</mat-icon>
+        <mat-icon class="user-card-controls-icon" (click)="user.isEditable = false">cancel</mat-icon>
+      </mat-card-footer>
+    </div>
+  </mat-card>
 </div>

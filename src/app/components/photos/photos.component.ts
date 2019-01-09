@@ -4,8 +4,8 @@ import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
-import { AngularFireStorageReference } from '@angular/fire/storage';
-import * as html2canvas from 'html2canvas';
+import { MatDialog } from '@angular/material';
+import { ConfirmPromptComponent } from '../confirm-prompt/confirm-prompt.component';
 
 declare const lightGallery: any;
 
@@ -34,6 +34,7 @@ export class PhotosComponent implements OnInit {
   constructor(
     private photosService: PhotosService,
     private auth: AuthService,
+    public dialog: MatDialog,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
@@ -50,6 +51,7 @@ export class PhotosComponent implements OnInit {
         this.updatePhotoGallery();
       }
     )
+    this.openDialog();
   }
 
   downloadPhoto(photo: Photo): void {
@@ -197,6 +199,7 @@ export class PhotosComponent implements OnInit {
   updatePhotoGallery(): void {
     const photoGallery = document.getElementById('lightgallery');
     const galleryId = photoGallery.getAttribute('lg-uid');
+
     if (galleryId)
       window.lgData[galleryId].destroy(true);
 
@@ -212,5 +215,16 @@ export class PhotosComponent implements OnInit {
       this.photoGallery = document.getElementById('lightgallery');
       lightGallery(this.photoGallery, galleryOptions);
     }
+  }
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmPromptComponent, {
+      width: '250px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('RESULT', result);
+    });
   }
 }

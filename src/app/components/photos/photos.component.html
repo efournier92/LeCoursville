@@ -1,4 +1,4 @@
-<div class="d-flex photos-component-container" style="margin: 0 20px">
+<div class="d-flex photos-component-container">
   <form (ngSubmit)="searchPhotos(searchTerm)">
     <mat-form-field>
       <input matInput [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search">
@@ -43,8 +43,6 @@
   <mat-spinner></mat-spinner>
 </div>
 <div id="lightgallery">
-  <div id="download-img" hidden></div>
-
   <div [hidden]="showSpinner">
     <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
       <a href="{{ photo.url }}" class="light-link">
