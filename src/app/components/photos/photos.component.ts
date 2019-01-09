@@ -4,6 +4,8 @@ import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
+import { AngularFireStorageReference } from '@angular/fire/storage';
+import * as html2canvas from 'html2canvas';
 
 declare const lightGallery: any;
 
@@ -51,7 +53,21 @@ export class PhotosComponent implements OnInit {
   }
 
   downloadPhoto(photo: Photo): void {
-    this.photosService.downloadPhoto(photo);
+    var request = new XMLHttpRequest();
+    request.open("GET", photo.url, true);
+    request.responseType = 'blob';
+    request.send();
+    request.onload = () => {
+      const blob = new Blob([request.response], { type: 'image/jpg' });
+      const photoElement = document.createElement("a");
+      document.body.appendChild(photoElement);
+      const url = window.URL.createObjectURL(blob);
+      photoElement.href = url;
+      const fileName = photo.path.replace('photos/', '')
+      photoElement.download = fileName;
+      photoElement.click();
+      window.URL.revokeObjectURL(url);
+    }
   }
 
   updatePhoto(photo: Photo): void {
@@ -97,7 +113,6 @@ export class PhotosComponent implements OnInit {
         this.allPhotos = photos;
         this.sortPhotosBy(this.sortRandomly);
         this.loadMorePhotos(3);
-        this.downloadPhoto(this.allPhotos[0]);
       }
     );
   }
@@ -187,7 +202,8 @@ export class PhotosComponent implements OnInit {
 
     const galleryOptions = {
       selector: '.light-link',
-      pause: 6000,
+      pause: 5000,
+      download: false,
       autoplay: false,
       progressBar: false,
     };

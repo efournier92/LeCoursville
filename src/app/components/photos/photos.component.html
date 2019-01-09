@@ -43,6 +43,8 @@
   <mat-spinner></mat-spinner>
 </div>
 <div id="lightgallery">
+  <div id="download-img" hidden></div>
+
   <div [hidden]="showSpinner">
     <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
       <a href="{{ photo.url }}" class="light-link">
@@ -53,8 +55,11 @@
         <span *ngIf="photo.location">{{ photo.location }}<br></span>
         <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
       </mat-card-content>
-      <mat-card-footer *ngIf="user.roles && user.roles.admin && !photo.isEditable" class="contact-controls-container d-flex justify-content-end">
-        <button mat-button (click)="photo.isEditable = true">
+      <mat-card-footer class="contact-controls-container d-flex justify-content-end">
+        <button mat-button (click)="downloadPhoto(photo)">
+          <mat-icon>cloud_download</mat-icon>
+        </button>
+        <button mat-button *ngIf="user.roles && user.roles.admin && !photo.isEditable" (click)="photo.isEditable = true">
           <mat-icon>edit</mat-icon>
         </button>
       </mat-card-footer>

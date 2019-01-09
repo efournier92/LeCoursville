@@ -32,7 +32,8 @@
             "scripts": [
               "src/assets/lightgallery/lightgallery.js",
               "src/assets/lightgallery/lg-zoom.js",
-              "src/assets/lightgallery/lg-autoplay.js"
+              "src/assets/lightgallery/lg-autoplay.js",
+              "src/assets/html2canvas/html2canvas.min.js"
             ]
           },
           "configurations": {
