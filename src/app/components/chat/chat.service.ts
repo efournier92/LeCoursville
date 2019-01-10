@@ -4,6 +4,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Message } from './message';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
+import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
+import { PhotoUpload } from '../photos/photos.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +17,7 @@ export class ChatService {
 
   constructor(
     private db: AngularFireDatabase,
+    private storage: AngularFireStorage,
     private auth: AuthService,
   ) {
     this.auth.userObservable.subscribe(

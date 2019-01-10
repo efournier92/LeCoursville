@@ -64,7 +64,7 @@ export class ChatComponent implements OnInit {
     }
     let authorId: string = this.auth.user.id;
     let authorName: string = this.auth.user.name;
-    this.messages.unshift(new Message('', '', authorId, authorName, false, true, 0));
+    this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
   }
 
   loadMore(): void {

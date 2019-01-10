@@ -55,6 +55,8 @@
       </mat-card-subtitle>
     </mat-card-title>
     {{ message.body }}
+    <br>
+    <img mat-card-image src="{{ message.photoUrl }}" style="width:80%;margin-left: 0px;" *ngIf="message.photoUrl && message.photoUrl !== ''">
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">

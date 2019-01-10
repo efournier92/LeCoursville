@@ -7,6 +7,11 @@ import { User } from 'src/app/components/auth/user';
 import { HighlightService } from '../highlight.service';
 import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
+import { PhotosService } from '../../photos/photos.service';
+
+declare global {
+  interface HTMLElement { value: string; }
+}
 
 @Component({
   selector: 'app-chat-edit',
@@ -31,6 +36,7 @@ export class ChatEditComponent implements OnInit {
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
+    private photoService: PhotosService,
     private highlightService: HighlightService,
     private router: Router,
   ) { }
@@ -44,6 +50,10 @@ export class ChatEditComponent implements OnInit {
   saveMessage(message: Message): void {
     message.isEditable = false;
     message.isSaved = true;
+    if (this.photoUpload && !this.message.isReply) {
+      this.saveMessageWithPhoto(message);
+      return;
+    }
     if (message.isReply) {
       if (this.parent)
         this.updateParent();
@@ -52,6 +62,16 @@ export class ChatEditComponent implements OnInit {
     } else {
       this.chatService.updateMessage(message);
     }
+  }
+
+  saveMessageWithPhoto(message: Message): void {
+    let photoUpload = this.photoService.uploadPhoto(this.photoUpload);
+    photoUpload.onUrlAvailable.subscribe(
+      (url: string) => {
+        message.photoUrl = url;
+        this.chatService.createMessage(message);
+      }
+    )
   }
 
   isMessageAuthor(message: Message): boolean {
@@ -112,5 +132,11 @@ export class ChatEditComponent implements OnInit {
   updatePhotoUpload(event: any) {
     this.photoUpload = event.currentTarget.files[0];
     console.log(this.photoUpload);
+  }
+
+  onCancelUpload() {
+    let uploadInputElement = document.getElementById('uploadPhotoInput');
+    uploadInputElement.value = '';
+    this.photoUpload = undefined;
   }
 }

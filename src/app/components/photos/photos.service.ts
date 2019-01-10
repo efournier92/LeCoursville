@@ -10,6 +10,7 @@ import { User } from '../auth/user';
 export interface PhotoUpload {
   photo: Photo;
   task: AngularFireUploadTask;
+  onUrlAvailable: Observable<string>;
 }
 
 @Injectable({
@@ -93,14 +94,19 @@ export class PhotosService {
             const photosDb: AngularFireList<Object> = this.db.list('photos');
             photo.url = url;
             photosDb.update(photo.id, photo);
+            photoUploadSource.next(url);
           }
         )
       })
     ).subscribe()
 
+    const photoUploadSource = new BehaviorSubject('');
+    const onUrlAvailable = photoUploadSource.asObservable();
+
     let upload = new Object as PhotoUpload;
     upload.task = task;
     upload.photo = photo;
+    upload.onUrlAvailable = onUrlAvailable;
 
     return upload;
   }

@@ -81,7 +81,7 @@ export class StoriesViewComponent implements OnInit {
     let replyLevel: number = this.message.replyLevel + 1;
     if (!this.message.replies)
       this.message.replies = new Array<Message>();
-    this.message.replies.unshift(new Message('', '', authorId, authorName, true, true, replyLevel));
+    this.message.replies.unshift(new Message('', '', '', authorId, authorName, true, true, replyLevel));
   }
 
   updateParent(): void {

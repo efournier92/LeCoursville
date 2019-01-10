@@ -58,7 +58,7 @@ export class StoriesComponent implements OnInit {
     }
     let authorId: string = this.auth.user.id;
     let authorName: string = this.auth.user.name;
-    this.messages.unshift(new Message('', '', authorId, authorName, false, true, 0));
+    this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
   }
 
   loadMore(): void {
@@ -82,7 +82,7 @@ export class StoriesComponent implements OnInit {
     this.chatService.deleteMessage(message);
   }
 
-  cancelEdit(message): void {
+  cancelEdit(message: Message): void {
     if (!message.isSaved) {
       this.messages.shift();
     } else {
