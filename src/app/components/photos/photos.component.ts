@@ -4,8 +4,9 @@ import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { ConfirmPromptComponent } from '../confirm-prompt/confirm-prompt.component';
+import { ConfirmPromptService } from '../confirm-prompt/confirm-prompt.service';
 
 declare const lightGallery: any;
 
@@ -35,6 +36,7 @@ export class PhotosComponent implements OnInit {
     private photosService: PhotosService,
     private auth: AuthService,
     public dialog: MatDialog,
+    public confirmPrompt: ConfirmPromptService,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
@@ -51,7 +53,6 @@ export class PhotosComponent implements OnInit {
         this.updatePhotoGallery();
       }
     )
-    this.openDialog();
   }
 
   downloadPhoto(photo: Photo): void {
@@ -91,14 +92,31 @@ export class PhotosComponent implements OnInit {
   }
 
   uploadPhotos(event: any): void {
-    for (let file of event.currentTarget.files) {
-      const upload = this.photosService.uploadPhoto(file);
-      this.photoUploads.push(upload);
-    }
-    setTimeout(() => {
-      this.sortPhotosBy(this.sortByDateAdded);
-      this.sortType = 'added';
-    }, 1500);
+    const filesToUpload = event.currentTarget.files;
+    let message = "Do you want to upload " + filesToUpload.length + " photos to LeCoursville?";
+    if (filesToUpload.length <= 1)
+      message = "Do you want to upload this photo to LeCoursville?";
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      message,
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+
+          for (let file of filesToUpload) {
+            const upload = this.photosService.uploadPhoto(file);
+            this.photoUploads.push(upload);
+          }
+          setTimeout(() => {
+            this.sortPhotosBy(this.sortByDateAdded);
+            this.sortType = 'added';
+          }, 1500);
+        }
+      }
+    );
+
+
   }
 
   completePhotoUpload(upload: PhotoUpload) {
@@ -154,9 +172,13 @@ export class PhotosComponent implements OnInit {
     this.loadMorePhotos(3);
   }
 
-  sortRandomly(a: Photo, b: Photo): number {
+  sortRandomly(): number {
     var randomNumber = Math.floor(Math.random() * 21) - 10;
     return randomNumber;
+  }
+
+  sortByYearTaken(a: Photo, b: Photo): number {
+    return new Date(a.year).getFullYear() - new Date(b.year).getFullYear();
   }
 
   sortByDateAdded(a: Photo, b: Photo): number {
@@ -165,10 +187,6 @@ export class PhotosComponent implements OnInit {
     if (!b.dateAdded)
       b.dateAdded = new Date(0);
     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-  }
-
-  sortByYearTaken(a: Photo, b: Photo): number {
-    return new Date(a.year).getFullYear() - new Date(b.year).getFullYear();
   }
 
   searchPhotos(searchTerm: string): void {
@@ -215,16 +233,5 @@ export class PhotosComponent implements OnInit {
       this.photoGallery = document.getElementById('lightgallery');
       lightGallery(this.photoGallery, galleryOptions);
     }
-  }
-
-  openDialog(): void {
-    const dialogRef = this.dialog.open(ConfirmPromptComponent, {
-      width: '250px',
-      data: {}
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('RESULT', result);
-    });
   }
 }

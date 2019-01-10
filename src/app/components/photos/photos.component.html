@@ -53,8 +53,8 @@
         <span *ngIf="photo.location">{{ photo.location }}<br></span>
         <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
       </mat-card-content>
-      <mat-card-footer class="contact-controls-container d-flex justify-content-end">
-        <button mat-button (click)="downloadPhoto(photo)">
+      <mat-card-footer class="photos-controls-container d-flex justify-content-end">
+        <button mat-button (click)="downloadPhoto(photo)" *ngIf="!photo.isEditable">
           <mat-icon>cloud_download</mat-icon>
         </button>
         <button mat-button *ngIf="user.roles && user.roles.admin && !photo.isEditable" (click)="photo.isEditable = true">
