@@ -59,6 +59,19 @@
       <textarea matInput class="message-input-area" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
         #input [(ngModel)]="message.body"></textarea>
     </mat-form-field>
+    <div class="d-flex align-items-center mt-2">
+      <button mat-raised-button class="photos-upload-button">
+        <label class="photos-add-button-label d-flex">
+          <mat-icon>attach_file</mat-icon><span class="photos-add-icon-label">Attach Photo</span>
+          <input type="file" (change)="updatePhotoUpload($event)" accept=".png,.jpg" />
+        </label>
+      </button>
+      <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
+      <span *ngIf="photoUpload && photoUpload.name">
+        {{ photoUpload.name }}
+        <mat-icon>cancel</mat-icon>
+      </span>
+    </div>
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">

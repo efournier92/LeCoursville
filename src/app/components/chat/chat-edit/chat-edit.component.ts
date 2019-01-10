@@ -26,6 +26,7 @@ export class ChatEditComponent implements OnInit {
   cancelEditEvent: EventEmitter<Object> = new EventEmitter();
   @ViewChild('autosize')
   autosize: CdkTextareaAutosize;
+  photoUpload: any;
 
   constructor(
     private chatService: ChatService,
@@ -106,5 +107,10 @@ export class ChatEditComponent implements OnInit {
 
   highlightElement(element: string, value: boolean): void {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
+  }
+
+  updatePhotoUpload(event: any) {
+    this.photoUpload = event.currentTarget.files[0];
+    console.log(this.photoUpload);
   }
 }
