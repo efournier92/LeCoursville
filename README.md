@@ -3,7 +3,7 @@
 ## TODO
 * [ ] PDF print-from-html
 * [ ] Update PDF calendars
-* [ ] Chat photo in message
+* [X] Chat photo in message
 * [X] Admin tools (super user)
 * [X] Photos upload progress bar
 * [X] Photos click lightbox with zoom

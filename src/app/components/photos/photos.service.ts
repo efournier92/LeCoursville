@@ -21,6 +21,7 @@ export class PhotosService {
   allPhotos: AngularFireList<Photo>;
   photoCount: number = 0;
   increment: number = 2;
+  user: User;
 
   constructor(
     private storage: AngularFireStorage,
@@ -30,6 +31,7 @@ export class PhotosService {
     this.auth.userObservable.subscribe(
       (user: User) => {
         if (user) {
+          this.user = user;
           this.getAllPhotos().valueChanges().subscribe(
             (photos: Photo[]) => {
               this.updateAllPhotosEvent(photos);
@@ -82,6 +84,7 @@ export class PhotosService {
     let photo: Photo = new Photo();
     photo.id = this.db.createPushId();
     photo.dateAdded = new Date();
+    photo.uploadedBy = this.user.id;
     photo.extension = file.name.split('.').pop();
     photo.path = `photos/${photo.id}.${photo.extension}`;
 

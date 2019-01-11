@@ -48,7 +48,7 @@
       <a href="{{ photo.url }}" class="light-link">
         <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
       </a>
-      <mat-card-content>
+      <mat-card-content *ngIf="!photo.isEditable">
         <span *ngIf="photo.info">{{ photo.info }}<br></span>
         <span *ngIf="photo.location">{{ photo.location }}<br></span>
         <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
@@ -61,14 +61,15 @@
           <mat-icon>edit</mat-icon>
         </button>
       </mat-card-footer>
-      <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.isEditable" class="contact-controls-container d-flex justify-content-end">
+      <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.isEditable" class="contact-edit-footer d-flex justify-content-end">
         <div class="input-group mb-1">
           <form>
             <div class="form-row">
               <div class="photo-info-input-container form-group col-11">
-                <input type="text" class="form-control" name="photoInfo" [(ngModel)]="photo.info" placeholder="Info">
+                <input type="text" class="form-control photo-info-input" name="photoInfo" [(ngModel)]="photo.info"
+                  placeholder="Info">
               </div>
-              <div class="form-row ml-3">
+              <div class="form-row ml-3 photo-edit-inputs-container">
                 <div class="form-group col-4">
                   <select class="form-control" name="photoYear" [(ngModel)]="photo.year">
                     <option *ngFor="let year of years">{{ year }}</option>

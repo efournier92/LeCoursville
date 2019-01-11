@@ -103,7 +103,6 @@ export class PhotosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
-
           for (let file of filesToUpload) {
             const upload = this.photosService.uploadPhoto(file);
             this.photoUploads.push(upload);
@@ -115,8 +114,6 @@ export class PhotosComponent implements OnInit {
         }
       }
     );
-
-
   }
 
   completePhotoUpload(upload: PhotoUpload) {

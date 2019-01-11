@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
 import { PhotosService } from '../../photos/photos.service';
 
-declare global {
-  interface HTMLElement { value: string; }
+declare interface HtmlInput extends HTMLElement {
+  value: string;
 }
 
 @Component({
@@ -135,7 +135,7 @@ export class ChatEditComponent implements OnInit {
   }
 
   onCancelUpload() {
-    let uploadInputElement = document.getElementById('uploadPhotoInput');
+    let uploadInputElement = document.getElementById('uploadPhotoInput') as HtmlInput;
     uploadInputElement.value = '';
     this.photoUpload = undefined;
   }
