@@ -1,15 +1,17 @@
 # Lecoursville
 
 ## TODO
+* [~] Add stories component
 * [ ] PDF print-from-html
-* [ ] Update PDF calendars
+* [X] IE Chat Bug
+* [ ] Confirm prompt instances
+* [ ] Label Photos
 * [X] Chat photo in message
 * [X] Admin tools (super user)
 * [X] Photos upload progress bar
 * [X] Photos click lightbox with zoom
 * [X] Photos Sortability
-* [ ] PhotoBy
-* [~] Add stories component
+* [X] PhotoBy
 * [X] DB Rules
 * [X] IE Compatibility
 * [X] Calendar Cell Dialog always show title

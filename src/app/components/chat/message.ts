@@ -26,6 +26,7 @@ export class Message {
   likes: Like[];
   replies: Message[];
   timestamp: number;
+  dateSent: Date;
   isEditable: boolean;
   isSaved: boolean;
   isDeleted: boolean;

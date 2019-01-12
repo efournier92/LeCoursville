@@ -49,6 +49,9 @@
         <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
       </a>
       <mat-card-content *ngIf="!photo.isEditable">
+        <div class="photo-by">
+          <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br></span>
+        </div>
         <span *ngIf="photo.info">{{ photo.info }}<br></span>
         <span *ngIf="photo.location">{{ photo.location }}<br></span>
         <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
@@ -76,10 +79,15 @@
                   </select>
                 </div>
                 <div class="form-group col-2 d-flex align-items-end">
-                  <mat-checkbox name="photoYearCirca" [(ngModel)]="photo.isYearCirca"><i>c.</i></mat-checkbox>
+                  <mat-checkbox name="photo-year-circa" [(ngModel)]="photo.isYearCirca"><i>c.</i></mat-checkbox>
                 </div>
                 <div class="form-group col-6">
-                  <input type="text" class="form-control" name="addressZip" [(ngModel)]="photo.location" placeholder="Location">
+                  <input type="text" class="form-control" name="photo-location" [(ngModel)]="photo.location"
+                    placeholder="Location">
+                </div>
+                <br>
+                <div class="form-group col-6">
+                  <input type="text" class="form-control" name="photo-by" [(ngModel)]="photo.takenBy" placeholder="Photo By">
                 </div>
               </div>
             </div>
