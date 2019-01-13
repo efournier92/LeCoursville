@@ -1,3 +1,5 @@
+<!-- <app-calendar-printer [events]="allEvents"></app-calendar-printer> -->
+
 <div class="upload-calendar-container d-flex justify-content-around" *ngIf="user && user.roles && user.roles.super">
   <div class="d-flex flex-row justify-content-center m-2">
     <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">

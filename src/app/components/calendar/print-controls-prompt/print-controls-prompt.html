@@ -1,3 +1,6 @@
+<div *ngIf="events && events.length > 0">
+  <app-calendar-view [viewDate]="viewDate" [events]="events"></app-calendar-view>
+</div>
 <label for="basic-url">
   <h3>
     Print Calendar
@@ -14,6 +17,8 @@
     </mat-select>
   </mat-form-field>
 </div>
+<mat-progress-bar class="mt-2 mb-2" mode="determinate" value="{{printProgress}}"></mat-progress-bar>
+
 <!-- <div class="input-group mb-3">
   <mat-checkbox class="example-margin" [(ngModel)]="birthdayChecked">Birthdays</mat-checkbox>
 </div>
@@ -21,5 +26,5 @@
   <mat-checkbox class="example-margin" [(ngModel)]="anniversaryChecked">Anniversaries</mat-checkbox>
 </div> -->
 <div class="d-flex justify-content-center">
-  <button mat-raised-button color="primary" (click)="printFromFile()">Print</button>
+  <button mat-raised-button color="primary" (click)="printFromHtml()">Print</button>
 </div>

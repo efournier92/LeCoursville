@@ -11,6 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import { Calendar } from './calendar';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
+import { CalendarPrinterComponent } from './calendar-printer/calendar-printer.component';
 
 @Component({
   selector: 'app-calendar',
@@ -39,7 +40,7 @@ export class CalendarComponent {
   constructor(
     public auth: AuthService,
     public dialog: MatDialog,
-    public printControlsPrompt: MatDialog,
+    public printerPrompt: MatDialog,
     public http: HttpClient,
     private calendarService: CalendarService,
   ) { }
@@ -90,6 +91,15 @@ export class CalendarComponent {
     this.updateEvents(this.events, year, this.showBirthdays, this.showAnniversaries);
   }
 
+  changeView(viewDate): void {
+    this.viewMonth = this.months[viewDate.getMonth()];
+    let viewYear = viewDate.getFullYear().toString();
+    if (viewYear !== this.viewYear) {
+      this.viewYear = viewYear;
+      this.updateEvents(this.events, viewYear, this.showBirthdays, this.showAnniversaries);
+    }
+  }
+
   updateEvents(events: RecurringEvent[], year: string, birthdays: boolean, anniversaries: boolean): void {
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
@@ -102,15 +112,6 @@ export class CalendarComponent {
       event.start = date;
       event.date = new Date(event.date);
       this.events.push(event);
-    }
-  }
-
-  changeView(viewDate): void {
-    this.viewMonth = this.months[viewDate.getMonth()];
-    let viewYear = viewDate.getFullYear().toString();
-    if (viewYear !== this.viewYear) {
-      this.viewYear = viewYear;
-      this.updateEvents(this.events, viewYear, this.showBirthdays, this.showAnniversaries);
     }
   }
 
@@ -162,8 +163,8 @@ export class CalendarComponent {
   }
 
   openPrintControlsPrompt(): void {
-    this.printControlsPrompt.open(PrintControlsPrompt, {
-      data: {},
+    this.printerPrompt.open(CalendarPrinterComponent, {
+      data: { events: this.allEvents },
     });
   }
 

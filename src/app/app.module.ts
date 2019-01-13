@@ -102,6 +102,7 @@ import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prom
     PrintControlsPrompt,
     CalendarDialogComponent,
     ConfirmPromptComponent,
+    CalendarPrinterComponent,
   ],
   exports: [
     EditContactComponent,

@@ -1,12 +1,13 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CalendarService } from '../calendar.service';
-import { CalendarPrinterService } from '../calendar-printer/calendar-printer.service';
 import { Calendar } from '../calendar';
+import { CalendarPrinterComponent } from '../calendar-printer/calendar-printer.component';
 
 @Component({
   selector: 'print-controls-prompt',
   templateUrl: 'print-controls-prompt.html',
+  providers: [CalendarPrinterComponent]
 })
 export class PrintControlsPrompt {
   userName: string;
@@ -15,11 +16,14 @@ export class PrintControlsPrompt {
   allCalendars: Array<Calendar>;
   birthdayChecked: boolean = true;
   anniversaryChecked: boolean = true;
+  printProgress: number = 0;
+  // calendarPrinter: CalendarPrinterComponent = new CalendarPrinterComponent();
 
   constructor(
     public dialogRef: MatDialogRef<PrintControlsPrompt>,
     private calendarService: CalendarService,
-    private calendarPrintService: CalendarPrinterService,
+    private calendarPrinter: CalendarPrinterComponent,
+    // private calendarPrinter: CalendarPrinterComponent,
     @Inject(MAT_DIALOG_DATA) public data: string,
   ) {
     this.viewYears = this.calendarService.getViewYears();
@@ -29,6 +33,15 @@ export class PrintControlsPrompt {
         this.allCalendars = calendars;
       }
     )
+  }
+
+  printFromHtml() {
+    this.calendarPrinter.printPdf(this.selectedYear).subscribe(
+      (progress: number) => {
+        this.printProgress = progress;
+      }
+    );
+
   }
 
   printFromFile(): void {
