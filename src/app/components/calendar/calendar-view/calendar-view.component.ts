@@ -18,6 +18,8 @@ export class CalendarViewComponent implements OnInit {
   viewDate: Date;
   @Input()
   events: RecurringEvent[];
+  @Input()
+  isPrintView: boolean;
   @Output()
   refreshView: EventEmitter<Event> = new EventEmitter();
 

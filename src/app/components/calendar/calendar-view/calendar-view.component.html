@@ -7,7 +7,7 @@
       <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
     </div>
     <small class="mb-1" *ngFor="let event of day.events">
-      <app-calendar-cell [event]="event" [isDialog]="false"></app-calendar-cell>
+      <app-calendar-cell [event]="event" [isPrintView]="isPrintView" [isDialog]="false"></app-calendar-cell>
     </small>
   </div>
   <mat-menu #menu="matMenu">

@@ -35,7 +35,6 @@ import { CalendarDialogComponent } from './components/calendar/calendar-dialog/c
 import { CalendarPrinterComponent } from './components/calendar/calendar-printer/calendar-printer.component';
 import { CalendarViewComponent } from './components/calendar/calendar-view/calendar-view.component';
 import { CalendarCellComponent } from './components/calendar/calendar-view/calendar-cell/calendar-cell.component';
-import { PrintControlsPrompt } from './components/calendar/print-controls-prompt/print-controls-prompt';
 import { AdminComponent } from './components/admin/admin.component';
 import { PhotoUploadProgressComponent } from './components/photos/photo-upload-progress/photo-upload-progress.component';
 import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prompt.component';
@@ -56,7 +55,6 @@ import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prom
     CalendarPrinterComponent,
     CalendarViewComponent,
     CalendarCellComponent,
-    PrintControlsPrompt,
     StoriesComponent,
     StoriesViewComponent,
     StoriesEditComponent,
@@ -99,7 +97,6 @@ import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prom
     AppComponent,
   ],
   entryComponents: [
-    PrintControlsPrompt,
     CalendarDialogComponent,
     ConfirmPromptComponent,
     CalendarPrinterComponent,

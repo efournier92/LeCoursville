@@ -2,8 +2,6 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CalendarView } from 'angular-calendar';
 import { MatDialog } from '@angular/material';
 import { CalendarDialogComponent } from './calendar-dialog/calendar-dialog.component';
-import { PrintControlsPrompt } from './print-controls-prompt/print-controls-prompt';
-import { CalendarPrinterService } from './calendar-printer/calendar-printer.service';
 import { CalendarService, Months } from './calendar.service'
 import { Subject } from 'rxjs';
 import { RecurringEvent } from './calendar.service';
