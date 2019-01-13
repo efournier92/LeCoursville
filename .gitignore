@@ -6,10 +6,10 @@
 /out-tsc
 
 # dependencies
-/node_modules
+/node_modules/**
 !/node_modules/zlib/
 !/node_modules/zlib/package.json
-!/node_modules/zlib/index.json
+!/node_modules/zlib/index.js
 
 # IDEs and editors
 /.idea
