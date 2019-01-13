@@ -7,7 +7,7 @@
 
 # dependencies
 /node_modules
-!/node_modules/zlib/**
+!/node_modules/zlib/*
 
 # IDEs and editors
 /.idea
