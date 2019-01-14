@@ -25,7 +25,6 @@ export class Message {
   replyLevel: number;
   likes: Like[];
   replies: Message[];
-  timestamp: number;
   dateSent: Date;
   isEditable: boolean;
   isSaved: boolean;
@@ -42,7 +41,7 @@ export class Message {
     this.isReply = isReply;
     this.replyLevel = replyLevel;
     this.replies = new Array<Message>();
-    this.timestamp = new Date().getTime();
+    this.dateSent = new Date();
     this.isEditable = isEditable;
     this.isSaved = false;
     this.isDeleted = false;

@@ -3,8 +3,8 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CalendarService, RecurringEvent } from '../calendar.service';
 
 export interface DialogData {
-  animal: string;
-  name: string;
+  header: string,
+  message: string,
 }
 
 @Component({

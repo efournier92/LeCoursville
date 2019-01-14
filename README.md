@@ -2,10 +2,12 @@
 
 ## TODO
 * [~] Add stories component
-* [ ] PDF print-from-html
+* [X] PDF print-from-html
 * [X] IE Chat Bug
 * [ ] Confirm prompt instances
+* [ ] Photo lightbox labels
 * [ ] Label Photos
+* [X] `zlib` warning
 * [X] Chat photo in message
 * [X] Admin tools (super user)
 * [X] Photos upload progress bar

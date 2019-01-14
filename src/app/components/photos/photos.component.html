@@ -52,9 +52,11 @@
         <div class="photo-by">
           <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br></span>
         </div>
-        <span *ngIf="photo.info">{{ photo.info }}<br></span>
-        <span *ngIf="photo.location">{{ photo.location }}<br></span>
-        <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
+        <div class="mt-1">
+          <span *ngIf="photo.info">{{ photo.info }}<br></span>
+          <span *ngIf="photo.location">{{ photo.location }}<br></span>
+          <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
+        </div>
       </mat-card-content>
       <mat-card-footer class="photos-controls-container d-flex justify-content-end">
         <button mat-button (click)="downloadPhoto(photo)" *ngIf="!photo.isEditable">

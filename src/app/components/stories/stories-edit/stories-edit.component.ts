@@ -1,12 +1,12 @@
 import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
-import { Message } from 'src/app/components/chat/message';
+import { Message } from 'src/app/components/stories/message';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { AuthService } from '../../auth/auth.service';
-import { ChatService } from 'src/app/components/chat/chat.service';
 import { User } from 'src/app/components/auth/user';
 import { HighlightService } from '../highlight.service';
 import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
+import { StoriesService } from '../stories.service';
 
 @Component({
   selector: 'app-stories-edit',
@@ -23,7 +23,7 @@ export class StoriesEditComponent implements OnInit {
   @ViewChild('autosize') autosize: CdkTextareaAutosize;
 
   constructor(
-    private chatService: ChatService,
+    private storiesService: StoriesService,
     private authService: AuthService,
     private highlightService: HighlightService,
     private router: Router,
@@ -42,9 +42,9 @@ export class StoriesEditComponent implements OnInit {
       if (this.parent)
         this.updateParent();
     } else if (!message.id) {
-      this.chatService.createMessage(message);
+      this.storiesService.createMessage(message);
     } else {
-      this.chatService.updateMessage(message);
+      this.storiesService.updateMessage(message);
     }
   }
 
@@ -72,7 +72,7 @@ export class StoriesEditComponent implements OnInit {
     if (this.message.replies && this.message.replies.length !== 0) {
       this.message.isDeleted = true;
     } else {
-      this.chatService.deleteMessage(this.message);
+      this.storiesService.deleteMessage(this.message);
     }
     this.message.isEditable = false;
   }

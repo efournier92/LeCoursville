@@ -43,7 +43,8 @@ export class PhotosService {
   }
 
   updatePhoto(photo: Photo): void {
-    this.allPhotos.update(photo.id, photo);
+    let photosDb = this.db.list('photos');
+    photosDb.update(photo.id, photo);
   }
 
   deletePhoto(photo: Photo): void {

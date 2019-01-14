@@ -18,7 +18,7 @@ export class CalendarCellComponent implements OnInit {
     private calendarService: CalendarService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit(): void { }
 
   getYearsSince(event: RecurringEvent): number {
     let eventYear: number = event.date.getUTCFullYear();

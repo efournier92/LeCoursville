@@ -41,7 +41,7 @@ export class CalendarViewComponent implements OnInit {
     this.refreshView.emit(event);
   }
 
-  openDialog(event): void {
+  openDialog(event: RecurringEvent): void {
     if (!this.user || !this.user.roles || this.user.roles.admin !== true)
       return;
 

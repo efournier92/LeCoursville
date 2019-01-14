@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { StoriesService } from './stories.service';
 import { User } from 'src/app/components/auth/user';
-import { Message } from 'src/app/components/chat/message';
+import { Message } from 'src/app/components/stories/message';
 
 @Component({
   selector: 'app-chat',
@@ -58,7 +58,7 @@ export class StoriesComponent implements OnInit {
     }
     let authorId: string = this.auth.user.id;
     let authorName: string = this.auth.user.name;
-    this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
+    this.messages.unshift(new Message('', '', authorId, authorName, false, true, 0));
   }
 
   loadMore(): void {

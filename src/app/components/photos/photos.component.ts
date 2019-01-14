@@ -4,8 +4,7 @@ import { PhotosService, PhotoUpload } from './photos.service'
 import { Photo } from './photo';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
-import { MatDialog, MatDialogRef } from '@angular/material';
-import { ConfirmPromptComponent } from '../confirm-prompt/confirm-prompt.component';
+import { MatDialog } from '@angular/material';
 import { ConfirmPromptService } from '../confirm-prompt/confirm-prompt.service';
 
 declare const lightGallery: any;
@@ -21,7 +20,7 @@ declare global {
 })
 export class PhotosComponent implements OnInit {
   user: User;
-  allPhotos: Photo[];
+  allPhotos: Photo[] = new Array<Photo>();
   loadablePhotos: Photo[] = new Array<Photo>();
   loadedPhotos: Photo[] = new Array<Photo>();
   foundPhotos: Photo[];
@@ -124,12 +123,21 @@ export class PhotosComponent implements OnInit {
     );
   }
 
+  shouldRefreshPhotos(photos): boolean {
+    return photos
+      && photos.length
+      && photos.length !== 0
+      && photos.length !== this.allPhotos.length;
+  }
+
   loadAllPhotos(): void {
     this.photosService.getAllPhotos().valueChanges().subscribe(
       (photos: Array<Photo>) => {
-        this.allPhotos = photos;
-        this.sortPhotosBy(this.sortRandomly);
-        this.loadMorePhotos(3);
+        if (this.shouldRefreshPhotos(photos)) {
+          this.allPhotos = photos;
+          this.sortPhotosBy(this.sortRandomly);
+          this.loadMorePhotos(3);
+        }
       }
     );
   }
@@ -194,10 +202,14 @@ export class PhotosComponent implements OnInit {
       let info = photo.info.toLowerCase();
       let location = photo.location.toLowerCase();
       let year = photo.year.toString();
+      let photoBy = '';
+      if (photo.takenBy)
+        photoBy = photo.takenBy.toLowerCase();
       if (
         info.includes(searchTerm) ||
         location.includes(searchTerm) ||
-        year.includes(searchTerm)
+        year.includes(searchTerm) ||
+        photoBy.includes(searchTerm)
       ) {
         this.loadablePhotos.push(photo);
       }
