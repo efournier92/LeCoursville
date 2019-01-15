@@ -129,14 +129,13 @@ export class ChatEditComponent implements OnInit {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 
-  updatePhotoUpload(event: any) {
-    this.photoUpload = event.currentTarget.files[0];
-    console.log(this.photoUpload);
-  }
-
-  onCancelUpload() {
-    let uploadInputElement = document.getElementById('uploadPhotoInput') as HtmlInput;
+  onCancelUpload(): void {
+    let uploadInputElement = document.getElementById('file-input-file') as HtmlInput;
     uploadInputElement.value = '';
     this.photoUpload = undefined;
+  }
+
+  onInputFileChange(file: any): void {
+    this.photoUpload = file.files[0];
   }
 }

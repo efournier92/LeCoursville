@@ -2,11 +2,13 @@
 
 ## TODO
 * [~] Add stories component
+* [~] File input component
 * [X] PDF print-from-html
 * [X] IE Chat Bug
 * [ ] Confirm prompt instances
 * [ ] Photo lightbox labels
 * [ ] Label Photos
+* [ ] Integrate GA
 * [X] `zlib` warning
 * [X] Chat photo in message
 * [X] Admin tools (super user)

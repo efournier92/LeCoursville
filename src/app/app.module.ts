@@ -38,6 +38,7 @@ import { CalendarCellComponent } from './components/calendar/calendar-view/calen
 import { AdminComponent } from './components/admin/admin.component';
 import { PhotoUploadProgressComponent } from './components/photos/photo-upload-progress/photo-upload-progress.component';
 import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prompt.component';
+import { FileInputComponent } from './components/file-input/file-input.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { ConfirmPromptComponent } from './components/confirm-prompt/confirm-prom
     AdminComponent,
     PhotoUploadProgressComponent,
     ConfirmPromptComponent,
+    FileInputComponent,
   ],
   imports: [
     AppRoutingModule,
