@@ -29,13 +29,9 @@
 </div>
 <div class="photo-upload-input-container d-flex flex-row justify-content-end" *ngIf="user && user.roles && user.roles.admin">
   <div class="d-flex flex-column">
-    <button mat-button class="photos-upload-button">
-      <label class="photos-add-button-label d-flex">
-        <mat-icon>add</mat-icon><span class="photos-add-icon-label">Upload Photos</span>
-        <input type="file" (change)="uploadPhotos($event)" accept=".png,.jpg" multiple />
-      </label>
-    </button>
-    <br>
+    <app-file-input [matIcon]="'file_upload'" [inputMessage]="'Upload Photos'" [multipleFiles]="true"
+      (onInputFileChange)="uploadPhotos($event)">
+    </app-file-input>
     <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
   </div>
 </div>

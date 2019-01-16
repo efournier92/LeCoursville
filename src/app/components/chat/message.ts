@@ -18,6 +18,7 @@ export class Message {
   id: string;
   title: string;
   body: string;
+  photoId: string;
   photoUrl: string;
   authorName: string;
   authorId: string;

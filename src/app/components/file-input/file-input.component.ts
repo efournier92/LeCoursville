@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
 
 interface HTMLInput extends HTMLElement {
   value: any;
+  files: any;
 }
 
 @Component({
@@ -13,38 +14,26 @@ export class FileInputComponent implements OnInit {
   @Input()
   matIcon: string;
   @Input()
-  inputPlaceholder: string;
+  inputMessage: string;
   @Input()
   multipleFiles: boolean;
   @Output()
   onInputFileChange: EventEmitter<HTMLInput> = new EventEmitter();
   fileInput: HTMLInput;
-  fileInputTextDiv: HTMLInput;
-  fileInputText: HTMLInput;
+  inputPlaceholder: string;
 
   constructor() { }
 
   ngOnInit() {
     this.fileInput = document.getElementById('file-input-file') as HTMLInput;
-    this.fileInputText = document.getElementById('file-input-text') as HTMLInput;
-    this.fileInputTextDiv = document.getElementById('file-input-text-container') as HTMLInput;
+    this.inputPlaceholder = this.inputMessage;
   }
 
   onInputChange() {
-    this.changeInputText();
-    this.onInputFileChange.emit(this.fileInput);
+    this.onInputFileChange.emit(this.fileInput.files);
     if (!this.fileInput)
       return;
     this.changeInputText();
-    if (this.fileInputText.value.length != 0) {
-      if (!this.fileInputTextDiv.classList.contains("is-focused")) {
-        this.fileInputTextDiv.classList.add('is-focused');
-      }
-    } else {
-      if (this.fileInputTextDiv.classList.contains("is-focused")) {
-        this.fileInputTextDiv.classList.remove('is-focused');
-      }
-    }
   }
 
   changeInputText() {
@@ -56,5 +45,19 @@ export class FileInputComponent implements OnInit {
       i = inputString.lastIndexOf('/') + 1;
     }
     this.inputPlaceholder = inputString.slice(i, inputString.length);
+  }
+
+  shouldAllowCancel(): boolean {
+    if (this.fileInput && this.fileInput.files && this.fileInput.files.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  clearInput() {
+    // document.getElementById('file-input-file').value = ""
+    this.fileInput.value = "";
+    this.inputPlaceholder = this.inputMessage;
   }
 }

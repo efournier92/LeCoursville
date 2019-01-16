@@ -32,6 +32,7 @@ export class ChatEditComponent implements OnInit {
   @ViewChild('autosize')
   autosize: CdkTextareaAutosize;
   photoUpload: any;
+  isSaving: boolean = false;
 
   constructor(
     private chatService: ChatService,
@@ -47,13 +48,18 @@ export class ChatEditComponent implements OnInit {
     )
   }
 
-  saveMessage(message: Message): void {
-    message.isEditable = false;
+  markMessageSaved(message: Message): Message {
     message.isSaved = true;
+    message.isEditable = false;
+    return message;
+  }
+
+  saveMessage(message: Message): void {
     if (this.photoUpload && !this.message.isReply) {
       this.saveMessageWithPhoto(message);
       return;
     }
+    message = this.markMessageSaved(message);
     if (message.isReply) {
       if (this.parent)
         this.updateParent();
@@ -65,11 +71,15 @@ export class ChatEditComponent implements OnInit {
   }
 
   saveMessageWithPhoto(message: Message): void {
-    let photoUpload = this.photoService.uploadPhoto(this.photoUpload);
+    this.isSaving = true;
+    const photoUpload = this.photoService.uploadPhoto(this.photoUpload, true);
     photoUpload.onUrlAvailable.subscribe(
       (url: string) => {
+        if (url === '') return;
         message.photoUrl = url;
+        message = this.markMessageSaved(message);
         this.chatService.createMessage(message);
+        this.isSaving = false;
       }
     )
   }
@@ -129,13 +139,7 @@ export class ChatEditComponent implements OnInit {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 
-  onCancelUpload(): void {
-    let uploadInputElement = document.getElementById('file-input-file') as HtmlInput;
-    uploadInputElement.value = '';
-    this.photoUpload = undefined;
-  }
-
-  onInputFileChange(file: any): void {
-    this.photoUpload = file.files[0];
+  onInputFileChange(files: any): void {
+    this.photoUpload = files[0];
   }
 }

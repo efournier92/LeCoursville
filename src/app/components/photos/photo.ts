@@ -11,4 +11,5 @@ export class Photo {
   uploadedBy: string = '';
   isYearCirca: boolean = false;
   isEditable: boolean = false;
+  isMessageAttachment: boolean = false;
 }

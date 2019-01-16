@@ -81,11 +81,12 @@ export class PhotosService {
     return photoByIdObservable;
   }
 
-  uploadPhoto(file: any): PhotoUpload {
+  uploadPhoto(file: any, isMessageAttachment: boolean): PhotoUpload {
     let photo: Photo = new Photo();
     photo.id = this.db.createPushId();
     photo.dateAdded = new Date();
     photo.uploadedBy = this.user.id;
+    photo.isMessageAttachment = isMessageAttachment;
     photo.extension = file.name.split('.').pop();
     photo.path = `photos/${photo.id}.${photo.extension}`;
 

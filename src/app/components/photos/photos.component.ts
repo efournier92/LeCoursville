@@ -90,8 +90,7 @@ export class PhotosComponent implements OnInit {
     }, 1000);
   }
 
-  uploadPhotos(event: any): void {
-    const filesToUpload = event.currentTarget.files;
+  uploadPhotos(filesToUpload: any): void {
     let message = "Do you want to upload " + filesToUpload.length + " photos to LeCoursville?";
     if (filesToUpload.length <= 1)
       message = "Do you want to upload this photo to LeCoursville?";
@@ -103,7 +102,7 @@ export class PhotosComponent implements OnInit {
       (confirmedAction: boolean) => {
         if (confirmedAction) {
           for (let file of filesToUpload) {
-            const upload = this.photosService.uploadPhoto(file);
+            const upload = this.photosService.uploadPhoto(file, false);
             this.photoUploads.push(upload);
           }
           setTimeout(() => {

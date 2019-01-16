@@ -1,4 +1,7 @@
-<div class="row mb-4 chat-card-content-container" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
+<div class="d-flex justify-content-center" *ngIf="isSaving">
+  <mat-spinner></mat-spinner>
+</div>
+<div class="row mb-4 chat-card-content-container" *ngIf="!isSaving" [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
   <div class="col-1 chat-tools-container">
     <div class="d-flex justify-content-center flex-column mt-2">
       <div class="mb-3" *ngIf="message.isSaved" [ngStyle]="{ color: highlights.trash === true  ? '#d50000' : '#CFD8DC' }">
@@ -59,14 +62,11 @@
       <textarea matInput class="message-input-area" placeholder="Message" cdkTextareaAutosize #autosize="cdkTextareaAutosize"
         #input [(ngModel)]="message.body"></textarea>
     </mat-form-field>
-    <div class="d-flex align-items-end">
-      <app-file-input [matIcon]="'attach_file'" [inputPlaceholder]="'Attach Photo'" [multipleFiles]="false"
+    <div class="d-flex align-items-end" *ngIf="!message.isReply">
+      <app-file-input [matIcon]="'attach_file'" [inputMessage]="'Attach Photo'" [multipleFiles]="false"
         (onInputFileChange)="onInputFileChange($event)">
       </app-file-input>
-      <mat-icon class="photo-upload-row-element photo-upload-cancel-icon" *ngIf="photoUpload && photoUpload.name"
-        (click)="onCancelUpload()">cancel</mat-icon>
     </div>
-
   </mat-card-content>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">

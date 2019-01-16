@@ -1,13 +1,14 @@
-<div class="file-input-container">
+<div class="file-input-container d-flex align-items-end">
   <div class="file-input">
     <label class="file-input-label mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect"
-      (change)="onInputChange($event)">
+      (change)="onInputChange()">
       <i class="material-icons">{{ matIcon }}</i>
       <input id="file-input-file" class="none" type="file" [multiple]="multipleFiles" />
     </label>
   </div>
-  <div id="file-input-text-container" class="mdl-textfield mdl-js-textfield textfield-demo">
-    <input id="file-input-text" class="mdl-textfield__input" type="text" placeholder="{{ inputPlaceholder }}" disabled
-      readonly />
+  <div id="file-input-text-container" class="mdl-textfield mdl-js-textfield">
+    <input id="file-input-text" class="mdl-textfield__input" type="text" placeholder="{{ inputPlaceholder }}" accept=".png,.jpg"
+      disabled readonly />
   </div>
+  <mat-icon class="file-upload-cancel-icon" *ngIf="shouldAllowCancel()" (click)="clearInput()">cancel</mat-icon>
 </div>
