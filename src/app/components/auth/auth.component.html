@@ -1,9 +1,12 @@
-<div id="auth-component-container" class="d-flex flex-column">
-  <div class="d-flex align-items-center">
-    <img class="auth-image img-responsive col-xl-4 col-sm-6 mb-3" src="./assets/icons/LeCours_Crest_Large_Black.png">
-  </div>
+<div class="d-flex flex-column justify-content-center align-items-center m-4">
+  <img class="auth-image col-xl-4 col-sm-6 mb-3" src="./assets/icons/LeCours_Crest_Large_Black.png">
   <firebase-ui (signInSuccessWithAuthResult)="signInSuccess()"></firebase-ui>
-  <button mat-raised-button (click)="signOut()" class="auth-button firebaseui-idp-button" *ngIf="user && user.id">
-    Sign out
-  </button>
+  <div class="d-flex flex-column align-items-center w-100" *ngIf="user && user.id">
+    <div class="user-name-container" *ngIf="user && user.name">
+      {{ user.name }}
+    </div>
+    <button mat-raised-button (click)="signOut()" class="firebaseui-idp-button">
+      Sign out
+    </button>
+  </div>
 </div>
