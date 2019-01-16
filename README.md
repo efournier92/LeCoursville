@@ -1,6 +1,13 @@
 # Lecoursville
 
 ## TODO
+* [ ] 
+* [ ] 
+* [ ] Fix message nested reply pattern
+* [ ] `lightgallery` component
+  - [ ] Photos
+  - [ ] Chat
+* [ ] Cancel button for `Sort By Family`
 * [~] Add stories component
 * [~] File input component
 * [X] PDF print-from-html

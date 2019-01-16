@@ -8,6 +8,7 @@ import { HighlightService } from '../highlight.service';
 import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
 import { PhotosService } from '../../photos/photos.service';
+import { AngularFireDatabase } from '@angular/fire/database';
 
 declare interface HtmlInput extends HTMLElement {
   value: string;
@@ -40,6 +41,7 @@ export class ChatEditComponent implements OnInit {
     private photoService: PhotosService,
     private highlightService: HighlightService,
     private router: Router,
+    private db: AngularFireDatabase,
   ) { }
 
   ngOnInit(): void {
@@ -60,6 +62,7 @@ export class ChatEditComponent implements OnInit {
       return;
     }
     message = this.markMessageSaved(message);
+    message.id = this.db.createPushId();
     if (message.isReply) {
       if (this.parent)
         this.updateParent();
