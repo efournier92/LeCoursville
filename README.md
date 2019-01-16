@@ -1,8 +1,15 @@
 # Lecoursville
 
 ## TODO
-* [ ] 
-* [ ] 
+* [ ] Edit name
+* [ ] Edit event mobile styling (dialog width)
+* [ ] Contact edit button styling
+* [ ] Blank message validation
+* [ ] New contact edit mode
+* [ ] Bulk photo delete
+* [ ] Photo comments
+* [ ] Upload component 
+  - [ ] Chat message becomes first comment
 * [ ] Fix message nested reply pattern
 * [ ] `lightgallery` component
   - [ ] Photos
@@ -13,7 +20,17 @@
 * [X] PDF print-from-html
 * [X] IE Chat Bug
 * [ ] Confirm prompt instances
+  - [ ] Upload photos
+  - [ ] Delete photo
+  - [ ] Delete message
+  - [ ] Restore message
+  - [ ] Log out
+  - [ ] Add contact
+  - [ ] Delete contact
+  - [ ] Create event
+  - [ ] Delete event
 * [ ] Photo lightbox labels
+* [ ] Name above `sign out` button
 * [ ] Label Photos
 * [ ] Integrate GA
 * [X] `zlib` warning
@@ -33,7 +50,7 @@
 * [X] Opt-in flow, email only
   - [X] Collect name at time of opt-in
 * [X] Restore deleted message
-* [X] Diseased styling
+* [X] Deceased functionality
 * [X] Calendar event editability (Admin)
 * [X] Upload calendar data to FireBase RTD
 * [X] Endless scroll deletes message
