@@ -1,5 +1,7 @@
-<div class="d-flex flex-column justify-content-center align-items-center m-4">
-  <img class="auth-image col-xl-4 col-sm-6 mb-3" src="./assets/icons/LeCours_Crest_Large_Black.png">
+<div class="auth-component-container">
+  <div class="auth-image-container mt-3 mb-3">
+    <img class="auth-image" src="./assets/icons/LeCours_Crest_Large_Black.png">
+  </div>
   <firebase-ui (signInSuccessWithAuthResult)="signInSuccess()"></firebase-ui>
   <div class="d-flex flex-column align-items-center w-100" *ngIf="user && user.id">
     <div class="user-name-container" *ngIf="user && user.name">

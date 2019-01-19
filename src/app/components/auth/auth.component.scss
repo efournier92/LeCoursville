@@ -1,11 +1,19 @@
+.auth-component-container {
+  width: 100%;
+}
+
+.auth-image-container {
+  width: 60%;
+  margin: auto;
+}
+
 .auth-image {
+  display: block;
+  width: 100%;
+  height: auto;
   opacity: 0.25;
 }
 
 .user-name-container {
   opacity: 0.5;
-}
-
-.auth-button {
-  margin: auto;
 }
