@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { User } from './user';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { ConfirmPromptService } from '../confirm-prompt/confirm-prompt.service';
 
 @Component({
   selector: 'app-auth',
@@ -16,6 +17,7 @@ export class AuthComponent implements OnInit {
     private auth: AuthService,
     private fireAuth: AngularFireAuth,
     private router: Router,
+    private confirmPrompt: ConfirmPromptService,
   ) { }
 
   ngOnInit(): void {
@@ -31,8 +33,17 @@ export class AuthComponent implements OnInit {
   }
 
   signOut(): void {
-    this.fireAuth.auth.signOut();
-    this.user = undefined;
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to sign out of LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          this.fireAuth.auth.signOut();
+          this.user = undefined;
+        }
+      }
+    )
   }
-
 }

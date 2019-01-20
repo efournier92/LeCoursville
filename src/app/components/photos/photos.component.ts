@@ -78,16 +78,27 @@ export class PhotosComponent implements OnInit {
   }
 
   deletePhoto(inputPhoto: Photo): void {
-    for (let i = 0; i < this.allPhotos.length; i++) {
-      if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
-        this.loadedPhotos.splice(i, 1);
-    }
-    this.photosService.deletePhoto(inputPhoto);
-    this.sortType = 'added';
-    setTimeout(() => {
-      this.showSpinner = false;
-      this.sortPhotosBy(this.sortByDateAdded);
-    }, 1000);
+    let message = "Do you want to delete this photo from LeCoursville?";
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      message,
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          for (let i = 0; i < this.allPhotos.length; i++) {
+            if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
+              this.loadedPhotos.splice(i, 1);
+          }
+          this.photosService.deletePhoto(inputPhoto);
+          this.sortType = 'added';
+          setTimeout(() => {
+            this.showSpinner = false;
+            this.sortPhotosBy(this.sortByDateAdded);
+          }, 1000);
+        }
+      }
+    )
   }
 
   uploadPhotos(filesToUpload: any): void {

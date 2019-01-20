@@ -19,9 +19,10 @@
 * [~] File input component
 * [X] PDF print-from-html
 * [X] IE Chat Bug
-* [ ] Confirm prompt instances
-  - [ ] Upload photos
-  - [ ] Delete photo
+* [~] Confirm prompt instances
+  - [X] Upload photos
+  - [X] Delete photo
+  - [X] Send message
   - [ ] Delete message
   - [ ] Restore message
   - [ ] Log out
@@ -30,7 +31,7 @@
   - [ ] Create event
   - [ ] Delete event
 * [ ] Photo lightbox labels
-* [ ] Name above `sign out` button
+* [X] Name above `sign out` button
 * [ ] Label Photos
 * [ ] Integrate GA
 * [X] `zlib` warning

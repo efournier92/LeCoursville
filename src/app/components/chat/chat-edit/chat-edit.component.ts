@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { Highlight } from '../highlight';
 import { PhotosService } from '../../photos/photos.service';
 import { AngularFireDatabase } from '@angular/fire/database';
+import { ConfirmPromptService } from '../../confirm-prompt/confirm-prompt.service';
 
 declare interface HtmlInput extends HTMLElement {
   value: string;
@@ -42,6 +43,7 @@ export class ChatEditComponent implements OnInit {
     private highlightService: HighlightService,
     private router: Router,
     private db: AngularFireDatabase,
+    private confirmPrompt: ConfirmPromptService,
   ) { }
 
   ngOnInit(): void {
@@ -57,20 +59,30 @@ export class ChatEditComponent implements OnInit {
   }
 
   saveMessage(message: Message): void {
-    if (this.photoUpload && !this.message.isReply) {
-      this.saveMessageWithPhoto(message);
-      return;
-    }
-    message = this.markMessageSaved(message);
-    message.id = this.db.createPushId();
-    if (message.isReply) {
-      if (this.parent)
-        this.updateParent();
-    } else if (!message.id) {
-      this.chatService.createMessage(message);
-    } else {
-      this.chatService.updateMessage(message);
-    }
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to post this message to LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          if (this.photoUpload && !this.message.isReply) {
+            this.saveMessageWithPhoto(message);
+            return;
+          }
+          message = this.markMessageSaved(message);
+          message.id = this.db.createPushId();
+          if (message.isReply) {
+            if (this.parent)
+              this.updateParent();
+          } else if (!message.id) {
+            this.chatService.createMessage(message);
+          } else {
+            this.chatService.updateMessage(message);
+          }
+        }
+      }
+    )
   }
 
   saveMessageWithPhoto(message: Message): void {
@@ -108,26 +120,46 @@ export class ChatEditComponent implements OnInit {
   }
 
   deleteMessage(): void {
-    if (this.message.replies && this.message.replies.length !== 0) {
-      this.message.isDeleted = true;
-    } else if (this.message.isReply) {
-      let i = 0;
-      for (const reply of this.parent.replies) {
-        if (reply.id === this.message.id) {
-          this.parent.replies.splice(i, 1);
-          this.updateParent();
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to remove this message from LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          if (this.message.replies && this.message.replies.length !== 0) {
+            this.message.isDeleted = true;
+          } else if (this.message.isReply) {
+            let i = 0;
+            for (const reply of this.parent.replies) {
+              if (reply.id === this.message.id) {
+                this.parent.replies.splice(i, 1);
+                this.updateParent();
+              }
+              i += 1;
+            }
+          } else {
+            this.chatService.deleteMessage(this.message);
+          }
+          this.message.isEditable = false;
         }
-        i += 1;
       }
-    } else {
-      this.chatService.deleteMessage(this.message);
-    }
-    this.message.isEditable = false;
+    )
   }
 
   restoreMessage(): void {
-    this.message.isDeleted = false;
-    this.message.isEditable = false;
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to restore this message to LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          this.message.isDeleted = false;
+          this.message.isEditable = false;
+        }
+      }
+    )
   }
 
   updateParent(): void {
