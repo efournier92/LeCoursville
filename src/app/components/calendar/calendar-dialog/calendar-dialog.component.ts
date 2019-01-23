@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CalendarService, RecurringEvent } from '../calendar.service';
+import { ConfirmPromptService } from '../../confirm-prompt/confirm-prompt.service';
 
 export interface DialogData {
   header: string,
@@ -21,14 +22,25 @@ export class CalendarDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<CalendarDialogComponent>,
     private calendarService: CalendarService,
+    private confirmPrompt: ConfirmPromptService,
     @Inject(MAT_DIALOG_DATA) public data: RecurringEvent,
   ) { }
 
   ngOnInit(): void { }
 
   deleteEvent(event: RecurringEvent): void {
-    this.calendarService.deleteCalendarEvent(event);
-    this.dialogRef.close();
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to delete this event from LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          this.calendarService.deleteCalendarEvent(event);
+          this.dialogRef.close();
+        }
+      }
+    )
   }
 
   onCancel(): void {

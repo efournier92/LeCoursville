@@ -51,7 +51,7 @@
         {{ message.authorName }}
       </mat-card-subtitle>
       <mat-card-subtitle class="chat-message-timestamp">
-        {{ message.timestamp | date:'short' }}
+        {{ message.dateSent | date:'short' }}
       </mat-card-subtitle>
     </mat-card-title>
     {{ message.body }}

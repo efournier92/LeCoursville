@@ -22,14 +22,14 @@
 * [~] Confirm prompt instances
   - [X] Upload photos
   - [X] Delete photo
-  - [X] Send message
-  - [ ] Delete message
-  - [ ] Restore message
-  - [ ] Log out
-  - [ ] Add contact
+  - [X] Post message
+  - [X] Delete message
+  - [X] Restore message
+  - [X] Sign out
+  - [X] Add contact
   - [ ] Delete contact
-  - [ ] Create event
-  - [ ] Delete event
+  - [X] Create event
+  - [X] Delete event
 * [ ] Photo lightbox labels
 * [X] Name above `sign out` button
 * [ ] Label Photos

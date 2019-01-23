@@ -10,6 +10,7 @@ import { Calendar } from './calendar';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user';
 import { CalendarPrinterComponent } from './calendar-printer/calendar-printer.component';
+import { ConfirmPromptService } from '../confirm-prompt/confirm-prompt.service';
 
 @Component({
   selector: 'app-calendar',
@@ -41,6 +42,7 @@ export class CalendarComponent {
     public printerPrompt: MatDialog,
     public http: HttpClient,
     private calendarService: CalendarService,
+    private confirmPrompt: ConfirmPromptService,
   ) { }
 
   ngOnInit(): void {
@@ -121,18 +123,28 @@ export class CalendarComponent {
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
       data: event,
     });
-
     dialogRef.afterClosed().subscribe(
       (result: RecurringEvent) => {
         if (!result) return;
-        let event = result;
-        if (event.id) {
-          this.calendarService.updateCalendarEvent(event);
-        } else {
-          this.calendarService.addCalendarEvent(event);
-        }
-        this.refreshCalendarView;
-      });
+        const confirmPrompRef = this.confirmPrompt.openDialog(
+          "Are You Sure?",
+          "Do you want to add this event to LeCoursville?",
+        );
+        confirmPrompRef.afterClosed().subscribe(
+          (confirmedAction: boolean) => {
+            if (confirmedAction) {
+              let event = result;
+              if (event.id) {
+                this.calendarService.updateCalendarEvent(event);
+              } else {
+                this.calendarService.addCalendarEvent(event);
+              }
+              this.refreshCalendarView;
+            }
+          }
+        )
+      }
+    )
   }
 
   uploadCalendar($event): void {

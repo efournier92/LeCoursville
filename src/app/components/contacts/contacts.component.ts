@@ -5,6 +5,7 @@ import { families } from 'src/app/components/contacts/families';
 import { AuthService } from 'src/app/components/auth/auth.service';
 import { ContactsService } from 'src/app/components/contacts/contacts.service';
 import { User } from 'src/app/components/auth/user';
+import { ConfirmPromptService } from '../confirm-prompt/confirm-prompt.service';
 
 @Component({
   selector: 'app-contacts',
@@ -23,6 +24,7 @@ export class ContactsComponent implements OnInit {
     private contactsService: ContactsService,
     private filter: FilterPipe,
     private auth: AuthService,
+    private confirmPrompt: ConfirmPromptService,
   ) { }
 
   ngOnInit(): void {
@@ -42,8 +44,18 @@ export class ContactsComponent implements OnInit {
   }
 
   newContact(): void {
-    let contact: Contact = new Contact();
-    this.contactsService.newContact(contact);
+    const dialogRef = this.confirmPrompt.openDialog(
+      "Are You Sure?",
+      "Do you want to add this contact to LeCoursville?",
+    );
+    dialogRef.afterClosed().subscribe(
+      (confirmedAction: boolean) => {
+        if (confirmedAction) {
+          let contact: Contact = new Contact();
+          this.contactsService.newContact(contact);
+        }
+      }
+    )
   }
 
   filterContacts(event: any): void {
@@ -61,5 +73,4 @@ export class ContactsComponent implements OnInit {
   downloadPdf(): void {
     this.contactsService.printPdf(this.filteredContacts, 'download');
   }
-
 }
