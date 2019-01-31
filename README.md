@@ -19,7 +19,7 @@
 * [~] File input component
 * [X] PDF print-from-html
 * [X] IE Chat Bug
-* [~] Confirm prompt instances
+* [X] Confirm prompt instances
   - [X] Upload photos
   - [X] Delete photo
   - [X] Post message
@@ -27,7 +27,6 @@
   - [X] Restore message
   - [X] Sign out
   - [X] Add contact
-  - [ ] Delete contact
   - [X] Create event
   - [X] Delete event
 * [ ] Photo lightbox labels
