@@ -1,1 +1,5 @@
 @import '../chat.component.scss';
+
+.chat-message-body {
+  white-space: pre-line;
+}
