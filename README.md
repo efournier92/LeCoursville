@@ -69,3 +69,4 @@
 * [X] Chat message cancel deletes existing message
 * [X] Chat should be sorted newest first
 * [X] All typescript declarations
+
