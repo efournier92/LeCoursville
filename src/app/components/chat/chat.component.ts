@@ -38,7 +38,7 @@ export class ChatComponent implements OnInit {
   }
 
   bumpStickies(): any {
-    const stickyMessages = this.messages.filter(message => message.isSticky === true);
+    let stickyMessages = this.messages.filter(message => message.isSticky === true).reverse();
     this.messages = this.messages.filter(message => message.isSticky !== true);
     for (const message of stickyMessages) {
       this.messages.unshift(message);
