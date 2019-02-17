@@ -18,8 +18,9 @@ export class Message {
   id: string;
   title: string;
   body: string;
-  photoId: string;
-  photoUrl: string;
+  attachmentId: string;
+  attachmentType: string;
+  attachmentUrl: string;
   authorName: string;
   authorId: string;
   isReply: boolean;
@@ -32,10 +33,10 @@ export class Message {
   isDeleted: boolean;
   isSticky: boolean;
 
-  constructor(title: string, body: string, photoUrl: string, authorId: string, authorName: string, isReply: boolean, isEditable: boolean, replyLevel: number) {
+  constructor(title: string, body: string, attachmentUrl: string, authorId: string, authorName: string, isReply: boolean, isEditable: boolean, replyLevel: number) {
     this.title = title;
     this.body = body;
-    this.photoUrl = photoUrl;
+    this.attachmentUrl = attachmentUrl;
     this.authorId = authorId;
     this.authorName = authorName;
     this.likes = new Array<Like>();

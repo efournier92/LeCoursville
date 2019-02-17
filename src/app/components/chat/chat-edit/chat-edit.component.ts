@@ -88,10 +88,12 @@ export class ChatEditComponent implements OnInit {
   saveMessageWithPhoto(message: Message): void {
     this.isSaving = true;
     const photoUpload = this.photoService.uploadPhoto(this.photoUpload, true);
+    const uploadFileType = this.photoUpload.type;
     photoUpload.onUrlAvailable.subscribe(
       (url: string) => {
         if (url === '') return;
-        message.photoUrl = url;
+        message.attachmentUrl = url;
+        message.attachmentType = uploadFileType;
         message = this.markMessageSaved(message);
         this.chatService.createMessage(message);
         this.isSaving = false;

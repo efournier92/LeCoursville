@@ -109,4 +109,16 @@ export class ChatViewComponent implements OnInit {
   editMessage(): void {
     this.message.isEditable = true;
   }
+
+  getAttachmentType(message: Message): string {
+    if (!message || !message.attachmentUrl || message.attachmentUrl === '')
+      return;
+    if (message.attachmentType.includes('image')) {
+      return 'photo';
+    } else if (message.attachmentType.includes('pdf') || message.attachmentType.includes('text')) {
+      return 'document';
+    } else {
+      return 'other';
+    }
+  }
 }
