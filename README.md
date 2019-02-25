@@ -1,4 +1,4 @@
-# ![LeCoursville](https://github.com/efournier92/lecoursville/blob/master/src/assets/icons/LeCours_Logo_Full_Black.png?raw=true)
+# ![LeCoursville](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/logo/LeCoursville_Logo_Black.png?raw=true)
 
 ## Table of Contents
 - [Overview](#overview)
@@ -11,7 +11,7 @@
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Licensing](#licensing)
-- [To Do](#to-do)
+- [To Do Features](#to-do-features)
 
 ## Overview
 I hail from a very large family on my mother's side: the LeCours family. She had 13 siblings, which amounted to 42 cousins in my generations, and many more in subsquent generations. Since I was young, my Mom & I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it constantly updated. I build this website for that purpose.
@@ -19,29 +19,32 @@ I hail from a very large family on my mother's side: the LeCours family. She had
 ## Demo
 [LeCoursville.com](https://www.lecoursville.com)
 
-
 ## Features
-- __Calendar__
-  - Users can view birthdays and anniversaries by date via the GUI
-  - User can print calendars by year
-  - [SCREENSHOT]()
-- __Contacts__
-  - View contact info 
-  - Search contact info by string
-  - Sort contact info by family
-  - [SCREENSHOT]()
-- __Chat__
-  - Post messages to a common board
-  - [SCREENSHOT]()
-- __Photos__
-  - View and upload family photos
-  - [SCREENSHOT]()
+
+### Calendar
+- View birthdays and anniversaries by date via the GUI
+- Print calendars by year
+![Calendar Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Calendar.png?raw=true)
+
+### Contacts
+- View contact info 
+- Search contact info by string
+- Sort contact info by family
+![Contacts Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Contacts.png?raw=true)
+
+### Chat
+- Post messages to a common board
+![Chat Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Chat.png?raw=true)
+
+### Photos
+- View and upload family photos
+![Chat Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Photos.png?raw=true)
 
 ## Development Philosophy
 Since the tools hosted here are meant for users of all ages, keeping them simple to use was my goal first and foremost. 
 
 ### Stack
-- Angular 7
+- Angular
 - TypeScript
 - Firebase Realtime Database
 - Firebase Hosting
@@ -54,10 +57,27 @@ Since the tools hosted here are meant for users of all ages, keeping them simple
 
 ## Configuration
 
+### /src/environments/secrets.ts
+- Populate with the following object with your Firebase account details
+
+```typescript
+export const secrets = {
+  firebaseConfig: {
+    apiKey: "API_KEY",
+    authDomain: "AUTH_DOMAIN",
+    databaseURL: "DATABASE_URL",
+    projectId: "PROJECT_ID",
+    storageBucket: "STORAGE_BUCKET",
+    messagingSenderId: "MESSAGE_SENDER_ID",
+  },
+};
+```
 
 ## Building
+
 ### Local
 `ng serve`
+
 ### Production
 `ng build --prod`
 
@@ -70,7 +90,7 @@ I'm not currently accepting pull requests for this project. Please feel free to 
 ### Licensing
 This project is provided under the `MIT` licence and I hereby grant rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without limitation, provided the resulting software also carries the same open-source licensing statement.
 
-## To Do
+## To Do Features
 * [ ] Edit name
 * [ ] Edit event mobile styling (dialog width)
 * [ ] Contact edit button styling
