@@ -1,75 +1,76 @@
-# LeCoursville
-## ![LeCoursville](http://s3.gomedia.us/wp-content/uploads/2015/05/Nike_Swoosh_Logo_Black_original.jpg)
+# ![LeCoursville](https://github.com/efournier92/lecoursville/blob/master/src/assets/icons/LeCours_Logo_Full_Black.png?raw=true)
 
 ## Table of Contents
-1. [Live Demo](Live Demo)
-2. [Overview](Developmment Philosophy)
-3. [Key Features](Key Features)
-4. [Usage](Usage)
-5. [Building the Project](Building the Project)
-6. [Testing](Testing)
-7. [Configuration](Configuration)
-8. [Examples / Screenshots / Code Snippets](Examples / Screenshots / Code Snippets)
-9. [Technology Utilized](Technology Utilized)
-10. [Liscensing](Liscensing)
-11. [Contibuting](Contibuting)
-12. [Alternatives](Alternatives)
-
-## [Live Demo](lecoursville.com)
+- [Overview](#overview)
+- [Demo](#demo)
+- [Features](#features)
+- [Development Philosophy](#development-philosophy)
+- [Stack](#stack)
+- [Configuration](#configuration)
+- [Building](#building)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Licensing](#licensing)
+- [To Do](#to-do)
 
 ## Overview
 I hail from a very large family on my mother's side: the LeCours family. She had 13 siblings, which amounted to 42 cousins in my generations, and many more in subsquent generations. Since I was young, my Mom & I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it constantly updated. I build this website for that purpose.
 
-## Developmment Philosophy
-Since the tools hosted here are meant for users of all ages, keeping them simple to use was my goal first and foremost. 
+## Demo
+[LeCoursville.com](https://www.lecoursville.com)
 
-## Key Features
-- Calendar
+
+## Features
+- __Calendar__
   - Users can view birthdays and anniversaries by date via the GUI
   - User can print calendars by year
-- Contacts
+  - [SCREENSHOT]()
+- __Contacts__
   - View contact info 
   - Search contact info by string
   - Sort contact info by family
-- Chat
+  - [SCREENSHOT]()
+- __Chat__
   - Post messages to a common board
-  - 
-- Photos
-  - 
+  - [SCREENSHOT]()
+- __Photos__
+  - View and upload family photos
+  - [SCREENSHOT]()
 
-## Building Locally
-2. `$ ng serve`
+## Development Philosophy
+Since the tools hosted here are meant for users of all ages, keeping them simple to use was my goal first and foremost. 
 
-## Building for Production
-2. `$ ng build --prod`
+### Stack
+- Angular 7
+- TypeScript
+- Firebase Realtime Database
+- Firebase Hosting
+- Firebase Authentication
+- SCSS
+- Angular Material
+- Bootstrap
+- RxJS
+- jsPDF
+
+## Configuration
+
+
+## Building
+### Local
+`ng serve`
+### Production
+`ng build --prod`
 
 ## Testing
-1. `ng test`
+`ng test`
 
-## Examples / Screenshots / Code Snippets
-#### Calendar
-#### Contacts
-#### Chat
-#### Photos
+### Contributing
+I'm not currently accepting pull requests for this project. Please feel free to fork this repo for your own purposes!
 
-### Technologies Utilized
-- 
+### Licensing
+This project is provided under the `MIT` licence and I hereby grant rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without limitation, provided the resulting software also carries the same open-source licensing statement.
 
-### Liscensing
-
-### Contibuting
-- I'm not currently accepting pull requests for this project
-- Please feel free to fork this repo for your own purposes!
-
-
-
-
-
-
-
-
-
-## TODO
+## To Do
 * [ ] Edit name
 * [ ] Edit event mobile styling (dialog width)
 * [ ] Contact edit button styling
