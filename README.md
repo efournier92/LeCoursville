@@ -1,4 +1,73 @@
-# Lecoursville
+# LeCoursville
+## ![LeCoursville](http://s3.gomedia.us/wp-content/uploads/2015/05/Nike_Swoosh_Logo_Black_original.jpg)
+
+## Table of Contents
+1. [Live Demo](Live Demo)
+2. [Overview](Developmment Philosophy)
+3. [Key Features](Key Features)
+4. [Usage](Usage)
+5. [Building the Project](Building the Project)
+6. [Testing](Testing)
+7. [Configuration](Configuration)
+8. [Examples / Screenshots / Code Snippets](Examples / Screenshots / Code Snippets)
+9. [Technology Utilized](Technology Utilized)
+10. [Liscensing](Liscensing)
+11. [Contibuting](Contibuting)
+12. [Alternatives](Alternatives)
+
+## [Live Demo](lecoursville.com)
+
+## Overview
+I hail from a very large family on my mother's side: the LeCours family. She had 13 siblings, which amounted to 42 cousins in my generations, and many more in subsquent generations. Since I was young, my Mom & I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it constantly updated. I build this website for that purpose.
+
+## Developmment Philosophy
+Since the tools hosted here are meant for users of all ages, keeping them simple to use was my goal first and foremost. 
+
+## Key Features
+- Calendar
+  - Users can view birthdays and anniversaries by date via the GUI
+  - User can print calendars by year
+- Contacts
+  - View contact info 
+  - Search contact info by string
+  - Sort contact info by family
+- Chat
+  - Post messages to a common board
+  - 
+- Photos
+  - 
+
+## Building Locally
+2. `$ ng serve`
+
+## Building for Production
+2. `$ ng build --prod`
+
+## Testing
+1. `ng test`
+
+## Examples / Screenshots / Code Snippets
+#### Calendar
+#### Contacts
+#### Chat
+#### Photos
+
+### Technologies Utilized
+- 
+
+### Liscensing
+
+### Contibuting
+- I'm not currently accepting pull requests for this project
+- Please feel free to fork this repo for your own purposes!
+
+
+
+
+
+
+
+
 
 ## TODO
 * [ ] Edit name
