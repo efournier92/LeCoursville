@@ -11,10 +11,10 @@
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Licensing](#licensing)
-- [To Do Features](#to-do-features)
+- [Features To Do](#to-do-features)
 
 ## Overview
-I hail from a very large family on my mother's side: the LeCours family. She had 13 siblings, which amounted to 42 cousins in my generations, and many more in subsquent generations. Since I was young, my Mom & I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it constantly updated. I build this website for that purpose.
+I come from a very large family on my mother's side: the LeCours family. She had 13 siblings, which saw 42 cousins born to my generations, then many more who sprung from there. Since I was young, my Mom & I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it constantly updated. I build this website for that purpose, then added another component to upload and display photos pertainent to our family's history. Finally, I added a chat component to help us keep in touch. Building this website was a labor of love, and I look forwared to working on further enhancements in the future.
 
 ## Demo
 [LeCoursville.com](https://www.lecoursville.com)
@@ -22,18 +22,24 @@ I hail from a very large family on my mother's side: the LeCours family. She had
 ## Features
 
 ### Calendar
-- View birthdays and anniversaries by date via the GUI
-- Print calendars by year
+- View birthdays and anniversaries by date via calendar GUI
+- Print calendars for any year
+- Add new calendar events [_Admin Only_]
 ![Calendar Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Calendar.png?raw=true)
 
 ### Contacts
 - View contact info 
 - Search contact info by string
 - Sort contact info by family
+- Add or edit contacts [_Admin Only_]
 ![Contacts Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Contacts.png?raw=true)
 
 ### Chat
 - Post messages to a common board
+- Attach documents of any type
+- Reply to a message
+- Like a message
+- Edit existing message [_Original Poster or Admin Only_]
 ![Chat Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Chat.png?raw=true)
 
 ### Photos
@@ -41,9 +47,9 @@ I hail from a very large family on my mother's side: the LeCours family. She had
 ![Chat Screenshot](https://github.com/efournier92/lecoursville/blob/master/src/assets/img/screenshots/Screenshot_Photos.png?raw=true)
 
 ## Development Philosophy
-Since the tools hosted here are meant for users of all ages, keeping them simple to use was my goal first and foremost. 
+Since these tools are meant for users of all ages, keeping them simple and easy-to-use was my goal first and foremost. In an effort to keep the site constently styled, I built it using [Angular Material](https://github.com/angular/material2) from the start. I also wanted to experiment wiht using Firebase tools in lieu of a back-end, which I accomplished with their Authentication, Hosting, and Realtime Database modules. The result is a clean and simple interface, with production-grade security of the DB side.
 
-### Stack
+## Stack
 - Angular
 - TypeScript
 - Firebase Realtime Database
@@ -58,7 +64,9 @@ Since the tools hosted here are meant for users of all ages, keeping them simple
 ## Configuration
 
 ### /src/environments/secrets.ts
-- Populate with the following object with your Firebase account details
+1. Create `secrets.ts` in `/src/environments/`
+2. Copy the following object into `secrets.ts`
+3. Populate values with details from your Firebase account
 
 ```typescript
 export const secrets = {
@@ -84,13 +92,13 @@ export const secrets = {
 ## Testing
 `ng test`
 
-### Contributing
-I'm not currently accepting pull requests for this project. Please feel free to fork this repo for your own purposes!
+## Contributing
+If you have feature suggestions, please contact me here or at efournier92@gmail.com. If you'd like to submit a pull request, please feel free and I'll merge it at my earliest convenience!
 
-### Licensing
+## Licensing
 This project is provided under the `MIT` licence and I hereby grant rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without limitation, provided the resulting software also carries the same open-source licensing statement.
 
-## To Do Features
+## Features ToDo
 * [ ] Edit name
 * [ ] Edit event mobile styling (dialog width)
 * [ ] Contact edit button styling
@@ -159,4 +167,3 @@ This project is provided under the `MIT` licence and I hereby grant rights to us
 * [X] Chat message cancel deletes existing message
 * [X] Chat should be sorted newest first
 * [X] All typescript declarations
-
