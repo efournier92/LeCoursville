@@ -5,11 +5,11 @@
 - [Demo](#demo)
 - [Development Philosophy](#development-philosophy)
 - [Stack](#stack)
-- [Configuration](#configuration)
-- [Build](#building)
-- [Test](#testing)
-- [Contribute](#contributing)
-- [Licence](#licensing)
+- [Configure](#configure)
+- [Build](#build)
+- [Test](#test)
+- [Contribute](#contribute)
+- [Licence](#license)
 - [Features](#features)
 - [Features To Do](#features-to-do)
 
@@ -34,7 +34,7 @@ I come from a very large family on my mother's side: the LeCours family. She had
 - [RxJS](http://reactivex.io/)
 - [jsPDF](https://github.com/MrRio/jsPDF/)
 
-## Configuration
+## Configure
 
 ### /src/environments/secrets.ts
 1. Create `secrets.ts` in `/src/environments/`
