@@ -6,10 +6,10 @@
 - [Development Philosophy](#development-philosophy)
 - [Stack](#stack)
 - [Configuration](#configuration)
-- [Building](#building)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [Licensing](#licensing)
+- [Build](#building)
+- [Test](#testing)
+- [Contribute](#contributing)
+- [Licence](#licensing)
 - [Features](#features)
 - [Features To Do](#features-to-do)
 
@@ -54,7 +54,7 @@ export const secrets = {
 };
 ```
 
-## Building
+## Build
 
 ### Local
 `ng serve`
@@ -62,13 +62,13 @@ export const secrets = {
 ### Production
 `ng build --prod`
 
-## Testing
+## Test
 `ng test`
 
-## Contributing
+## Contribute
 If you have feature suggestions, please contact me here or at efournier92@gmail.com. If you'd like to submit a pull request, please feel free and I'll merge it at my earliest convenience!
 
-## Licensing
+## License
 This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) licence and I hereby grant rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software without limitation, provided the resulting software also carries the same open-source licensing statement.
 
 ## Features
