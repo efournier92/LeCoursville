@@ -129,7 +129,7 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
   - [X] Delete event
 * [ ] Photo lightbox labels
 * [X] Name above `sign out` button
-* [ ] Label Photos
+* [-] Label Photos
 * [ ] Integrate GA
 * [X] `zlib` warning
 * [X] Chat photo in message
