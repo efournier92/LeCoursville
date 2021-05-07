@@ -41,7 +41,7 @@
     "html2canvas": "^1.0.0-alpha.12",
     "jspdf": "^1.4.1",
     "lightgallery.js": "^1.1.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "moment-timezone": "^0.5.23",
     "ng2-pdf-viewer": "^5.1.2",
     "ngx-filter-pipe": "^2.1.2",
