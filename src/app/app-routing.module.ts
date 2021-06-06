@@ -1,13 +1,14 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AuthComponent } from './components/auth/auth.component';
-import { ChatComponent } from 'src/app/components/chat/chat.component';
-import { ContactsComponent } from './components/contacts/contacts.component';
-import { CalendarComponent } from './components/calendar/calendar.component';
-import { PhotosComponent } from './components/photos/photos.component';
-// import { StoriesComponent } from './components/stories/stories.component';
-import { AdminComponent } from './components/admin/admin.component';
-import { AuthGuardService } from './components/auth/auth-guard.service';
+import { AuthComponent } from 'src/app/auth/auth.component';
+import { ChatComponent } from 'src/app/chat/chat.component';
+import { ContactsComponent } from 'src/app/contacts/contacts.component';
+import { CalendarComponent } from 'src/app/calendar/calendar.component';
+import { PhotosComponent } from 'src/app/photos/photos.component';
+import { VideosComponent } from 'src/app/videos/videos.component';
+// import { StoriesComponent } from 'src/app/stories/stories.component';
+import { AdminComponent } from 'src/app/admin/admin.component';
+import { AuthGuardService } from 'src/app/auth/auth-guard.service';
 
 const routes: Routes =
   [
@@ -35,6 +36,11 @@ const routes: Routes =
       component: PhotosComponent,
       canActivate: [AuthGuardService],
     },
+    {
+      path: 'videos',
+      component: VideosComponent,
+      canActivate: [AuthGuardService],
+    },
     // {
     //   path: 'stories',
     //   component: StoriesComponent,
@@ -51,4 +57,6 @@ const routes: Routes =
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
+
 export class AppRoutingModule { }
+

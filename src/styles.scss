@@ -3,11 +3,11 @@
 @import "../node_modules/angular-calendar/css/angular-calendar.css";
 @import "~bootstrap/dist/css/bootstrap.css";
 @import "~font-awesome/css/font-awesome.css";
-@import "~lightgallery.js/dist/css/lightgallery.css";
+// @import "~lightgallery.js/dist/css/lightgallery.css";
 
 @include mat-core();
 
-$my-theme-primary: mat-palette($mat-blue-grey, 400);
+$my-theme-primary: mat-palette($mat-green, 900);
 $my-theme-accent: mat-palette($mat-green, 500);
 $my-theme-warn: mat-palette($mat-green, A400);
 
@@ -54,4 +54,3 @@ html, body {
 #calendar-print-view .cal-month-view .cal-day-cell.cal-today {
   background-color: white;
 }
-

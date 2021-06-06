@@ -1,19 +1,28 @@
 <body class="mat-app-background">
   <mat-toolbar color="primary">
-    <img src="./assets/img/logo/LeCoursville_Icon_White.png" routerLink="/" alt="LeCoursville" height="80%">
+    <img src="./assets/img/logo/L.png" class="toolbar-icon" routerLink="/" alt="L" height="80%">
     <span class="spacer"></span>
     <div class="d-none d-sm-block" *ngIf="user.id">
-      <button mat-button routerLink="/chat">Chat</button>
-      <button mat-button routerLink="/contacts">Contacts</button>
-      <button mat-button routerLink="/calendar">Calendar</button>
-      <button mat-button routerLink="/photos">Photos</button>
-      <!-- <button mat-button routerLink="/stories">Stories</button> -->
+      <div class="toolbar-routes-buttons-inline">
+        <button mat-button routerLink="/chat">Chat</button>
+        <button mat-button routerLink="/contacts">Contacts</button>
+        <button mat-button routerLink="/calendar">Calendar</button>
+        <button mat-button routerLink="/photos">Photos</button>
+        <!-- <button mat-button routerLink="/stories">Stories</button> -->
+      </div>
     </div>
+    <!-- <div class="content" role="main">
+      <span>App is running!</span>
+   </div> -->
     <div *ngIf="user.id">
       <button mat-icon-button [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
       </button>
-      <mat-menu #menu="matMenu">
+      <mat-menu #menu="matMenu" class="toolbar-routes-menu">
+        <button mat-menu-item routerLink="/videos">
+          <mat-icon>local_movies</mat-icon>
+          <span>Videos</span>
+        </button>
         <button mat-menu-item routerLink="/chat">
           <mat-icon>message</mat-icon>
           <span>Chat</span>

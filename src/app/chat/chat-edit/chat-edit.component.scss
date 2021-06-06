@@ -1,0 +1,34 @@
+@import '../chat.component.scss';
+@import '../../photos/photos.component.scss';
+
+.title-input-container {
+  line-height: 1;
+}
+
+.chat-edit-input-body {
+  overflow:hidden;
+  min-height: 9em;
+}
+
+// .photos-add-icon-label {
+//   margin-top: -5px;
+//   padding-bottom: 40px;
+//   cursor: pointer;
+// }
+
+// .photos-add-button-label {
+//   cursor: pointer;
+// }
+
+// .photos-upload-button {
+//   cursor: pointer;
+//   width: 144px;
+// }
+
+.photo-upload-cancel-icon {
+  cursor: pointer;
+}
+
+.photo-upload-row-element {
+  margin-left: 8px;
+}

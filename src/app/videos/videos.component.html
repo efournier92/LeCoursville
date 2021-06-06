@@ -1,0 +1,63 @@
+<mat-sidenav-container class="videos-container">
+    <mat-sidenav #sidenav mode="side" class="videos-nav" position="end" opened>
+
+        <mat-form-field class="search-field">
+            <mat-label>Search</mat-label>
+            <input type="text"
+                   placeholder="Search videos"
+                   aria-label="Search Videos"
+                   matInput
+                   [formControl]="myControl"
+                   [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete">
+              <mat-option *ngFor="let video of videos" [value]="video">
+                {{video.name}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+        <button mat-button *ngFor="let video of videos" (click)="onVideoSelect(video)" style="width:100%; height:80px;text-align:left;margin-top:10px;">
+            <img src="{{ video.icon }}" height="80px" width="80px">
+            {{ video.name }}
+            <span flex></span>
+        </button>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+
+        <div class="video-player-wrapper">
+
+            <vg-player (onPlayerReady)="videoPlayerInit($event)">
+                <vg-overlay-play></vg-overlay-play>
+                <vg-buffering></vg-buffering>
+
+                <vg-scrub-bar>
+                    <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
+                    <vg-scrub-bar-buffering-time></vg-scrub-bar-buffering-time>
+                </vg-scrub-bar>
+
+                <vg-controls>
+                    <vg-play-pause></vg-play-pause>
+                    <vg-playback-button></vg-playback-button>
+
+                    <vg-time-display vgProperty="current" vgFormat="mm:ss"></vg-time-display>
+
+                    <vg-scrub-bar style="pointer-events: none;"></vg-scrub-bar>
+
+                    <vg-time-display vgProperty="left" vgFormat="mm:ss"></vg-time-display>
+
+                    <vg-mute></vg-mute>
+                    <vg-volume></vg-volume>
+
+                    <vg-fullscreen></vg-fullscreen>
+                </vg-controls>
+
+                <video [vgMedia]="media" #media id="singleVideo" preload="false">
+                    <source *ngFor="let video of sources" [src]="video.src" [type]="video.type">    
+                    <!-- <source src="{{ getVideoUrl() }}" type="video/mp4" /> -->
+                </video>
+
+            </vg-player>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>
