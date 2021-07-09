@@ -2,7 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RecurringEvent, CalendarService } from 'src/app/services/calendar.service';
 import { CalendarView } from 'angular-calendar';
-import { CalendarDialogComponent } from 'src/app/components/calendar/calendar-dialog/calendar-dialog.component';
+import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 

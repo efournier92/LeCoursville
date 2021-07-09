@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { VideosService } from 'src/app/services/videos.service';
 import { SampleVideoService } from 'src/app/constants/sample-videos';
+import { secrets } from 'src/environments/secrets.js';
 
 @Component({
   selector: 'app-videos',
@@ -62,13 +63,13 @@ export class VideosComponent implements OnInit {
   updateGoogleDriveUrlFormat(video: Video){
     if (video.url.includes("https://drive.google.com/file/d/")) {
       let id = video.url.replace("https://drive.google.com/file/d/", "").replace("/view?usp=sharing", "")
-      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=AIzaSyB0O5xzuR9PvyU_5YHq8byjOcMk1adqbVg`
+      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${secrets.googleApiKey}`
       video.url = newUrl;
     }
 
     if (video.icon.includes("https://drive.google.com/file/d/")) {
       let id = video.icon.replace("https://drive.google.com/file/d/", "").replace("/view?usp=sharing", "")
-      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=AIzaSyB0O5xzuR9PvyU_5YHq8byjOcMk1adqbVg`
+      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${secrets.googleApiKey}`
       video.icon = newUrl;
     }
 

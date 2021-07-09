@@ -20,24 +20,23 @@ import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { ContactsComponent } from 'src/app/components/contacts/contacts.component';
 import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
-import { EditContactComponent } from 'src/app/components/contacts/edit-contact/edit-contact.component';
-import { ViewContactComponent } from 'src/app/components/contacts/view-contact/view-contact.component';
+import { ContactEditComponent } from 'src/app/components/contacts/contact-edit/contact-edit.component';
+import { ContactViewComponent } from 'src/app/components/contacts/contact-view/contact-view.component';
 import { ChatComponent } from 'src/app/components/chat/chat.component';
-import { ChatViewComponent } from 'src/app/components/chat/chat-view/chat-view.component';
-import { ChatEditComponent } from 'src/app/components/chat/chat-edit/chat-edit.component';
+import { ChatViewComponent } from 'src/app/components/chat-view/chat-view.component';
+import { ChatEditComponent } from 'src/app/components/chat-edit/chat-edit.component';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
-import { CalendarDialogComponent } from 'src/app/components/calendar/calendar-dialog/calendar-dialog.component';
-import { CalendarPrinterComponent } from 'src/app/components/calendar/calendar-printer/calendar-printer.component';
-import { CalendarViewComponent } from 'src/app/components/calendar/calendar-view/calendar-view.component';
-import { CalendarCellComponent } from 'src/app/components/calendar/calendar-view/calendar-cell/calendar-cell.component';
+import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
+import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
+import { CalendarViewComponent } from 'src/app/components/calendar-view/calendar-view.component';
+import { CalendarCellComponent } from 'src/app/components/calendar-cell/calendar-cell.component';
 import { AdminComponent } from 'src/app/components/admin/admin.component';
-import { PhotoUploadProgressComponent } from 'src/app/components/photos/photo-upload-progress/photo-upload-progress.component';
+import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { ConfirmPromptComponent } from 'src/app/components/confirm-prompt/confirm-prompt.component';
 import { FileInputComponent } from 'src/app/components/file-input/file-input.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { VideosComponent } from 'src/app/components/videos/videos.component';
-
 import { VgCoreModule } from '@videogular/ngx-videogular/core';
 import { VgControlsModule } from '@videogular/ngx-videogular/controls';
 import { VgOverlayPlayModule } from '@videogular/ngx-videogular/overlay-play';
@@ -54,8 +53,8 @@ import { VideoPlayerComponent } from 'src/app/components/video-player/video-play
     ContactsComponent,
     CalendarComponent,
     PhotosComponent,
-    EditContactComponent,
-    ViewContactComponent,
+    ContactEditComponent,
+    ContactViewComponent,
     ChatComponent,
     ChatViewComponent,
     ChatEditComponent,
@@ -110,7 +109,7 @@ import { VideoPlayerComponent } from 'src/app/components/video-player/video-play
     CalendarPrinterComponent,
   ],
   exports: [
-    EditContactComponent,
+    ContactEditComponent,
   ]
 })
 export class AppModule { }

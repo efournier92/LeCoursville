@@ -4,11 +4,11 @@ import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-view-contact',
-  templateUrl: './view-contact.component.html',
-  styleUrls: ['./view-contact.component.scss']
+  selector: 'app-contact-view',
+  templateUrl: './contact-view.component.html',
+  styleUrls: ['./contact-view.component.scss']
 })
-export class ViewContactComponent implements OnInit {
+export class ContactViewComponent implements OnInit {
   @Input() contact: Contact;
   user: User;
 

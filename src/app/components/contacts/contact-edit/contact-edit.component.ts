@@ -6,11 +6,11 @@ import { families } from 'src/app/constants/families';
 import { ContactsService } from 'src/app/services/contacts.service';
 
 @Component({
-  selector: 'app-edit-contact',
-  templateUrl: './edit-contact.component.html',
-  styleUrls: ['./edit-contact.component.scss']
+  selector: 'app-contact-edit',
+  templateUrl: './contact-edit.component.html',
+  styleUrls: ['./contact-edit.component.scss']
 })
-export class EditContactComponent implements OnInit {
+export class ContactEditComponent implements OnInit {
   @Input()
   public contact: Contact;
   user: User;

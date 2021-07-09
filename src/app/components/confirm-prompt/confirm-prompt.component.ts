@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogData } from 'src/app/components/calendar/calendar-dialog/calendar-dialog.component';
+import { DialogData } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 
 @Component({
   selector: 'app-confirm-prompt',
