@@ -1,0 +1,11 @@
+<div *ngIf="isVideo(selectedMedia)">
+    <app-video-player></app-video-player>
+</div>
+
+<!-- <div *ngIf="isDocument(selectedMedia)"> -->
+    <!-- <pdf-viewer [src]="pdfThing" [render-text]="true" style="display: block;">
+    </pdf-viewer> -->
+<!-- </div> -->
+
+
+<app-media-list [allMedia]="media" (mediaClickEvent)="onMediaSelect($event)"></app-media-list>

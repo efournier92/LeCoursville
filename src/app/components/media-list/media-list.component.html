@@ -1,0 +1,26 @@
+<button mat-button class="media-item-button" *ngFor="let media of filteredMedia"
+(click)="onMediaSelect(media)">
+<div class="row justify-content-start">
+    <div class="imageContainer">
+        <div class="imageCenterer">
+            <img src="{{ media.icon }}">
+        </div>
+    </div>
+
+    <div class="col-9">
+        <div class="media-details-name">
+            {{ media.name }}
+        </div>
+        <div class="media-details-location">
+            {{ media.location }}
+        </div>
+        <div class="media-details-date">
+            {{ media.date }}
+        </div>
+        <div class="media-details-duration">
+            {{ media.duration }}
+        </div>
+    </div>
+    <span flex></span>
+</div>
+</button>
