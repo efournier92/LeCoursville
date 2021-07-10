@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { AngularFireDatabase } from '@angular/fire/database';
-import { Router } from '@angular/router';
 import { Message } from 'src/app/models/message';
 import { AuthService } from 'src/app/services/auth.service';
 import { ChatService } from 'src/app/services/chat.service';
@@ -10,6 +9,7 @@ import { HighlightService } from 'src/app/services/highlight.service';
 import { Highlight } from 'src/app/models/highlight';
 import { PhotosService } from 'src/app/services/photos.service';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
+import { RoutingService } from 'src/app/services/routing.service';
 
 declare interface HtmlInput extends HTMLElement {
   value: string;
@@ -41,7 +41,7 @@ export class ChatEditComponent implements OnInit {
     private authService: AuthService,
     private photoService: PhotosService,
     private highlightService: HighlightService,
-    private router: Router,
+    private routingService: RoutingService,
     private db: AngularFireDatabase,
     private confirmPrompt: ConfirmPromptService,
   ) { }
@@ -169,7 +169,7 @@ export class ChatEditComponent implements OnInit {
   }
 
   cancelMessage(): void {
-    this.router.navigateByUrl('/chat', { skipLocationChange: true });
+    this.routingService.NavigateToRouteWithoutLocationChange('/chat');
   }
 
   highlightElement(element: string, value: boolean): void {

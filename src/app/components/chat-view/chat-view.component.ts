@@ -76,8 +76,8 @@ export class ChatViewComponent implements OnInit {
   }
 
   replyMessage(): void {
-    let authorId: string = this.auth.user.id;
-    let authorName: string = this.auth.user.name;
+    let authorId: string = this.user.id;
+    let authorName: string = this.user.name;
     let replyLevel: number = this.message.replyLevel + 1;
     if (!this.message.replies)
       this.message.replies = new Array<Message>();

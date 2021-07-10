@@ -1,9 +1,19 @@
-import { Doc, Video } from "src/app/models/video"
+import { Doc, PhotoAlbum, Video } from "src/app/models/media"
 
-export class SampleVideoService {
+export class SampleMediaService {
 
     get() {
         return [
+            new PhotoAlbum(
+                "",
+                "SomeGuy",
+                "",
+                "https://i1.sndcdn.com/avatars-000432238356-t84yvc-t500x500.jpg",
+                "1950s",
+                "00:05:53",
+                ["-LTtjt2CcYemzQ8koKwq", "-LTtju2MiLom4Jr_mSlC", "-LTtju2p_NxNUzWJwqB8", "-LTtju3NTbkrbTLWdeBD"],
+            ),
+
             new Doc(
                 "",
                 "LeCours Family Farm - 1950s",

@@ -8,46 +8,46 @@ describe('workspace-project App', () => {
     chat = new AppChat();
   });
 
-  it('should display the toolbar colored as theme primary', async () => {
-    await chat.navigateTo();
+  // it('should display the toolbar colored as theme primary', async () => {
+  //   await chat.navigateTo();
     
-    const toolbar = await chat.getToolbarMaterialColor();
-    expect(toolbar).toEqual('primary');
-  });
+  //   const toolbar = await chat.getToolbarMaterialColor();
+  //   expect(toolbar).toEqual('primary');
+  // });
 
-  it('should include a Chat component', async () => {
-    await chat.navigateTo();
+  // it('should include a Chat component', async () => {
+  //   await chat.navigateTo();
     
-    const isChatComponentPresent = await chat.isChatComponentPresent();
+  //   const isChatComponentPresent = await chat.isChatComponentPresent();
 
-    expect(isChatComponentPresent).toBeTruthy();
-  });
+  //   expect(isChatComponentPresent).toBeTruthy();
+  // });
 
-  it('should include a "New Message" button', async () => {
-    await chat.navigateTo();
+  // it('should include a "New Message" button', async () => {
+  //   await chat.navigateTo();
     
-    const isCreateMessageButtonPresent = await chat.isCreateMessageButtonPresent();
+  //   const isCreateMessageButtonPresent = await chat.isCreateMessageButtonPresent();
 
-    expect(isCreateMessageButtonPresent).toBeTruthy();
-  });
+  //   expect(isCreateMessageButtonPresent).toBeTruthy();
+  // });
 
-  it('should create a new message on clicking the "New Message" button', async () => {
-    await chat.navigateTo();
+  // it('should create a new message on clicking the "New Message" button', async () => {
+  //   await chat.navigateTo();
         
-    await chat.clickNewMessageButton();
+  //   await chat.clickNewMessageButton();
 
-    await chat.inputToNewMessageTitleInput();
-    await chat.inputToNewMessageBodyInput();
+  //   await chat.inputToNewMessageTitleInput();
+  //   await chat.inputToNewMessageBodyInput();
 
-    const isNewMessageContentPresent = await chat.isNewMessageContentPresent();
-    await chat.clickSaveButton();
+  //   const isNewMessageContentPresent = await chat.isNewMessageContentPresent();
+  //   await chat.clickSaveButton();
 
-    await chat.clickConfirmButton();
+  //   await chat.clickConfirmButton();
     
-    debugger;
+  //   debugger;
 
-    expect(isNewMessageContentPresent).toBeTruthy();
-  });  
+  //   expect(isNewMessageContentPresent).toBeTruthy();
+  // });  
   
 
   afterEach(async () => {

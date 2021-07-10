@@ -41,5 +41,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Secrets
-/src/environments/secrets.ts
+# Enviroment Secrets
+/src/environments/environment.prod.ts
+/src/environments/environment.ts

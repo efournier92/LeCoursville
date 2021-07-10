@@ -2,10 +2,12 @@
     <app-video-player></app-video-player>
 </div>
 
-<!-- <div *ngIf="isDocument(selectedMedia)"> -->
-    <!-- <pdf-viewer [src]="pdfThing" [render-text]="true" style="display: block;">
-    </pdf-viewer> -->
-<!-- </div> -->
+<div *ngIf="isDocument(selectedMedia)">
+    <app-pdf-viewer></app-pdf-viewer>
+</div>
 
+<div *ngIf="isPhotoAlbum(selectedMedia)">
+    <app-photo-album [album]="selectedMedia"></app-photo-album>
+</div>
 
 <app-media-list [allMedia]="media" (mediaClickEvent)="onMediaSelect($event)"></app-media-list>

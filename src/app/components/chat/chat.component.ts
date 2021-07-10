@@ -65,8 +65,8 @@ export class ChatComponent implements OnInit {
       if (message.isEditable === true)
         return;
     }
-    let authorId: string = this.auth.user.id;
-    let authorName: string = this.auth.user.name;
+    let authorId: string = this.user.id;
+    let authorName: string = this.user.name;
     this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
   }
 

@@ -1,5 +1,5 @@
 import { AppPage } from './app.po';
-import { browser, by, element, logging } from 'protractor';
+import { browser, logging } from 'protractor';
 
 describe('workspace-project App', () => {
   let page: AppPage;
@@ -12,6 +12,7 @@ describe('workspace-project App', () => {
     await page.navigateTo();
     
     var toolbar = await page.getToolbarMaterialColor();
+    
     expect(toolbar).toEqual('primary');
   });
 
@@ -26,15 +27,16 @@ describe('workspace-project App', () => {
     await page.navigateTo();
     
     var areButtonsDisplayed = await page.doesToolbarIncludeAnyRoutes();
+
     expect(areButtonsDisplayed).toBeFalsy();
   });
 
   it('should allow the user to log in and land them on the chat page', async () => {
     await page.navigateTo();
-    
     await page.login();
  
     const currentUrl = await page.getCurrentUrl();
+
     expect(currentUrl).toContain("chat");
   });
 

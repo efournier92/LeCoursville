@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Media } from 'src/app/models/video';
+import { Media } from 'src/app/models/media';
 
 @Component({
   selector: 'app-media-list',

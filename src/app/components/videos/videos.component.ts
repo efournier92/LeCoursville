@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Video } from 'src/app/models/video';
+import { Video } from 'src/app/models/media';
 import { VideoUploadDialogComponent as CreateVideoDialogComponent } from './video-upload-dialog/video-upload-dialog.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { VideosService } from 'src/app/services/videos.service';
-import { SampleVideoService } from 'src/app/constants/sample-videos';
-import { secrets } from 'src/environments/secrets.js';
+import { SampleMediaService } from 'src/app/constants/sample-media';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-videos',
@@ -47,12 +47,14 @@ export class VideosComponent implements OnInit {
 
     this.allVideos = [];
     
-    const sampleVideoService = new SampleVideoService();
-    const videos = sampleVideoService.get();
+    const sampleMediaService = new SampleMediaService();
+    const videos = sampleMediaService.get();
 
     videos.forEach(video => {
-      video = this.updateGoogleDriveUrlFormat(video);
-      this.allVideos.push(video);
+      if (video instanceof Video) {
+        video = this.updateGoogleDriveUrlFormat(video);
+        this.allVideos.push(video);
+      }
     });
 
     console.log("Videos -> ", this.allVideos);
@@ -63,13 +65,13 @@ export class VideosComponent implements OnInit {
   updateGoogleDriveUrlFormat(video: Video){
     if (video.url.includes("https://drive.google.com/file/d/")) {
       let id = video.url.replace("https://drive.google.com/file/d/", "").replace("/view?usp=sharing", "")
-      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${secrets.googleApiKey}`
+      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${environment.googleApiKey}`
       video.url = newUrl;
     }
 
     if (video.icon.includes("https://drive.google.com/file/d/")) {
       let id = video.icon.replace("https://drive.google.com/file/d/", "").replace("/view?usp=sharing", "")
-      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${secrets.googleApiKey}`
+      let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${environment.googleApiKey}`
       video.icon = newUrl;
     }
 

@@ -78,3 +78,24 @@ export class Doc extends Media {
         this.duration = duration;
     }
 }
+
+export class PhotoAlbum extends Media {
+    photos: string[];
+
+    constructor(
+        id: string = "",
+        name: string = "",
+        url: string = "",
+        icon: string = "",
+        date: string = "",
+        fileName: string = "",
+        photos: string[] = new Array<string>(),
+      ) {
+        const format = MediaConstants.FORMAT.PHOTO_ALBUM;
+        const type = MediaConstants.TYPES.PHOTO_ALBUM;
+
+        super(id, name, date, icon, url, format, type, fileName);
+
+        this.photos = photos;
+    }
+}

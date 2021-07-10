@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireDatabase, AngularFireList, AngularFireObject } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Video } from 'src/app/models/video';
+import { Video } from 'src/app/models/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 
