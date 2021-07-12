@@ -4,6 +4,7 @@ import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
+// Imports
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFireStorageModule } from '@angular/fire/storage';
@@ -20,13 +21,17 @@ import { HttpClientModule } from '@angular/common/http';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { LightgalleryModule } from 'lightgallery/angular';
 import { MaterialModule } from 'src/app/modules/material.module';
+import { NgxAudioPlayerModule } from 'ngx-audio-player';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { VgBufferingModule } from '@videogular/ngx-videogular/buffering';
 import { VgControlsModule } from '@videogular/ngx-videogular/controls';
 import { VgCoreModule } from '@videogular/ngx-videogular/core';
 import { VgOverlayPlayModule } from '@videogular/ngx-videogular/overlay-play';
 
+// Declarations
 import { AdminComponent } from 'src/app/components/admin/admin.component';
+import { AdminUsersComponent } from 'src/app/components/admin-users/admin-users.component';
+import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
 import { AppComponent } from 'src/app/app.component';
 import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { CalendarCellComponent } from 'src/app/components/calendar-cell/calendar-cell.component';
@@ -51,10 +56,13 @@ import { PhotosComponent } from 'src/app/components/photos/photos.component';
 import { VideoPlayerComponent } from 'src/app/components/video-player/video-player.component';
 import { VideoUploadDialogComponent } from 'src/app/components/videos/video-upload-dialog/video-upload-dialog.component';
 import { VideosComponent } from 'src/app/components/videos/videos.component';
+import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
 
 @NgModule({
   declarations: [
     AdminComponent,
+    AdminMediaComponent,
+    AdminUsersComponent,
     AppComponent,
     AuthComponent,
     CalendarCellComponent,
@@ -78,7 +86,8 @@ import { VideosComponent } from 'src/app/components/videos/videos.component';
     PhotosComponent,
     VideoPlayerComponent,
     VideoUploadDialogComponent,
-    VideosComponent,    
+    VideosComponent,
+    AudioPlayerComponent,    
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -100,6 +109,7 @@ import { VideosComponent } from 'src/app/components/videos/videos.component';
     InfiniteScrollModule,
     LightgalleryModule,
     MaterialModule,
+    NgxAudioPlayerModule,
     NgxExtendedPdfViewerModule,
     ReactiveFormsModule,
     VgBufferingModule,

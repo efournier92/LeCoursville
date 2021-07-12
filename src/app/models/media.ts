@@ -1,3 +1,4 @@
+import { Track } from "ngx-audio-player";
 import { MediaConstants } from "src/app/constants/media-constants";
 
 export class Media {
@@ -97,5 +98,26 @@ export class PhotoAlbum extends Media {
         super(id, name, date, icon, url, format, type, fileName);
 
         this.photos = photos;
+    }
+}
+
+export class MusicAlbum extends Media {
+    tracks: Track[];
+
+    constructor(
+        id: string = "",
+        name: string = "",
+        url: string = "",
+        icon: string = "",
+        date: string = "",
+        fileName: string = "",
+        tracks: Track[] = new Array<Track>(),
+      ) {
+        const format = MediaConstants.FORMAT.MUSIC_ALBUM;
+        const type = MediaConstants.TYPES.MUSIC_ALBUM;
+
+        super(id, name, date, icon, url, format, type, fileName);
+
+        this.tracks = tracks;
     }
 }

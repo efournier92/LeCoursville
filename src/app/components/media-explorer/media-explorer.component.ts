@@ -33,6 +33,10 @@ export class MediaExplorerComponent implements OnInit {
     return selectedMedia && selectedMedia.type == MediaConstants.TYPES.PHOTO_ALBUM;
   }
 
+  isMusicAlbum(selectedMedia: Media): boolean {
+    return selectedMedia && selectedMedia.type == MediaConstants.TYPES.MUSIC_ALBUM;
+  }
+
   onMediaSelect(media: Media): void {
     // if (media && media.url && media.format)
       this.setCurrentMedia(media);

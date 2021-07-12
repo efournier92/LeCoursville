@@ -1,12 +1,45 @@
-import { Doc, PhotoAlbum, Video } from "src/app/models/media"
+import { Doc, MusicAlbum, PhotoAlbum, Video } from "src/app/models/media"
 
 export class SampleMediaService {
 
+    getTracks() {
+        return [
+            {
+                title: 'Audio One Title',
+                link: 'https://www.googleapis.com/drive/v3/files/14uYyXC74ObyOdRSwkUTN_rbUh6XrR1MH?alt=media&key=AIzaSyB0O5xzuR9PvyU_5YHq8byjOcMk1adqbVg',
+                artist: 'Audio One Artist',
+                duration: 123
+            },
+            {
+                title: 'Audio Two Title',
+                link: 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+                artist: 'Audio Two Artist',
+                duration: 123
+            },
+            {
+                title: 'Audio Three Title',
+                link: 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+                artist: 'Audio Three Artist',
+                duration: 123
+            }
+        ]
+    }
+
     get() {
         return [
+            new MusicAlbum(
+                "",
+                "Music by Some Guy",
+                "",
+                "https://www.martinguitar.com/on/demandware.static/-/Sites-martin-master-catalog/default/dw9d7b53db/images/00-18/00-18_f.jpg",
+                "1950s",
+                "00:05:53",
+                [],
+            ),
+
             new PhotoAlbum(
                 "",
-                "SomeGuy",
+                "Some Guy Album",
                 "",
                 "https://i1.sndcdn.com/avatars-000432238356-t84yvc-t500x500.jpg",
                 "1950s",
