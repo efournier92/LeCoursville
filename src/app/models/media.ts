@@ -10,6 +10,11 @@ export class Media {
     format: string;
     type: string;
     fileName: string;
+    location: string;
+    duration: string;
+    dateAdded: Date;
+    author: string;
+    listing: Array<any>;
     
     constructor(
         id: string = "",
@@ -20,6 +25,9 @@ export class Media {
         format: string = "",
         mediaType: string = "",
         fileName: string = "",
+        location: string = "",
+        duration: string = "",
+        listing: Array<any> = [],
     ) {
         this.id = id,
         this.name = name,
@@ -28,7 +36,10 @@ export class Media {
         this.url = url,
         this.format = format,
         this.type = mediaType
-        this.fileName = fileName
+        this.fileName = fileName,
+        this.location = location,
+        this.duration = duration,
+        this.listing = listing
     }
 }
 
@@ -81,7 +92,7 @@ export class Doc extends Media {
 }
 
 export class PhotoAlbum extends Media {
-    photos: string[];
+    listing: string[];
 
     constructor(
         id: string = "",
@@ -97,11 +108,11 @@ export class PhotoAlbum extends Media {
 
         super(id, name, date, icon, url, format, type, fileName);
 
-        this.photos = photos;
+        this.listing = photos;
     }
 }
 
-export class MusicAlbum extends Media {
+export class AudioAlbum extends Media {
     tracks: Track[];
 
     constructor(
@@ -113,8 +124,8 @@ export class MusicAlbum extends Media {
         fileName: string = "",
         tracks: Track[] = new Array<Track>(),
       ) {
-        const format = MediaConstants.FORMAT.MUSIC_ALBUM;
-        const type = MediaConstants.TYPES.MUSIC_ALBUM;
+        const format = MediaConstants.FORMAT.AUDIO_ALBUM;
+        const type = MediaConstants.TYPES.AUDIO_ALBUM;
 
         super(id, name, date, icon, url, format, type, fileName);
 

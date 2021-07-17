@@ -1,11 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
-import { PhotoAlbum } from 'src/app/models/media';
+import { Media, PhotoAlbum } from 'src/app/models/media';
 import { Photo } from 'src/app/models/photo';
 import { PhotosService } from 'src/app/services/photos.service';
 import lgZoom from 'lightgallery/plugins/zoom'
 import lgAutoplay from 'lightgallery/plugins/autoplay'
+import { MediaService } from 'src/app/services/media.service';
 
 @Component({
   selector: 'app-photo-album',
@@ -19,16 +20,17 @@ export class PhotoAlbumComponent implements OnInit {
   needsRefresh: any;
   
   constructor(
-    private photoService: PhotosService
+    private photoService: PhotosService,
+    private mediaService: MediaService
   ) { }
 
   ngOnInit(): void {
-    this.album.photos.forEach(
-      (photoId: string) => {
-        this.photoService.getPhotoById(photoId).subscribe(
-          (photo: Photo) => {
-            if (photo.id) {
-              this.photos.push(photo);
+    this.album.listing.forEach(
+      (id: string) => {
+        this.mediaService.getById(id).subscribe(
+          (media: Media) => {
+            if (media.id) {
+              this.photos.push(media);
               this.needsRefresh = true;
             }
           }

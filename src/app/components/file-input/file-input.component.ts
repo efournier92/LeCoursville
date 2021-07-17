@@ -11,14 +11,13 @@ interface HTMLInput extends HTMLElement {
   styleUrls: ['./file-input.component.scss']
 })
 export class FileInputComponent implements OnInit {
-  @Input()
-  matIcon: string;
-  @Input()
-  inputMessage: string;
-  @Input()
-  multipleFiles: boolean;
-  @Output()
-  onInputFileChange: EventEmitter<HTMLInput> = new EventEmitter();
+  @Input() matIcon: string;
+  @Input() inputMessage: string;
+  @Input() shouldAllowMultipleFiles: boolean = false;
+  @Input() shouldShowLabel: boolean = false;
+  @Input() shouldShowClearButton: boolean = false;
+  @Output() onInputFileChange: EventEmitter<HTMLInput> = new EventEmitter();
+  @Output() onInputCleared: EventEmitter<HTMLInput> = new EventEmitter();
   fileInput: HTMLInput;
   inputPlaceholder: string;
 
@@ -30,9 +29,13 @@ export class FileInputComponent implements OnInit {
   }
 
   onInputChange() {
-    this.onInputFileChange.emit(this.fileInput.files);
+    this.fileInput = document.getElementById('file-input-file') as HTMLInput;
+
     if (!this.fileInput)
       return;
+
+    this.onInputFileChange.emit(this.fileInput.files);
+
     this.changeInputText();
   }
 
@@ -56,8 +59,8 @@ export class FileInputComponent implements OnInit {
   }
 
   clearInput() {
-    // document.getElementById('file-input-file').value = ""
     this.fileInput.value = "";
     this.inputPlaceholder = this.inputMessage;
+    this.onInputCleared.emit();
   }
 }

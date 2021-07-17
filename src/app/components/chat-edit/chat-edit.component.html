@@ -68,7 +68,12 @@
           #autosize="cdkTextareaAutosize" #input [(ngModel)]="message.body"></textarea>
       </mat-form-field>
       <div class="d-flex align-items-end" *ngIf="!message.isReply">
-        <app-file-input [matIcon]="'attach_file'" [inputMessage]="'Attach Photo'" [multipleFiles]="false"
+        <app-file-input
+          [matIcon]="'attach_file'"
+          [inputMessage]="'Attach Photo'"
+          [shouldShowLabel]="false"
+          [shouldShowClearButton]="false"
+          [shouldAllowMultipleFiles]="false"
           (onInputFileChange)="onInputFileChange($event)">
         </app-file-input>
       </div>

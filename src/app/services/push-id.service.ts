@@ -4,7 +4,7 @@ import { AngularFireDatabase } from '@angular/fire/database';
 @Injectable({
   providedIn: 'root'
 })
-export class PushIdService {
+export class PushIdFactory {
 
   constructor(
     private db: AngularFireDatabase,

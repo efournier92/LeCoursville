@@ -4,7 +4,7 @@ import { Video } from 'src/app/models/media';
 import { VideoUploadDialogComponent as CreateVideoDialogComponent } from './video-upload-dialog/video-upload-dialog.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
-import { VideosService } from 'src/app/services/videos.service';
+import { MediaService } from 'src/app/services/media.service';
 import { SampleMediaService } from 'src/app/constants/sample-media';
 import { environment } from 'src/environments/environment';
 
@@ -23,7 +23,7 @@ export class VideosComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
-    private videosService: VideosService,
+    private videosService: MediaService,
     public dialog: MatDialog,
   ) {}
 

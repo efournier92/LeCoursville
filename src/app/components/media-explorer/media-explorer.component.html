@@ -1,17 +1,17 @@
 <div *ngIf="isVideo(selectedMedia)">
-    <app-video-player></app-video-player>
+    <app-video-player [video]="selectedMedia" [events]="eventsSubject.asObservable()"></app-video-player>
 </div>
 
 <div *ngIf="isDocument(selectedMedia)">
-    <app-pdf-viewer></app-pdf-viewer>
+    <app-doc-viewer [doc]="selectedMedia" [events]="eventsSubject.asObservable()"></app-doc-viewer>
 </div>
 
 <div *ngIf="isPhotoAlbum(selectedMedia)">
     <app-photo-album [album]="selectedMedia"></app-photo-album>
 </div>
 
-<div *ngIf="isMusicAlbum(selectedMedia)">
-    <app-audio-player [album]="selectedMedia"></app-audio-player>
+<div *ngIf="isAudioAlbum(selectedMedia)">
+    <app-audio-player [album]="selectedMedia" [events]="eventsSubject.asObservable()"></app-audio-player>
 </div>
 
-<app-media-list [allMedia]="media" (mediaClickEvent)="onMediaSelect($event)"></app-media-list>
+<app-media-list (mediaClickEvent)="onMediaSelect($event)"></app-media-list>

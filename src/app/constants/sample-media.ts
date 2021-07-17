@@ -1,4 +1,5 @@
-import { Doc, MusicAlbum, PhotoAlbum, Video } from "src/app/models/media"
+
+import { Doc, AudioAlbum, PhotoAlbum, Video } from "src/app/models/media"
 
 export class SampleMediaService {
 
@@ -27,7 +28,7 @@ export class SampleMediaService {
 
     get() {
         return [
-            new MusicAlbum(
+            new AudioAlbum(
                 "",
                 "Music by Some Guy",
                 "",
@@ -58,16 +59,16 @@ export class SampleMediaService {
                 "1950s_HomeMovies_Farm_LeCoursFamily.mp4",
             ),
 
-            new Video(
-                "",
-                "LeCours Family Farm - 1950s",
-                "https://drive.google.com/file/d/1rCkREZhQZepugqwLvn7P6tYBQMejq0O2/view?usp=sharing",
-                "https://drive.google.com/file/d/197RuL7K8bAg6aQI36OjEfCO27YRGG9Hz/view?usp=sharing",
-                "Hardwick, VT",
-                "1950s",
-                "00:05:53",
-                "1950s_HomeMovies_Farm_LeCoursFamily.mp4",
-            ),
+                new Video(
+                    "",
+                    "LeCours Family Farm - 1950s",
+                    "https://drive.google.com/file/d/1rCkREZhQZepugqwLvn7P6tYBQMejq0O2/view?usp=sharing",
+                    "https://drive.google.com/file/d/197RuL7K8bAg6aQI36OjEfCO27YRGG9Hz/view?usp=sharing",
+                    "Hardwick, VT",
+                    "1950s",
+                    "00:05:53",
+                    "1950s_HomeMovies_Farm_LeCoursFamily.mp4",
+                ),
 
             new Video(
                 "",

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PushIdFactory } from './push-id.service';
+import { JsonService } from './json.service';
 
-describe('PushIdService', () => {
-  let service: PushIdFactory;
+describe('JsonService', () => {
+  let service: JsonService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(PushIdFactory);
+    service = TestBed.inject(JsonService);
   });
 
   it('should be created', () => {

@@ -1,6 +1,24 @@
-<ngx-audio-player [playlist]="tracks" [displayTitle]="msaapDisplayTitle" [autoPlay]="false" 
-    muted="muted" [displayPlaylist]="msaapDisplayPlayList"
-    [displayVolumeControls]="msaapDisplayVolumeControls" [displayRepeatControls]="msaapDisplayRepeatControls"
-    [disablePositionSlider]="msaapDisablePositionSlider" [displayArtist]="msaapDisplayArtist" 
-    [displayDuration]="msaapDisplayDuration" [expanded]="true">
+<div class="d-flex justify-content-center align-items-center flex-column">
+    <div>
+        <img class="audio-player-album-art" src="{{album.icon}}" alt="">
+    </div>
+    <div>
+        {{ album.author }}
+    </div>
+    <div>
+        {{ album.name }}
+    </div>
+</div>
+
+<ngx-audio-player 
+    [playlist]="tracks"
+    [displayPlaylist]="true"
+    [displayTitle]="album.name"
+    [displayArtist]="album.author" 
+    [autoPlay]="true" 
+    [pageSizeOptions]=10
+    [displayVolumeControls]="true"
+    [displayRepeatControls]="true"
+    [disablePositionSlider]="false"
+    [expanded]="true">
 </ngx-audio-player>

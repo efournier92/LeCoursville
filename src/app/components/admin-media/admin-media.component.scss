@@ -1,0 +1,15 @@
+.media-upload-radio-group {
+    display: flex;
+    flex-direction: column;
+    margin: 15px 0;
+}
+  
+.media-upload-radio-button {
+    margin: 5px;
+}
+
+.media-upload-errors {
+    font-size: 0.8em;
+    color: #FF5252;
+    margin-bottom: 0.8em;
+}

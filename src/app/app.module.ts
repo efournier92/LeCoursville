@@ -57,6 +57,7 @@ import { VideoPlayerComponent } from 'src/app/components/video-player/video-play
 import { VideoUploadDialogComponent } from 'src/app/components/videos/video-upload-dialog/video-upload-dialog.component';
 import { VideosComponent } from 'src/app/components/videos/videos.component';
 import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
+import { DocViewerComponent } from './components/doc-viewer/doc-viewer.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +88,8 @@ import { AudioPlayerComponent } from './components/audio-player/audio-player.com
     VideoPlayerComponent,
     VideoUploadDialogComponent,
     VideosComponent,
-    AudioPlayerComponent,    
+    AudioPlayerComponent,
+    DocViewerComponent,    
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),

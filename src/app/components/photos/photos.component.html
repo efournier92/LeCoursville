@@ -29,7 +29,12 @@
 </div>
 <div class="photo-upload-input-container d-flex flex-row justify-content-end" *ngIf="user && user.roles && user.roles.admin">
   <div class="d-flex flex-column">
-    <app-file-input [matIcon]="'file_upload'" [inputMessage]="'Upload Photos'" [multipleFiles]="true"
+    <app-file-input
+      [matIcon]="'file_upload'"
+      [inputMessage]="'Upload Photos'"
+      [shouldAllowMultipleFiles]="true"
+      [shouldShowClearButton]="false"
+      [shouldAllowMultipleFiles]="false"
       (onInputFileChange)="uploadPhotos($event)">
     </app-file-input>
     <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>

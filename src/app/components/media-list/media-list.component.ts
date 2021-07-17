@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Media } from 'src/app/models/media';
+import { MediaService } from 'src/app/services/media.service';
 
 @Component({
   selector: 'app-media-list',
@@ -8,13 +9,21 @@ import { Media } from 'src/app/models/media';
 })
 export class MediaListComponent implements OnInit {
   filteredMedia: Array<Media>;
-  @Input() allMedia: Array<Media>;
+  allMedia: Array<Media>;
   @Output() mediaClickEvent = new EventEmitter<Media>();
   
-  constructor() { }
+  constructor(
+    private mediaService: MediaService,
+  ) { }
 
   ngOnInit(): void {
-    this.filteredMedia = this.allMedia;
+    this.mediaService.mediaObservable.subscribe(
+      (mediaList) => {
+        // if (!this.allMedia)
+          this.allMedia = mediaList;
+          this.filteredMedia = this.allMedia.filter(media => media.type !== "photo" && media.type !== "audio-track");
+      }
+    )
   }
 
   onMediaSelect(media: Media): void {
