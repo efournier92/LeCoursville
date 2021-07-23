@@ -33,16 +33,16 @@ export class JsonService {
 
   bulkUploadMediaFromJson(mediaArray: Array<any>): void {
     mediaArray.forEach(mediaFile => {
-      if (mediaFile.type === MediaConstants.TYPES.VIDEO)
+      if (mediaFile.type === MediaConstants.VIDEO.id)
         this.uploadVideo(mediaFile);
 
-      if (mediaFile.type === MediaConstants.TYPES.DOCUMENT)
+      if (mediaFile.type === MediaConstants.DOC.id)
         this.uploadDocument(mediaFile);
 
-      if (mediaFile.type === MediaConstants.TYPES.PHOTO_ALBUM)
+      if (mediaFile.type === MediaConstants.PHOTO_ALBUM.id)
         this.uploadPhotoAlbum(mediaFile);
 
-      if (mediaFile.type === MediaConstants.TYPES.AUDIO_ALBUM)
+      if (mediaFile.type === MediaConstants.AUDIO_ALBUM.id)
         this.uploadAudioAlbum(mediaFile);
     });
   }

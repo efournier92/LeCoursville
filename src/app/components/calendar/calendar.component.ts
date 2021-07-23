@@ -11,6 +11,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-calendar',
@@ -43,6 +44,7 @@ export class CalendarComponent {
     public http: HttpClient,
     private calendarService: CalendarService,
     private confirmPrompt: ConfirmPromptService,
+    private analyticsService: AnalyticsService,
   ) { }
 
   ngOnInit(): void {
@@ -68,6 +70,8 @@ export class CalendarComponent {
         this.allCalendars = calendars;
       }
     )
+
+    this.analyticsService.logPageView('calendar');
   }
 
   toggleBirthdays($event): void {

@@ -1,26 +1,35 @@
-<button mat-button class="media-item-button" *ngFor="let media of filteredMedia"
-(click)="onMediaSelect(media)">
-<div class="row justify-content-start">
-    <div class="imageContainer">
-        <div class="imageCenterer">
-            <!-- <img src="{{ media.icon }}"> -->
+    <div class="media-list-controls-container d-flex align-items-center justify-content-center justify-content-md-end">
+        <div class="">
+            <app-media-search-input (inputChangeEvent)="onSearchInputChange($event)"></app-media-search-input>
+        </div>
+        <div class="">
+            <app-media-types-radio-selector (selectMediaTypeEvent)="onSelectMediaType($event)">
+            </app-media-types-radio-selector>
         </div>
     </div>
 
-    <div class="col-9">
-        <div class="media-details-name">
-            {{ media.name }}
+<button mat-button class="media-item-button" *ngFor="let media of filteredMedia" (click)="onMediaSelect(media)">
+    <div class="row justify-content-start">
+        <div class="imageContainer">
+            <div class="imageCenterer">
+                <!-- <img src="{{ media.icon }}"> -->
+            </div>
         </div>
-        <div class="media-details-location">
-            {{ media.location }}
+
+        <div class="col-9">
+            <div class="media-details-name">
+                {{ media.name }}
+            </div>
+            <div class="media-details-location">
+                {{ media.location }}
+            </div>
+            <div class="media-details-date">
+                {{ media.date }}
+            </div>
+            <div class="media-details-duration">
+                {{ media.duration }}
+            </div>
         </div>
-        <div class="media-details-date">
-            {{ media.date }}
-        </div>
-        <div class="media-details-duration">
-            {{ media.duration }}
-        </div>
+        <span flex></span>
     </div>
-    <span flex></span>
-</div>
 </button>

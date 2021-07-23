@@ -57,8 +57,8 @@ export class Video extends Media {
         duration: string = "",
         fileName: string = "",
       ) {
-        const format = MediaConstants.FORMAT.VIDEO;
-        const type = MediaConstants.TYPES.VIDEO;
+        const type = MediaConstants.VIDEO.id;
+        const format = MediaConstants.VIDEO.format;
 
         super(id, name, date, icon, url, format, type, fileName);
 
@@ -81,8 +81,8 @@ export class Doc extends Media {
         duration: string = "",
         fileName: string = "",
       ) {
-        const format = MediaConstants.FORMAT.DOCUMENT;
-        const type = MediaConstants.TYPES.DOCUMENT;
+        const type = MediaConstants.DOC.id;
+        const format = MediaConstants.DOC.format;
 
         super(id, name, date, icon, url, format, type, fileName);
 
@@ -103,8 +103,8 @@ export class PhotoAlbum extends Media {
         fileName: string = "",
         photos: string[] = new Array<string>(),
       ) {
-        const format = MediaConstants.FORMAT.PHOTO_ALBUM;
-        const type = MediaConstants.TYPES.PHOTO_ALBUM;
+        const type = MediaConstants.PHOTO_ALBUM.id;
+        const format = MediaConstants.PHOTO_ALBUM.format;
 
         super(id, name, date, icon, url, format, type, fileName);
 
@@ -124,8 +124,8 @@ export class AudioAlbum extends Media {
         fileName: string = "",
         tracks: Track[] = new Array<Track>(),
       ) {
-        const format = MediaConstants.FORMAT.AUDIO_ALBUM;
-        const type = MediaConstants.TYPES.AUDIO_ALBUM;
+        const type = MediaConstants.AUDIO_ALBUM.id
+        const format = MediaConstants.AUDIO_ALBUM.format;
 
         super(id, name, date, icon, url, format, type, fileName);
 

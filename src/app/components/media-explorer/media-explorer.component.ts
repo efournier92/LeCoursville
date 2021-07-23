@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { SampleMediaService } from 'src/app/constants/sample-media';
 import { Media } from 'src/app/models/media';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 import { MediaService } from 'src/app/services/media.service';
 
 @Component({
@@ -16,6 +16,7 @@ export class MediaExplorerComponent implements OnInit {
 
   constructor(
     private mediaService: MediaService,
+    private analyticsService: AnalyticsService,
   ) { }
 
   ngOnInit(): void {
@@ -28,22 +29,24 @@ export class MediaExplorerComponent implements OnInit {
         console.log(mediaList);
       }
     )
+    
+    this.analyticsService.logPageView('media-explorer');
   }
 
   isVideo(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.TYPES.VIDEO;
+    return selectedMedia && selectedMedia.type == MediaConstants.VIDEO.id;
   }
 
   isDocument(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.TYPES.DOCUMENT;
+    return selectedMedia && selectedMedia.type == MediaConstants.DOC.id;
   }
 
   isPhotoAlbum(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.TYPES.PHOTO_ALBUM;
+    return selectedMedia && selectedMedia.type == MediaConstants.PHOTO_ALBUM.id;
   }
 
   isAudioAlbum(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.TYPES.AUDIO_ALBUM;
+    return selectedMedia && selectedMedia.type == MediaConstants.AUDIO_ALBUM.id;
   }
 
   onMediaSelect(media: Media): void {
@@ -54,6 +57,7 @@ export class MediaExplorerComponent implements OnInit {
 
   setCurrentMedia(media: Media) {
     this.selectedMedia = media;
+    this.analyticsService.logMediaSelect(media);
     this.emitEventToChild(media);
   }
 

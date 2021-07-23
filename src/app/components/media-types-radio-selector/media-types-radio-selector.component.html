@@ -1,0 +1,20 @@
+<!-- <label id="example-radio-group-label"></label>
+<mat-radio-group aria-labelledby="example-radio-group-label" class="example-radio-group" [(ngModel)]="selectedType">
+    <div
+        class="d-flex d-flex align-items-center justify-content-center justify-content-sm-between flex-sm-row flex-column px-2">
+        <mat-radio-button class="media-type-radio-button" *ngFor="let type of allTypes"
+            (click)="onSelectMediaType(type.id)" [value]="type">
+            {{type.name}}
+        </mat-radio-button>
+    </div>
+</mat-radio-group> -->
+
+<span>
+    <ul>
+        <li *ngFor="let type of allTypes">
+            <mat-checkbox (click)="onSelectMediaType(type)">
+                {{type.name}}
+            </mat-checkbox>
+        </li>
+    </ul>
+</span>

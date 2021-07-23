@@ -8,6 +8,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFireStorageModule } from '@angular/fire/storage';
+import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
@@ -58,6 +59,8 @@ import { VideoUploadDialogComponent } from 'src/app/components/videos/video-uplo
 import { VideosComponent } from 'src/app/components/videos/videos.component';
 import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
 import { DocViewerComponent } from './components/doc-viewer/doc-viewer.component';
+import { MediaTypesRadioSelectorComponent } from './components/media-types-radio-selector/media-types-radio-selector.component';
+import { MediaSearchInputComponent } from './components/media-search-input/media-search-input.component';
 
 @NgModule({
   declarations: [
@@ -89,10 +92,13 @@ import { DocViewerComponent } from './components/doc-viewer/doc-viewer.component
     VideoUploadDialogComponent,
     VideosComponent,
     AudioPlayerComponent,
-    DocViewerComponent,    
+    DocViewerComponent,
+    MediaTypesRadioSelectorComponent,
+    MediaSearchInputComponent,    
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireAnalyticsModule,
     AngularFireDatabaseModule,
     AngularFireStorageModule,
     AngularFireAuthModule,
