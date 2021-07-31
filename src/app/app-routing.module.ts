@@ -5,7 +5,6 @@ import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { ContactsComponent } from 'src/app/components/contacts/contacts.component';
 import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
-import { VideosComponent } from 'src/app/components/videos/videos.component';
 import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
@@ -37,11 +36,6 @@ const routes: Routes =
       canActivate: [AuthGuardService],
     },
     {
-      path: 'videos',
-      component: VideosComponent,
-      canActivate: [AuthGuardService],
-    },
-    {
       path: 'media',
       component: MediaExplorerComponent,
       canActivate: [AuthGuardService],
@@ -59,4 +53,3 @@ const routes: Routes =
 })
 
 export class AppRoutingModule { }
-

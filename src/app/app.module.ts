@@ -54,13 +54,13 @@ import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component
 import { PhotoAlbumComponent } from './components/photo-album/photo-album.component';
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
-import { VideoPlayerComponent } from 'src/app/components/video-player/video-player.component';
-import { VideoUploadDialogComponent } from 'src/app/components/videos/video-upload-dialog/video-upload-dialog.component';
-import { VideosComponent } from 'src/app/components/videos/videos.component';
+import { VideoUploadDialogComponent } from 'src/app/components/video-upload-dialog/video-upload-dialog.component';
 import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
 import { DocViewerComponent } from './components/doc-viewer/doc-viewer.component';
-import { MediaTypesRadioSelectorComponent } from './components/media-types-radio-selector/media-types-radio-selector.component';
+import { MediaTypesCheckboxesComponent } from './components/media-types-checkboxes/media-types-checkboxes.component';
 import { MediaSearchInputComponent } from './components/media-search-input/media-search-input.component';
+import { VideoPlayerDriveIframeComponent } from './components/video-player-drive-iframe/video-player-drive-iframe.component';
+import { VideoPlayerVideogularComponent } from './components/video-player-videogular/video-player-videogular.component';
 
 @NgModule({
   declarations: [
@@ -88,13 +88,13 @@ import { MediaSearchInputComponent } from './components/media-search-input/media
     PhotoAlbumComponent,
     PhotoUploadProgressComponent,
     PhotosComponent,
-    VideoPlayerComponent,
     VideoUploadDialogComponent,
-    VideosComponent,
     AudioPlayerComponent,
     DocViewerComponent,
-    MediaTypesRadioSelectorComponent,
-    MediaSearchInputComponent,    
+    MediaTypesCheckboxesComponent,
+    MediaSearchInputComponent,
+    VideoPlayerDriveIframeComponent,
+    VideoPlayerVideogularComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),

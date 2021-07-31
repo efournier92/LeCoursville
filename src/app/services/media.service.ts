@@ -46,7 +46,7 @@ export class MediaService {
   }
 
   getMedia(): AngularFireList<Media> {
-    this.mediaList = this.db.list('media', ref => ref.limitToFirst(10));
+    this.mediaList = this.db.list('media', ref => ref.limitToFirst(100));
     return this.mediaList;
   }
 

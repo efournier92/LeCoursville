@@ -20,7 +20,11 @@ export class AdminMediaComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
+    this.jsonService.successMessagesObservable.subscribe(
+      (messages: string[]) => {
+        this.successMessages = messages;
+      }
+    );
   }
 
   onInputFileChange(files: any): void {

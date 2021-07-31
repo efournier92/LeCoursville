@@ -11,6 +11,7 @@ export class DocViewerComponent implements OnInit {
   @Input() doc: Doc;
   url: string;
   pdfThing: string;
+  isLoading: boolean;
 
   private eventsSubscription: Subscription;
   @Input() events: Observable<Media>;
@@ -18,6 +19,8 @@ export class DocViewerComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    this.isLoading = true;
+
     this.url = this.doc.url;
 
     this.eventsSubscription = this.events.subscribe((media) => {
@@ -29,5 +32,8 @@ export class DocViewerComponent implements OnInit {
     this.eventsSubscription.unsubscribe();
   }
 
+  onPdfLoaded() {
+    this.isLoading = false;
+  }
 
 }

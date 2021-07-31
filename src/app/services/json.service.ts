@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Observable } from 'rxjs/internal/Observable';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { Doc, Media, PhotoAlbum } from 'src/app/models/media';
 import { MediaService } from 'src/app/services/media.service';
-import { environment } from 'src/environments/environment';
 import { MediaConstants } from '../constants/media-constants';
 import { PushIdFactory } from './push-id.service';
 
@@ -31,7 +32,11 @@ export class JsonService {
     return response;
   }
 
-  bulkUploadMediaFromJson(mediaArray: Array<any>): void {
+  successMessages: string[] = [];
+  private successMessagesSource: BehaviorSubject<string[]> = new BehaviorSubject([]);
+  successMessagesObservable: Observable<string[]> = this.successMessagesSource.asObservable();
+
+  bulkUploadMediaFromJson(mediaArray: any[]): void {
     mediaArray.forEach(mediaFile => {
       if (mediaFile.type === MediaConstants.VIDEO.id)
         this.uploadVideo(mediaFile);
@@ -44,22 +49,36 @@ export class JsonService {
 
       if (mediaFile.type === MediaConstants.AUDIO_ALBUM.id)
         this.uploadAudioAlbum(mediaFile);
+
+      const successMessage = this.buildSuccessfulUploadMessage(mediaFile);
+      this.addSuccessMessage(successMessage);
     });
   }
+
+  private buildSuccessfulUploadMessage(mediaFile: Media): string {
+    return `Successfully uploaded ${mediaFile.name}`;
+  }
+
+  private addSuccessMessage(message: string): void {
+    this.successMessages.push(message);
+    this.successMessagesSource.next(this.successMessages);
+  } 
 
   uploadVideo(mediaFile: any): void {
     let video = new Media();
 
     video.name = mediaFile.name;
-    video.url = mediaFile.url;
-    video.icon = mediaFile.icon;
     video.location = mediaFile.location;
     video.date = mediaFile.date;
     video.duration = mediaFile.duration;
     video.fileName = mediaFile.fileName;
     video.type = mediaFile.type;
 
-    video = this.updateGoogleDriveUrlFormat(video);
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.icon);
+    video.icon = this.createGoogleDriveSmallAssetUrl(iconId);
+
+    video.hostingId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.url);
+    video.url = this.createGoogleDriveVideoUrl(video.hostingId);
 
     this.mediaService.create(video);
   }
@@ -68,15 +87,17 @@ export class JsonService {
     let doc = new Doc();
 
     doc.name = mediaFile.name;
-    doc.url = mediaFile.url;
-    doc.icon = mediaFile.icon;
     doc.location = mediaFile.location;
     doc.date = mediaFile.date;
     doc.duration = mediaFile.duration;
     doc.fileName = mediaFile.fileName;
     doc.type = mediaFile.type;
 
-    doc = this.updateGoogleDriveUrlFormat(doc);
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(doc.icon);
+    doc.icon = this.createGoogleDriveSmallAssetUrl(iconId);
+
+    doc.hostingId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.url);
+    doc.url = this.createGoogleDriveSmallAssetUrl(doc.hostingId);
 
     this.mediaService.create(doc);
   }
@@ -85,14 +106,14 @@ export class JsonService {
     let album = new PhotoAlbum();
 
     album.name = mediaFile.name;
-    album.icon = mediaFile.icon;
     album.type = mediaFile.type;
+
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.icon);
+    album.icon = this.createGoogleDriveSmallAssetUrl(iconId);
 
     const photoIds = this.uploadPhotos(mediaFile.listing);
 
     album.listing = photoIds;
-
-    album = this.updateGoogleDriveUrlFormat(album);
 
     this.mediaService.create(album);
   }
@@ -100,19 +121,22 @@ export class JsonService {
   uploadPhoto(mediaFile: Media) {
     let photo = new Media();
 
-    photo.url = mediaFile.url;
+    photo.id = this.pushIdFactory.create();
     photo.date = mediaFile.date;
     photo.type = mediaFile.type;
-    photo.id = this.pushIdFactory.create();
+    photo.hostingId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.url);
 
-    photo = this.updateGoogleDriveUrlFormat(photo);
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.icon);
+    photo.icon = this.createGoogleDriveSmallAssetUrl(iconId);
+
+    photo.url = this.createGoogleDriveSmallAssetUrl(iconId);
 
     this.mediaService.create(photo);
 
     return photo.id;
   }
 
-  uploadPhotos(photos: []) {
+  private uploadPhotos(photos: []) {
     let photoIds = new Array<string>();
 
     photos.forEach((photo: Media) => {
@@ -123,16 +147,19 @@ export class JsonService {
     return photoIds;
   }
 
-
   uploadAudioTrack(mediaFile: Media) {
     let track = new Media();
 
-    track.url = mediaFile.url;
+    track.id = this.pushIdFactory.create();
     track.name = mediaFile.name;
     track.type = mediaFile.type;
-    track.id = this.pushIdFactory.create();
+    track.hostingId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.url);
 
-    track = this.updateGoogleDriveUrlFormat(track);
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.icon);
+    track.icon = this.createGoogleDriveSmallAssetUrl(iconId);
+
+    track.hostingId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.url);
+    track.url = this.createGoogleDriveSmallAssetUrl(track.hostingId);
 
     this.mediaService.create(track);
 
@@ -150,34 +177,34 @@ export class JsonService {
     return ids;
   }
 
-
   uploadAudioAlbum(mediaFile: any): void {
     let album = new PhotoAlbum();
 
     album.name = mediaFile.name;
-    album.icon = mediaFile.icon;
     album.type = mediaFile.type;
+    
+    const iconId = this.extractGoogleDriveAssetIdFromUrl(mediaFile.icon);
+    album.icon = this.createGoogleDriveSmallAssetUrl(iconId);
 
     const albumIds = this.uploadAudioTracks(mediaFile.listing);
 
     album.listing = albumIds;
 
-    album = this.updateGoogleDriveUrlFormat(album);
-
     this.mediaService.create(album);
   }
 
-  private updateGoogleDriveUrlFormat(video: Media): Media {
-    Object.keys(video).forEach(key => {
-      const value = video[key];
-      if (value && value.includes && value.includes("https://drive.google.com/file/d/")) {
-        let id = value.replace("https://drive.google.com/file/d/", "").replace("/view?usp=sharing", "")
-        let newUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${environment.googleApiKey}`;
-        video[key] = newUrl;
-      }
-    });
+  private extractGoogleDriveAssetIdFromUrl(url: string): string {
+    return url
+      .replace("https://drive.google.com/file/d/", "")
+      .replace("/view?usp=sharing", "");
+  }
 
-    return video;
+  private createGoogleDriveSmallAssetUrl(assetId: string): string {
+    return `https://drive.google.com/uc?id=${assetId}`;
+  }
+
+  private createGoogleDriveVideoUrl(assetId: string): string {
+    return `https://drive.google.com/file/d/${assetId}/preview`;
   }
 
 }

@@ -1,0 +1,7 @@
+<div class="media-types-checkboxes-container mb-4">
+
+    <mat-checkbox *ngFor="let type of allTypes" (click)="onSelectMediaType(type)" class="col-12 col-md-4 col-lg-2">
+        {{type.name}}
+    </mat-checkbox>
+
+</div>

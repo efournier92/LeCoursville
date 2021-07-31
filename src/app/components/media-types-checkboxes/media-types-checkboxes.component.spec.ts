@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MediaTypesRadioSelectorComponent } from './media-types-radio-selector.component';
+import { MediaTypesCheckboxesComponent } from './media-types-checkboxes.component';
 
 describe('MediaTypesRadioSelectorComponent', () => {
-  let component: MediaTypesRadioSelectorComponent;
-  let fixture: ComponentFixture<MediaTypesRadioSelectorComponent>;
+  let component: MediaTypesCheckboxesComponent;
+  let fixture: ComponentFixture<MediaTypesCheckboxesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MediaTypesRadioSelectorComponent ]
+      declarations: [ MediaTypesCheckboxesComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MediaTypesRadioSelectorComponent);
+    fixture = TestBed.createComponent(MediaTypesCheckboxesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

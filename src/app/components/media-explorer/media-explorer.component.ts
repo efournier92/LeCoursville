@@ -13,6 +13,7 @@ import { MediaService } from 'src/app/services/media.service';
 export class MediaExplorerComponent implements OnInit {
   media: Media[] = new Array<Media>();
   selectedMedia: Media;
+  shouldShowLoader: boolean;
 
   constructor(
     private mediaService: MediaService,
@@ -51,8 +52,15 @@ export class MediaExplorerComponent implements OnInit {
 
   onMediaSelect(media: Media): void {
     this.selectedMedia = null;
+    this.shouldShowLoader = true;
+    window.scroll(0,0);
     // if (media && media.url && media.format)
       this.setCurrentMedia(media);
+  }
+
+  onVideoAutoPlay() {
+    console.log("Don't show loader");
+    this.shouldShowLoader = false; 
   }
 
   setCurrentMedia(media: Media) {

@@ -8,8 +8,14 @@
     margin: 5px;
 }
 
-.media-upload-errors {
+.media-upload-success-messages {
+    color: #00C853;
     font-size: 0.8em;
-    color: #FF5252;
+    margin-bottom: 0.8em;
+}
+
+.media-upload-error-messages {
+    color: #D50000;
+    font-size: 0.8em;
     margin-bottom: 0.8em;
 }

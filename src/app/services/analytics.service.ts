@@ -28,6 +28,7 @@ export class AnalyticsService {
   logPageView(pageName: string) {
     const data = {
       'page': pageName,
+      'user_id': this.user.id,
     }
     this.logEvent("page_view", data);
   }

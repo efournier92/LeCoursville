@@ -14,12 +14,4 @@ export class VideoUploadDialogComponent implements OnInit {
   ngOnInit(): void {
     this.videoToUpload = new Video();
   }
-
-  // uploadPhotos(filesToUpload: any): void {
-  //   this.videoToUpload
-  //   for (let file of filesToUpload) {
-  //     const upload = this.photosService.uploadPhoto(file, false);
-  //     this.photoUploads.push(upload);
-  //   }
-  // }
 }

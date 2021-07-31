@@ -1,17 +1,22 @@
-<div *ngIf="isVideo(selectedMedia)">
-    <app-video-player [video]="selectedMedia" [events]="eventsSubject.asObservable()"></app-video-player>
-</div>
+<div class="row">
+    <div class="col-12 col-lg-8" *ngIf="isVideo(selectedMedia)">
+        <div>
+            <app-video-player-drive-iframe [video]="selectedMedia" [events]="eventsSubject.asObservable()"
+                (onAutoPlayEvent)="onVideoAutoPlay()"></app-video-player-drive-iframe>
+        </div>
 
-<div *ngIf="isDocument(selectedMedia)">
-    <app-doc-viewer [doc]="selectedMedia" [events]="eventsSubject.asObservable()"></app-doc-viewer>
-</div>
+        <div *ngIf="isDocument(selectedMedia)">
+            <app-doc-viewer [doc]="selectedMedia" [events]="eventsSubject.asObservable()"></app-doc-viewer>
+        </div>
 
-<div *ngIf="isPhotoAlbum(selectedMedia)">
-    <app-photo-album [album]="selectedMedia"></app-photo-album>
-</div>
+        <div *ngIf="isPhotoAlbum(selectedMedia)">
+            <app-photo-album [album]="selectedMedia"></app-photo-album>
+        </div>
 
-<div *ngIf="isAudioAlbum(selectedMedia)">
-    <app-audio-player [album]="selectedMedia" [events]="eventsSubject.asObservable()"></app-audio-player>
+        <div *ngIf="isAudioAlbum(selectedMedia)">
+            <app-audio-player [album]="selectedMedia" [events]="eventsSubject.asObservable()"></app-audio-player>
+        </div>
+    </div>
 </div>
 
 <app-media-list (mediaClickEvent)="onMediaSelect($event)"></app-media-list>

@@ -1,21 +1,12 @@
-<mat-radio-group
-  class="media-upload-radio-group"
-  [(ngModel)]="selectedMediaType">
-  <mat-radio-button class="media-upload-radio-button" *ngFor="let mediaType of mediaTypes" [value]="mediaType">
-    {{mediaType}}
-  </mat-radio-button>
-</mat-radio-group>
-
-<app-file-input
-    [matIcon]="'attach_file'" 
-    [inputMessage]="'JSON File'"
-    [shouldAllowMultipleFiles]="false"
-    [shouldShowLabel]="true"
-    [shouldShowClearButton]="true"
-    (onInputFileChange)="onInputFileChange($event)"
-    (onInputCleared)="onInputCleared()">
+<app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+  [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
+  (onInputCleared)="onInputCleared()">
 </app-file-input>
 
-<div class="media-upload-errors" *ngFor="let error of errorMessages">
-    {{error}}
+<div class="media-upload-success-messages" *ngFor="let success of successMessages">
+  {{ success }}
+</div>
+
+<div class="media-upload-error-messages" *ngFor="let error of errorMessages">
+  {{ error }}
 </div>

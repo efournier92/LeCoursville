@@ -14,6 +14,7 @@ export class Media {
     duration: string;
     dateAdded: Date;
     author: string;
+    hostingId: string;
     listing: Array<any>;
     
     constructor(

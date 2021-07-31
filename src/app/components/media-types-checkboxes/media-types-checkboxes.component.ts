@@ -3,11 +3,11 @@ import { MediaConstants, MediaType } from "src/app/constants/media-constants";
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 
 @Component({
-  selector: 'app-media-types-radio-selector',
-  templateUrl: './media-types-radio-selector.component.html',
-  styleUrls: ['./media-types-radio-selector.component.scss']
+  selector: 'app-media-types-checkboxes',
+  templateUrl: './media-types-checkboxes.component.html',
+  styleUrls: ['./media-types-checkboxes.component.scss']
 })
-export class MediaTypesRadioSelectorComponent implements OnInit {
+export class MediaTypesCheckboxesComponent implements OnInit {
   allTypes: MediaType[] = new Array<MediaType>();
   selectedType: string;
   @Output() selectMediaTypeEvent = new EventEmitter<string[]>();
