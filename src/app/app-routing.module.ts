@@ -9,11 +9,18 @@ import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
 
+
+
 const routes: Routes =
   [
     {
       path: '',
       component: AuthComponent,
+    },
+    {
+      path: 'admin',
+      component: AdminComponent,
+      canActivate: [AuthGuardService],
     },
     {
       path: 'contacts',
@@ -38,13 +45,8 @@ const routes: Routes =
     {
       path: 'media',
       component: MediaExplorerComponent,
-      canActivate: [AuthGuardService],
-    },
-    {
-      path: 'admin',
-      component: AdminComponent,
-      canActivate: [AuthGuardService],
-    },
+      // canActivate: [AuthGuardService],
+    }
   ];
 
 @NgModule({

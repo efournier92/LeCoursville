@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Media } from 'src/app/models/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { MediaTypesService } from './media-types-service.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,18 +13,20 @@ import { User } from 'src/app/models/user';
 export class MediaService {
   user: any;
   mediaList: AngularFireList<Media>;
+  
   private mediaSource: BehaviorSubject<Media[]> = new BehaviorSubject<Media[]>([]);
   mediaObservable: Observable<Media[]> = this.mediaSource.asObservable();
 
   constructor(
     private db: AngularFireDatabase,
     private auth: AuthService,
-    private angularFireAuth: AngularFireAuth,
+    private mediaTypesService: MediaTypesService,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
         if (user)
           this.user = user;
+          
         this.getMedia().valueChanges().subscribe(
           (mediaList: Media[]) => {
             this.updateMediaEvent(mediaList);
@@ -33,8 +36,8 @@ export class MediaService {
     )
   }
 
-  updateMediaEvent(messages: Media[]): void {
-    this.mediaSource.next(messages);
+  updateMediaEvent(mediaFiles: Media[]): void {
+    this.mediaSource.next(mediaFiles);
   }
 
   create(media: Media): void {
@@ -46,7 +49,7 @@ export class MediaService {
   }
 
   getMedia(): AngularFireList<Media> {
-    this.mediaList = this.db.list('media', ref => ref.limitToFirst(100));
+    this.mediaList = this.db.list('media');
     return this.mediaList;
   }
 
@@ -65,6 +68,85 @@ export class MediaService {
       }
     )
     return mediaByIdObservable;
+  }
+
+  filterByTypes(selectedTypes: string[], allMedia: Media[]): Media[] {
+    const hiddenTypes = this.mediaTypesService.getHiddenTypeIds();
+
+    return allMedia.filter(
+      (media: Media) => !hiddenTypes.includes(media.type) && selectedTypes.includes(media.type)
+    );
+  }
+
+  filterByQuery(query: string, allMedia): Media[] {
+    return allMedia.filter(
+      (media: Media) => {
+        return this.doesAnyKeyIncludeQuery(media, query);
+      }
+    );
+  }
+
+  loadMoreMedia(numberToLoad: number, allMedia: Media[], loadedMedia: Media[]): Media[] {
+    for (let i = 0; i < numberToLoad; i++) {
+      loadedMedia = this.loadAnotherMediaFile(allMedia, loadedMedia);
+    }
+
+    return this.filterMedia(loadedMedia);
+  }
+
+  private filterMedia(mediaList: Media[], ): Media[] {
+    return mediaList.filter(media => !this.mediaTypesService.getHiddenTypeIds().includes(media.type));
+  }
+
+  private loadAnotherMediaFile(allMedia: Media[], loadedMedia: Media[]): Media[] {
+    const newMedia = allMedia[loadedMedia.length];
+
+    if (this.shouldLoadMediaFile(newMedia, allMedia, loadedMedia)) {
+      loadedMedia.push(newMedia);
+    }
+
+    return loadedMedia;
+  }
+
+  private shouldLoadMediaFile(mediaFile: Media, allMedia: Media[], loadedMedia: Media[]): boolean {
+    return loadedMedia.length < allMedia.length 
+      && !loadedMedia.some(media => media.id === mediaFile.id)
+  }
+
+  private doesAnyKeyIncludeQuery(media: Media, query: string): boolean {
+    return Object.keys(media).some(
+      (key: string) => {
+          let value = media[key];
+          if (!this.isString(value))
+            return;
+
+          if (value)
+            value = value.toLowerCase();
+
+          if (query)
+            query = query.toLowerCase();
+
+          return value && value.includes(query);
+    });
+  }
+
+  private isString(input: any) {
+    return typeof input === "string";
+  }
+
+  tryLoadingFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
+    if (this.shouldLoadFirstBatch(allMedia, loadedMedia))
+      loadedMedia = this.loadFirstBatch(allMedia, loadedMedia);
+
+    return this.filterMedia(loadedMedia);
+  }
+
+  private shouldLoadFirstBatch(allMedia: Media[], loadedMedia: Media[]): boolean  {
+    return allMedia.length && !loadedMedia.length;
+  }
+
+  private loadFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
+    return this.loadMoreMedia(20, allMedia, loadedMedia);
   }
 
 }

@@ -1,9 +1,13 @@
-<mat-form-field class="example-form-field" appearance="fill">
-    <mat-label>
-        <mat-icon>search</mat-icon> Search Media
-    </mat-label>
-    <input matInput type="text" (input)="onInputChange($event.target.value)">
-    <button *ngIf="inputValue" matSuffix mat-icon-button aria-label="Clear" (click)="clearInput()">
-        <mat-icon>close</mat-icon>
-    </button>
-</mat-form-field>
+<div class="media-search-input-container">
+
+    <mat-form-field appearance="fill">
+        <mat-label>
+            <mat-icon>search</mat-icon> Search Media
+        </mat-label>
+        <input matInput type="text" (input)="onInputChange($event.target.value)">
+        <button *ngIf="inputValue" matSuffix mat-icon-button aria-label="Clear" (click)="clearInput()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </mat-form-field>
+
+</div>

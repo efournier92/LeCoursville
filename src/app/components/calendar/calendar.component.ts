@@ -70,8 +70,6 @@ export class CalendarComponent {
         this.allCalendars = calendars;
       }
     )
-
-    this.analyticsService.logPageView('calendar');
   }
 
   toggleBirthdays($event): void {

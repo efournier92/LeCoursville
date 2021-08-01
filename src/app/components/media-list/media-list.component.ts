@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MediaConstants } from 'src/app/constants/media-constants';
 import { Media } from 'src/app/models/media';
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 import { MediaService } from 'src/app/services/media.service';
+import { MediaIconsService } from 'src/assets/img/media-placeholders/services/media-icons.service';
 
 @Component({
   selector: 'app-media-list',
@@ -9,23 +11,36 @@ import { MediaService } from 'src/app/services/media.service';
   styleUrls: ['./media-list.component.scss']
 })
 export class MediaListComponent implements OnInit {
+  allMedia: Array<Media> = [];
   filteredMedia: Array<Media>;
-  allMedia: Array<Media>;
-  @Output() mediaClickEvent = new EventEmitter<Media>();
+  private loadedMedia: Array<Media> = [];
   
+  @Output() mediaClickEvent = new EventEmitter<Media>();
+
   constructor(
     private mediaService: MediaService,
-    private mediaTypesService: MediaTypesService
+    private mediaIconsService: MediaIconsService,
   ) { }
 
   ngOnInit(): void {
+    this.subscribeToMediaObservable();
+  }
+
+  subscribeToMediaObservable() {
     this.mediaService.mediaObservable.subscribe(
       (mediaList) => {
           this.allMedia = mediaList;
-          const hiddenTypes = this.mediaTypesService.getHiddenTypes();
-          this.filteredMedia = this.allMedia.filter(media => media.type !== "photo" && media.type !== "audio-track");
+          this.filteredMedia = this.mediaService.tryLoadingFirstBatch(this.allMedia, this.loadedMedia);
       }
     )
+  }
+
+  getPlaceholderName(mediaType: string): string  {
+    return this.mediaIconsService.getPlaceholderNameByMediaType(mediaType);
+  }
+
+  onImageLoaded(media: any): void {
+    media.isIconLoaded = true;
   }
 
   onMediaSelect(media: Media): void {
@@ -33,48 +48,19 @@ export class MediaListComponent implements OnInit {
   }
 
   onSelectMediaType(selectedTypes: string[]): void {
-    this.filterByTypes(selectedTypes);
-  }
-
-  private filterByTypes(selectedTypes: string[]): void {
-    const hiddenTypes = this.mediaTypesService.getHiddenTypes();
-
-    this.filteredMedia = this.allMedia.filter(
-      (media: Media) => !hiddenTypes.includes(media.type) && selectedTypes.includes(media.type)
-    );
+    this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
   }
 
   onSearchInputChange(query: string): void {
-    this.filterByQuery(query);
+    this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
   }
 
-  private filterByQuery(query: string): void {
-    this.filteredMedia = this.allMedia.filter(
-      (media: Media) => {
-        return this.doesAnyKeyIncludeQuery(media, query);
-      }
-    );
+  onLoadMore(): void {
+    this.filteredMedia = this.mediaService.loadMoreMedia(10, this.allMedia, this.loadedMedia);
   }
 
-  private doesAnyKeyIncludeQuery(media: Media, query: string): boolean {
-    return Object.keys(media).some(
-      (key: string) => {
-          let value = media[key];
-          if (!this.isString(value))
-            return;
-
-          if (value)
-            value = value.toLowerCase();
-
-          if (query)
-            query = query.toLowerCase();
-
-          return value && value.includes(query);
-    });
-  }
-
-  private isString(input: any) {
-    return typeof input === "string";
+  shouldShowLoadMore(): boolean {
+    return this.allMedia?.length && this.loadedMedia.length !== this.allMedia.length;
   }
 
 }

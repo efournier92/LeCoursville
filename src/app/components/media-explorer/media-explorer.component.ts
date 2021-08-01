@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { Media } from 'src/app/models/media';
+import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
+import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
   selector: 'app-media-explorer',
@@ -11,27 +15,39 @@ import { MediaService } from 'src/app/services/media.service';
   styleUrls: ['./media-explorer.component.scss']
 })
 export class MediaExplorerComponent implements OnInit {
-  media: Media[] = new Array<Media>();
+  user: User;
+  allMedia: Media[] = new Array<Media>();
   selectedMedia: Media;
-  shouldShowLoader: boolean;
+  loadedMedia: Media[];
+  eventsSubject: Subject<Media> = new Subject<Media>();
 
   constructor(
+    private authService: AuthService,
     private mediaService: MediaService,
     private analyticsService: AnalyticsService,
+    private routingService: RoutingService,
+    private activatedRoute: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
-    // this.media = sampleMediaService.get();
     this.selectedMedia = undefined;
+    this.allMedia = [];
 
-    this.mediaService.mediaObservable.subscribe(
-      (mediaList) => {
-        this.media = mediaList;
-        console.log(mediaList);
+    this.getQueryParams();
+    this.subscribeToAuth();
+  }
+
+  private subscribeToAuth() {
+    this.authService.userObservable.subscribe(
+      (user: User) => {
+        this.updateUser(user);
       }
     )
-    
-    this.analyticsService.logPageView('media-explorer');
+  }
+
+  private updateUser(user: User) {
+    if (user && user.id)
+      this.user = user;
   }
 
   isVideo(selectedMedia: Media): boolean {
@@ -50,28 +66,64 @@ export class MediaExplorerComponent implements OnInit {
     return selectedMedia && selectedMedia.type == MediaConstants.AUDIO_ALBUM.id;
   }
 
+  getLinkToShare(): string {
+    return location.href;
+  }
+
+  navigateToSignIn() {
+    this.routingService.NavigateToSignIn();
+  }
+
   onMediaSelect(media: Media): void {
-    this.selectedMedia = null;
-    this.shouldShowLoader = true;
-    window.scroll(0,0);
-    // if (media && media.url && media.format)
+    this.resetSelectedMedia();
+
+    this.scrollToTop();
+
+    if (this.shouldSetCurrentMedia(media))
       this.setCurrentMedia(media);
   }
 
-  onVideoAutoPlay() {
-    console.log("Don't show loader");
-    this.shouldShowLoader = false; 
+  private resetSelectedMedia(): void {
+    this.selectedMedia = null;
   }
 
-  setCurrentMedia(media: Media) {
+  private scrollToTop(): void {
+    window.scroll(0,0);
+  }
+
+  private shouldSetCurrentMedia(media: Media) {
+    return media && media.url && media.type
+  }
+
+  private setCurrentMedia(media: Media) {
     this.selectedMedia = media;
-    this.analyticsService.logMediaSelect(media);
     this.emitEventToChild(media);
+    this.routingService.updateQueryParams(this.selectedMedia.id);
+    this.analyticsService.logMediaSelect(media);
   }
 
-  eventsSubject: Subject<Media> = new Subject<Media>();
-
-  emitEventToChild(media: Media) {
+  private emitEventToChild(media: Media) {
     this.eventsSubject.next(this.selectedMedia);
+  }
+
+  private getQueryParams() {
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.getMediaIdFromQueryParams(params);
+    });
+  }
+
+  private getMediaIdFromQueryParams(params) {
+    const idFromParams = params["id"];
+    if (idFromParams)
+      this.loadMediaByQueryId(idFromParams);
+  }
+
+  private loadMediaByQueryId(id: string) {
+    this.mediaService.getById(id).subscribe(
+      (media: Media) => {
+        if (media && media.id == id)
+          this.selectedMedia = media;
+      }
+    );
   }
 }

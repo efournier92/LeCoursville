@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MediaConstants, MediaType } from "src/app/constants/media-constants";
+import { MediaType } from "src/app/constants/media-constants";
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 
 @Component({
@@ -17,7 +17,8 @@ export class MediaTypesCheckboxesComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const types = MediaConstants.ALL_TYPES;
+    const types = this.mediaTypesService.getVisibleTypes();
+
     types.forEach(type => {
       this.allTypes.push(type as MediaType);
     });

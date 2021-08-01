@@ -22,7 +22,20 @@ export class MediaTypesService {
     return output;
   }
 
-  getHiddenTypes() {
+  getVisibleTypes(): MediaType[] {
+    let output = new Array<MediaType>();
+
+    MediaConstants.ALL_TYPES.forEach(
+      type => {
+        if (!type.isHiddenByDefault)
+          output.push(type);
+      }
+    )
+
+    return output;
+  }
+
+  getHiddenTypeIds(): string[] {
     let output = new Array<string>();
 
     MediaConstants.ALL_TYPES.forEach(

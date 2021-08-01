@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser'; 
+import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
   selector: 'app-video-player-drive-iframe',
@@ -10,17 +11,18 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 })
 export class VideoPlayerDriveIframeComponent implements OnInit {
   @Input() video: Video;
+  @Input() events: Observable<Video>;
+
   videos: Video[];
   videogular: any;
   isLoading: boolean;
   videoUrl: SafeResourceUrl;
-  @ViewChild('videoElement') videoElement: ElementRef<HTMLElement>;
-
+  
   private eventsSubscription: Subscription;
-  @Input() events: Observable<Video>;
 
   constructor(
     private sanitizer: DomSanitizer,
+    private routingService: RoutingService,
   ) { }
 
   ngOnInit(): void {
@@ -33,51 +35,15 @@ export class VideoPlayerDriveIframeComponent implements OnInit {
     );
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.eventsSubscription.unsubscribe();
   }
 
-  private updateVideoUrl(video: Video) {
-    const url = video.url;
-    // const url = video.url + "?autoplay=1";
-    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.playVideo();
+  getLinkToShare(): string {
+    return this.routingService.getCurrentLocation();
   }
 
-  private playVideo() {
-    setTimeout(() => {
-      let el: HTMLElement = this.videoElement.nativeElement;
-      el.click();
-      setTimeout(() => {
-        el.click();
-      }, 1000);
-  }, 3000);
+  private updateVideoUrl(video: Video): void {
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(video.url);
   }
-
-  // ngOnDestroy() {
-  //   this.eventsSubscription.unsubscribe();
-  // }
-
-  // initVideoPlayer(data: any) {
-  //   this.videogular = data;
-
-  //   data.getDefaultMedia().subscriptions.loadStart.subscribe(
-  //     () => {
-  //       this.isLoading = true;
-  //       console.log("CAN PLAY!");
-  //       // Set the video to the beginning
-  //       // this.api.getDefaultMedia().currentTime = 0;
-  //     }
-  //   );
-
-  //   // https://github.com/videogular/videogular2/blob/master/docs/getting-started/using-the-api.md
-  //   data.getDefaultMedia().subscriptions.play.subscribe(
-  //     () => {
-  //       this.isLoading = false;
-  //       console.log("CAN PLAY!");
-  //       // Set the video to the beginning
-  //       // this.api.getDefaultMedia().currentTime = 0;
-  //     }
-  //   );
-  // }
 }

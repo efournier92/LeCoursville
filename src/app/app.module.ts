@@ -14,6 +14,7 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
+import { ClipboardModule } from '@angular/cdk/clipboard'; 
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -50,17 +51,17 @@ import { ContactsComponent } from 'src/app/components/contacts/contacts.componen
 import { FileInputComponent } from 'src/app/components/file-input/file-input.component';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
 import { MediaListComponent } from 'src/app/components/media-list/media-list.component';
-import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
 import { PhotoAlbumComponent } from './components/photo-album/photo-album.component';
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
 import { VideoUploadDialogComponent } from 'src/app/components/video-upload-dialog/video-upload-dialog.component';
 import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
-import { DocViewerComponent } from './components/doc-viewer/doc-viewer.component';
 import { MediaTypesCheckboxesComponent } from './components/media-types-checkboxes/media-types-checkboxes.component';
 import { MediaSearchInputComponent } from './components/media-search-input/media-search-input.component';
 import { VideoPlayerDriveIframeComponent } from './components/video-player-drive-iframe/video-player-drive-iframe.component';
 import { VideoPlayerVideogularComponent } from './components/video-player-videogular/video-player-videogular.component';
+import { DocViewerNgxExtendedComponent } from './components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component';
+import { DocViewerDriveIframeComponent } from './components/doc-viewer-drive-iframe/doc-viewer-drive-iframe.component';
 
 @NgModule({
   declarations: [
@@ -84,17 +85,17 @@ import { VideoPlayerVideogularComponent } from './components/video-player-videog
     FileInputComponent,
     MediaExplorerComponent,
     MediaListComponent,
-    PdfViewerComponent,
     PhotoAlbumComponent,
     PhotoUploadProgressComponent,
     PhotosComponent,
     VideoUploadDialogComponent,
     AudioPlayerComponent,
-    DocViewerComponent,
     MediaTypesCheckboxesComponent,
     MediaSearchInputComponent,
     VideoPlayerDriveIframeComponent,
     VideoPlayerVideogularComponent,
+    DocViewerNgxExtendedComponent,
+    DocViewerDriveIframeComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -109,6 +110,7 @@ import { VideoPlayerVideogularComponent } from './components/video-player-videog
       provide: DateAdapter,
       useFactory: adapterFactory,
     }),
+    ClipboardModule,
     FilterPipeModule,
     FirebaseUIModule.forRoot(AuthConfig),
     FontAwesomeModule,
@@ -123,7 +125,7 @@ import { VideoPlayerVideogularComponent } from './components/video-player-videog
     VgBufferingModule,
     VgControlsModule,
     VgCoreModule,
-    VgOverlayPlayModule,    
+    VgOverlayPlayModule,
   ],
   providers: [
     { provide: LocationStrategy, useClass: PathLocationStrategy },
