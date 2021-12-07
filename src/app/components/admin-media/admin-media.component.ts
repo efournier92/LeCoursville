@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { _ } from 'core-js';
+import { AudioAlbum } from 'src/app/models/media';
+import { environment } from 'src/environments/environment';
+
 
 @Component({
   selector: 'app-admin-media',
@@ -14,6 +17,8 @@ export class AdminMediaComponent implements OnInit {
   selectedFile: any;
   successMessages: string[];
   errorMessages: string[];
+  driveFolderId: string = "";
+  album: AudioAlbum = new AudioAlbum();
 
   constructor(
     private jsonService: JsonService,
@@ -40,6 +45,55 @@ export class AdminMediaComponent implements OnInit {
       console.log(error);
     }
   }
+
+  uploadByDriveId(): void {
+    var driveDir = this.driveFolderId;
+    var apiKey = environment.googleDriveApiKey;
+  
+    var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${driveDir}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
+
+    var jsonString = this.httpGet(apiUrl);
+   
+    var allInfo = JSON.parse(jsonString);
+  
+    var files = allInfo.files;
+    
+    var allFilesToUpload = [];
+  
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+  
+      if (!file) continue;
+  
+      var fileUploadInfo = {
+        "url": `https://drive.google.com/file/d/${file.id}/view?usp=sharing`,
+        "name": this.formatFileName(file.originalFilename),
+        "type": "audio-track"
+      };
+  
+      allFilesToUpload.push(fileUploadInfo);
+    }
+
+    var albumInfo = {
+      "name": "1990 - Hootenanny",
+      "icon": "",
+      "type": "audio-album",
+      "listing": allFilesToUpload
+    }
+
+    this.jsonService.uploadAudioAlbum(albumInfo);
+  }
+
+  httpGet(theUrl) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
+private formatFileName(name) {
+  return name.replace(".mp3", "");
+}
 
   onInputCleared(): void {
     this.clearMessages();

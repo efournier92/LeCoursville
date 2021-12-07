@@ -15,6 +15,7 @@ export class Media {
     dateAdded: Date;
     author: string;
     hostingId: string;
+    downloadLocation: string;
     listing: Array<any>;
     
     constructor(
@@ -28,6 +29,7 @@ export class Media {
         fileName: string = "",
         location: string = "",
         duration: string = "",
+        downloadLocation: string = "",
         listing: Array<any> = [],
     ) {
         this.id = id,
@@ -40,6 +42,7 @@ export class Media {
         this.fileName = fileName,
         this.location = location,
         this.duration = duration,
+        this.downloadLocation = downloadLocation,
         this.listing = listing
     }
 }

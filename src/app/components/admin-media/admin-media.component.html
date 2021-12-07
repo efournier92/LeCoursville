@@ -1,12 +1,36 @@
-<app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-  [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
-  (onInputCleared)="onInputCleared()">
-</app-file-input>
+<mat-tab-group>
+  <mat-tab label="Audio Album">
+    <form class="example-form">
+      <mat-form-field class="example-full-width">
+        <mat-label>Album Name</mat-label>
+        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
+        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
+      </mat-form-field><br/>
+      <mat-form-field class="example-full-width">
+        <mat-label>Album Cover</mat-label>
+        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
+        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
+      </mat-form-field><br/>
+      <mat-form-field class="example-full-width">
+        <mat-label>Drive Folder ID</mat-label>
+        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
+        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
+      </mat-form-field><br/>
+      <button mat-flat-button (click)="uploadByDriveId()">Upload</button>
+    </form>
+  </mat-tab>
+  <mat-tab label="TODO">
+    <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+      [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
+      (onInputCleared)="onInputCleared()">
+    </app-file-input>
 
-<div class="media-upload-success-messages" *ngFor="let success of successMessages">
-  {{ success }}
-</div>
+    <div class="media-upload-success-messages" *ngFor="let success of successMessages">
+      {{ success }}
+    </div>
 
-<div class="media-upload-error-messages" *ngFor="let error of errorMessages">
-  {{ error }}
-</div>
+    <div class="media-upload-error-messages" *ngFor="let error of errorMessages">
+      {{ error }}
+    </div>
+  </mat-tab>
+</mat-tab-group>

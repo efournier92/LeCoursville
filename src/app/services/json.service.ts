@@ -161,7 +161,7 @@ export class JsonService {
 
   private extractDriveAssetIdFromUrl(url: string): string {
     if (!url?.includes("drive.google.com"))
-      return url;
+      return url || "";
 
     return url
       .replace("https://drive.google.com/file/d/", "")

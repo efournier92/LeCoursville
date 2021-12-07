@@ -31,9 +31,10 @@ export class AudioPlayerComponent implements OnInit {
       (id: string) => {
         this.mediaService.getById(id).subscribe(
           (media: Media) => {
-            if (media.id) {
+          if (media.id) {
               const track = this.mapMediaToTrack(media);
               this.tracks.push(track);
+              this.tracks.sort((a, b) => (a.title > b.title) ? 1 : -1)
             }
           }
         );
