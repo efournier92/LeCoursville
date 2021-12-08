@@ -4,9 +4,9 @@
       <div class="d-flex justify-content-center mt-2">
         <span class="fa-stack" (click)="likeMessage()" (mouseover)="highlightElement('like', true)"
           (mouseleave)="highlightElement('like', false)">
-          <span class="fa fa-heart-o fa-2x"
+          <span [matMenuTriggerFor]="menu" class="fa fa-heart-o fa-2x"
             [ngStyle]="{ color: highlights.like === true  ? '#ff80ab' : '#CFD8DC' }"></span>
-          <mat-menu #menu="matMenu" [matMenuTriggerFor]="menu">
+          <mat-menu #menu="matMenu">
             <div *ngFor="let liker of likers">
               <button mat-menu-item disabled>
                 <span>{{ liker }}</span>
@@ -39,43 +39,43 @@
       <span class="calendar-icon-label d-flex justify-content-center">Edit</span>
     </div>
   </div>
-  <mat-divider [vertical]="true" class="ml-2"></mat-divider>
-  <mat-card-content class="col-9" *ngIf="message.isDeleted">
-    <mat-card-title>
-      <mat-card-subtitle class="chat-message-author-name">
-        <i>This message was deleted.</i>
-      </mat-card-subtitle>
-    </mat-card-title>
-  </mat-card-content>
-  <mat-card-content class="col-9" *ngIf="!message.isDeleted">
-    <mat-card-title>
-      <div class="chat-message-title" *ngIf="!message.isReply">
-        {{ message.title }}
+  <mat-divider [vertical]="true" style="width:2px; padding: 0;"></mat-divider>
+  <div class="col-9" style="margin-left:6px">
+    <mat-card-content class="col-9" *ngIf="message.isDeleted" style="margin-left:10px;">
+      <mat-card-title>
+        <mat-card-subtitle class="chat-message-author-name">
+          <i>This message was deleted.</i>
+        </mat-card-subtitle>
+      </mat-card-title>
+    </mat-card-content>
+    <mat-card-content *ngIf="!message.isDeleted">
+      <mat-card-title>
+        <div class="chat-message-title" *ngIf="!message.isReply">
+          {{ message.title }}
+        </div>
+        <mat-card-subtitle class="chat-message-author-name">
+          {{ message.authorName }}
+        </mat-card-subtitle>
+        <mat-card-subtitle class="chat-message-timestamp">
+          {{ message.dateSent | date:'short' }}
+        </mat-card-subtitle>
+      </mat-card-title>
+      <div class="chat-message-body">
+        {{ message.body }}
       </div>
-      <mat-card-subtitle class="chat-message-author-name">
-        {{ message.authorName }}
-      </mat-card-subtitle>
-      <mat-card-subtitle class="chat-message-timestamp">
-        {{ message.dateSent | date:'short' }}
-      </mat-card-subtitle>
-    </mat-card-title>
-    <div class="chat-message-body">
-      {{ message.body }}
-    </div>
-    <br>
-    <img mat-card-image src="{{ message.attachmentUrl }}" class="massage-attachment-image"
-      *ngIf="getAttachmentType(message) === 'photo'">
-    <a mat-button [href]="message.attachmentUrl" class="view-attachment-button" target="_blank"
-      *ngIf="getAttachmentType(message) === 'document'">View Attachment</a>
-    <a mat-button [href]="message.attachmentUrl" class="view-attachment-button" download
-      *ngIf="getAttachmentType(message) === 'other'">Download Attachment</a>
-  </mat-card-content>
+      <br>
+      <img mat-card-image src="{{ message.attachmentUrl }}" class="massage-attachment-image"
+        *ngIf="getAttachmentType(message) === 'photo'">
+      <a mat-button [href]="message.attachmentUrl" class="view-attachment-button" target="_blank"
+        *ngIf="getAttachmentType(message) === 'document'">View Attachment</a>
+      <a mat-button [href]="message.attachmentUrl" class="view-attachment-button" download
+        *ngIf="getAttachmentType(message) === 'other'">Download Attachment</a>
+    </mat-card-content>
+  </div>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
-  <app-chat-view *ngIf="!reply.isEditable" [message]="reply" [parent]="message"
-    (updateParentEvent)="updateParent()">
+  <app-chat-view *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
   </app-chat-view>
-  <app-chat-edit *ngIf="reply.isEditable" [message]="reply" [parent]="message"
-    (updateParentEvent)="updateParent()">
+  <app-chat-edit *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
   </app-chat-edit>
 </mat-card-content>

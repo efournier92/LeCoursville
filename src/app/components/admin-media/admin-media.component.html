@@ -1,23 +1,6 @@
-<mat-tab-group>
+<mat-tab-group style="margin: 36px; width: 75%">
   <mat-tab label="Audio Album">
-    <form class="example-form">
-      <mat-form-field class="example-full-width">
-        <mat-label>Album Name</mat-label>
-        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
-        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
-      </mat-form-field><br/>
-      <mat-form-field class="example-full-width">
-        <mat-label>Album Cover</mat-label>
-        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
-        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
-      </mat-form-field><br/>
-      <mat-form-field class="example-full-width">
-        <mat-label>Drive Folder ID</mat-label>
-        <!-- <input matInput [(ngModel)]="driveFolderId"> -->
-        <input type="text" matInput (change)='driveFolderId=$event.target.value' [value]="driveFolderId">
-      </mat-form-field><br/>
-      <button mat-flat-button (click)="uploadByDriveId()">Upload</button>
-    </form>
+    <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
   </mat-tab>
   <mat-tab label="TODO">
     <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"

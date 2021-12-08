@@ -1,0 +1,25 @@
+<form class="audio-album-upload-form">
+    <mat-form-field class="admin-upload-input">
+        <mat-label>Album Name</mat-label>
+        <input type="text" matInput name="albumName" [(ngModel)]="album.name">
+    </mat-form-field><br />
+    <mat-form-field class="admin-upload-input">
+        <mat-label>Album Cover</mat-label>
+        <input type="text" matInput name="albumIcon" [(ngModel)]="album.icon">
+    </mat-form-field><br />
+    <mat-form-field class="admin-upload-input">
+        <mat-label>Drive Folder ID</mat-label>
+        <input type="text" matInput name="albumUrl" [(ngModel)]="album.url">
+    </mat-form-field><br />
+    <button mat-button style="width: 100%; background-color: #1b5e20; color: white"
+        (click)="uploadByDriveId()">Upload</button>
+    <mat-divider style="margin-top:22px"></mat-divider>
+    <div style="text-align: center; width:100%">
+        <span style="color: #BDBDBD; text-align: center; width:100%">OR</span>
+    </div>
+    <mat-divider style="margin-bottom: 22px"></mat-divider>
+    <!-- <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+      [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
+      (onInputCleared)="onInputCleared()">
+    </app-file-input> -->
+</form>

@@ -62,6 +62,7 @@ import { VideoPlayerDriveIframeComponent } from './components/video-player-drive
 import { VideoPlayerVideogularComponent } from './components/video-player-videogular/video-player-videogular.component';
 import { DocViewerNgxExtendedComponent } from './components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component';
 import { DocViewerDriveIframeComponent } from './components/doc-viewer-drive-iframe/doc-viewer-drive-iframe.component';
+import { AdminMediaUploadAudioAlbumComponent } from './admin-media-upload-audio-album/admin-media-upload-audio-album.component';
 
 @NgModule({
   declarations: [
@@ -96,6 +97,7 @@ import { DocViewerDriveIframeComponent } from './components/doc-viewer-drive-ifr
     VideoPlayerVideogularComponent,
     DocViewerNgxExtendedComponent,
     DocViewerDriveIframeComponent,
+    AdminMediaUploadAudioAlbumComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),

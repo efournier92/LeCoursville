@@ -47,10 +47,9 @@ export class AdminMediaComponent implements OnInit {
   }
 
   uploadByDriveId(): void {
-    var driveDir = this.driveFolderId;
     var apiKey = environment.googleDriveApiKey;
   
-    var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${driveDir}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
+    var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${this.album.url}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
 
     var jsonString = this.httpGet(apiUrl);
    
@@ -75,11 +74,11 @@ export class AdminMediaComponent implements OnInit {
     }
 
     var albumInfo = {
-      "name": "1990 - Hootenanny",
-      "icon": "",
+      "name": this.album.name,
+      "icon": this.album.icon,
       "type": "audio-album",
       "listing": allFilesToUpload
-    }
+    } 
 
     this.jsonService.uploadAudioAlbum(albumInfo);
   }
@@ -92,7 +91,10 @@ export class AdminMediaComponent implements OnInit {
 }
 
 private formatFileName(name) {
-  return name.replace(".mp3", "");
+  if (name.includes(".mp3"))
+    return name.replace(".mp3", "");
+  
+  return name;
 }
 
   onInputCleared(): void {
