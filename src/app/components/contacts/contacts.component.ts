@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { User } from 'src/app/models/user';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
+import { ContactsPrinterService } from 'src/app/services/contacts-printer.service';
 
 @Component({
   selector: 'app-contacts',
@@ -22,6 +23,7 @@ export class ContactsComponent implements OnInit {
 
   constructor(
     private contactsService: ContactsService,
+    private contactsPrinterService: ContactsPrinterService,
     private filter: FilterPipe,
     private auth: AuthService,
     private confirmPrompt: ConfirmPromptService,
@@ -67,10 +69,10 @@ export class ContactsComponent implements OnInit {
   }
 
   printPdf(): void {
-    this.contactsService.printPdf(this.filteredContacts, 'print');
+    this.contactsPrinterService.printPdf(this.filteredContacts);
   }
 
   downloadPdf(): void {
-    this.contactsService.printPdf(this.filteredContacts, 'download');
+    this.contactsPrinterService.downloadPdf(this.filteredContacts);
   }
 }

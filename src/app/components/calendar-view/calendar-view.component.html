@@ -1,24 +1,26 @@
-<div class="d-flex justify-content-center col-12">
-  <h3>{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
-</div>
-<ng-template #customCellTemplate let-day="day" let-locale="locale">
-  <div [matMenuTriggerFor]="menu">
-    <div class="cal-cell-top">
-      <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
-    </div>
-    <small class="mb-1" *ngFor="let event of day.events">
-      <app-calendar-cell [event]="event" [isPrintView]="isPrintView" [isDialog]="false"></app-calendar-cell>
-    </small>
+<div style="width: 100%;">
+  <div class="d-flex justify-content-center col-12">
+    <h3>{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
   </div>
-  <mat-menu #menu="matMenu">
-    <div *ngFor="let event of day.events" (click)="openDialog(event)">
-      <app-calendar-cell [event]="event" [isDialog]="true"></app-calendar-cell>
+  <ng-template #customCellTemplate let-day="day" let-locale="locale">
+    <div [matMenuTriggerFor]="menu">
+      <div class="cal-cell-top">
+        <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+      </div>
+      <small class="mb-1" *ngFor="let event of day.events">
+        <app-calendar-cell [event]="event" [isPrintView]="isPrintView" [isDialog]="false"></app-calendar-cell>
+      </small>
     </div>
-  </mat-menu>
-</ng-template>
-<div class="calendar-view-container d-flex col-12 justify-content-center">
-  <div class="col-xl-10 col-lg-11">
-    <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate">
-    </mwl-calendar-month-view>
+    <mat-menu #menu="matMenu">
+      <div *ngFor="let event of day.events" (click)="openDialog(event)">
+        <app-calendar-cell [event]="event" [isDialog]="true"></app-calendar-cell>
+      </div>
+    </mat-menu>
+  </ng-template>
+  <div class="calendar-view-container d-flex col-12 justify-content-center">
+    <div class="col-xl-10 col-lg-11">
+      <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate">
+      </mwl-calendar-month-view>
+    </div>
   </div>
 </div>

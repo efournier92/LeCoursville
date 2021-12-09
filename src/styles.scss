@@ -50,3 +50,8 @@ html, body {
 #calendar-print-view .cal-month-view .cal-day-cell.cal-today {
   background-color: white;
 }
+
+.cal-month-view .cal-day-cell {
+  min-width: 140px;
+  min-height: 140px;
+}
