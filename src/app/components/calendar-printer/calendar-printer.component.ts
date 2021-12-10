@@ -24,7 +24,7 @@ export class CalendarPrinterComponent implements OnInit {
   selectedYear: string;
   printProgress: number = 0;
   printAction: string;
-  calendarPdf: jsPDF = new jsPDF('l', 'mm', 'letter');
+  pdf: jsPDF = new jsPDF('l', 'in', 'letter');
 
   constructor(
     public dialogRef: MatDialogRef<CalendarPrinterComponent>,
@@ -38,14 +38,14 @@ export class CalendarPrinterComponent implements OnInit {
   ngOnInit(): void {
     this.allEvents = this.data.events;
     this.events = this.allEvents;
-    this.viewDate = new Date();
+    this.viewDate = new Date('January 1, ' + this.selectedYear);
   }
 
   downloadOrPrint(action: string): void {
     this.printAction = action;
     this.viewDate = new Date('January 1, ' + this.selectedYear);
     this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
-    this.captureNextOrSave(true)
+    this.captureNextOrSave(true);
   }
 
   refreshPrintCalendar(): void {
@@ -56,19 +56,24 @@ export class CalendarPrinterComponent implements OnInit {
   captureNextOrSave(isFirst: boolean): void {
     if (this.viewDate.getFullYear() !== +this.selectedYear + 1) {
       if (!isFirst)
-        this.calendarPdf.addPage();
+        this.pdf.addPage();
       this.capturePage();
       this.viewDate = new Date(this.viewDate.setMonth(this.viewDate.getMonth() + 1))
       this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
-      // let progress = Math.floor((this.calendarPdf.internal.getNumberOfPages() / 12) * 100);
-      // this.printProgress = progress;
+      let progress = Math.floor((this.pdf.getNumberOfPages() / 12) * 100);
+      this.printProgress = progress;
     } else {
       this.printProgress = 0;
       if (this.printAction === 'print') {
-        this.calendarPdf.autoPrint();
+        this.pdf.autoPrint();
+        // this.calendarPdf.save();
         // window.open(this.calendarPdf.output('bloburl'));
+        // window.open(this.calendarPdf.output('bloburl'), '_blank');
+        // window.open(this.calendarPdf.output())
+        // this.calendarPdf.output('dataurlnewwindow');;
+        window.open(this.pdf.output('bloburl').toString());
       } else if (this.printAction === 'download') {
-        this.calendarPdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`)
+        this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`)
       }
       this.dialogRef.close();
     }
@@ -76,18 +81,17 @@ export class CalendarPrinterComponent implements OnInit {
 
   capturePage(): void {
     const calendarElement = document.getElementById('calendar-print-view');
+
     html2canvas(calendarElement).then(
       (canvas: any) => {
-        let imgHeight = this.calendarPdf.internal.pageSize.getHeight() - 30;
-        let imgWidth = canvas.width * imgHeight / canvas.height;
-        if (imgHeight > 220) {
-          imgHeight = 220;
-          imgWidth = canvas.width / imgHeight * canvas.height;
-        }
-        const contentDataURL = canvas.toDataURL('image/png');
-        let leftMargin = (this.calendarPdf.internal.pageSize.getWidth() - imgWidth) / 2;
-        let topMargin = (this.calendarPdf.internal.pageSize.getHeight() - imgHeight) / 2;
-        this.calendarPdf.addImage(contentDataURL, 'PNG', leftMargin, topMargin, imgWidth, imgHeight);
+        const imgWidth = 10;
+        const imgHeight = 8;
+
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        let leftMargin = 0.45;
+        let topMargin = 0.25;
+
+        this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
         this.captureNextOrSave(false);
       }
     )

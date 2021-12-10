@@ -1,5 +1,7 @@
 .calendar-cell-container {
-  margin-top: -12px;
+  // margin-top: -12px;
+  // margin-bottom: -8px;
+  font-size: 1em;
 }
 
 .calendar-icon {
@@ -28,9 +30,11 @@
 }
 
 .event-not-living {
-  opacity: 0.4;
+  opacity: 0.3;
+  // color: #BDBDBD;
 }
 
 .event-living {
   opacity: 0.8;
+  // color: #424242;
 }

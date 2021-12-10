@@ -52,6 +52,31 @@ html, body {
 }
 
 .cal-month-view .cal-day-cell {
-  min-width: 140px;
-  min-height: 140px;
+  min-width: 120px;
+  min-height: 120px;
+}
+
+.cal-month-view .cal-day-number {
+  margin-top: 0px;
+  margin-right: 5px;
+}
+
+.cal-month-view .cal-cell-top {
+  height: 1.5em;
+  min-height: 0;
+}
+
+.cal-month-view .cal-day-cell:not(:last-child) {
+  border-right: 2px solid #e1e1e1;
+}
+
+.cal-month-view .cal-days {
+  border-top: 2px solid #e1e1e1;
+  border-left: 2px solid #e1e1e1;
+  border-right: 2px solid #e1e1e1;
+}
+
+.cal-month-view .cal-day-cell {
+  // border-right: 2px solid #e1e1e1;
+  border-bottom: 1.8px solid #e1e1e1;
 }

@@ -1,16 +1,12 @@
-<br />
-<div class="calendar-cell-container row mx-auto" [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
-  <div class="col-1 d-flex flex-column align-items-center mx-auto">
-    <!-- <span class="calendar-icon" *ngIf="event.type === 'birth'"></span>
-    <span class="fa fa-heart calendar-icon anniversary-icon" *ngIf="event.type === 'anniversary'"></span> -->
-    <span class="years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-icon' : 'anniversary-icon'">{{ getYearsSince(event) }}</span>
-    <!-- <span class="years-since-span anniversary-icon" *ngIf="event.type === 'anniversary'">{{ getYearsSince(event) }}</span> -->
-  </div>
-  <div *ngIf="!isDialog && !isPrintView"
-    class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center d-none d-md-block">
-    {{ event.title }}
-  </div>
-  <div *ngIf="isDialog || isPrintView" class="event-title-container col-8 p-0 flex-column align-items-center align-content-center align-self-center">
-    {{ event.title }}
+<div class="calendar-cell-container" style="margin-left: 0.75em;"
+  [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
+  <div class="d-flex" style="margin-bottom: 0.7em;">
+    <div class="" style="line-height: 1em;margin-right:0.75em">
+      <span class="years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-icon' : 'anniversary-icon'">{{
+        getYearsSince(event) }}</span>
+    </div>
+    <div class="event-title-container" style="float: right;">
+      {{ event.title }}
+    </div>
   </div>
 </div>

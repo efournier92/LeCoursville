@@ -15,56 +15,59 @@
     </button>
   </div>
 </div> -->
-<div class="d-flex mt-2 calendar-checkbox-tools-container">
-  <div class="col-xs-8 calendar-checkbox-container">
-    <mat-checkbox class="calendar-checkbox" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
-      Birthdays
-    </mat-checkbox>
-    <mat-checkbox class="calendar-checkbox" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
-      Anniversaries
-    </mat-checkbox>
+<div *ngIf="user && user.name">
+  <div class="d-flex mt-2 calendar-checkbox-tools-container">
+    <div class="col-xs-8 calendar-checkbox-container">
+      <mat-checkbox class="calendar-checkbox" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
+        Birthdays
+      </mat-checkbox>
+      <mat-checkbox class="calendar-checkbox" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
+        Anniversaries
+      </mat-checkbox>
+    </div>
+    <span class="spacer"></span>
+    <div class="col-xs-2" *ngIf="user && user.roles.admin === true">
+      <button mat-button (click)="newEvent()">
+        <mat-icon>add</mat-icon> New Event
+      </button>
+    </div>
   </div>
-  <span class="spacer"></span>
-  <div class="col-xs-2" *ngIf="user && user.roles.admin === true">
-    <button mat-button (click)="newEvent()">
-      <mat-icon>add</mat-icon> New Event
+  <div class="d-flex mt-1 justify-content-between calendar-date-tools-container">
+    <div>
+      <mat-form-field class="month-select-container">
+        <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
+          <div *ngFor="let month of months">
+            <mat-option [value]="month">
+              {{ month }}
+            </mat-option>
+          </div>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="year-select-container ml-2">
+        <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+          <div *ngFor="let year of years">
+            <mat-option [value]="year">
+              {{ year }}
+            </mat-option>
+          </div>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="d-flex justify-content-center calendar-print-button-container">
+      <button mat-button (click)="printPdf()">
+        <mat-icon style="margin-right:4px">print</mat-icon> Print
+      </button>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center" style="margin-bottom: 1;">
+    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+      [(viewDate)]="viewDate">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
+      [(viewDate)]="viewDate">
+      <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
+  <app-calendar-view [viewDate]="viewDate" [events]="events" [isPrintView]="false" style="margin:auto"></app-calendar-view>
 </div>
-<div class="d-flex mt-1 justify-content-between calendar-date-tools-container">
-  <div>
-    <mat-form-field class="month-select-container">
-      <mat-select placeholder="Month" [(value)]="viewMonth" (selectionChange)="changeViewMonth($event)">
-        <div *ngFor="let month of months">
-          <mat-option [value]="month">
-            {{ month }}
-          </mat-option>
-        </div>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field class="year-select-container ml-2">
-      <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
-        <div *ngFor="let year of years">
-          <mat-option [value]="year">
-            {{ year }}
-          </mat-option>
-        </div>
-      </mat-select>
-    </mat-form-field>
-  </div>
-  <div class="d-flex justify-content-center calendar-print-button-container">
-    <button mat-button (click)="printPdf()">
-      <mat-icon style="margin-right:4px">print</mat-icon> Print
-    </button>
-  </div>
-</div>
-<div class="d-flex justify-content-center">
-  <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
-    [(viewDate)]="viewDate">
-    <mat-icon>keyboard_arrow_left</mat-icon>
-  </button>
-  <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
-    <mat-icon>keyboard_arrow_right</mat-icon>
-  </button>
-</div>
-<app-calendar-view [viewDate]="viewDate" [events]="events" [isPrintView]="false"></app-calendar-view>
