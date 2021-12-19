@@ -54,9 +54,13 @@ export class CalendarPrinterComponent implements OnInit {
     window.open(this.pdf.output('bloburl').toString());
   }
 
-  createPdf() {
+  async createPdf() {
     this.refreshPrintJob();
-    this.captureNextPage();
+
+    for (let i = 0; i < 12; i++)
+      await this.captureNextMonth();
+
+    this.finishPrintJob();
   }
 
   refreshPrintJob() {
@@ -69,21 +73,22 @@ export class CalendarPrinterComponent implements OnInit {
     this.pdf.addPage();
   }
 
-  async captureNextPage() {
-    if (this.shouldFinishPrintJob()) {
-      this.finishPrintJob();
-      return;
-    }
+  async captureNextMonth() {
     this.prepareNextPage();
     await this.capturePage();
   }
 
   prepareNextPage() {
+    if (!this.isFirstMonth())
+      this.addPage();
+      
     this.updateCalendarMonth();
     this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
     this.updateProgressBar();
-    if (this.shouldAddPage())
-      this.addPage();
+  }
+
+  isFirstMonth(): boolean {
+    return this.activeDate.getMonth() == 0;
   }
 
   finishPrintJob() {
@@ -93,12 +98,7 @@ export class CalendarPrinterComponent implements OnInit {
   }
 
   shouldFinishPrintJob(): boolean {
-    // return this.pdf.getNumberOfPages() >= 12;
     return this.activeDate.getFullYear() !== this.selectedYear;
-  }
-
-  shouldAddPage(): boolean {
-    return this.activeDate.getMonth() >= 1;
   }
 
   updateCalendarMonth() {
@@ -122,7 +122,6 @@ export class CalendarPrinterComponent implements OnInit {
         let topMargin = 0.25;
 
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
-        this.captureNextPage();
       }
     )
   }

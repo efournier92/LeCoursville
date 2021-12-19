@@ -1,9 +1,9 @@
-<div class="calendar-cell-container" style="margin-left: 0.75em;"
+<div class="calendar-cell-container" style="margin-left: 0.75em;" *ngIf="shouldDisplayEvent()"
   [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
   <div class="d-flex" style="margin-bottom: 0.7em;">
     <div class="" style="line-height: 1em;margin-right:0.75em">
-      <span class="years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-icon' : 'anniversary-icon'">{{
-        getYearsSince(event) }}</span>
+      <span class="years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
+        {{ getYearsSince(event) }}</span>
     </div>
     <div class="event-title-container" style="float: right;">
       {{ event.title }}
