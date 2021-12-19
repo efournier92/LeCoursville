@@ -45,10 +45,8 @@ export class CalendarService {
   private calendarEventsSource = new BehaviorSubject([]);
   calendarEventsObservable = this.calendarEventsSource.asObservable();
 
-  getYearsSince(eventYear: number) {
-    let now: Date = new Date();
-    let currentYear = now.getFullYear();
-    return currentYear - eventYear;
+  getYearsSince(eventYear: number, selectedYear: number) {
+    return +selectedYear - +eventYear;
   }
 
   updateCalendarEventsEvent(calendarEvents: RecurringEvent[]) {

@@ -8,7 +8,7 @@ import { AuthService } from 'src/app/services/auth.service';
   providedIn: 'root'
 })
 export class AnalyticsService {
-  user: User;
+  private user: User;
 
   constructor(
     private analytics: AngularFireAnalytics,
@@ -21,7 +21,7 @@ export class AnalyticsService {
     )
   }
 
-  private logEvent(name: string, data: any) {
+  logEvent(name: string, data: any) {
     this.analytics.logEvent(name, data);
   }
 

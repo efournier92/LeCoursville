@@ -1,31 +1,21 @@
 <div style="width: 100%;">
-  <div class="d-flex justify-content-center col-12">
+  <div class="calendar-date d-flex justify-content-center col-12">
     <h3 style="font-size: 1.6em; font-weight: 500; color: #B71C1C; margin-bottom: 10px;">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
   </div>
   <ng-template #customCellTemplate let-day="day" let-locale="locale">
-    <div [matMenuTriggerFor]="menu">
+    <div>
       <div class="cal-cell-top">
         <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
       </div>
       <small class="mb-1" *ngFor="let event of day.events">
-        <app-calendar-cell [event]="event" [isPrintView]="isPrintView" [isDialog]="false"></app-calendar-cell>
+        <app-calendar-cell *ngIf="isEventInActiveMonth(event)" [event]="event" [selectedYear]="selectedYear"></app-calendar-cell>
       </small>
     </div>
-    <mat-menu #menu="matMenu">
-      <div *ngFor="let event of day.events" (click)="openDialog(event)">
-        <app-calendar-cell [event]="event" [isDialog]="true"></app-calendar-cell>
-      </div>
-    </mat-menu>
   </ng-template>
-  <!-- <div class="calendar-view-container d-flex col-12 justify-content-center"> -->
-  <!-- <div class="col-xl-10 col-lg-11"> -->
-  <div style="width: 100%;overflow:auto;">
+  <div class="calendar-scroll-container" style="width: 100%;overflow:auto;">
     <div style="width: 10in; height: 8in;margin:auto">
-      <!-- <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate"> -->
-      <mwl-calendar-month-view [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate">
+      <mwl-calendar-month-view [activeDay]="activeDay" [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate">
       </mwl-calendar-month-view>
     </div>  
   </div>
-  <!-- </div> -->
-  <!-- </div> -->
 </div>

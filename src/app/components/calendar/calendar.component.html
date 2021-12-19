@@ -44,7 +44,7 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field class="year-select-container ml-2">
-        <mat-select placeholder="Year" [(value)]="viewYear" (selectionChange)="changeViewYear($event)">
+        <mat-select placeholder="Year" value="{{ selectedYear.toString() }}" (selectionChange)="changeSelectedYear($event)">
           <div *ngFor="let year of years">
             <mat-option [value]="year">
               {{ year }}
@@ -69,5 +69,5 @@
       <mat-icon>keyboard_arrow_right</mat-icon>
     </button>
   </div>
-  <app-calendar-view [viewDate]="viewDate" [events]="events" [isPrintView]="false" style="margin:auto"></app-calendar-view>
+  <app-calendar-view [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" style="margin:auto"></app-calendar-view>
 </div>

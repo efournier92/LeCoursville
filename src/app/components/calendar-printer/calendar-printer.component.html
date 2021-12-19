@@ -1,6 +1,6 @@
 <div class="calendar-printer-container">
   <div id="calendar-print-view">
-    <app-calendar-view [viewDate]="viewDate" [events]="events" [isPrintView]="true"></app-calendar-view>
+    <app-calendar-view [viewDate]="activeDate" [selectedYear]="selectedYear" [events]="events"></app-calendar-view>
   </div>
   <div *ngIf="printProgress === 0" class="calendar-printer-container">
     <label for="basic-url">
@@ -10,7 +10,7 @@
     </label>
     <div class="input-group mb-3">
       <mat-form-field class="year-select-container ml-2">
-        <mat-select placeholder="Year" [(value)]="selectedYear" (selectionChange)="refreshPrintCalendar()">
+        <mat-select placeholder="Year" value="{{ selectedYear.toString() }}" (selectionChange)="refreshPrintJob()">
           <div *ngFor="let year of viewYears">
             <mat-option [value]="year">
               {{ year }}
@@ -20,7 +20,7 @@
       </mat-form-field>
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox class="example-margin" (change)="refreshPrintCalendar()" [(ngModel)]="shouldPrintBirthdays">Birthdays</mat-checkbox>
+      <mat-checkbox class="example-margin" (change)="refreshPrintJob()" [(ngModel)]="shouldPrintBirthdays">Birthdays</mat-checkbox>
     </div>
     <div class="input-group mb-3">
       <mat-checkbox class="example-margin" [(ngModel)]="shouldPrintAnniversaries">Anniversaries</mat-checkbox>

@@ -15,16 +15,16 @@ interface EventsData extends Object {
   styleUrls: ['./calendar-printer.component.scss']
 })
 export class CalendarPrinterComponent implements OnInit {
-  viewDate: Date;
+  activeDate: Date;
   allEvents: RecurringEvent[];
   events: RecurringEvent[];
   viewYears: Array<string>;
   shouldPrintBirthdays: boolean = true;
   shouldPrintAnniversaries: boolean = true;
-  selectedYear: string;
+  selectedYear: number;
   printProgress: number = 0;
   printAction: string;
-  pdf: jsPDF = new jsPDF('l', 'in', 'letter');
+  pdf: jsPDF;
 
   constructor(
     public dialogRef: MatDialogRef<CalendarPrinterComponent>,
@@ -32,57 +32,87 @@ export class CalendarPrinterComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: EventsData,
   ) {
     this.viewYears = this.calendarService.getViewYears();
-    this.selectedYear = new Date().getFullYear().toString();
+    this.selectedYear = new Date().getFullYear();
   }
 
   ngOnInit(): void {
     this.allEvents = this.data.events;
     this.events = this.allEvents;
-    this.viewDate = new Date('January 1, ' + this.selectedYear);
+    this.activeDate = new Date('January 1, ' + this.selectedYear);
   }
 
-  downloadOrPrint(action: string): void {
-    this.printAction = action;
-    this.viewDate = new Date('January 1, ' + this.selectedYear);
+  downloadOrPrint(): void {
+    this.createPdf();
+  }
+
+  downloadPdf() {
+    this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`)
+  }
+
+  printPdf() {
+    this.pdf.autoPrint();
+    window.open(this.pdf.output('bloburl').toString());
+  }
+
+  createPdf() {
+    this.refreshPrintJob();
+    this.captureNextPage();
+  }
+
+  refreshPrintJob() {
+    this.activeDate = new Date('January 1, ' + this.selectedYear);
+    this.pdf = new jsPDF('l', 'in', 'letter');
     this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
-    this.captureNextOrSave(true);
   }
 
-  refreshPrintCalendar(): void {
-    this.viewDate = new Date('January 1, ' + this.selectedYear);
-    this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+  addPage() {
+    this.pdf.addPage();
   }
 
-  captureNextOrSave(isFirst: boolean): void {
-    if (this.viewDate.getFullYear() !== +this.selectedYear + 1) {
-      if (!isFirst)
-        this.pdf.addPage();
-      this.capturePage();
-      this.viewDate = new Date(this.viewDate.setMonth(this.viewDate.getMonth() + 1))
-      this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
-      let progress = Math.floor((this.pdf.getNumberOfPages() / 12) * 100);
-      this.printProgress = progress;
-    } else {
-      this.printProgress = 0;
-      if (this.printAction === 'print') {
-        this.pdf.autoPrint();
-        // this.calendarPdf.save();
-        // window.open(this.calendarPdf.output('bloburl'));
-        // window.open(this.calendarPdf.output('bloburl'), '_blank');
-        // window.open(this.calendarPdf.output())
-        // this.calendarPdf.output('dataurlnewwindow');;
-        window.open(this.pdf.output('bloburl').toString());
-      } else if (this.printAction === 'download') {
-        this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`)
-      }
-      this.dialogRef.close();
+  async captureNextPage() {
+    if (this.shouldFinishPrintJob()) {
+      this.finishPrintJob();
+      return;
     }
+    this.prepareNextPage();
+    await this.capturePage();
   }
 
-  capturePage(): void {
+  prepareNextPage() {
+    this.updateCalendarMonth();
+    this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+    this.updateProgressBar();
+    if (this.shouldAddPage())
+      this.addPage();
+  }
+
+  finishPrintJob() {
+    this.printProgress = 0;
+    this.dialogRef.close();
+    this.downloadPdf();
+  }
+
+  shouldFinishPrintJob(): boolean {
+    // return this.pdf.getNumberOfPages() >= 12;
+    return this.activeDate.getFullYear() !== this.selectedYear;
+  }
+
+  shouldAddPage(): boolean {
+    return this.activeDate.getMonth() >= 1;
+  }
+
+  updateCalendarMonth() {
+    this.activeDate = new Date(this.activeDate.setMonth(this.activeDate.getMonth() + 1))
+  }
+
+  updateProgressBar() {
+    this.printProgress = Math.floor((this.pdf.getNumberOfPages() / 12) * 100);
+  }
+
+  async capturePage(): Promise<void> {
     const calendarElement = document.getElementById('calendar-print-view');
 
-    html2canvas(calendarElement).then(
+    await html2canvas(calendarElement, {scale: 2}).then(
       (canvas: any) => {
         const imgWidth = 10;
         const imgHeight = 8;
@@ -92,14 +122,13 @@ export class CalendarPrinterComponent implements OnInit {
         let topMargin = 0.25;
 
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
-        this.captureNextOrSave(false);
+        this.captureNextPage();
       }
     )
   }
 
-  updateEvents(events: RecurringEvent[], year: string, birthdays: boolean, anniversaries: boolean): void {
-    if (!events)
-      return;
+  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
+    if (!events) return;
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false)
@@ -107,7 +136,7 @@ export class CalendarPrinterComponent implements OnInit {
       if (event.type === 'anniversary' && anniversaries === false)
         continue;
       let date = new Date(event.date);
-      date.setFullYear(+year);
+      date.setFullYear(year);
       event.start = date;
       event.date = new Date(event.date);
       this.events.push(event);

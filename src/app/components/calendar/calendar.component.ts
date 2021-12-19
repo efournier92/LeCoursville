@@ -19,22 +19,19 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
   styleUrls: ['./calendar.component.scss']
 })
 export class CalendarComponent {
-  @Output()
-  refreshView = new EventEmitter();
+  @Output() refreshView = new EventEmitter();
+  refresh: Subject<any> = new Subject();
   user: User;
   view = CalendarView.Month;
   months: string[] = Months;
   years: string[];
   viewDate: Date = new Date();
   viewMonth: string;
-  viewYear: string;
+  selectedYear: number;
   allEvents: RecurringEvent[] = new Array<RecurringEvent>();
   events: RecurringEvent[] = new Array<RecurringEvent>();
-  printViewDate = new Date(`01-01-2018`);
-  refresh: Subject<any> = new Subject();
   showBirthdays: boolean = true;
   showAnniversaries: boolean = true;
-  uploadedCalendarYear: string;
   allCalendars: Array<Calendar>;
 
   constructor(
@@ -50,7 +47,7 @@ export class CalendarComponent {
   ngOnInit(): void {
     this.years = this.calendarService.getViewYears();
     const now = new Date();
-    this.viewYear = now.getFullYear().toString();
+    this.selectedYear = now.getFullYear();
     const monthIndex: number = now.getMonth();
     let monthName = this.months[monthIndex];
     this.viewMonth = monthName;
@@ -62,7 +59,7 @@ export class CalendarComponent {
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
-        this.updateEvents(events, this.viewYear, this.showBirthdays, this.showAnniversaries);
+        this.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
       }
     )
     this.calendarService.calendarsObservable.subscribe(
@@ -72,37 +69,42 @@ export class CalendarComponent {
     )
   }
 
-  toggleBirthdays($event): void {
+  toggleBirthdays($event: any): void {
     let showBirthdays = $event.checked;
-    this.updateEvents(this.allEvents, this.viewYear, showBirthdays, this.showAnniversaries);
+    this.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
+    this.analyticsService.logEvent("calendar_birthdays_toggle", $event)
   }
 
-  toggleAnniversaries($event): void {
+  toggleAnniversaries($event: any): void {
     let showAnniversaries = $event.checked;
-    this.updateEvents(this.allEvents, this.viewYear, this.showBirthdays, showAnniversaries);
+    this.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
+    this.analyticsService.logEvent("calendar_anniversaires_toggle", $event)
   }
 
-  changeViewMonth($event): void {
+  changeViewMonth($event: any): void {
     let monthName = $event.value;
-    this.viewDate = new Date(monthName + '1,' + this.viewYear);
+    this.viewDate = new Date(monthName + '1,' + this.selectedYear);
+    this.analyticsService.logEvent("calendar_view_month_change", $event)
   }
 
-  changeViewYear($event): void {
-    let year = $event.value;
-    this.viewDate = new Date(this.viewMonth + '1,' + year);
-    this.updateEvents(this.events, year, this.showBirthdays, this.showAnniversaries);
+  changeSelectedYear($event: any): void {
+    this.selectedYear = $event.value;
+    this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
+    this.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+    this.analyticsService.logEvent("calendar_selected_year_change", $event)
   }
 
-  changeView(viewDate): void {
-    this.viewMonth = this.months[viewDate.getMonth()];
-    let viewYear = viewDate.getFullYear().toString();
-    if (viewYear !== this.viewYear) {
-      this.viewYear = viewYear;
-      this.updateEvents(this.events, viewYear, this.showBirthdays, this.showAnniversaries);
+  changeView(date: Date): void {
+    this.viewMonth = this.months[date.getMonth()];
+    let selectedYear = date.getFullYear();
+    if (selectedYear !== this.selectedYear) {
+      this.selectedYear = selectedYear;
+      this.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
+    this.analyticsService.logEvent("calendar_change_view", date)
   }
 
-  updateEvents(events: RecurringEvent[], year: string, birthdays: boolean, anniversaries: boolean): void {
+  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false)
@@ -110,7 +112,7 @@ export class CalendarComponent {
       if (event.type === 'anniversary' && anniversaries === false)
         continue;
       let date = new Date(event.date);
-      date.setFullYear(+year);
+      date.setFullYear(year);
       event.start = date;
       event.date = new Date(event.date);
       this.events.push(event);
@@ -121,7 +123,7 @@ export class CalendarComponent {
     this.refresh.next();
   }
 
-  openDialog(event): void {
+  openDialog(event: any): void {
     const dialogRef = this.dialog.open(CalendarDialogComponent, {
       data: event,
     });
@@ -149,45 +151,27 @@ export class CalendarComponent {
     )
   }
 
-  uploadCalendar($event): void {
-    const selectedYearCalendar: Calendar = this.allCalendars.find(
-      (calendar: Calendar) => {
-        return calendar.year === this.uploadedCalendarYear;
-      }
-    );
-    if (selectedYearCalendar) {
-      this.calendarService.updateCalendar($event.currentTarget.files[0], selectedYearCalendar);
-    } else {
-      this.calendarService.addCalendar($event.currentTarget.files[0], this.uploadedCalendarYear);
-    }
-  }
-
   newEvent(): void {
     let event = new Object as RecurringEvent;
     event.isLiving = true;
     this.openDialog(event);
+    this.analyticsService.logEvent("calendar_create_new_event", event)
   }
 
   saveEvents(): void {
     for (const event of this.events) {
       this.calendarService.addCalendarEvent(event);
     }
+    this.analyticsService.logEvent("calendar_save_events", event)
+  }
+
+  printPdf(): void {
+    this.openPrintControlsPrompt();
   }
 
   openPrintControlsPrompt(): void {
     this.printerPrompt.open(CalendarPrinterComponent, {
       data: { events: this.allEvents },
     });
-  }
-
-  printPdf(): void {
-    this.openPrintControlsPrompt();
-    // this.calendarPrinterService.printPdf();
-  }
-
-  addCalendar(event: any): void {
-    for (let file of event.currentTarget.files) {
-      this.calendarService.addCalendarEvent(file)
-    }
   }
 }

@@ -7,12 +7,8 @@ import { CalendarService, RecurringEvent } from 'src/app/services/calendar.servi
   styleUrls: ['./calendar-cell.component.scss']
 })
 export class CalendarCellComponent implements OnInit {
-  @Input()
-  event: RecurringEvent;
-  @Input()
-  isDialog: boolean;
-  @Input()
-  isPrintView: boolean;
+  @Input() event: RecurringEvent;
+  @Input() selectedYear: number;
 
   constructor(
     private calendarService: CalendarService,
@@ -22,6 +18,6 @@ export class CalendarCellComponent implements OnInit {
 
   getYearsSince(event: RecurringEvent): number {
     let eventYear: number = event.date.getUTCFullYear();
-    return this.calendarService.getYearsSince(eventYear);
+    return this.calendarService.getYearsSince(eventYear, this.selectedYear);
   }
 }

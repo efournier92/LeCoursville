@@ -1,10 +1,12 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, Inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RecurringEvent, CalendarService } from 'src/app/services/calendar.service';
 import { CalendarView } from 'angular-calendar';
 import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { DOCUMENT } from '@angular/common';
+import scrollIntoView from 'scroll-into-view-if-needed'
 
 @Component({
   selector: 'app-calendar-view',
@@ -17,16 +19,18 @@ export class CalendarViewComponent implements OnInit {
   @Input()
   viewDate: Date;
   @Input()
-  events: RecurringEvent[];
+  selectedYear: number;
   @Input()
-  isPrintView: boolean;
+  events: RecurringEvent[];
   @Output()
   refreshView: EventEmitter<Event> = new EventEmitter();
+  activeDay: Date = new Date("December 10, 2021");
 
   constructor(
     public dialog: MatDialog,
     private auth: AuthService,
     private calendarService: CalendarService,
+    @Inject(DOCUMENT) private document: Document
   ) { }
 
   ngOnInit(): void {
@@ -37,8 +41,28 @@ export class CalendarViewComponent implements OnInit {
     )
   }
 
+  ngAfterViewInit() {
+    this.ensureTodaysDateIsInView();
+  }
+
+  ensureTodaysDateIsInView() {
+    const node = this.document.querySelector(".cal-cell.cal-day-cell.cal-today");
+
+    if (node) {
+      scrollIntoView(node, {
+        scrollMode: 'if-needed',
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
+  }
+
   refreshCalendar(): void {
     this.refreshView.emit(event);
+  }
+
+  isEventInActiveMonth(event: RecurringEvent) {
+    return event.date.getMonth() === this.viewDate.getMonth();
   }
 
   openDialog(event: RecurringEvent): void {
