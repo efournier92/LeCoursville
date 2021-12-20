@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { Video } from 'src/app/models/media';
+import { Video } from 'src/app/models/media/video';
 
 @Component({
   selector: 'app-video-player-videogular',

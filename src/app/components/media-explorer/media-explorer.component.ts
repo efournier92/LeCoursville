@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media';
+import { Media } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -83,6 +83,10 @@ export class MediaExplorerComponent implements OnInit {
       this.setCurrentMedia(media);
   }
 
+  downloadSelectedMedia(): void {
+    window.open(this.selectedMedia.urls.download);
+  }
+
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
   }
@@ -92,7 +96,7 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private shouldSetCurrentMedia(media: Media) {
-    return media && media.url && media.type
+    return media && media.urls.location && media.type
   }
 
   private setCurrentMedia(media: Media) {

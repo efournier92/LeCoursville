@@ -1,6 +1,6 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { Video } from 'src/app/models/media';
+import { Video } from 'src/app/models/media/video';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser'; 
 import { RoutingService } from 'src/app/services/routing.service';
 

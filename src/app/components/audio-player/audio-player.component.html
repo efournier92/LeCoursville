@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center align-items-center flex-column">
     <div>
-        <img class="audio-player-album-art" src="{{album.icon}}" alt="">
+        <img class="audio-player-album-art" src="{{album.urls.icon}}" alt="">
     </div>
     <div>
         {{ album.author }}
@@ -11,14 +11,13 @@
 </div>
 
 <ngx-audio-player 
-    [playlist]="tracks"
-    [displayPlaylist]="true"
+    [playlist]="playlist"
     [displayTitle]="album.name"
     [displayArtist]="album.author" 
-    [autoPlay]="true" 
-    [pageSizeOptions]=10
     [displayVolumeControls]="true"
     [displayRepeatControls]="true"
     [disablePositionSlider]="false"
-    [expanded]="true">
+    [displayPlaylist]="true"
+    [expanded]="true"
+    [pageSizeOptions]=[1000]>
 </ngx-audio-player>

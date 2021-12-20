@@ -1,20 +1,3 @@
-<!-- <div class="upload-calendar-container d-flex justify-content-around" *ngIf="user && user.roles && user.roles.super">
-  <div class="d-flex flex-row justify-content-center m-2">
-    <mat-select class="upload-calendar-year-select" placeholder="Upload" [(ngModel)]="uploadedCalendarYear">
-      <div *ngFor="let year of years">
-        <mat-option [value]="year">
-          {{ year }}
-        </mat-option>
-      </div>
-    </mat-select>
-    <button mat-button [disabled]="!uploadedCalendarYear">
-      <label class="upload-calendar-button-label">
-        <mat-icon>cloud_upload</mat-icon>
-        <input type="file" (change)="uploadCalendar($event)" accept=".pdf" />
-      </label>
-    </button>
-  </div>
-</div> -->
 <div *ngIf="user && user.name">
   <div class="d-flex mt-2 calendar-checkbox-tools-container">
     <div class="col-xs-8 calendar-checkbox-container">
@@ -60,14 +43,14 @@
     </div>
   </div>
   <div class="d-flex justify-content-center" style="margin-bottom: 1;">
-    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
-      [(viewDate)]="viewDate">
-      <mat-icon>keyboard_arrow_left</mat-icon>
-    </button>
-    <button class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
-      [(viewDate)]="viewDate">
-      <mat-icon>keyboard_arrow_right</mat-icon>
-    </button>
+    <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+      [(viewDate)]="viewDate" style="cursor: pointer;width:2em;height:2em;">
+      <mat-icon style="font-size:2em;width:1em;height:1em;">keyboard_arrow_left</mat-icon>
+    </div>
+    <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
+      [(viewDate)]="viewDate" style="cursor: pointer;width:2em;height:2em;">
+      <mat-icon style="font-size:2em;width:1em;height:1em;">keyboard_arrow_right</mat-icon>
+  </div>
   </div>
   <app-calendar-view [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" style="margin:auto"></app-calendar-view>
 </div>

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireDatabase, AngularFireList, AngularFireObject } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Media } from 'src/app/models/media';
+import { Media } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { MediaTypesService } from './media-types-service.service';
@@ -43,7 +43,6 @@ export class MediaService {
   create(media: Media): void {
     if (!media || !media.id)
       media.id = this.db.createPushId();
-    media.dateAdded = new Date();
 
     this.mediaList.update(media.id, media);
   }
@@ -92,6 +91,16 @@ export class MediaService {
     }
 
     return this.filterMedia(loadedMedia);
+  }
+
+  deleteMedia(media: Media): void {
+    if (media?.listing?.length > 0) {
+      media.listing.forEach((id: string) => {
+        this.mediaList.remove(id);
+      })
+    }
+
+    this.mediaList.remove(media.id);
   }
 
   private filterMedia(mediaList: Media[], ): Media[] {
@@ -146,7 +155,7 @@ export class MediaService {
   }
 
   private loadFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
-    return this.loadMoreMedia(20, allMedia, loadedMedia);
+    return this.loadMoreMedia(10000, allMedia, loadedMedia);
   }
 
 }

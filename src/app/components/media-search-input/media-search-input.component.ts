@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { Media } from 'src/app/models/media';
+import { Media } from 'src/app/models/media/media';
 
 @Component({
   selector: 'app-media-search-input',

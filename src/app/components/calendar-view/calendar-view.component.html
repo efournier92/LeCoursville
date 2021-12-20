@@ -1,6 +1,13 @@
 <div style="width: 100%;">
-  <div class="calendar-date d-flex justify-content-center col-12">
-    <h3 style="font-size: 1.6em; font-weight: 500; color: #B71C1C; margin-bottom: 10px;">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
+  <div class="calendar-date d-flex flex-row justify-content-between" style="max-width: 10in; margin:auto;margin-bottom: -2px;">
+    <img class="" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" alt="" style="width:60px;height:60px;opacity: 0.6;" />
+    <div class="d-flex flex-column justify-content-center">
+      <div>
+        <div style="text-align: center; font-size: 1.4em; color: #B71C1C;margin-bottom: -6px;">LeCoursville Calendar</div>
+        <h3 class="" style="text-align: center;font-size: 2em; font-weight: 500; color: #B71C1C; margin: auto;">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
+      </div>
+    </div>
+    <img class="" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" alt="" style="width:60x;height:60px;opacity: 0.6;" />
   </div>
   <ng-template #customCellTemplate let-day="day" let-locale="locale">
     <div>

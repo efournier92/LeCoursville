@@ -53,7 +53,7 @@ html, body {
 
 .cal-month-view .cal-day-cell {
   min-width: 120px;
-  min-height: 120px;
+  min-height: 110px;
 }
 
 .cal-month-view .cal-day-number {
@@ -67,24 +67,40 @@ html, body {
 }
 
 .cal-month-view .cal-day-cell:not(:last-child) {
-  border-right: 2px solid #e1e1e1;
+  border-right: 2px solid #616161;
 }
 
 .cal-month-view .cal-days {
-  border-top: 2px solid #e1e1e1;
-  border-left: 2px solid #e1e1e1;
-  border-right: 2px solid #e1e1e1;
+  border-top: 2px solid #616161;
+  border-left: 2px solid #616161;
+  border-right: 2px solid #616161;
 }
 
 .cal-month-view .cal-day-cell {
   // border-right: 2px solid #e1e1e1;
-  border-bottom: 1.8px solid #e1e1e1;
+  border-bottom: 1.8px solid #616161;
 }
 
 app-calendar-cell {
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 
 .cal-month-view .cal-header .cal-cell {
   // font-style: italic;
 }
+
+th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
+  cursor: pointer;
+}
+
+html .mat-paginator, html .mat-paginator-page-size .mat-select-trigger, body .mat-paginator, body .mat-paginator-page-size .mat-select-trigger {
+  display: none;
+}
+
+// .cal-month-view .cal-day-cell:not(:last-child) {
+//   border-right: 2px solid #616161;
+// }
+
+// .cal-month-view .cal-day-cell {
+//   border-right: 2px solid #616161;
+// }

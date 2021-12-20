@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
-import { Media, PhotoAlbum } from 'src/app/models/media';
+import { Media } from 'src/app/models/media/media';
+import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import { Photo } from 'src/app/models/photo';
 import { PhotosService } from 'src/app/services/photos.service';
 import lgZoom from 'lightgallery/plugins/zoom'

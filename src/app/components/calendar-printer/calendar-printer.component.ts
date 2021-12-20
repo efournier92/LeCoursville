@@ -81,7 +81,7 @@ export class CalendarPrinterComponent implements OnInit {
   prepareNextPage() {
     if (!this.isFirstMonth())
       this.addPage();
-      
+
     this.updateCalendarMonth();
     this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
     this.updateProgressBar();
@@ -119,7 +119,7 @@ export class CalendarPrinterComponent implements OnInit {
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         let leftMargin = 0.45;
-        let topMargin = 0.25;
+        let topMargin = 0.45;
 
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
       }

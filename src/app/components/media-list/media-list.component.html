@@ -1,44 +1,47 @@
-<div class="media-list-container">
+<div class="media-list-container row">
 
-    <div class="media-search-input-container">
+    <!-- <div class="media-search-input-container">
         <app-media-search-input (inputChangeEvent)="onSearchInputChange($event)"></app-media-search-input>
     </div>
 
     <div class="media-types-checkboxes-container">
         <app-media-types-checkboxes (selectMediaTypeEvent)="onSelectMediaType($event)">
         </app-media-types-checkboxes>
+    </div> -->
+
+    <div class="row" *ngFor="let media of filteredMedia">
+        <button mat-button class="mb-3 col-12 col-md-6 col-lg-4" (click)="onMediaSelect(media)">
+            <div class="row">
+
+                <div class="col-4 imageContainer">
+                    <div style="height: 100%;" class="d-flex flex-column justify-content-center">
+                        <mat-icon class=""
+                            style="font-size:60px; margin-top: 10px; color: #9E9E9E; height: 80px;width: 100%;"
+                            [hidden]="media.isIconLoaded">{{ getPlaceholderName(media.type) }}</mat-icon>
+                    </div>
+                    <div class="imageCenterer">
+                        <img [src]="media.urls.icon" (load)="onImageLoaded(media)" [hidden]="!media.isIconLoaded">
+                    </div>
+                </div>
+
+                <div class="col-8 justify-content-start">
+                    <div class="media-details-name">
+                        {{ media.name }}
+                    </div>
+                    <div class="media-details-location">
+                        {{ media.location }}
+                    </div>
+                    <div class="media-details-date">
+                        {{ media.date }}
+                    </div>
+                    <div class="media-details-duration">
+                        {{ media.duration }}
+                    </div>
+                </div>
+
+            </div>
+        </button>
     </div>
-
-    <button mat-button class="mb-3 col-12 col-md-6 col-lg-4" *ngFor="let media of filteredMedia" (click)="onMediaSelect(media)">
-        <div class="row">
-
-            <div class="col-4 imageContainer">
-                <div style="height: 100%;" class="d-flex flex-column justify-content-center">
-                    <mat-icon class="" style="font-size:60px; margin-top: 10px; color: #9E9E9E; height: 80px;width: 100%;" [hidden]="media.isIconLoaded">{{ getPlaceholderName(media.type) }}</mat-icon>
-                </div>
-                <div class="imageCenterer">
-                    <img [src]="media.icon" (load)="onImageLoaded(media)" [hidden]="!media.isIconLoaded">
-                </div>
-            </div>
-
-            <div class="col-8 justify-content-start">
-                <div class="media-details-name">
-                    {{ media.name }}
-                </div>
-                <div class="media-details-location">
-                    {{ media.location }}
-                </div>
-                <div class="media-details-date">
-                    {{ media.date }}
-                </div>
-                <div class="media-details-duration">
-                    {{ media.duration }}
-                </div>
-            </div>
-
-        </div>
-    </button>
-
 </div>
 
 <div class="d-flex justify-content-center w-100 mb-4" *ngIf="shouldShowLoadMore()">

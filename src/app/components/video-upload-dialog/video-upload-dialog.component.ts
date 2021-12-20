@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Video } from 'src/app/models/media';
+import { Video } from 'src/app/models/media/video';
 
 @Component({
   selector: 'app-video-upload-dialog',

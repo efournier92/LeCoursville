@@ -1,25 +1,52 @@
-<form class="audio-album-upload-form">
-    <mat-form-field class="admin-upload-input">
-        <mat-label>Album Name</mat-label>
-        <input type="text" matInput name="albumName" [(ngModel)]="album.name">
-    </mat-form-field><br />
-    <mat-form-field class="admin-upload-input">
-        <mat-label>Album Cover</mat-label>
-        <input type="text" matInput name="albumIcon" [(ngModel)]="album.icon">
-    </mat-form-field><br />
-    <mat-form-field class="admin-upload-input">
-        <mat-label>Drive Folder ID</mat-label>
-        <input type="text" matInput name="albumUrl" [(ngModel)]="album.url">
-    </mat-form-field><br />
-    <button mat-button style="width: 100%; background-color: #1b5e20; color: white"
-        (click)="uploadByDriveId()">Upload</button>
-    <mat-divider style="margin-top:22px"></mat-divider>
-    <div style="text-align: center; width:100%">
-        <span style="color: #BDBDBD; text-align: center; width:100%">OR</span>
+<div *ngIf="user?.roles?.admin">
+    <div class="admin-media-upload-audio-album-form-container">
+    <form class="audio-album-upload-form">
+        <mat-form-field class="admin-upload-input">
+            <mat-label>Name</mat-label>
+            <input type="text" matInput name="albumName" [(ngModel)]="album.name">
+        </mat-form-field><br />
+        <mat-form-field class="admin-upload-input">
+            <mat-label>Location ID</mat-label>
+            <input type="text" matInput name="albumLocationId" [(ngModel)]="album.ids.location">
+        </mat-form-field><br />
+        <mat-form-field class="admin-upload-input">
+            <mat-label>Cover ID</mat-label>
+            <input type="text" matInput name="albumCoverId" [(ngModel)]="album.ids.icon">
+        </mat-form-field><br />
+        <mat-form-field class="admin-upload-input">
+            <mat-label>Download ID</mat-label>
+            <input type="text" matInput name="albumDownloadId" [(ngModel)]="album.ids.download">
+        </mat-form-field><br />
+        <mat-form-field class="admin-upload-input">
+            <mat-label>Date</mat-label>
+            <input type="text" matInput name="albumDate" [(ngModel)]="album.date">
+        </mat-form-field><br />
+        <button mat-button class="admin-media-form-action-button admin-media-form-action-button-upload" 
+            (click)="onUploadSelectedMedia()">
+            <span *ngIf="!album.id">Upload</span>
+            <span *ngIf="album.id">Update</span>
+        </button>
+        <button class="admin-media-form-action-button admin-media-form-action-button-delete" *ngIf="album.id" mat-button
+            (click)="onDeleteSelectedMedia(album)">Delete</button>
+        <button mat-button class="admin-media-form-action-button admin-media-form-action-button-cancel"
+            (click)="onCancelSelectedMedia(album)">Clear</button>
+        <mat-divider style="margin-top:22px"></mat-divider>
+        <div style="text-align: center; width:100%">
+            <span style="color: #BDBDBD; text-align: center; width:100%">OR</span>
+        </div>
+        <mat-divider style="margin-bottom: 22px"></mat-divider>
+        <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+            [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
+            (onInputCleared)="onInputCleared()">
+        </app-file-input>
+    </form>
+</div>
+    <div style="width: 95%">
+        <div style="width: 100%;text-align: center">
+            <h2>All Audio Albums</h2>
+        </div>
+        <app-media-list [mediaType]="audio-album" (mediaClickEvent)="onMediaSelect($event)" *ngIf="isUserAdmin()">
+        </app-media-list>
     </div>
-    <mat-divider style="margin-bottom: 22px"></mat-divider>
-    <!-- <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-      [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
-      (onInputCleared)="onInputCleared()">
-    </app-file-input> -->
-</form>
+
+</div>

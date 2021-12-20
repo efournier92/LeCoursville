@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { Doc, Media } from 'src/app/models/media';
+import { Media } from 'src/app/models/media/media';
+import { Doc } from 'src/app/models/media/doc';
 
 @Component({
   selector: 'app-doc-viewer-ngx-extended',

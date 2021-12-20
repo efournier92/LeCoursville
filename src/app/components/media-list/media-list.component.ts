@@ -1,7 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media';
-import { MediaTypesService } from 'src/app/services/media-types-service.service';
+import { Media } from 'src/app/models/media/media';
 import { MediaService } from 'src/app/services/media.service';
 import { MediaIconsService } from 'src/assets/img/media-placeholders/services/media-icons.service';
 
@@ -11,6 +9,7 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
   styleUrls: ['./media-list.component.scss']
 })
 export class MediaListComponent implements OnInit {
+  @Input() mediaType: string;
   allMedia: Array<Media> = [];
   filteredMedia: Array<Media>;
   private loadedMedia: Array<Media> = [];
@@ -24,6 +23,8 @@ export class MediaListComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToMediaObservable();
+    if (this.mediaType)
+      this.filteredMedia = this.mediaService.filterByTypes([this.mediaType], this.allMedia);
   }
 
   subscribeToMediaObservable() {
@@ -56,11 +57,10 @@ export class MediaListComponent implements OnInit {
   }
 
   onLoadMore(): void {
-    this.filteredMedia = this.mediaService.loadMoreMedia(10, this.allMedia, this.loadedMedia);
+    this.filteredMedia = this.mediaService.loadMoreMedia(1000, this.allMedia, this.loadedMedia);
   }
 
   shouldShowLoadMore(): boolean {
     return this.allMedia?.length && this.loadedMedia.length !== this.allMedia.length;
   }
-
 }

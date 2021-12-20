@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { _ } from 'core-js';
-import { AudioAlbum } from 'src/app/models/media';
+import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { environment } from 'src/environments/environment';
 
 
@@ -47,40 +47,40 @@ export class AdminMediaComponent implements OnInit {
   }
 
   uploadByDriveId(): void {
-    var apiKey = environment.googleDriveApiKey;
+    // var apiKey = environment.googleDriveApiKey;
   
-    var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${this.album.url}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
+    // var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${this.album.url}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
 
-    var jsonString = this.httpGet(apiUrl);
+    // var jsonString = this.httpGet(apiUrl);
    
-    var allInfo = JSON.parse(jsonString);
+    // var allInfo = JSON.parse(jsonString);
   
-    var files = allInfo.files;
+    // var files = allInfo.files;
     
-    var allFilesToUpload = [];
+    // var allFilesToUpload = [];
   
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i];
+    // for (var i = 0; i < files.length; i++) {
+    //   var file = files[i];
   
-      if (!file) continue;
+    //   if (!file) continue;
   
-      var fileUploadInfo = {
-        "url": `https://drive.google.com/file/d/${file.id}/view?usp=sharing`,
-        "name": this.formatFileName(file.originalFilename),
-        "type": "audio-track"
-      };
+    //   var fileUploadInfo = {
+    //     "url": `https://drive.google.com/file/d/${file.id}/view?usp=sharing`,
+    //     "name": this.formatFileName(file.originalFilename),
+    //     "type": "audio-track"
+    //   };
   
-      allFilesToUpload.push(fileUploadInfo);
-    }
+    //   allFilesToUpload.push(fileUploadInfo);
+    // }
 
-    var albumInfo = {
-      "name": this.album.name,
-      "icon": this.album.icon,
-      "type": "audio-album",
-      "listing": allFilesToUpload
-    } 
+    // var albumInfo = {
+    //   "name": this.album.name,
+    //   "icon": this.album.ids.location,
+    //   "type": "audio-album",
+    //   "listing": allFilesToUpload
+    // } 
 
-    this.jsonService.uploadAudioAlbum(albumInfo);
+    // this.jsonService.uploadAudioAlbum(albumInfo);
   }
 
   httpGet(theUrl) {
