@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
@@ -15,6 +15,7 @@ import { RoutingService } from 'src/app/services/routing.service';
   styleUrls: ['./media-explorer.component.scss']
 })
 export class MediaExplorerComponent implements OnInit {
+  @Input() mediaType: string;
   user: User;
   allMedia: Media[] = new Array<Media>();
   selectedMedia: Media;
@@ -29,6 +30,8 @@ export class MediaExplorerComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
   ) { }
 
+  // LIFECYCLE
+
   ngOnInit(): void {
     this.selectedMedia = undefined;
     this.allMedia = [];
@@ -36,6 +39,53 @@ export class MediaExplorerComponent implements OnInit {
     this.getQueryParams();
     this.subscribeToAuth();
   }
+
+  // PUBLIC
+
+  onMediaSelect(media: Media): void {
+    this.resetSelectedMedia();
+
+    if (this.shouldSetCurrentMedia(media))
+      this.setCurrentMedia(media);
+
+    this.scrollToTop();
+  }
+
+  getShareableLink(): string {
+    return location?.href;
+  }
+
+  downloadSelectedMedia(): void {
+    window.location.href = this.selectedMedia?.urls?.download;
+  }
+
+  navigateToSignIn() {
+    this.routingService.NavigateToSignIn();
+  }
+
+  // MEDIA CHECKS
+
+  shouldDisplayMediaList(): boolean {
+    return !!this.user?.id;
+  }
+
+  isVideo(selectedMedia: Media): boolean {
+    return selectedMedia?.type == MediaConstants.VIDEO.id;
+  }
+
+  isDocument(selectedMedia: Media): boolean {
+    return selectedMedia?.type == MediaConstants.DOC.id;
+  }
+
+  isPhotoAlbum(selectedMedia: Media): boolean {
+    return selectedMedia?.type == MediaConstants.PHOTO_ALBUM.id;
+  }
+
+  isAudioAlbum(selectedMedia: Media): boolean {
+    return selectedMedia?.type == MediaConstants.AUDIO_ALBUM.id;
+  }
+  
+  // HELPERS
 
   private subscribeToAuth() {
     this.authService.userObservable.subscribe(
@@ -46,47 +96,10 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private updateUser(user: User) {
-    if (user && user.id)
+    if (user?.id)
       this.user = user;
   }
-
-  isVideo(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.VIDEO.id;
-  }
-
-  isDocument(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.DOC.id;
-  }
-
-  isPhotoAlbum(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.PHOTO_ALBUM.id;
-  }
-
-  isAudioAlbum(selectedMedia: Media): boolean {
-    return selectedMedia && selectedMedia.type == MediaConstants.AUDIO_ALBUM.id;
-  }
-
-  getLinkToShare(): string {
-    return location.href;
-  }
-
-  navigateToSignIn() {
-    this.routingService.NavigateToSignIn();
-  }
-
-  onMediaSelect(media: Media): void {
-    this.resetSelectedMedia();
-
-    this.scrollToTop();
-
-    if (this.shouldSetCurrentMedia(media))
-      this.setCurrentMedia(media);
-  }
-
-  downloadSelectedMedia(): void {
-    window.open(this.selectedMedia.urls.download);
-  }
-
+  
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
   }
@@ -96,18 +109,18 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private shouldSetCurrentMedia(media: Media) {
-    return media && media.urls.location && media.type
+    return media?.urls?.location && media?.type
   }
 
   private setCurrentMedia(media: Media) {
     this.selectedMedia = media;
     this.emitEventToChild(media);
     this.routingService.updateQueryParams(this.selectedMedia.id);
-    this.analyticsService.logMediaSelect(media);
+    this.analyticsService.logEvent("media_explorer_select", media);
   }
 
   private emitEventToChild(media: Media) {
-    this.eventsSubject.next(this.selectedMedia);
+    this.eventsSubject.next(media);
   }
 
   private getQueryParams() {

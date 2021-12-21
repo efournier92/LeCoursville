@@ -5,6 +5,7 @@ import { AudioAlbumUploadService } from 'src/app/services/audio-album-upload.ser
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { Media } from 'src/app/models/media/media';
+import { MediaConstants } from '../constants/media-constants';
 
 @Component({
   selector: 'app-admin-media-upload-audio-album',
@@ -39,6 +40,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   onUploadSelectedMedia(): void {
     this.audioAlbumUploadService.uploadAudioAlbum(this.album);
+    this.resetSelectedMedia();
   }
 
   onDeleteSelectedMedia(media: Media): void {
@@ -59,5 +61,9 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   onInputFileChange($event: any): void {
     console.log("File changed: ", $event);
+  }
+
+  getAudioAlbumTypeId(): string {
+    return MediaConstants.AUDIO_ALBUM.id;
   }
 }

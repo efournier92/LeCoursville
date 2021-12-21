@@ -1,5 +1,5 @@
 <lightgallery [settings]="lightGallerySettings" [onInit]="onLightGalleryInit">
     <a *ngFor="let photo of photos" [href]="photo.url" data-src="{{ photo.url }}">
-        <img [src]="photo.url" class="col-4 col-md-3 col-xl-2" style="padding: 4px;" />
+        <img [src]="photo.url" class="photo-album-image col-4 col-md-3 col-xl-2" />
     </a>
 </lightgallery>

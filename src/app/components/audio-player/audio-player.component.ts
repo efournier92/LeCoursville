@@ -11,6 +11,7 @@ import { MediaService } from 'src/app/services/media.service';
 })
 export class AudioPlayerComponent implements OnInit,OnChanges {
   @Input() album: AudioAlbum = new AudioAlbum();
+  
   playlist: Track[] = [];
   allTracks: Track[] = [];
 

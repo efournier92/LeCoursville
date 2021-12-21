@@ -23,6 +23,10 @@ export class RoutingService {
     this.NavigateToRoute("/media");
   }
 
+  NavigateToAudio() {
+    this.NavigateToRoute("/audio");
+  }
+
   NavigateToRouteWithoutLocationChange(route: string) {
     this.router.navigateByUrl(route, { skipLocationChange: true });
   }

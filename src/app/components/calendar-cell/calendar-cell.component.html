@@ -1,11 +1,11 @@
-<div class="calendar-cell-container" style="margin-left: 0.75em;" *ngIf="shouldDisplayEvent()"
+<div class="calendar-cell-container" *ngIf="shouldDisplayEvent()"
   [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
-  <div class="d-flex" style="margin-bottom: 0.3em;">
-    <div class="" style="line-height: 1em;margin-right:0.75em">
-      <span class="years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
+  <div class="calendar-cell-event-container d-flex">
+    <div class="calendar-years-since-container">
+      <span class="calendar-years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
         {{ getYearsSince(event) }}</span>
     </div>
-    <div class="event-title-container" style="float: right;line-height: 1em;">
+    <div class="calendar-event-title-container">
       {{ event.title }}
     </div>
   </div>

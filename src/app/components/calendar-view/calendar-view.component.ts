@@ -14,17 +14,15 @@ import scrollIntoView from 'scroll-into-view-if-needed'
   styleUrls: ['./calendar-view.component.scss']
 })
 export class CalendarViewComponent implements OnInit {
+  @Input() viewDate: Date;
+  @Input() selectedYear: number;
+  @Input() events: RecurringEvent[];
+
+  @Output() refreshView: EventEmitter<Event> = new EventEmitter();
+
   user: User;
   view: string = CalendarView.Month;
-  @Input()
-  viewDate: Date;
-  @Input()
-  selectedYear: number;
-  @Input()
-  events: RecurringEvent[];
-  @Output()
-  refreshView: EventEmitter<Event> = new EventEmitter();
-  activeDay: Date = new Date("December 10, 2021");
+  activeDay: Date = new Date();  
 
   constructor(
     public dialog: MatDialog,

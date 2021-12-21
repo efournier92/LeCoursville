@@ -16,8 +16,10 @@ export class FileInputComponent implements OnInit {
   @Input() shouldAllowMultipleFiles: boolean = false;
   @Input() shouldShowLabel: boolean = false;
   @Input() shouldShowClearButton: boolean = false;
+
   @Output() onInputFileChange: EventEmitter<HTMLInput> = new EventEmitter();
   @Output() onInputCleared: EventEmitter<HTMLInput> = new EventEmitter();
+  
   fileInput: HTMLInput;
   inputPlaceholder: string;
 

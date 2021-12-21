@@ -39,12 +39,12 @@ export class AudioAlbumUploadService {
       const name = this.formatFileName(file.originalFilename);
       let track = new AudioTrack(id, name, file.id);
 
-      track.urls.location = this.getDownloadUrlById(file.id);
+      track.urls.location = this.getLocationUrlById(file.id);
 
       allFilesToUpload.push(track);
     }
 
-    album.urls.location = this.getLocationUrlById(album.ids.location);
+    album.urls.location = this.getIconUrlById(album.ids.location);
     album.urls.icon = this.getIconUrlById(album.ids.icon);
     album.urls.download = this.getDownloadUrlById(album.ids.download);
 
@@ -70,7 +70,9 @@ export class AudioAlbumUploadService {
   private getLocationUrlById(id: string): string {
     if (!id) return "";
 
-    return `https://drive.google.com/uc?id=${id}`;
+    return `https://drive.google.com/uc?export=download&id=${id}`
+    // return `https://drive.google.com/file/d/${id}/view?usp=sharing`
+    // return `https://drive.google.com/uc?id=${id}`;
   }
 
   private getIconUrlById(id: string): string {

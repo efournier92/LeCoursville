@@ -1,27 +1,46 @@
 .admin-upload-input {
-    width: 100%;
+  width: 100%;
 }
 
 .admin-media-form-action-button {
-    width: 100%;
-    color: white;
-    margin-top: 12px;
+  width: 100%;
+  color: white;
+  margin-top: 12px;
 }
 
 .admin-media-form-action-button-upload {
-    background-color: #1b5e20;
+  background-color: #1b5e20;
 }
 
 .admin-media-form-action-button-delete {
-    background-color: #B71C1C;
+  background-color: #b71c1c;
 }
 
 .admin-media-form-action-button-cancel {
-    background-color: #F57F17;
+  background-color: #f57f17;
 }
 
 .admin-media-upload-audio-album-form-container {
-    border: 0.01em solid grey;
-    padding: 2em;
-    margin: 1em;
+  border: 0.01em solid grey;
+  padding: 2em;
+  margin: 1em;
+}
+
+.admin-media-upload-divider {
+  margin-top: 22px;
+}
+
+.admin-media-upload-or-container {
+  text-align: center;
+  width: 100%;
+}
+
+.admin-media-upload-or-span {
+  color: #bdbdbd;
+  text-align: center;
+  width: 100%;
+}
+
+.admin-media-list-container {
+  width: 95%;
 }

@@ -1,40 +1,34 @@
-<div class="media-explorer-container row justify-content-center">
+<div class="row justify-content-center">
     <div class="row justify-content-end">
+        <button mat-mini-fab matTooltip="Copy Link" color="secondary" class="m-1" [cdkCopyToClipboard]="getShareableLink()">
+            <mat-icon>share</mat-icon>
+        </button>
         <button mat-mini-fab matTooltip="Download Link" color="secondary" class="m-1" (click)="downloadSelectedMedia()">
             <mat-icon>download</mat-icon>
         </button>
-        <button mat-mini-fab matTooltip="Copy Link" color="secondary" class="m-1" [cdkCopyToClipboard]="getLinkToShare()">
-            <mat-icon>share</mat-icon>
-        </button>
     </div>
 
-    <div *ngIf="isVideo(selectedMedia)" style="position: relative">
+    <div class="media-component-container" *ngIf="isVideo(selectedMedia)">
         <app-video-player-drive-iframe
             [video]="selectedMedia"
             [events]="eventsSubject.asObservable()">
         </app-video-player-drive-iframe>
     </div>
 
-    <div *ngIf="isDocument(selectedMedia)" class="document-component-container" style="position: relative">
+    <div class="media-component-container document-component-container" *ngIf="isDocument(selectedMedia)">
         <app-doc-viewer-drive-iframe
             [doc]="selectedMedia"
             [events]="eventsSubject.asObservable()">
         </app-doc-viewer-drive-iframe>
-        <button mat-fab matTooltip="Copy Link" style="position: absolute; top: 4px; right: 16px;" color="secondary" class="mb-4" [cdkCopyToClipboard]="getLinkToShare()">
-            <mat-icon>share</mat-icon>
-        </button>
     </div>
 
-    <div *ngIf="isPhotoAlbum(selectedMedia)" style="position: relative">
+    <div class="media-component-container" *ngIf="isPhotoAlbum(selectedMedia)">
         <app-photo-album 
             [album]="selectedMedia">
         </app-photo-album>
-        <button mat-fab matTooltip="Copy Link" style="position: absolute; top: 4px; right: 16px;" color="secondary" class="mb-4" [cdkCopyToClipboard]="getLinkToShare()">
-            <mat-icon>share</mat-icon>
-        </button>
     </div>
 
-    <div *ngIf="isAudioAlbum(selectedMedia)" style="position: relative">
+    <div class="media-component-container" *ngIf="isAudioAlbum(selectedMedia)">
         <app-audio-player 
             [album]="selectedMedia"
             [events]="eventsSubject.asObservable()">
@@ -43,9 +37,9 @@
 </div>
 
 <div class="d-flex w-100 justify-content-center mt-2" *ngIf="selectedMedia?.id && !user?.id">
-    <button mat-raised-button color="primary" class="mb-4" (click)="navigateToSignIn()">
+    <button mat-raised-button color="primary" class="mb-4" (click)="getShareableLink()">
         Sign In For More
     </button>    
 </div>
     
-<app-media-list (mediaClickEvent)="onMediaSelect($event)" *ngIf="user?.id"></app-media-list>
+<app-media-list (mediaClickEvent)="navigateToSignIn($event)" [mediaType]="mediaType" *ngIf="shouldDisplayMediaList()"></app-media-list>

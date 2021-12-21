@@ -10,12 +10,12 @@ import { Doc } from 'src/app/models/media/doc';
 })
 export class DocViewerNgxExtendedComponent implements OnInit {
   @Input() doc: Doc;
+  @Input() events: Observable<Media>;
+
   url: string;
   pdfThing: string;
   isLoading: boolean;
-
   private eventsSubscription: Subscription;
-  @Input() events: Observable<Media>;
 
   constructor() { }
 

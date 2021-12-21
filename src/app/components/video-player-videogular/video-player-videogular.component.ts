@@ -9,12 +9,13 @@ import { Video } from 'src/app/models/media/video';
 })
 export class VideoPlayerVideogularComponent implements OnInit {
   @Input() video: Video;
+  @Input() events: Observable<Video>;
+
   videos: Video[];
   videogular: any;
-
-  private eventsSubscription: Subscription;
-  @Input() events: Observable<Video>;
   isLoading: boolean;
+  
+  private eventsSubscription: Subscription;
 
   constructor() { }
 

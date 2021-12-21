@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MediaConstants } from 'src/app/constants/media-constants';
 import { Media } from 'src/app/models/media/media';
 import { MediaService } from 'src/app/services/media.service';
 import { MediaIconsService } from 'src/assets/img/media-placeholders/services/media-icons.service';
@@ -9,12 +10,13 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
   styleUrls: ['./media-list.component.scss']
 })
 export class MediaListComponent implements OnInit {
-  @Input() mediaType: string;
+  @Input() mediaTypesToShow: string[];
+
+  @Output() mediaClickEvent = new EventEmitter<Media>();
+
   allMedia: Array<Media> = [];
   filteredMedia: Array<Media>;
   private loadedMedia: Array<Media> = [];
-  
-  @Output() mediaClickEvent = new EventEmitter<Media>();
 
   constructor(
     private mediaService: MediaService,
@@ -23,17 +25,34 @@ export class MediaListComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToMediaObservable();
-    if (this.mediaType)
-      this.filteredMedia = this.mediaService.filterByTypes([this.mediaType], this.allMedia);
+    
+    if (!this.mediaTypesToShow)
+      this.mediaTypesToShow = this.getDefaultMediaTypes();
+
+    if (this.mediaTypesToShow)
+      this.filteredMedia = this.filterAllMediaByType();
+    }
+
+  private getDefaultMediaTypes(): string[] {
+    return [
+      MediaConstants.VIDEO.id,
+      MediaConstants.AUDIO_ALBUM.id, 
+      MediaConstants.PHOTO_ALBUM.id,
+      MediaConstants.DOC.id
+    ];
   }
 
   subscribeToMediaObservable() {
     this.mediaService.mediaObservable.subscribe(
       (mediaList) => {
           this.allMedia = mediaList;
-          this.filteredMedia = this.mediaService.tryLoadingFirstBatch(this.allMedia, this.loadedMedia);
+          this.filteredMedia = this.filterAllMediaByType();
       }
     )
+  }
+
+  filterAllMediaByType() {
+    return this.mediaService.filterByTypes(this.mediaTypesToShow, this.allMedia);
   }
 
   getPlaceholderName(mediaType: string): string  {

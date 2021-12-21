@@ -73,11 +73,11 @@ export class MediaService {
     const hiddenTypes = this.mediaTypesService.getHiddenTypeIds();
 
     return allMedia.filter(
-      (media: Media) => !hiddenTypes.includes(media.type) && selectedTypes.includes(media.type)
+      (media: Media) => !hiddenTypes?.includes(media.type) && selectedTypes?.includes(media.type)
     );
   }
 
-  filterByQuery(query: string, allMedia): Media[] {
+  filterByQuery(query: string, allMedia: Media[]): Media[] {
     return allMedia.filter(
       (media: Media) => {
         return this.doesAnyKeyIncludeQuery(media, query);
@@ -101,6 +101,10 @@ export class MediaService {
     }
 
     this.mediaList.remove(media.id);
+  }
+
+  loadAllMedia(type: string) {
+    
   }
 
   private filterMedia(mediaList: Media[], ): Media[] {

@@ -9,14 +9,14 @@ import { Photo } from 'src/app/models/photo';
   styleUrls: ['./photo-upload-progress.component.scss']
 })
 export class PhotoUploadProgressComponent implements OnInit {
-  @Input()
-  upload: PhotoUpload;
+  @Input() upload: PhotoUpload;
+
+  @Output() completeUploadEvent = new EventEmitter<Photo>();
+
   uploadFinished: boolean = false;
   photo: Photo;
   uploadProgress: Observable<number>;
-  @Output()
-  completeUploadEvent = new EventEmitter<Photo>();
-
+  
   constructor(
     private photosService: PhotosService,
   ) { }

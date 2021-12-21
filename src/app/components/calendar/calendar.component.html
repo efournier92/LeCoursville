@@ -1,4 +1,5 @@
 <div *ngIf="user && user.name">
+
   <div class="d-flex mt-2 calendar-checkbox-tools-container">
     <div class="col-xs-8 calendar-checkbox-container">
       <mat-checkbox class="calendar-checkbox" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
@@ -15,6 +16,7 @@
       </button>
     </div>
   </div>
+
   <div class="d-flex mt-1 justify-content-between calendar-date-tools-container">
     <div>
       <mat-form-field class="month-select-container">
@@ -27,7 +29,8 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field class="year-select-container ml-2">
-        <mat-select placeholder="Year" value="{{ selectedYear.toString() }}" (selectionChange)="changeSelectedYear($event)">
+        <mat-select placeholder="Year" value="{{ selectedYear.toString() }}"
+          (selectionChange)="changeSelectedYear($event)">
           <div *ngFor="let year of years">
             <mat-option [value]="year">
               {{ year }}
@@ -38,19 +41,22 @@
     </div>
     <div class="d-flex justify-content-center calendar-print-button-container">
       <button mat-button (click)="printPdf()">
-        <mat-icon style="margin-right:4px">print</mat-icon> Print
+        <mat-icon class="calendar-print-button-icon">print</mat-icon> Print
       </button>
     </div>
   </div>
-  <div class="d-flex justify-content-center" style="margin-bottom: 1;">
+
+  <div class="d-flex justify-content-center">
     <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
-      [(viewDate)]="viewDate" style="cursor: pointer;width:2em;height:2em;">
-      <mat-icon style="font-size:2em;width:1em;height:1em;">keyboard_arrow_left</mat-icon>
+      [(viewDate)]="viewDate" class="calendar-arrow-button-container">
+      <mat-icon class="calendar-arrow-button">keyboard_arrow_left</mat-icon>
     </div>
     <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
-      [(viewDate)]="viewDate" style="cursor: pointer;width:2em;height:2em;">
-      <mat-icon style="font-size:2em;width:1em;height:1em;">keyboard_arrow_right</mat-icon>
+      [(viewDate)]="viewDate" class="calendar-arrow-button-container">
+      <mat-icon class="calendar-arrow-button">keyboard_arrow_right</mat-icon>
+    </div>
   </div>
-  </div>
-  <app-calendar-view [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" style="margin:auto"></app-calendar-view>
+
+  <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events">
+  </app-calendar-view>
 </div>

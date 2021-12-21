@@ -21,17 +21,15 @@ declare interface HtmlInput extends HTMLElement {
   styleUrls: ['./chat-edit.component.scss']
 })
 export class ChatEditComponent implements OnInit {
-  user: User;
-  highlights: Highlight = new Highlight();
-  @Input()
-  message: Message;
-  @Input()
-  parent: Message;
-  @Output()
-  updateParentEvent: EventEmitter<Object> = new EventEmitter();
-  @Output()
-  cancelEditEvent: EventEmitter<Object> = new EventEmitter();
+  @Input() message: Message;
+  @Input() parent: Message;
+
+  @Output() updateParentEvent: EventEmitter<Object> = new EventEmitter();
+  @Output() cancelEditEvent: EventEmitter<Object> = new EventEmitter();
+
   @ViewChild('autosize')
+  user: User;
+  highlights: Highlight = new Highlight();  
   autosize: CdkTextareaAutosize;
   photoUpload: any;
   isSaving: boolean = false;

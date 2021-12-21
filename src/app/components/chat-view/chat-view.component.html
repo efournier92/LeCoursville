@@ -39,9 +39,9 @@
       <span class="calendar-icon-label d-flex justify-content-center">Edit</span>
     </div>
   </div>
-  <mat-divider [vertical]="true" style="width:2px; padding: 0;"></mat-divider>
-  <div class="col-9" style="margin-left:6px">
-    <mat-card-content class="col-9" *ngIf="message.isDeleted" style="margin-left:10px;">
+  <mat-divider class="chat-divider-vertical" [vertical]="true"></mat-divider>
+  <div class="chat-view-message-container col-9">
+    <mat-card-content class="chat-view-message-deleted-container col-9" *ngIf="message.isDeleted">
       <mat-card-title>
         <mat-card-subtitle class="chat-message-author-name">
           <i>This message was deleted.</i>

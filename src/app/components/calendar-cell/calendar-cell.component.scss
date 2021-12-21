@@ -1,8 +1,25 @@
 .calendar-cell-container {
-  // margin-top: -12px;
-  // margin-bottom: -8px;
+  margin-left: 0.75em;
   font-size: 1em;
   font-weight: 500;
+}
+
+.calendar-cell-event-container {
+  margin-bottom: 0.3em;
+}
+
+.calendar-years-since-container {
+  line-height: 1em;
+  margin-right: 0.75em;
+}
+
+.calendar-years-since-span {
+  margin-top: -2px;
+}
+
+.calendar-event-title-container {
+  float: right;
+  line-height: 1em;
 }
 
 .calendar-icon {
@@ -14,15 +31,11 @@
 }
 
 .anniversary-color {
-  color: #B71C1C;
+  color: #b71c1c;
 }
 
 .day-cell-container {
   margin-top: 0.55em;
-}
-
-.years-since-span {
-  margin-top: -2px;
 }
 
 .event-title-container {
