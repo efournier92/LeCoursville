@@ -19,10 +19,10 @@ export class CalendarPrinterComponent implements OnInit {
   allEvents: RecurringEvent[];
   events: RecurringEvent[];
   viewYears: Array<string>;
-  shouldPrintBirthdays: boolean = true;
-  shouldPrintAnniversaries: boolean = true;
+  shouldPrintBirthdays = true;
+  shouldPrintAnniversaries = true;
   selectedYear: number;
-  printProgress: number = 0;
+  printProgress = 0;
   printAction: string;
   pdf: jsPDF;
 
@@ -46,7 +46,7 @@ export class CalendarPrinterComponent implements OnInit {
   }
 
   downloadPdf() {
-    this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`)
+    this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`);
   }
 
   printPdf() {
@@ -57,8 +57,9 @@ export class CalendarPrinterComponent implements OnInit {
   async createPdf() {
     this.refreshPrintJob();
 
-    for (let i = 0; i < 12; i++)
+    for (let i = 0; i < 12; i++) {
       await this.captureNextMonth();
+    }
 
     this.finishPrintJob();
   }
@@ -79,8 +80,9 @@ export class CalendarPrinterComponent implements OnInit {
   }
 
   prepareNextPage() {
-    if (!this.isFirstMonth())
+    if (!this.isFirstMonth()) {
       this.addPage();
+    }
 
     this.updateCalendarMonth();
     this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
@@ -88,7 +90,7 @@ export class CalendarPrinterComponent implements OnInit {
   }
 
   isFirstMonth(): boolean {
-    return this.activeDate.getMonth() == 0;
+    return this.activeDate.getMonth() === 0;
   }
 
   finishPrintJob() {
@@ -102,7 +104,7 @@ export class CalendarPrinterComponent implements OnInit {
   }
 
   updateCalendarMonth() {
-    this.activeDate = new Date(this.activeDate.setMonth(this.activeDate.getMonth() + 1))
+    this.activeDate = new Date(this.activeDate.setMonth(this.activeDate.getMonth() + 1));
   }
 
   updateProgressBar() {
@@ -118,23 +120,25 @@ export class CalendarPrinterComponent implements OnInit {
         const imgHeight = 8;
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        let leftMargin = 0.45;
-        let topMargin = 0.45;
+        const leftMargin = 0.45;
+        const topMargin = 0.45;
 
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
       }
-    )
+    );
   }
 
   updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
-    if (!events) return;
+    if (!events) { return; }
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
-      if (event.type === 'birth' && birthdays === false)
+      if (event.type === 'birth' && birthdays === false) {
         continue;
-      if (event.type === 'anniversary' && anniversaries === false)
+      }
+      if (event.type === 'anniversary' && anniversaries === false) {
         continue;
-      let date = new Date(event.date);
+      }
+      const date = new Date(event.date);
       date.setFullYear(year);
       event.start = date;
       event.date = new Date(event.date);

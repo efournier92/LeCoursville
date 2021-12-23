@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FilterPipe } from 'ngx-filter-pipe';
 import { Contact } from 'src/app/models/contact';
-import { families } from 'src/app/constants/families';
+import { AppSettings } from 'src/environments/app-settings';
 import { AuthService } from 'src/app/services/auth.service';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { User } from 'src/app/models/user';
@@ -16,10 +16,10 @@ import { ContactsPrinterService } from 'src/app/services/contacts-printer.servic
 export class ContactsComponent implements OnInit {
   user: User;
   contacts: Contact[] = [];
-  searchTerm: string = '';
+  searchTerm = '';
   filteredContacts: Contact[] = [];
-  family: string = '';
-  families: string[] = families;
+  family = '';
+  families: string[] = AppSettings.families;
 
   constructor(
     private contactsService: ContactsService,
@@ -38,26 +38,26 @@ export class ContactsComponent implements OnInit {
     this.contactsService.userContacts.subscribe(contacts => {
       this.contacts = contacts;
       this.filteredContacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-    })
+    });
   }
 
   switchFamily(family: string): void {
-    this.filteredContacts = this.filter.transform(this.contacts, { family: family });
+    this.filteredContacts = this.filter.transform(this.contacts, { family });
   }
 
   newContact(): void {
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to add this contact to LeCoursville?",
+      'Are You Sure?',
+      'Do you want to add this contact to LeCoursville?',
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
-          let contact: Contact = new Contact();
+          const contact: Contact = new Contact();
           this.contactsService.newContact(contact);
         }
       }
-    )
+    );
   }
 
   filterContacts(event: any): void {

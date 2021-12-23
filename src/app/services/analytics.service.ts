@@ -13,12 +13,12 @@ export class AnalyticsService {
   constructor(
     private analytics: AngularFireAnalytics,
     private authService: AuthService,
-  ) { 
+  ) {
     this.authService.userObservable.subscribe(
       (user: User) => {
         this.user = user;
       }
-    )
+    );
   }
 
   logEvent(name: string, data: any) {
@@ -27,19 +27,19 @@ export class AnalyticsService {
 
   logPageView(pageName: string) {
     const data = {
-      'page': pageName,
-      'user_id': this.user.id,
-    }
-    this.logEvent("page_view", data);
+      page: pageName,
+      user_id: this.user.id,
+    };
+    this.logEvent('page_view', data);
   }
 
   logMediaSelect(media: Media) {
     const data = {
-      'id': media.id,
-      'name': media.name,
-      'user_id': this.user.id,
+      id: media.id,
+      name: media.name,
+      user_id: this.user.id,
     };
 
-    this.logEvent("media_selection", data);
+    this.logEvent('media_selection', data);
   }
 }

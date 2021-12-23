@@ -1,4 +1,4 @@
-import { User } from "src/app/models/user";
+import { User } from 'src/app/models/user';
 
 export class Like {
   userId: string;
@@ -33,7 +33,16 @@ export class Message {
   isDeleted: boolean;
   isSticky: boolean;
 
-  constructor(title: string, body: string, attachmentUrl: string, authorId: string, authorName: string, isReply: boolean, isEditable: boolean, replyLevel: number) {
+  constructor(
+    title: string,
+    body: string,
+    attachmentUrl: string,
+    authorId: string,
+    authorName: string,
+    isReply: boolean,
+    isEditable: boolean,
+    replyLevel: number
+  ) {
     this.title = title;
     this.body = body;
     this.attachmentUrl = attachmentUrl;

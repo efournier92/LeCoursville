@@ -1,16 +1,16 @@
-import { MediaConstants } from "src/app/constants/media-constants";
-import { Media } from "src/app/models/media/media";
+import { MediaConstants } from 'src/app/constants/media-constants';
+import { Media } from 'src/app/models/media/media';
 
 export class PhotoAlbum extends Media {
     listing: string[];
 
     constructor(
-        id: string = "",
-        name: string = "",
-        url: string = "",
-        icon: string = "",
-        date: string = "",
-        fileName: string = "",
+        id: string = '',
+        name: string = '',
+        url: string = '',
+        icon: string = '',
+        date: string = '',
+        fileName: string = '',
         photos: string[] = new Array<string>(),
       ) {
         const type = MediaConstants.PHOTO_ALBUM.id;

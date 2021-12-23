@@ -1,10 +1,10 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
 import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
-import { CalendarService, Months } from 'src/app/services/calendar.service'
+import { CalendarService, Months } from 'src/app/services/calendar.service';
 import { RecurringEvent } from 'src/app/services/calendar.service';
 import { Calendar } from 'src/app/models/calendar';
 import { AuthService } from 'src/app/services/auth.service';
@@ -18,8 +18,9 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.scss']
 })
-export class CalendarComponent {
+export class CalendarComponent implements OnInit {
   @Output() refreshView = new EventEmitter();
+
   refresh: Subject<any> = new Subject();
   user: User;
   view = CalendarView.Month;
@@ -30,8 +31,8 @@ export class CalendarComponent {
   selectedYear: number;
   allEvents: RecurringEvent[] = new Array<RecurringEvent>();
   events: RecurringEvent[] = new Array<RecurringEvent>();
-  showBirthdays: boolean = true;
-  showAnniversaries: boolean = true;
+  showBirthdays = true;
+  showAnniversaries = true;
   allCalendars: Array<Calendar>;
 
   constructor(
@@ -49,69 +50,70 @@ export class CalendarComponent {
     const now = new Date();
     this.selectedYear = now.getFullYear();
     const monthIndex: number = now.getMonth();
-    let monthName = this.months[monthIndex];
-    this.viewMonth = monthName;
+    this.viewMonth = this.months[monthIndex];
     this.auth.userObservable.subscribe(
       (user: User) => {
         this.user = user;
       }
-    )
+    );
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
         this.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
       }
-    )
+    );
     this.calendarService.calendarsObservable.subscribe(
       (calendars: Array<Calendar>) => {
         this.allCalendars = calendars;
       }
-    )
+    );
   }
 
   toggleBirthdays($event: any): void {
-    let showBirthdays = $event.checked;
+    const showBirthdays = $event.checked;
     this.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent("calendar_birthdays_toggle", $event)
+    this.analyticsService.logEvent('calendar_birthdays_toggle', $event);
   }
 
   toggleAnniversaries($event: any): void {
-    let showAnniversaries = $event.checked;
+    const showAnniversaries = $event.checked;
     this.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
-    this.analyticsService.logEvent("calendar_anniversaires_toggle", $event)
+    this.analyticsService.logEvent('calendar_anniversaires_toggle', $event);
   }
 
   changeViewMonth($event: any): void {
-    let monthName = $event.value;
+    const monthName = $event.value;
     this.viewDate = new Date(monthName + '1,' + this.selectedYear);
-    this.analyticsService.logEvent("calendar_view_month_change", $event)
+    this.analyticsService.logEvent('calendar_view_month_change', $event);
   }
 
   changeSelectedYear($event: any): void {
     this.selectedYear = $event.value;
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
     this.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent("calendar_selected_year_change", $event)
+    this.analyticsService.logEvent('calendar_selected_year_change', $event);
   }
 
   changeView(date: Date): void {
     this.viewMonth = this.months[date.getMonth()];
-    let selectedYear = date.getFullYear();
+    const selectedYear = date.getFullYear();
     if (selectedYear !== this.selectedYear) {
       this.selectedYear = selectedYear;
       this.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
-    this.analyticsService.logEvent("calendar_change_view", date)
+    this.analyticsService.logEvent('calendar_change_view', date);
   }
 
   updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
     this.events = new Array<RecurringEvent>();
     for (const event of events) {
-      if (event.type === 'birth' && birthdays === false)
+      if (event.type === 'birth' && birthdays === false) {
         continue;
-      if (event.type === 'anniversary' && anniversaries === false)
+      }
+      if (event.type === 'anniversary' && anniversaries === false) {
         continue;
-      let date = new Date(event.date);
+      }
+      const date = new Date(event.date);
       date.setFullYear(year);
       event.start = date;
       event.date = new Date(event.date);
@@ -129,40 +131,39 @@ export class CalendarComponent {
     });
     dialogRef.afterClosed().subscribe(
       (result: RecurringEvent) => {
-        if (!result) return;
+        if (!result) { return; }
         const confirmPrompRef = this.confirmPrompt.openDialog(
-          "Are You Sure?",
-          "Do you want to add this event to LeCoursville?",
+          'Are You Sure?',
+          'Do you want to add this event to LeCoursville?',
         );
         confirmPrompRef.afterClosed().subscribe(
           (confirmedAction: boolean) => {
             if (confirmedAction) {
-              let event = result;
-              if (event.id) {
-                this.calendarService.updateCalendarEvent(event);
+              if (result.id) {
+                this.calendarService.updateCalendarEvent(result);
               } else {
-                this.calendarService.addCalendarEvent(event);
+                this.calendarService.addCalendarEvent(result);
               }
-              this.refreshCalendarView;
+              this.refreshCalendarView();
             }
           }
-        )
+        );
       }
-    )
+    );
   }
 
   newEvent(): void {
-    let event = new Object as RecurringEvent;
+    const event = new Object as RecurringEvent;
     event.isLiving = true;
     this.openDialog(event);
-    this.analyticsService.logEvent("calendar_create_new_event", event)
+    this.analyticsService.logEvent('calendar_create_new_event', event);
   }
 
   saveEvents(): void {
     for (const event of this.events) {
       this.calendarService.addCalendarEvent(event);
     }
-    this.analyticsService.logEvent("calendar_save_events", event)
+    this.analyticsService.logEvent('calendar_save_events', {});
   }
 
   printPdf(): void {

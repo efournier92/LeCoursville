@@ -18,12 +18,12 @@ export class CalendarCellComponent implements OnInit {
   ngOnInit(): void { }
 
   getYearsSince(event: RecurringEvent): number {
-    let eventYear: number = event.date.getUTCFullYear();
+    const eventYear: number = event.date.getUTCFullYear();
     return this.calendarService.getYearsSince(eventYear, this.selectedYear);
   }
 
   shouldDisplayEvent(): boolean {
-    return !this.isNonLivingAnniversary()
+    return !this.isNonLivingAnniversary();
   }
 
   private isNonLivingAnniversary(): boolean {

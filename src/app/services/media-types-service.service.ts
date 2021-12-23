@@ -6,57 +6,58 @@ import { MediaConstants, MediaType } from '../constants/media-constants';
 })
 export class MediaTypesService {
 
-  constructor() { 
-    
-  }
+  constructor() { }
 
   getAllTypes(): string[] {
-    let output = new Array<string>();
+    const output = new Array<string>();
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
         output.push(type.id);
       }
-    )
+    );
 
     return output;
   }
 
   getVisibleTypes(): MediaType[] {
-    let output = new Array<MediaType>();
+    const output = new Array<MediaType>();
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
-        if (!type.isHiddenByDefault)
+        if (!type.isHiddenByDefault) {
           output.push(type);
+        }
       }
-    )
+    );
 
     return output;
   }
 
   getHiddenTypeIds(): string[] {
-    let output = new Array<string>();
+    const output = new Array<string>();
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
-        if (type.isHiddenByDefault)
+        if (type.isHiddenByDefault) {
           output.push(type.id);
+        }
       }
-    )
+    );
 
     return output;
   }
 
   getSelectedTypes(allTypes: MediaType[]): string[] {
-    let output = new Array<string>();
+    const output = new Array<string>();
 
     allTypes.forEach(
       type => {
-        if (type.isSelected)
+        if (type.isSelected) {
           output.push(type.id);
+        }
       }
-    )
+    );
 
     return output;
   }

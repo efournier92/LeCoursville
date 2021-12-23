@@ -24,15 +24,15 @@ export class ChatEditComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
 
-  @Output() updateParentEvent: EventEmitter<Object> = new EventEmitter();
-  @Output() cancelEditEvent: EventEmitter<Object> = new EventEmitter();
+  @Output() updateParentEvent: EventEmitter<object> = new EventEmitter();
+  @Output() cancelEditEvent: EventEmitter<object> = new EventEmitter();
 
   @ViewChild('autosize')
   user: User;
-  highlights: Highlight = new Highlight();  
+  highlights: Highlight = new Highlight();
   autosize: CdkTextareaAutosize;
   photoUpload: any;
-  isSaving: boolean = false;
+  isSaving = false;
 
   constructor(
     private chatService: ChatService,
@@ -47,7 +47,7 @@ export class ChatEditComponent implements OnInit {
   ngOnInit(): void {
     this.authService.userObservable.subscribe(
       (user: User) => this.user = user
-    )
+    );
   }
 
   markMessageSaved(message: Message): Message {
@@ -58,8 +58,8 @@ export class ChatEditComponent implements OnInit {
 
   saveMessage(message: Message): void {
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to post this message to LeCoursville?",
+      'Are You Sure?',
+      'Do you want to post this message to LeCoursville?',
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
@@ -71,8 +71,9 @@ export class ChatEditComponent implements OnInit {
           message = this.markMessageSaved(message);
           message.id = this.db.createPushId();
           if (message.isReply) {
-            if (this.parent)
+            if (this.parent) {
               this.updateParent();
+            }
           } else if (!message.id) {
             this.chatService.createMessage(message);
           } else {
@@ -80,7 +81,7 @@ export class ChatEditComponent implements OnInit {
           }
         }
       }
-    )
+    );
   }
 
   saveMessageWithPhoto(message: Message): void {
@@ -89,14 +90,14 @@ export class ChatEditComponent implements OnInit {
     const uploadFileType = this.photoUpload.type;
     photoUpload.onUrlAvailable.subscribe(
       (url: string) => {
-        if (url === '') return;
+        if (url === '') { return; }
         message.attachmentUrl = url;
         message.attachmentType = uploadFileType;
         message = this.markMessageSaved(message);
         this.chatService.createMessage(message);
         this.isSaving = false;
       }
-    )
+    );
   }
 
   isMessageAuthor(message: Message): boolean {
@@ -121,8 +122,8 @@ export class ChatEditComponent implements OnInit {
 
   deleteMessage(): void {
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to remove this message from LeCoursville?",
+      'Are You Sure?',
+      'Do you want to remove this message from LeCoursville?',
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
@@ -144,13 +145,13 @@ export class ChatEditComponent implements OnInit {
           this.message.isEditable = false;
         }
       }
-    )
+    );
   }
 
   restoreMessage(): void {
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to restore this message to LeCoursville?",
+      'Are You Sure?',
+      'Do you want to restore this message to LeCoursville?',
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
@@ -159,7 +160,7 @@ export class ChatEditComponent implements OnInit {
           this.message.isEditable = false;
         }
       }
-    )
+    );
   }
 
   updateParent(): void {
@@ -174,7 +175,7 @@ export class ChatEditComponent implements OnInit {
     this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
   }
 
-  onInputFileChange(files: any): void {
+  inputFileChangeEvent(files: any): void {
     this.photoUpload = files[0];
   }
 }

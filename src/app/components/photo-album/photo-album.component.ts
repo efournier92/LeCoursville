@@ -1,12 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, AfterViewChecked } from '@angular/core';
 import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
 import { Media } from 'src/app/models/media/media';
 import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import { Photo } from 'src/app/models/photo';
-import { PhotosService } from 'src/app/services/photos.service';
-import lgZoom from 'lightgallery/plugins/zoom'
-import lgAutoplay from 'lightgallery/plugins/autoplay'
+import lgZoom from 'lightgallery/plugins/zoom';
+import lgAutoplay from 'lightgallery/plugins/autoplay';
 import { MediaService } from 'src/app/services/media.service';
 
 @Component({
@@ -14,16 +13,25 @@ import { MediaService } from 'src/app/services/media.service';
   templateUrl: './photo-album.component.html',
   styleUrls: ['./photo-album.component.scss']
 })
-export class PhotoAlbumComponent implements OnInit {
-  photos: Photo[] = new Array<Photo>();
+export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
+
+  constructor(
+    private mediaService: MediaService
+  ) { }
+  photos: Media[] = new Array<Media>();
   private lightGallery: LightGallery;
   @Input() album: PhotoAlbum;
   needsRefresh: any;
-  
-  constructor(
-    private photoService: PhotosService,
-    private mediaService: MediaService
-  ) { }
+
+  lightGallerySettings = {
+    plugins: [lgZoom, lgAutoplay],
+    counter: true,
+    thumbnail: true,
+    showZoomInOutIcons: true,
+    autoplay: true,
+    progressBar: true,
+    showCloseIcon: true
+  };
 
   ngOnInit(): void {
     this.album.listing.forEach(
@@ -49,15 +57,5 @@ export class PhotoAlbumComponent implements OnInit {
 
   onLightGalleryInit = (detail: InitDetail): void => {
     this.lightGallery = detail.instance;
-  };
-  
-  lightGallerySettings = {
-    plugins: [lgZoom, lgAutoplay],
-    counter: true,
-    thumbnail: true,
-    showZoomInOutIcons: true,
-    autoplay: true,
-    progressBar: true,
-    showCloseIcon: true
-  };
+  }
 }

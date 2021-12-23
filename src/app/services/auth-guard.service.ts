@@ -16,7 +16,7 @@ export class AuthGuardService implements CanActivate {
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user,
-    )
+    );
   }
 
   canActivate(): boolean {
@@ -24,7 +24,6 @@ export class AuthGuardService implements CanActivate {
       this.routingService.NavigateToRoute('/');
       return false;
     }
-    
     return true;
   }
 }

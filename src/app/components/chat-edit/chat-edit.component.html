@@ -71,7 +71,7 @@
         <div class="d-flex align-items-end" *ngIf="!message.isReply">
           <app-file-input [matIcon]="'attach_file'" [inputMessage]="'Attach Photo'" [shouldShowLabel]="false"
             [shouldShowClearButton]="false" [shouldAllowMultipleFiles]="false"
-            (onInputFileChange)="onInputFileChange($event)">
+            (inputFileChangeEvent)="inputFileChangeEvent($event)">
           </app-file-input>
         </div>
       </mat-card-content>

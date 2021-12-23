@@ -13,10 +13,10 @@ export class PhotoUploadProgressComponent implements OnInit {
 
   @Output() completeUploadEvent = new EventEmitter<Photo>();
 
-  uploadFinished: boolean = false;
+  uploadFinished = false;
   photo: Photo;
   uploadProgress: Observable<number>;
-  
+
   constructor(
     private photosService: PhotosService,
   ) { }
@@ -32,13 +32,13 @@ export class PhotoUploadProgressComponent implements OnInit {
             (photo: Photo) => {
               this.photo = photo;
               setTimeout(() => {
-                if (!this.photo.url) return;
+                if (!this.photo.url) { return; }
                 this.completeUploadEvent.emit(this.photo);
               }, 7000);
             }
           );
         }
       }
-    )
+    );
   }
 }

@@ -22,10 +22,10 @@ class ContactsPrintConfig {
   rightColumnName: string;
 
   public constructor() {
-    this.currentLine;
-    this.currentColumn;
+    this.currentLine = 0;
     this.leftColumnName = 'left';
     this.rightColumnName = 'right';
+    this.currentColumn = this.leftColumnName;
     this.lineHeight = 22;
     this.positionLeft = 60;
     this.leftLine = 0;
@@ -36,7 +36,7 @@ class ContactsPrintConfig {
     this.maxLinesPerPage = 600;
     this.rightColumnDistanceFromLeft = 350;
     this.leftColumnDistanceFromLeft = 60;
-  };
+  }
 }
 
 @Injectable({
@@ -82,15 +82,12 @@ export class ContactsPrinterService {
   }
 
   private renderAllContactsToPage() {
-    for (let contact of this.contactsToPrint) {
+    for (const contact of this.contactsToPrint) {
       this.renderContactToPage(contact);
     }
   }
 
   private prepareFonts() {
-    openSansBold;
-    openSansLight;
-    openSansRegular;
     this.pdf.getFontList();
   }
 
@@ -101,7 +98,7 @@ export class ContactsPrinterService {
 
   private setFontForBody() {
     this.setFontWeightToRegular();
-    this.setFontSizeToRegular()
+    this.setFontSizeToRegular();
   }
 
   private setFontWeightToBold() {
@@ -135,16 +132,19 @@ export class ContactsPrinterService {
 
     this.printConfig.currentLine += this.printConfig.lineHeight;
 
-    if (contact.addresses)
+    if (contact.addresses) {
       this.renderAddressToPage(contact.addresses);
+    }
 
     this.setFontSizeToSmall();
 
-    if (contact.phones)
+    if (contact.phones) {
       this.renderUserPhones(contact.phones);
+    }
 
-    if (contact.emails)
+    if (contact.emails) {
       this.printUserEmails(contact.emails);
+    }
 
     this.setFontSizeToRegular();
 
@@ -152,7 +152,7 @@ export class ContactsPrinterService {
   }
 
   private renderAddressToPage(addresses: Address[]) {
-    for (let address of addresses) {
+    for (const address of addresses) {
       this.pdf.text(address.street, this.printConfig.positionLeft, this.printConfig.currentLine);
       this.printConfig.currentLine += this.printConfig.lineHeight;
       this.pdf.text(`${address.city}, ${address.state}, ${address.zip}`, this.printConfig.positionLeft, this.printConfig.currentLine);
@@ -161,13 +161,14 @@ export class ContactsPrinterService {
   }
 
   private renderUserPhones(phones: Phone[]) {
-    for (let phone of phones) {
-      if (!phone || !phone.number)
+    for (const phone of phones) {
+      if (!phone || !phone.number) {
         continue;
+      }
 
-      var startingPositionLeft = this.printConfig.positionLeft;
+      const startingPositionLeft = this.printConfig.positionLeft;
 
-      this.printUserEmailInfo(phone.info, "Phone:");
+      this.printUserEmailInfo(phone.info, 'Phone:');
 
       this.setFontWeightToRegular();
 
@@ -181,13 +182,14 @@ export class ContactsPrinterService {
   }
 
   private printUserEmails(emails: Email[]) {
-    for (let email of emails) {
-      if (!email || !email.address)
+    for (const email of emails) {
+      if (!email || !email.address) {
         continue;
+      }
 
-      var startingPositionLeft = this.printConfig.positionLeft;
+      const startingPositionLeft = this.printConfig.positionLeft;
 
-      this.printUserEmailInfo(email.info, "Email:");
+      this.printUserEmailInfo(email.info, 'Email:');
 
       this.setFontWeightToRegular();
 
@@ -220,8 +222,9 @@ export class ContactsPrinterService {
       this.prepareToPrintInLeftColumn();
     }
 
-    if (this.shouldStartNewPage())
+    if (this.shouldStartNewPage()) {
       this.startNewPage();
+    }
   }
 
   private prepareToPrintInRightColumn() {
@@ -233,8 +236,9 @@ export class ContactsPrinterService {
 
   private prepareToPrintInLeftColumn() {
     this.printConfig.currentColumn = this.printConfig.leftColumnName;
-    if (this.printConfig.leftLine && this.printConfig.leftLine > this.printConfig.currentLine)
+    if (this.printConfig.leftLine && this.printConfig.leftLine > this.printConfig.currentLine) {
       this.printConfig.currentLine = this.printConfig.leftLine;
+    }
     this.printConfig.positionLeft = this.printConfig.leftColumnDistanceFromLeft;
     this.printConfig.currentLine += this.printConfig.spaceBetweenContacts;
   }

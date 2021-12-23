@@ -4,8 +4,8 @@ import { CalendarService, RecurringEvent } from 'src/app/services/calendar.servi
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
 
 export interface DialogData {
-  header: string,
-  message: string,
+  header: string;
+  message: string;
 }
 
 @Component({
@@ -30,8 +30,8 @@ export class CalendarDialogComponent implements OnInit {
 
   deleteEvent(event: RecurringEvent): void {
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to delete this event from LeCoursville?",
+      'Are You Sure?',
+      'Do you want to delete this event from LeCoursville?',
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
@@ -40,7 +40,7 @@ export class CalendarDialogComponent implements OnInit {
           this.dialogRef.close();
         }
       }
-    )
+    );
   }
 
   onCancel(): void {

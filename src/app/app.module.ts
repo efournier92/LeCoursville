@@ -1,4 +1,4 @@
-import { AuthConfig } from 'src/app/auth.config'
+import { AuthConfig } from 'src/app/auth.config';
 import { environment } from 'src/environments/environment';
 import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { NgModule } from '@angular/core';
@@ -14,7 +14,7 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
-import { ClipboardModule } from '@angular/cdk/clipboard'; 
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -146,4 +146,5 @@ import { AudioComponent } from './audio/audio.component';
     ContactEditComponent,
   ]
 })
+
 export class AppModule { }

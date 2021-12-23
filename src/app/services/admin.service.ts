@@ -11,6 +11,9 @@ export class AdminService {
   user: User;
   allUsers: AngularFireList<User>;
 
+  private allUsersSource = new BehaviorSubject({});
+  allUsersObservable = this.allUsersSource.asObservable();
+
   constructor(
     private db: AngularFireDatabase,
     private auth: AuthService,
@@ -24,16 +27,13 @@ export class AdminService {
           }
         );
       }
-    )
+    );
   }
 
   getAllUsers(): AngularFireList<User> {
     this.allUsers = this.db.list('users');
     return this.allUsers;
   }
-
-  private allUsersSource = new BehaviorSubject({});
-  allUsersObservable = this.allUsersSource.asObservable();
 
   updateAllUsersEvent(users: User[]): void {
     this.allUsersSource.next(users);

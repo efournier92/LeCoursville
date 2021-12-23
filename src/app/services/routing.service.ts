@@ -16,15 +16,15 @@ export class RoutingService {
   }
 
   NavigateToSignIn() {
-    this.NavigateToRoute("/");
+    this.NavigateToRoute('/');
   }
 
   NavigateToMedia() {
-    this.NavigateToRoute("/media");
+    this.NavigateToRoute('/media');
   }
 
   NavigateToAudio() {
-    this.NavigateToRoute("/audio");
+    this.NavigateToRoute('/audio');
   }
 
   NavigateToRouteWithoutLocationChange(route: string) {
@@ -46,20 +46,30 @@ export class RoutingService {
   }
 
   private getMediaIdFromQueryParams(params) {
-    const idFromParams = params["id"];
-    if (idFromParams)
+    const idFromParams = params.id;
+    if (idFromParams) {
       return idFromParams;
+    }
   }
 
   updateQueryParams(selectedId: string) {
     const queryParams: Params = { id: selectedId };
-  
+
     this.router.navigate(
-      [], 
+      [],
       {
         relativeTo: this.activatedRoute,
-        queryParams: queryParams, 
+        queryParams
         // queryParamsHandling: 'merge', // remove to replace all query params by provided
+      });
+  }
+
+  clearQueryParams() {
+    this.router.navigate(
+      [],
+      {
+        relativeTo: this.activatedRoute,
+        queryParams: null,
       });
   }
 }

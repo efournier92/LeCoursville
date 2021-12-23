@@ -1,9 +1,9 @@
 <div class="row justify-content-center">
     <div class="row justify-content-end">
-        <button mat-mini-fab matTooltip="Copy Link" color="secondary" class="m-1" [cdkCopyToClipboard]="getShareableLink()">
+        <button *ngIf="shouldShowShareableLinkButton()" mat-mini-fab matTooltip="Copy Link" color="secondary" class="m-1" [cdkCopyToClipboard]="getShareableLink()">
             <mat-icon>share</mat-icon>
         </button>
-        <button mat-mini-fab matTooltip="Download Link" color="secondary" class="m-1" (click)="downloadSelectedMedia()">
+        <button *ngIf="shouldShowDownloadButton()" mat-mini-fab matTooltip="Download Link" color="secondary" class="m-1" (click)="downloadSelectedMedia()">
             <mat-icon>download</mat-icon>
         </button>
     </div>
@@ -42,4 +42,4 @@
     </button>    
 </div>
     
-<app-media-list (mediaClickEvent)="navigateToSignIn($event)" [mediaType]="mediaType" *ngIf="shouldDisplayMediaList()"></app-media-list>
+<app-media-list (mediaClickEvent)="onMediaSelect($event)" [mediaType]="mediaType" *ngIf="shouldDisplayMediaList()"></app-media-list>

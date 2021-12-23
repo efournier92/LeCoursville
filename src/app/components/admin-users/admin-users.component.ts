@@ -21,10 +21,11 @@ export class AdminUsersComponent implements OnInit {
     this.authService.userObservable.subscribe(
       (user: User) => {
         this.user = user;
-        if (this.user.roles && this.user.roles.super)
+        if (this.user.roles && this.user.roles.super) {
           this.getAllUsers();
+        }
       }
-    )
+    );
   }
 
   getAllUsers(): void {
@@ -33,7 +34,7 @@ export class AdminUsersComponent implements OnInit {
         this.allUsers = allUsers;
         this.sortAllUsersBy(this.sortByDateAdded);
       }
-    )
+    );
   }
 
   updateUser(user: User): void {
@@ -46,8 +47,9 @@ export class AdminUsersComponent implements OnInit {
   }
 
   sortAllUsersBy(sortFunction: any): void {
-    if (this.allUsers.constructor === Array)
+    if (this.allUsers.constructor === Array) {
       this.allUsers = this.allUsers.sort(sortFunction);
+    }
   }
 
   sortByDateAdded(a: User, b: User): number {

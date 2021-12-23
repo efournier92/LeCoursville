@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media/video';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser'; 
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
@@ -9,7 +9,7 @@ import { RoutingService } from 'src/app/services/routing.service';
   templateUrl: './video-player-drive-iframe.component.html',
   styleUrls: ['./video-player-drive-iframe.component.scss']
 })
-export class VideoPlayerDriveIframeComponent implements OnInit {
+export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   @Input() video: Video;
   @Input() events: Observable<Video>;
 
@@ -17,7 +17,7 @@ export class VideoPlayerDriveIframeComponent implements OnInit {
   videogular: any;
   isLoading: boolean;
   videoUrl: SafeResourceUrl;
-  
+
   private eventsSubscription: Subscription;
 
   constructor(

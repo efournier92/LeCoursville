@@ -1,8 +1,8 @@
 export class Highlight {
-  like: boolean = false;
-  reply: boolean = false;
-  edit: boolean = false;
-  cancel: boolean = false;
-  send: boolean = false;
-  sticky: boolean = false;
+  like = false;
+  reply = false;
+  edit = false;
+  cancel = false;
+  send = false;
+  sticky = false;
 }

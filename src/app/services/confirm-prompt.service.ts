@@ -15,8 +15,8 @@ export class ConfirmPromptService {
     const dialogRef = this.dialog.open(ConfirmPromptComponent, {
       width: '250px',
       data: {
-        header: header,
-        message: message,
+        header,
+        message,
       },
     });
 

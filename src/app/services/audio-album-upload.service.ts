@@ -6,9 +6,9 @@ import { JsonService } from 'src/app/services/json.service';
 import { MediaService } from 'src/app/services/media.service';
 import { AudioTrack } from '../models/media/audio-track';
 import { PushIdFactory as PushIdService } from './push-id.service';
-@Injectable({
-  providedIn: 'root'
-})
+
+@Injectable({ providedIn: 'root' })
+
 export class AudioAlbumUploadService {
 
   constructor(
@@ -18,26 +18,24 @@ export class AudioAlbumUploadService {
   ) { }
 
   uploadAudioAlbum(album: AudioAlbum): void {
-    var apiKey = environment.googleDriveApiKey;
+    const apiKey = environment.googleApiKey;
 
-    var apiUrl = `https://www.googleapis.com/drive/v3/files?q='${album.ids.location}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
+    const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${album.ids.location}'+in+parents&fields=files(id,+originalFilename)&key=${apiKey}`;
 
-    var jsonString = this.httpGet(apiUrl);
+    const jsonString = this.httpGet(apiUrl);
 
-    var allInfo = JSON.parse(jsonString);
+    const allInfo = JSON.parse(jsonString);
 
-    var files = allInfo.files;
+    const files = allInfo.files;
 
-    var allFilesToUpload = [];
+    const allFilesToUpload = [];
 
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i];
-
-      if (!file) continue;
+    for (const file of files) {
+      if (!file) { continue; }
 
       const id = this.pushIdService.create();
       const name = this.formatFileName(file.originalFilename);
-      let track = new AudioTrack(id, name, file.id);
+      const track = new AudioTrack(id, name, file.id);
 
       track.urls.location = this.getLocationUrlById(file.id);
 
@@ -54,36 +52,35 @@ export class AudioAlbumUploadService {
   }
 
   private httpGet(url: string) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false);
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET', url, false);
     xmlHttp.send(null);
     return xmlHttp.responseText;
   }
 
   private formatFileName(name: string) {
-    if (name.includes(".mp3"))
-      return name.replace(".mp3", "");
+    if (name.includes('.mp3')) {
+      return name.replace('.mp3', '');
+    }
 
     return name;
   }
 
   private getLocationUrlById(id: string): string {
-    if (!id) return "";
+    if (!id) { return ''; }
 
-    return `https://drive.google.com/uc?export=download&id=${id}`
-    // return `https://drive.google.com/file/d/${id}/view?usp=sharing`
-    // return `https://drive.google.com/uc?id=${id}`;
+    return `https://drive.google.com/uc?export=download&id=${id}`;
   }
 
   private getIconUrlById(id: string): string {
-      if (!id) return "";
+      if (!id) { return ''; }
 
       return `https://drive.google.com/uc?id=${id}`;
   }
 
   private getDownloadUrlById(id: string): string {
-      if (!id) return "";
+      if (!id) { return ''; }
 
-      return `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${environment.googleDriveApiKey}`;
+      return `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${environment.googleApiKey}`;
   }
 }

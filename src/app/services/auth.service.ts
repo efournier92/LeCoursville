@@ -24,30 +24,29 @@ export class AuthService {
   ) {
     this.angularFireAuth.authState.subscribe(
       authData => this.getUser(authData)
-    )
+    );
   }
 
   getUser(authData: any): void {
-    if (!authData || !authData.uid) 
-      return;
+    if (!authData || !authData.uid) { return; }
 
     this.userObj = this.db.object(`users/${authData.uid}`);
     this.userObj.valueChanges().subscribe(
       (user: User) => {
         this.setUser(user, authData);
       }
-    )
+    );
   }
 
   getUserNameById(userId: string): string {
-    let userObj = this.db.object(`users/${userId}`);
+    const userObj = this.db.object(`users/${userId}`);
     let user: User;
-    
+
     userObj.valueChanges().subscribe(
-      (user: User) => {
-        user = user;
+      (updatedUser: User) => {
+        user = updatedUser;
       }
-    )
+    );
 
     return user.name;
   }
@@ -73,13 +72,13 @@ export class AuthService {
     this.angularFireAuth.signOut().then(() => {
       this.userObj = undefined;
       this.routingService.RefreshCurrentRoute();
-    })
+    });
   }
-  
+
   openSignOutDialog(): MatDialogRef<ConfirmPromptComponent, any> {
     return this.confirmPrompt.openDialog(
-      "Are You Sure?",
-      "Do you want to sign out of LeCoursville?",
+      'Are You Sure?',
+      'Do you want to sign out of LeCoursville?',
     );
   }
 
@@ -90,6 +89,6 @@ export class AuthService {
           this.signOut();
         }
       }
-    )
+    );
   }
 }

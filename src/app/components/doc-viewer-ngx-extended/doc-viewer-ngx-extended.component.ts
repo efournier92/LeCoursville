@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Media } from 'src/app/models/media/media';
 import { Doc } from 'src/app/models/media/doc';
@@ -8,7 +8,7 @@ import { Doc } from 'src/app/models/media/doc';
   templateUrl: './doc-viewer-ngx-extended.component.html',
   styleUrls: ['./doc-viewer-ngx-extended.component.scss']
 })
-export class DocViewerNgxExtendedComponent implements OnInit {
+export class DocViewerNgxExtendedComponent implements OnInit, OnDestroy {
   @Input() doc: Doc;
   @Input() events: Observable<Media>;
 
@@ -36,5 +36,4 @@ export class DocViewerNgxExtendedComponent implements OnInit {
   onPdfLoaded() {
     this.isLoading = false;
   }
-
 }

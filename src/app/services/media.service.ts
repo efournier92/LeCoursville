@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFireDatabase, AngularFireList, AngularFireObject } from '@angular/fire/database';
+import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Media } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
@@ -13,7 +12,7 @@ import { MediaTypesService } from './media-types-service.service';
 export class MediaService {
   user: any;
   mediaList: AngularFireList<Media>;
-  
+
   private mediaSource: BehaviorSubject<Media[]> = new BehaviorSubject<Media[]>([]);
   mediaObservable: Observable<Media[]> = this.mediaSource.asObservable();
 
@@ -24,16 +23,17 @@ export class MediaService {
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
-        if (user)
+        if (user) {
           this.user = user;
-          
+        }
+
         this.getMedia().valueChanges().subscribe(
           (mediaList: Media[]) => {
             this.updateMediaEvent(mediaList);
           }
         );
       }
-    )
+    );
   }
 
   updateMediaEvent(mediaFiles: Media[]): void {
@@ -41,8 +41,9 @@ export class MediaService {
   }
 
   create(media: Media): void {
-    if (!media || !media.id)
+    if (!media || !media.id) {
       media.id = this.db.createPushId();
+    }
 
     this.mediaList.update(media.id, media);
   }
@@ -53,7 +54,7 @@ export class MediaService {
   }
 
   getById(id: string): Observable<Media> {
-    let mediaObj = this.db.object(`media/${id}`);
+    const mediaObj = this.db.object(`media/${id}`);
     const mediaByIdSource: BehaviorSubject<Media> = new BehaviorSubject<Media>(new Media());
     const mediaByIdObservable: Observable<Media> = mediaByIdSource.asObservable();
 
@@ -62,10 +63,11 @@ export class MediaService {
     }
     mediaObj.valueChanges().subscribe(
       (media: Media) => {
-        if (media && media.id)
+        if (media && media.id) {
           updateMediaEvent(media);
+        }
       }
-    )
+    );
     return mediaByIdObservable;
   }
 
@@ -97,14 +99,14 @@ export class MediaService {
     if (media?.listing?.length > 0) {
       media.listing.forEach((id: string) => {
         this.mediaList.remove(id);
-      })
+      });
     }
 
     this.mediaList.remove(media.id);
   }
 
   loadAllMedia(type: string) {
-    
+
   }
 
   private filterMedia(mediaList: Media[], ): Media[] {
@@ -122,34 +124,38 @@ export class MediaService {
   }
 
   private shouldLoadMediaFile(mediaFile: Media, allMedia: Media[], loadedMedia: Media[]): boolean {
-    return loadedMedia.length < allMedia.length 
-      && !loadedMedia.some(media => media.id === mediaFile.id)
+    return loadedMedia.length < allMedia.length
+      && !loadedMedia.some(media => media.id === mediaFile.id);
   }
 
   private doesAnyKeyIncludeQuery(media: Media, query: string): boolean {
     return Object.keys(media).some(
       (key: string) => {
           let value = media[key];
-          if (!this.isString(value))
+          if (!this.isString(value)) {
             return;
+          }
 
-          if (value)
+          if (value) {
             value = value.toLowerCase();
+          }
 
-          if (query)
+          if (query) {
             query = query.toLowerCase();
+          }
 
           return value && value.includes(query);
     });
   }
 
   private isString(input: any) {
-    return typeof input === "string";
+    return typeof input === 'string';
   }
 
   tryLoadingFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
-    if (this.shouldLoadFirstBatch(allMedia, loadedMedia))
+    if (this.shouldLoadFirstBatch(allMedia, loadedMedia)) {
       loadedMedia = this.loadFirstBatch(allMedia, loadedMedia);
+    }
 
     return this.filterMedia(loadedMedia);
   }
@@ -161,5 +167,4 @@ export class MediaService {
   private loadFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
     return this.loadMoreMedia(10000, allMedia, loadedMedia);
   }
-
 }

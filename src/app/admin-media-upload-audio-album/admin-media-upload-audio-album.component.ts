@@ -55,11 +55,11 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.album = new AudioAlbum();
   }
 
-  onInputCleared(): void {
+  inputClearedEvent(): void {
     console.log("Input cleared");
   }
 
-  onInputFileChange($event: any): void {
+  inputFileChangeEvent($event: any): void {
     console.log("File changed: ", $event);
   }
 

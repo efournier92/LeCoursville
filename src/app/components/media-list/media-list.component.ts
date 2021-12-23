@@ -25,18 +25,20 @@ export class MediaListComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToMediaObservable();
-    
-    if (!this.mediaTypesToShow)
-      this.mediaTypesToShow = this.getDefaultMediaTypes();
 
-    if (this.mediaTypesToShow)
+    if (!this.mediaTypesToShow) {
+      this.mediaTypesToShow = this.getDefaultMediaTypes();
+    }
+
+    if (this.mediaTypesToShow) {
       this.filteredMedia = this.filterAllMediaByType();
     }
+  }
 
   private getDefaultMediaTypes(): string[] {
     return [
       MediaConstants.VIDEO.id,
-      MediaConstants.AUDIO_ALBUM.id, 
+      MediaConstants.AUDIO_ALBUM.id,
       MediaConstants.PHOTO_ALBUM.id,
       MediaConstants.DOC.id
     ];
@@ -45,17 +47,17 @@ export class MediaListComponent implements OnInit {
   subscribeToMediaObservable() {
     this.mediaService.mediaObservable.subscribe(
       (mediaList) => {
-          this.allMedia = mediaList;
-          this.filteredMedia = this.filterAllMediaByType();
+        this.allMedia = mediaList;
+        this.filteredMedia = this.filterAllMediaByType();
       }
-    )
+    );
   }
 
   filterAllMediaByType() {
     return this.mediaService.filterByTypes(this.mediaTypesToShow, this.allMedia);
   }
 
-  getPlaceholderName(mediaType: string): string  {
+  getPlaceholderName(mediaType: string): string {
     return this.mediaIconsService.getPlaceholderNameByMediaType(mediaType);
   }
 

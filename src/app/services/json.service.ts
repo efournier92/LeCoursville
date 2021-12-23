@@ -16,14 +16,17 @@ import { AudioTrack } from '../models/media/audio-track';
   providedIn: 'root'
 })
 export class JsonService {
+  successMessages: string[] = [];
+
+  private successMessagesSource: BehaviorSubject<string[]> = new BehaviorSubject([]);
+  successMessagesObservable: Observable<string[]> = this.successMessagesSource.asObservable();
 
   constructor(
     private mediaService: MediaService,
-    private pushIdFactory: PushIdFactory,
   ) { }
 
   isValidJson(input: string): JsonValidationResponse {
-    let response = new JsonValidationResponse();
+    const response = new JsonValidationResponse();
 
     try {
       JSON.parse(input);
@@ -36,10 +39,6 @@ export class JsonService {
     response.isValid = true;
     return response;
   }
-
-  successMessages: string[] = [];
-  private successMessagesSource: BehaviorSubject<string[]> = new BehaviorSubject([]);
-  successMessagesObservable: Observable<string[]> = this.successMessagesSource.asObservable();
 
   bulkUploadMediaFromJson(mediaArray: any[]): void {
     mediaArray.forEach(mediaFile => {
@@ -65,7 +64,7 @@ export class JsonService {
   private addSuccessMessage(message: string): void {
     this.successMessages.push(message);
     this.successMessagesSource.next(this.successMessages);
-  } 
+  }
 
   private constructMediaObject(mediaFile: Media, newMedia: Media) {
     // newMedia.id = this.pushIdFactory.create();
@@ -134,12 +133,12 @@ export class JsonService {
   }
 
   uploadAudioTracks(tracks: Media[]) {
-    let ids = new Array<string>();
+    const ids = new Array<string>();
 
     tracks.forEach((track: Media) => {
       const trackId = this.uploadAudioTrack(track);
       ids.push(trackId);
-    })
+    });
 
     return ids;
   }
@@ -153,23 +152,25 @@ export class JsonService {
   }
 
   private getIconUrl(mediaFile: Media): string {
-    if (!mediaFile.ids.location)
-      return "";
+    if (!mediaFile.ids.location) {
+      return '';
+    }
 
-    const ids = this.extractDriveAssetIdFromUrl(mediaFile.ids.location)
+    const ids = this.extractDriveAssetIdFromUrl(mediaFile.ids.location);
 
-    return mediaFile?.ids.location?.includes("drive.google.com") && !mediaFile?.ids.location?.includes("http")
+    return mediaFile?.ids.location?.includes('drive.google.com') && !mediaFile?.ids.location?.includes('http')
       ? this.createDrivePhotoUrl(ids)
       : mediaFile.ids.location;
   }
 
   private extractDriveAssetIdFromUrl(url: string): string {
-    if (!url?.includes("drive.google.com"))
-      return url || "";
+    if (!url?.includes('drive.google.com')) {
+      return url || '';
+    }
 
     return url
-      .replace("https://drive.google.com/file/d/", "")
-      .replace("/view?usp=sharing", "");
+      .replace('https://drive.google.com/file/d/', '')
+      .replace('/view?usp=sharing', '');
   }
 
   private createDrivePhotoUrl(assetId: string): string {

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { PhotosService, PhotoUpload } from 'src/app/services/photos.service'
+import { PhotosService, PhotoUpload } from 'src/app/services/photos.service';
 import { Photo } from 'src/app/models/photo';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
@@ -19,17 +19,6 @@ declare global {
   styleUrls: ['./photos.component.scss'],
 })
 export class PhotosComponent implements OnInit {
-  user: User;
-  allPhotos: Photo[] = new Array<Photo>();
-  loadablePhotos: Photo[] = new Array<Photo>();
-  loadedPhotos: Photo[] = new Array<Photo>();
-  foundPhotos: Photo[];
-  searchTerm: string = '';
-  years: Number[];
-  showSpinner: boolean = true;
-  photoGallery: Element;
-  photoUploads: PhotoUpload[] = new Array<PhotoUpload>();
-  sortType: string = 'random';
 
   constructor(
     private photosService: PhotosService,
@@ -41,8 +30,22 @@ export class PhotosComponent implements OnInit {
       (user: User) => {
         this.user = user;
       }
-    )
+    );
   }
+  user: User;
+  allPhotos: Photo[] = new Array<Photo>();
+  loadablePhotos: Photo[] = new Array<Photo>();
+  loadedPhotos: Photo[] = new Array<Photo>();
+  foundPhotos: Photo[];
+  searchTerm = '';
+  years: number[];
+  showSpinner = true;
+  photoGallery: Element;
+  photoUploads: PhotoUpload[] = new Array<PhotoUpload>();
+  sortType = 'random';
+
+  private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
+  loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
 
   ngOnInit(): void {
     this.loadAllPhotos();
@@ -51,25 +54,25 @@ export class PhotosComponent implements OnInit {
       () => {
         this.updatePhotoGallery();
       }
-    )
+    );
   }
 
   downloadPhoto(photo: Photo): void {
-    var request = new XMLHttpRequest();
-    request.open("GET", photo.url, true);
+    const request = new XMLHttpRequest();
+    request.open('GET', photo.url, true);
     request.responseType = 'blob';
     request.send();
     request.onload = () => {
       const blob = new Blob([request.response], { type: 'image/jpg' });
-      const photoElement = document.createElement("a");
+      const photoElement = document.createElement('a');
       document.body.appendChild(photoElement);
       const url = window.URL.createObjectURL(blob);
       photoElement.href = url;
-      const fileName = photo.path.replace('photos/', '')
+      const fileName = photo.path.replace('photos/', '');
       photoElement.download = fileName;
       photoElement.click();
       window.URL.revokeObjectURL(url);
-    }
+    };
   }
 
   updatePhoto(photo: Photo): void {
@@ -78,17 +81,18 @@ export class PhotosComponent implements OnInit {
   }
 
   deletePhoto(inputPhoto: Photo): void {
-    let message = "Do you want to delete this photo from LeCoursville?";
+    const message = 'Do you want to delete this photo from LeCoursville?';
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
+      'Are You Sure?',
       message,
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
           for (let i = 0; i < this.allPhotos.length; i++) {
-            if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id)
+            if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id) {
               this.loadedPhotos.splice(i, 1);
+            }
           }
           this.photosService.deletePhoto(inputPhoto);
           this.sortType = 'added';
@@ -98,21 +102,22 @@ export class PhotosComponent implements OnInit {
           }, 1000);
         }
       }
-    )
+    );
   }
 
   uploadPhotos(filesToUpload: any): void {
-    let message = "Do you want to upload " + filesToUpload.length + " photos to LeCoursville?";
-    if (filesToUpload.length <= 1)
-      message = "Do you want to upload this photo to LeCoursville?";
+    let message = `Do you want to upload ${filesToUpload.length} photos to LeCoursville?`;
+    if (filesToUpload.length <= 1) {
+      message = 'Do you want to upload this photo to LeCoursville?';
+    }
     const dialogRef = this.confirmPrompt.openDialog(
-      "Are You Sure?",
+      'Are You Sure?',
       message,
     );
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
-          for (let file of filesToUpload) {
+          for (const file of filesToUpload) {
             const upload = this.photosService.uploadPhoto(file, false);
             this.photoUploads.push(upload);
           }
@@ -153,10 +158,17 @@ export class PhotosComponent implements OnInit {
   }
 
   loadAnotherPhoto(): void {
-    let newPhoto = this.loadablePhotos[this.loadedPhotos.length]
-    if (this.loadablePhotos && this.loadablePhotos.length && this.loadedPhotos.length < this.loadablePhotos.length && !this.loadedPhotos.some(photo => photo.id === newPhoto.id)) {
+    const newPhoto = this.loadablePhotos[this.loadedPhotos.length];
+    if (this.shouldLoadAnotherPhoto(newPhoto)) {
       this.loadedPhotos.push(newPhoto);
     }
+  }
+
+  private shouldLoadAnotherPhoto(newPhoto: Photo): boolean {
+    return this.loadablePhotos
+        && this.loadablePhotos.length
+        && this.loadedPhotos.length < this.loadablePhotos.length
+        && !this.loadedPhotos.some(photo => photo.id === newPhoto.id);
   }
 
   loadMorePhotos(numToLoad): void {
@@ -173,9 +185,6 @@ export class PhotosComponent implements OnInit {
     }
   }
 
-  private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
-  loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
-
   updateLoadedPhotos(photos: Photo[]): void {
     this.loadedPhotosSource.next(photos);
   }
@@ -188,7 +197,7 @@ export class PhotosComponent implements OnInit {
   }
 
   sortRandomly(): number {
-    var randomNumber = Math.floor(Math.random() * 21) - 10;
+    const randomNumber = Math.floor(Math.random() * 21) - 10;
     return randomNumber;
   }
 
@@ -197,10 +206,12 @@ export class PhotosComponent implements OnInit {
   }
 
   sortByDateAdded(a: Photo, b: Photo): number {
-    if (!a.dateAdded)
+    if (!a.dateAdded) {
       a.dateAdded = new Date(0);
-    if (!b.dateAdded)
+    }
+    if (!b.dateAdded) {
       b.dateAdded = new Date(0);
+    }
     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
   }
 
@@ -209,12 +220,13 @@ export class PhotosComponent implements OnInit {
     this.loadablePhotos = [];
     searchTerm = searchTerm.toLowerCase();
     for (const photo of this.allPhotos) {
-      let info = photo.info.toLowerCase();
-      let location = photo.location.toLowerCase();
-      let year = photo.year.toString();
+      const info = photo.info.toLowerCase();
+      const location = photo.location.toLowerCase();
+      const year = photo.year.toString();
       let photoBy = '';
-      if (photo.takenBy)
+      if (photo.takenBy) {
         photoBy = photo.takenBy.toLowerCase();
+      }
       if (
         info.includes(searchTerm) ||
         location.includes(searchTerm) ||
@@ -237,8 +249,9 @@ export class PhotosComponent implements OnInit {
     const photoGallery = document.getElementById('lightgallery');
     const galleryId = photoGallery.getAttribute('lg-uid');
 
-    if (galleryId)
+    if (galleryId) {
       window.lgData[galleryId].destroy(true);
+    }
 
     const galleryOptions = {
       selector: '.light-link',

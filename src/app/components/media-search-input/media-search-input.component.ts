@@ -1,5 +1,4 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { Media } from 'src/app/models/media/media';
 
 @Component({
   selector: 'app-media-search-input',
@@ -7,17 +6,16 @@ import { Media } from 'src/app/models/media/media';
   styleUrls: ['./media-search-input.component.scss']
 })
 export class MediaSearchInputComponent implements OnInit {
-  inputValue : string = "";
+  inputValue = '';
   @Output() inputChangeEvent = new EventEmitter<string>();
 
   constructor() { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
   clearInput(): void {
-    this.inputValue = "";
-  } 
+    this.inputValue = '';
+  }
 
   onInputChange(inputValue: string): void {
     this.inputChangeEvent.emit(inputValue);

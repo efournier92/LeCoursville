@@ -18,11 +18,10 @@ export class ConfirmPromptComponent implements OnInit {
     this.dialogRef.close('');
   }
 
-  onActionClick(didUserConfirm) {
+  onActionClick(didUserConfirm: boolean) {
     this.dialogRef.close(didUserConfirm);
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }

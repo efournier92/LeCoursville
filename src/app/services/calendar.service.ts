@@ -15,16 +15,14 @@ export interface RecurringEvent extends CalendarEvent {
 }
 
 export const Months: string[] = [
-  "January", "February", "March", "April", "May", "June", "July",
-  "August", "September", "October", "November", "December",
-]
+  'January', 'February', 'March', 'April', 'May', 'June', 'July',
+  'August', 'September', 'October', 'November', 'December',
+];
 
 @Injectable({
   providedIn: 'root'
 })
 export class CalendarService {
-  calendarEvents: AngularFireList<RecurringEvent>;
-  calendars: AngularFireList<Calendar>;
 
   constructor(
     private db: AngularFireDatabase,
@@ -41,9 +39,14 @@ export class CalendarService {
       }
     );
   }
+  calendarEvents: AngularFireList<RecurringEvent>;
+  calendars: AngularFireList<Calendar>;
 
   private calendarEventsSource = new BehaviorSubject([]);
   calendarEventsObservable = this.calendarEventsSource.asObservable();
+
+  private calendarsSource = new BehaviorSubject([]);
+  calendarsObservable = this.calendarsSource.asObservable();
 
   getYearsSince(eventYear: number, selectedYear: number) {
     return +selectedYear - +eventYear;
@@ -53,15 +56,12 @@ export class CalendarService {
     this.calendarEventsSource.next(calendarEvents);
   }
 
-  getCalendarEvents(): AngularFireList<Object> {
+  getCalendarEvents(): AngularFireList<object> {
     this.calendarEvents = this.db.list('calendarEvents');
     return this.calendarEvents;
   }
 
-  private calendarsSource = new BehaviorSubject([]);
-  calendarsObservable = this.calendarsSource.asObservable();
-
-  getCalendars(): AngularFireList<Object> {
+  getCalendars(): AngularFireList<object> {
     this.calendars = this.db.list('calendars');
     return this.calendars;
   }
@@ -76,7 +76,7 @@ export class CalendarService {
   }
 
   addCalendar(file: any, year: string): void {
-    let calendar: Calendar = new Calendar();
+    const calendar: Calendar = new Calendar();
     calendar.id = this.db.createPushId();
     calendar.year = year;
     calendar.path = `calendars/${year}.pdf`;
@@ -91,9 +91,9 @@ export class CalendarService {
             calendar.url = url;
             calendarDb.set(calendar.id, calendar);
           }
-        )
+        );
       })
-    ).subscribe()
+    ).subscribe();
   }
 
   updateCalendar(file: any, calendar: Calendar): void {
@@ -106,9 +106,9 @@ export class CalendarService {
             calendar.url = url;
             this.calendars.update(calendar.id, calendar);
           }
-        )
+        );
       })
-    ).subscribe()
+    ).subscribe();
   }
 
   updateCalendarEvent(event: RecurringEvent): void {
@@ -122,7 +122,7 @@ export class CalendarService {
   getViewYears(): Array<string> {
     const thisYear: number = new Date().getFullYear();
     let year = thisYear - 3;
-    let years: string[] = [];
+    const years: string[] = [];
     for (let i = 0; i < 7; i++) {
       years.push(year.toString());
       year += 1;

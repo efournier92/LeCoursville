@@ -19,9 +19,12 @@ export interface PhotoUpload {
 export class PhotosService {
   photos: AngularFireList<Photo>;
   allPhotos: AngularFireList<Photo>;
-  photoCount: number = 0;
-  increment: number = 2;
+  photoCount = 0;
+  increment = 2;
   user: User;
+
+  private allPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
+  allPhotosObservable: Observable<Photo[]> = this.allPhotosSource.asObservable();
 
   constructor(
     private storage: AngularFireStorage,
@@ -39,21 +42,18 @@ export class PhotosService {
           );
         }
       }
-    )
+    );
   }
 
   updatePhoto(photo: Photo): void {
-    let photosDb = this.db.list('photos');
-    //photosDb.update(photo.id, photo);
+    const photosDb = this.db.list('photos');
+    // photosDb.update(photo.id, photo);
   }
 
   deletePhoto(photo: Photo): void {
     this.allPhotos.remove(photo.id);
     this.storage.storage.refFromURL(photo.url).delete();
   }
-
-  private allPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
-  allPhotosObservable: Observable<Photo[]> = this.allPhotosSource.asObservable();
 
   updateAllPhotosEvent(photos: Photo[]): void {
     this.allPhotosSource.next(photos);
@@ -65,7 +65,7 @@ export class PhotosService {
   }
 
   getPhotoById(photoId: string): Observable<Photo> {
-    let photoObj = this.db.object(`photos/${photoId}`);
+    const photoObj = this.db.object(`photos/${photoId}`);
     const photoByIdSource: BehaviorSubject<Photo> = new BehaviorSubject<Photo>(new Photo());
     const photoByIdObservable: Observable<Photo> = photoByIdSource.asObservable();
 
@@ -74,10 +74,11 @@ export class PhotosService {
     }
     photoObj.valueChanges().subscribe(
       (photo: Photo) => {
-        if (photo && photo.id)
+        if (photo && photo.id) {
           updatePhotoEvent(photo);
+        }
       }
-    )
+    );
     return photoByIdObservable;
   }
 
@@ -90,7 +91,7 @@ export class PhotosService {
   }
 
   uploadImage(file: any, isMessageAttachment: boolean, imageBucket: string): PhotoUpload {
-    let photo: Photo = new Photo();
+    const photo: Photo = new Photo();
     photo.id = this.db.createPushId();
     photo.dateAdded = new Date();
     photo.uploadedBy = this.user.id;
@@ -104,19 +105,19 @@ export class PhotosService {
       finalize(() => {
         fileRef.getDownloadURL().subscribe(
           url => {
-            const photosDb: AngularFireList<Object> = this.db.list(imageBucket);
+            const photosDb: AngularFireList<object> = this.db.list(imageBucket);
             photo.url = url;
-            //photosDb.update(photo.id, photo);
+            // photosDb.update(photo.id, photo);
             photoUploadSource.next(url);
           }
-        )
+        );
       })
-    ).subscribe()
+    ).subscribe();
 
     const photoUploadSource = new BehaviorSubject('');
     const onUrlAvailable = photoUploadSource.asObservable();
 
-    let upload = new Object as PhotoUpload;
+    const upload = new Object as PhotoUpload;
     upload.task = task;
     upload.photo = photo;
     upload.onUrlAvailable = onUrlAvailable;
@@ -124,9 +125,9 @@ export class PhotosService {
     return upload;
   }
 
-  getYears(): Array<Number> {
-    let thisYear: number = new Date().getFullYear()
-    let years: Array<Number> = Array<Number>();
+  getYears(): Array<number> {
+    const thisYear: number = new Date().getFullYear();
+    const years: Array<number> = Array<number>();
     for (let i = 1800; i <= thisYear; i++) {
       years.push(i);
     }

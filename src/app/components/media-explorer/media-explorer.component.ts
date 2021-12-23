@@ -45,14 +45,15 @@ export class MediaExplorerComponent implements OnInit {
   onMediaSelect(media: Media): void {
     this.resetSelectedMedia();
 
-    if (this.shouldSetCurrentMedia(media))
+    if (this.shouldSetCurrentMedia(media)) {
       this.setCurrentMedia(media);
+    }
 
     this.scrollToTop();
   }
 
   getShareableLink(): string {
-    return location?.href;
+    return `${location?.href}?id=${this.selectedMedia?.id}`;
   }
 
   downloadSelectedMedia(): void {
@@ -65,26 +66,38 @@ export class MediaExplorerComponent implements OnInit {
 
   // MEDIA CHECKS
 
+  hasSelectedMedia(): boolean {
+    return !!this.selectedMedia?.id;
+  }
+
+  shouldShowShareableLinkButton() {
+    return this.hasSelectedMedia();
+  }
+
+  shouldShowDownloadButton() {
+    return this.hasSelectedMedia();
+  }
+
   shouldDisplayMediaList(): boolean {
     return !!this.user?.id;
   }
 
   isVideo(selectedMedia: Media): boolean {
-    return selectedMedia?.type == MediaConstants.VIDEO.id;
+    return selectedMedia?.type === MediaConstants.VIDEO.id;
   }
 
   isDocument(selectedMedia: Media): boolean {
-    return selectedMedia?.type == MediaConstants.DOC.id;
+    return selectedMedia?.type === MediaConstants.DOC.id;
   }
 
   isPhotoAlbum(selectedMedia: Media): boolean {
-    return selectedMedia?.type == MediaConstants.PHOTO_ALBUM.id;
+    return selectedMedia?.type === MediaConstants.PHOTO_ALBUM.id;
   }
 
   isAudioAlbum(selectedMedia: Media): boolean {
-    return selectedMedia?.type == MediaConstants.AUDIO_ALBUM.id;
+    return selectedMedia?.type === MediaConstants.AUDIO_ALBUM.id;
   }
-  
+
   // HELPERS
 
   private subscribeToAuth() {
@@ -92,31 +105,32 @@ export class MediaExplorerComponent implements OnInit {
       (user: User) => {
         this.updateUser(user);
       }
-    )
+    );
   }
 
   private updateUser(user: User) {
-    if (user?.id)
+    if (user?.id) {
       this.user = user;
+    }
   }
-  
+
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
   }
 
   private scrollToTop(): void {
-    window.scroll(0,0);
+    window.scroll(0, 0);
   }
 
   private shouldSetCurrentMedia(media: Media) {
-    return media?.urls?.location && media?.type
+    return media?.urls?.location && media?.type;
   }
 
   private setCurrentMedia(media: Media) {
     this.selectedMedia = media;
     this.emitEventToChild(media);
-    this.routingService.updateQueryParams(this.selectedMedia.id);
-    this.analyticsService.logEvent("media_explorer_select", media);
+    this.routingService.clearQueryParams();
+    this.analyticsService.logEvent('media_explorer_select', media);
   }
 
   private emitEventToChild(media: Media) {
@@ -130,16 +144,19 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private getMediaIdFromQueryParams(params) {
-    const idFromParams = params["id"];
-    if (idFromParams)
+    const idFromParams = params.id;
+    if (idFromParams) {
       this.loadMediaByQueryId(idFromParams);
+    }
   }
 
   private loadMediaByQueryId(id: string) {
     this.mediaService.getById(id).subscribe(
       (media: Media) => {
-        if (media && media.id == id)
+        if (media?.id === id) {
           this.selectedMedia = media;
+          this.routingService.clearQueryParams();
+        }
       }
     );
   }

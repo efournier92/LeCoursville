@@ -21,17 +21,17 @@ export class Media {
     };
 
     constructor(
-        id: string = "",
-        name: string = "",
-        locationId: string = "",
-        iconId: string = "",
-        downloadId: string = "",
-        date: string = "",
-        author: string = "",
-        fileName: string = "",
-        type: string = "",
+        id: string = '',
+        name: string = '',
+        locationId: string = '',
+        iconId: string = '',
+        downloadId: string = '',
+        date: string = '',
+        author: string = '',
+        fileName: string = '',
+        type: string = '',
         listing: Array<any> = [],
-        format: string = "",
+        format: string = '',
         dateUpdated: Date = new Date(),
     ) {
         this.id = id,
@@ -49,9 +49,9 @@ export class Media {
             download: downloadId,
         },
         this.urls = {
-            location: "",
-            icon: "",
-            download: "",
-        }
+            location: '',
+            icon: '',
+            download: '',
+        };
     }
 }

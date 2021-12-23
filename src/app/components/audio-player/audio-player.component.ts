@@ -9,9 +9,9 @@ import { MediaService } from 'src/app/services/media.service';
   templateUrl: './audio-player.component.html',
   styleUrls: ['./audio-player.component.scss']
 })
-export class AudioPlayerComponent implements OnInit,OnChanges {
+export class AudioPlayerComponent implements OnInit, OnChanges {
   @Input() album: AudioAlbum = new AudioAlbum();
-  
+
   playlist: Track[] = [];
   allTracks: Track[] = [];
 
@@ -36,8 +36,9 @@ export class AudioPlayerComponent implements OnInit,OnChanges {
               const track = this.mapMediaToTrack(media);
               this.allTracks.push(track);
             }
-            if (this.isFinishedLoading())
+            if (this.isFinishedLoading()) {
               this.finalizePlaylist();
+            }
           }
         );
       }
@@ -50,7 +51,7 @@ export class AudioPlayerComponent implements OnInit,OnChanges {
   }
 
   private isFinishedLoading(): boolean {
-    return this.allTracks.length == this.album.listing.length;
+    return this.allTracks.length === this.album.listing.length;
   }
 
   private mapMediaToTrack(media: Media): Track {
@@ -58,6 +59,6 @@ export class AudioPlayerComponent implements OnInit,OnChanges {
       title: media.name,
       artist: media.author,
       link: media.urls.location,
-    }
+    };
   }
 }

@@ -1,27 +1,27 @@
 export class Address {
-  street: string = '';
-  city: string = '';
-  state: string = '';
-  zip: string = '';
-  info: string = '';
+  street = '';
+  city = '';
+  state = '';
+  zip = '';
+  info = '';
 }
 
 export class Phone {
-  number: string = '';
-  info: string = '';
+  number = '';
+  info = '';
 }
 
 export class Email {
-  address: string = '';
-  info: string = '';
+  address = '';
+  info = '';
 }
 
 export class Contact {
-  id: string = '';
-  name: string = '';
+  id = '';
+  name = '';
   addresses: Address[] = [];
-  family: string = '';
+  family = '';
   emails: Email[] = [];
   phones: Phone[] = [];
-  isEditable: boolean = false;
+  isEditable = false;
 }

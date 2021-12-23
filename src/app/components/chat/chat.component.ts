@@ -13,8 +13,8 @@ export class ChatComponent implements OnInit {
   user: User;
   messages: Message[];
   url: string;
-  loading: boolean = true;
-  years: Number[];
+  loading = true;
+  years: number[];
 
   constructor(
     private chatService: ChatService,
@@ -24,7 +24,7 @@ export class ChatComponent implements OnInit {
       (user: User) => {
         this.user = user;
       }
-    )
+    );
   }
 
   ngOnInit(): void {
@@ -33,11 +33,11 @@ export class ChatComponent implements OnInit {
         this.messages = messages.sort(this.compareMessagesByTimestamp);
         this.bumpStickies();
       }
-    )
+    );
   }
 
   bumpStickies(): any {
-    let stickyMessages = this.messages.filter(message => message.isSticky === true).reverse();
+    const stickyMessages = this.messages.filter(message => message.isSticky === true).reverse();
     this.messages = this.messages.filter(message => message.isSticky !== true);
     for (const message of stickyMessages) {
       this.messages.unshift(message);
@@ -45,14 +45,16 @@ export class ChatComponent implements OnInit {
   }
 
   compareMessagesByTimestamp(a: Message, b: Message): number {
-    return new Date(b.dateSent).getTime() - new Date(a.dateSent).getTime()
+    return new Date(b.dateSent).getTime() - new Date(a.dateSent).getTime();
   }
 
   compareMessagesByLikes(a: Message, b: Message): any {
-    if (!a.likes)
+    if (!a.likes) {
       a.likes = [];
-    if (!b.likes)
+    }
+    if (!b.likes) {
       b.likes = [];
+    }
     return b.likes.length - a.likes.length;
   }
 
@@ -61,12 +63,13 @@ export class ChatComponent implements OnInit {
   }
 
   createMessage(): void {
-    for (let message of this.messages) {
-      if (message.isEditable === true)
+    for (const message of this.messages) {
+      if (message.isEditable === true) {
         return;
+      }
     }
-    let authorId: string = this.user.id;
-    let authorName: string = this.user.name;
+    const authorId: string = this.user.id;
+    const authorName: string = this.user.name;
     this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
   }
 

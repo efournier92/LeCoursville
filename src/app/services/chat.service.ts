@@ -10,9 +10,6 @@ import { User } from 'src/app/models/user';
   providedIn: 'root'
 })
 export class ChatService {
-  messages: AngularFireList<Message>;
-  messageCount: number = 0;
-  increment: number = 8;
 
   constructor(
     private db: AngularFireDatabase,
@@ -29,19 +26,22 @@ export class ChatService {
           );
         }
       }
-    )
+    );
   }
+  messages: AngularFireList<Message>;
+  messageCount = 0;
+  increment = 8;
+
+  private messagesSource: BehaviorSubject<Message[]> = new BehaviorSubject([]);
+  chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
 
   getYears(): number[] {
-    let years: number[] = Array<number>();
+    const years: number[] = Array<number>();
     for (let i = 1880; i <= 2000; i++) {
       years.push(i);
     }
     return years;
   }
-
-  private messagesSource: BehaviorSubject<Message[]> = new BehaviorSubject([]);
-  chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
 
   updateMessagesEvent(messages: Message[]): void {
     this.messagesSource.next(messages);

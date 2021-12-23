@@ -10,8 +10,6 @@ import { AuthGuardService } from 'src/app/services/auth-guard.service';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
 import { AudioComponent } from './audio/audio.component';
 
-
-
 const routes: Routes =
   [
     {
@@ -46,12 +44,10 @@ const routes: Routes =
     {
       path: 'media',
       component: MediaExplorerComponent,
-      // canActivate: [AuthGuardService],
     },
     {
       path: 'audio',
       component: AudioComponent,
-      // canActivate: [AuthGuardService],
     }
   ];
 

@@ -36,8 +36,8 @@
             </div>
             <mat-divider class="admin-media-upload-divider"></mat-divider>
             <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-                [shouldShowLabel]="true" [shouldShowClearButton]="true" (onInputFileChange)="onInputFileChange($event)"
-                (onInputCleared)="onInputCleared()">
+                [shouldShowLabel]="true" [shouldShowClearButton]="true" (inputFileChangeEvent)="inputFileChangeEvent($event)"
+                (inputClearedEvent)="inputClearedEvent()">
             </app-file-input>
         </form>
     </div>

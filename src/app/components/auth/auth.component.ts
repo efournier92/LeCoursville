@@ -34,7 +34,7 @@ export class AuthComponent implements OnInit {
 
     this.authService.createUser(userData);
     this.routingService.NavigateToMedia();
-    
+
     return true;
   }
 

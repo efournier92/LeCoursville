@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MediaType } from "src/app/constants/media-constants";
+import { MediaType } from 'src/app/constants/media-constants';
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 
 @Component({
@@ -29,8 +29,9 @@ export class MediaTypesCheckboxesComponent implements OnInit {
 
     let selectedTypes = this.mediaTypesService.getSelectedTypes(this.allTypes);
 
-    if (!selectedTypes.length || selectedTypes.length < 1)
+    if (!selectedTypes.length || selectedTypes.length < 1) {
       selectedTypes = this.mediaTypesService.getAllTypes();
+    }
 
     this.selectMediaTypeEvent.emit(selectedTypes);
   }

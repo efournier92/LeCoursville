@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Contact, Phone, Address, Email } from 'src/app/models/contact';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
-import { families } from 'src/app/constants/families';
+import { AppSettings } from 'src/environments/app-settings';
 import { ContactsService } from 'src/app/services/contacts.service';
 
 @Component({
@@ -12,9 +12,9 @@ import { ContactsService } from 'src/app/services/contacts.service';
 })
 export class ContactEditComponent implements OnInit {
   @Input() contact: Contact;
-  
+
   user: User;
-  families: string[] = families;
+  families: string[] = AppSettings.families;
 
   constructor(
     private auth: AuthService,
@@ -25,7 +25,7 @@ export class ContactEditComponent implements OnInit {
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user
-    )
+    );
   }
 
   updateContact(contact: Contact): void {
@@ -38,9 +38,10 @@ export class ContactEditComponent implements OnInit {
   }
 
   addAddress(contact: Contact): void {
-    if (!contact.addresses)
+    if (!contact.addresses) {
       contact.addresses = new Array<Address>();
-    let address: Address = new Address();
+    }
+    const address: Address = new Address();
     contact.addresses.push(address);
   }
 
@@ -49,9 +50,10 @@ export class ContactEditComponent implements OnInit {
   }
 
   addPhone(contact: Contact): void {
-    if (!contact.phones)
+    if (!contact.phones) {
       contact.phones = new Array<Phone>();
-    let phone: Phone = new Phone();
+    }
+    const phone: Phone = new Phone();
     contact.phones.push(phone);
   }
 
@@ -60,9 +62,10 @@ export class ContactEditComponent implements OnInit {
   }
 
   addEmail(contact: Contact): void {
-    if (!contact.emails)
+    if (!contact.emails) {
       contact.emails = new Array<Email>();
-    let email: Email = new Email();
+    }
+    const email: Email = new Email();
     contact.emails.push(email);
   }
 

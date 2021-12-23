@@ -10,7 +10,7 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class ContactViewComponent implements OnInit {
   @Input() contact: Contact;
-  
+
   user: User;
 
   constructor(public auth: AuthService) { }
@@ -18,6 +18,6 @@ export class ContactViewComponent implements OnInit {
   ngOnInit(): void {
     this.auth.userObservable.subscribe(
       (user: User) => this.user = user
-    )
+    );
   }
 }
