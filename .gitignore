@@ -27,8 +27,11 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# misc
+# cache
+/.angular/cache/
 /.sass-cache
+
+# misc
 /connect.lock
 /coverage
 /libpeerconnection.log
