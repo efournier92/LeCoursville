@@ -9,8 +9,8 @@
         </app-media-types-checkboxes>
     </div> -->
 
-    <div class="row" *ngFor="let media of filteredMedia">
-        <button mat-button class="mb-3 col-12 col-md-6 col-lg-4" (click)="onMediaSelect(media)">
+    <div class="row d-flex flex-column" *ngFor="let media of filteredMedia">
+        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" (click)="onMediaSelect(media)">
             <div class="row">
 
                 <div class="col-4 imageContainer">

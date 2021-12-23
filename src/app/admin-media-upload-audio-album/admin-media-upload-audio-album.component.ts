@@ -34,7 +34,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   }
 
   onMediaSelect(album: AudioAlbum): void {
-    console.log(`Selected Album: `, album)
+    console.log(`Selected Album: `, album);
     this.album = album;
   }
 
@@ -45,6 +45,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   onDeleteSelectedMedia(media: Media): void {
     this.mediaService.deleteMedia(media);
+    this.resetSelectedMedia();
   }
 
   onCancelSelectedMedia(): void {
@@ -56,11 +57,11 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   }
 
   inputClearedEvent(): void {
-    console.log("Input cleared");
+    console.log('Input cleared');
   }
 
   inputFileChangeEvent($event: any): void {
-    console.log("File changed: ", $event);
+    console.log('File changed: ', $event);
   }
 
   getAudioAlbumTypeId(): string {

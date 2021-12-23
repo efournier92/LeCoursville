@@ -1,45 +1,49 @@
-<div class="row justify-content-center">
-    <div class="row justify-content-end">
-        <button *ngIf="shouldShowShareableLinkButton()" mat-mini-fab matTooltip="Copy Link" color="secondary" class="m-1" [cdkCopyToClipboard]="getShareableLink()">
+<div class="media-explorer-component row">
+    <div class="media-explorer-player-container col-lg-7 row justify-content-center">
+
+    <div class="media-explorer-actions-container row justify-content-end">
+        <button *ngIf="shouldShowShareableLinkButton()" mat-fab matTooltip="Copy Link" color="secondary"
+            class="m-1" [cdkCopyToClipboard]="getShareableLink()">
             <mat-icon>share</mat-icon>
         </button>
-        <button *ngIf="shouldShowDownloadButton()" mat-mini-fab matTooltip="Download Link" color="secondary" class="m-1" (click)="downloadSelectedMedia()">
+        <button *ngIf="shouldShowDownloadButton()" mat-fab matTooltip="Download Link" color="secondary"
+            class="m-1" (click)="downloadSelectedMedia()">
             <mat-icon>download</mat-icon>
         </button>
     </div>
 
-    <div class="media-component-container" *ngIf="isVideo(selectedMedia)">
-        <app-video-player-drive-iframe
-            [video]="selectedMedia"
-            [events]="eventsSubject.asObservable()">
-        </app-video-player-drive-iframe>
+        <div class="media-component-container" *ngIf="isVideo(selectedMedia)">
+            <app-video-player-drive-iframe [video]="selectedMedia" [events]="eventsSubject.asObservable()">
+            </app-video-player-drive-iframe>
+        </div>
+
+        <div class="media-component-container document-component-container" *ngIf="isDocument(selectedMedia)">
+            <app-doc-viewer-drive-iframe [doc]="selectedMedia" [events]="eventsSubject.asObservable()">
+            </app-doc-viewer-drive-iframe>
+        </div>
+
+        <div class="media-component-container" *ngIf="isPhotoAlbum(selectedMedia)">
+            <app-photo-album [album]="selectedMedia">
+            </app-photo-album>
+        </div>
+
+        <div class="media-component-container" *ngIf="isAudioAlbum(selectedMedia)">
+            <app-audio-player [album]="selectedMedia" [events]="eventsSubject.asObservable()">
+            </app-audio-player>
+        </div>
+
     </div>
 
-    <div class="media-component-container document-component-container" *ngIf="isDocument(selectedMedia)">
-        <app-doc-viewer-drive-iframe
-            [doc]="selectedMedia"
-            [events]="eventsSubject.asObservable()">
-        </app-doc-viewer-drive-iframe>
+    <div class="media-list-container col-lg-4">
+        <!-- TODO: Move to app-media-list -->
+        <div class="d-flex w-100 justify-content-center mt-2" *ngIf="selectedMedia?.id && !user?.id">
+            <button mat-raised-button color="primary" class="mb-4" (click)="getShareableLink()">
+                Sign In For More
+            </button>
+        </div>
+
+        <app-media-list (mediaClickEvent)="onMediaSelect($event)" [mediaType]="mediaType"
+            *ngIf="shouldDisplayMediaList()"></app-media-list>
     </div>
 
-    <div class="media-component-container" *ngIf="isPhotoAlbum(selectedMedia)">
-        <app-photo-album 
-            [album]="selectedMedia">
-        </app-photo-album>
-    </div>
-
-    <div class="media-component-container" *ngIf="isAudioAlbum(selectedMedia)">
-        <app-audio-player 
-            [album]="selectedMedia"
-            [events]="eventsSubject.asObservable()">
-        </app-audio-player>
-    </div>
 </div>
-
-<div class="d-flex w-100 justify-content-center mt-2" *ngIf="selectedMedia?.id && !user?.id">
-    <button mat-raised-button color="primary" class="mb-4" (click)="getShareableLink()">
-        Sign In For More
-    </button>    
-</div>
-    
-<app-media-list (mediaClickEvent)="onMediaSelect($event)" [mediaType]="mediaType" *ngIf="shouldDisplayMediaList()"></app-media-list>

@@ -1,23 +1,21 @@
-<div class="d-flex justify-content-center align-items-center flex-column">
-    <div>
-        <img class="audio-player-album-art" src="{{album.urls.icon}}" alt="">
+<div class="audio-player-container">
+    <div class="d-flex justify-content-center align-items-center flex-column w-100">
+        <div *ngIf="!album?.urls?.icon" class="album-name-container">{{ album.name }}</div>
+        <div *ngIf="album?.id && album?.author" class="author-name-container">{{ album.author }}</div>
+        <div class="audio-player-album-art-container col-md-7">
+            <img class="audio-player-album-art" src="{{album?.urls?.icon}}" [alt]="album?.name">
+        </div>
     </div>
-    <div>
-        {{ album.author }}
-    </div>
-    <div>
-        {{ album.name }}
-    </div>
+    
+    <ngx-audio-player 
+        [playlist]="playlist"
+        [displayTitle]="album.name"
+        [displayArtist]="album.author" 
+        [displayVolumeControls]="true"
+        [displayRepeatControls]="true"
+        [disablePositionSlider]="false"
+        [displayPlaylist]="true"
+        [expanded]="true"
+        [pageSizeOptions]=[10000]>
+    </ngx-audio-player>    
 </div>
-
-<ngx-audio-player 
-    [playlist]="playlist"
-    [displayTitle]="album.name"
-    [displayArtist]="album.author" 
-    [displayVolumeControls]="true"
-    [displayRepeatControls]="true"
-    [disablePositionSlider]="false"
-    [displayPlaylist]="true"
-    [expanded]="true"
-    [pageSizeOptions]=[1000]>
-</ngx-audio-player>

@@ -1,9 +1,19 @@
-.audio-player-album-art-container {
+.album-name-container {
   width: 100%;
-  display: flex;
-  align-items: center;
+  font-weight: bold;
+  font-size: 1.6em;
+  text-align: center;
+  font-style: italic;
+}
+
+.author-name-container {
+  width: 100%;
+  font-size: 1.2em;
+  text-align: center;
+  margin-top: -6px;
 }
 
 .audio-player-album-art {
-  max-height: 30vh;
+  width: 100%;
+  margin: auto;
 }

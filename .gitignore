@@ -29,6 +29,7 @@
 
 # cache
 /.angular/cache/
+/.firebase
 /.sass-cache
 
 # misc
