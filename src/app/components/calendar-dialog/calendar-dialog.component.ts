@@ -1,7 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CalendarService, RecurringEvent } from 'src/app/services/calendar.service';
+import { CalendarService } from 'src/app/services/calendar.service';
+import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
+import { CalendarConstants } from 'src/app/constants/calendar-constants';
 
 export interface DialogData {
   header: string;
@@ -14,10 +16,7 @@ export interface DialogData {
   styleUrls: ['./calendar-dialog.component.scss']
 })
 export class CalendarDialogComponent implements OnInit {
-  eventTypes: string[] = [
-    'birth',
-    'anniversary',
-  ];
+  eventTypes: string[] = CalendarConstants.EventTypes;
 
   constructor(
     public dialogRef: MatDialogRef<CalendarDialogComponent>,

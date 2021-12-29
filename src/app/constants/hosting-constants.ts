@@ -1,7 +1,7 @@
 
 export abstract class HostingConstants {
     static readonly Albums = {
-        baseUrl: 'https://d1c0gnxjb5k6qa.cloudfront.net',
+        baseUrl: 'https://assets.lecoursville.com/',
         folderNames: {
             music: 'Music',
             albums: 'Albums',

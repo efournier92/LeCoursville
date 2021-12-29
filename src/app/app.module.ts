@@ -55,15 +55,17 @@ import { PhotoAlbumComponent } from './components/photo-album/photo-album.compon
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
 import { VideoUploadDialogComponent } from 'src/app/components/video-upload-dialog/video-upload-dialog.component';
-import { AudioPlayerComponent } from './components/audio-player/audio-player.component';
-import { MediaTypesCheckboxesComponent } from './components/media-types-checkboxes/media-types-checkboxes.component';
-import { MediaSearchInputComponent } from './components/media-search-input/media-search-input.component';
-import { VideoPlayerDriveIframeComponent } from './components/video-player-drive-iframe/video-player-drive-iframe.component';
-import { VideoPlayerVideogularComponent } from './components/video-player-videogular/video-player-videogular.component';
-import { DocViewerNgxExtendedComponent } from './components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component';
-import { DocViewerDriveIframeComponent } from './components/doc-viewer-drive-iframe/doc-viewer-drive-iframe.component';
-import { AdminMediaUploadAudioAlbumComponent } from './admin-media-upload-audio-album/admin-media-upload-audio-album.component';
-import { AudioComponent } from './audio/audio.component';
+import { AudioPlayerComponent } from 'src/app/components/audio-player/audio-player.component';
+import { MediaTypesCheckboxesComponent } from 'src/app/components/media-types-checkboxes/media-types-checkboxes.component';
+import { MediaSearchInputComponent } from 'src/app/components/media-search-input/media-search-input.component';
+import { VideoPlayerDriveIframeComponent } from 'src/app/components/video-player-drive-iframe/video-player-drive-iframe.component';
+import { VideoPlayerVideogularComponent } from 'src/app/components/video-player-videogular/video-player-videogular.component';
+import { DocViewerNgxExtendedComponent } from 'src/app/components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component';
+import { DocViewerDriveIframeComponent } from 'src/app/components/doc-viewer-drive-iframe/doc-viewer-drive-iframe.component';
+import { AdminMediaUploadAudioAlbumComponent } from 'src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component';
+import { AudioComponent } from 'src/app/components/audio/audio.component';
+import { AdminCalendarComponent } from 'src/app/components/admin-calendar/admin-calendar.component';
+import { AdminRoutingComponent } from './components/admin-routing/admin-routing.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +102,8 @@ import { AudioComponent } from './audio/audio.component';
     DocViewerDriveIframeComponent,
     AdminMediaUploadAudioAlbumComponent,
     AudioComponent,
+    AdminCalendarComponent,
+    AdminRoutingComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),

@@ -5,13 +5,13 @@ import { CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
 import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { CalendarService, Months } from 'src/app/services/calendar.service';
-import { RecurringEvent } from 'src/app/services/calendar.service';
 import { Calendar } from 'src/app/models/calendar';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 
 @Component({
   selector: 'app-calendar',

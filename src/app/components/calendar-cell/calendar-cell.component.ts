@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { CalendarService, RecurringEvent } from 'src/app/services/calendar.service';
+import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { CalendarService } from 'src/app/services/calendar.service';
 import { AppSettings } from 'src/environments/app-settings';
 
 @Component({

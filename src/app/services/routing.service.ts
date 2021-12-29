@@ -27,6 +27,18 @@ export class RoutingService {
     this.NavigateToRoute('/audio');
   }
 
+  NavigateToAdminUsers() {
+    this.NavigateToRoute('/admin/users');
+  }
+
+  NavigateToAdminMedia() {
+    this.NavigateToRoute('/admin/media');
+  }
+
+  NavigateToAdminCalendar() {
+    this.NavigateToRoute('/admin/calendar');
+  }
+
   NavigateToRouteWithoutLocationChange(route: string) {
     this.router.navigateByUrl(route, { skipLocationChange: true });
   }

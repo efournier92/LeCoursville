@@ -7,8 +7,11 @@ import { CalendarComponent } from 'src/app/components/calendar/calendar.componen
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
 import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
+import { AudioComponent } from 'src/app/components/audio/audio.component';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
-import { AudioComponent } from './audio/audio.component';
+import { AdminCalendarComponent } from './components/admin-calendar/admin-calendar.component';
+import { AdminMediaComponent } from './components/admin-media/admin-media.component';
+import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 
 const routes: Routes =
   [
@@ -19,6 +22,21 @@ const routes: Routes =
     {
       path: 'admin',
       component: AdminComponent,
+      canActivate: [AuthGuardService],
+    },
+    {
+      path: 'admin/calendar',
+      component: AdminCalendarComponent,
+      canActivate: [AuthGuardService],
+    },
+    {
+      path: 'admin/media',
+      component: AdminMediaComponent,
+      canActivate: [AuthGuardService],
+    },
+    {
+      path: 'admin/users',
+      component: AdminUsersComponent,
       canActivate: [AuthGuardService],
     },
     {
@@ -41,10 +59,10 @@ const routes: Routes =
       component: PhotosComponent,
       canActivate: [AuthGuardService],
     },
-    {
-      path: 'media',
-      component: MediaExplorerComponent,
-    },
+      // {
+      //   path: 'media',
+      //   component: MediaExplorerComponent,
+      // },
     {
       path: 'audio',
       component: AudioComponent,

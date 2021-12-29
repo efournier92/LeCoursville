@@ -1,19 +1,33 @@
-<mat-tab-group class="admin-media-upload-tab-group">
-  <mat-tab label="Audio Album">
-    <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
-  </mat-tab>
-  <mat-tab label="TODO">
-    <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-      [shouldShowLabel]="true" [shouldShowClearButton]="true" (inputFileChangeEvent)="inputFileChangeEvent($event)"
-      (inputClearedEvent)="inputClearedEvent()">
-    </app-file-input>
+<div class="admin-media-component-container">
 
-    <div class="media-upload-success-messages" *ngFor="let success of successMessages">
-      {{ success }}
-    </div>
+  <app-admin-routing class="w-100"></app-admin-routing>
 
-    <div class="media-upload-error-messages" *ngFor="let error of errorMessages">
-      {{ error }}
-    </div>
-  </mat-tab>
-</mat-tab-group>
+  <mat-tab-group class="admin-media-upload-tab-group">
+
+    <mat-tab label="Audio Album">
+      <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
+    </mat-tab>
+
+    <mat-tab label="Photo Album">
+      TODO
+    </mat-tab>
+
+    <mat-tab label="Video">
+      TODO
+    </mat-tab>
+
+    <mat-tab label="Doc">
+      TODO
+    </mat-tab>
+
+  </mat-tab-group>
+
+  <div class="media-upload-success-messages" *ngFor="let success of successMessages">
+    {{ success }}
+  </div>
+
+  <div class="media-upload-error-messages" *ngFor="let error of errorMessages">
+    {{ error }}
+  </div>
+
+</div>

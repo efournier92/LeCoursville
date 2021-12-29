@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss']
+  selector: 'app-admin-routing',
+  templateUrl: './admin-routing.component.html',
+  styleUrls: ['./admin-routing.component.scss']
 })
-export class AdminComponent implements OnInit {
+export class AdminRoutingComponent implements OnInit {
 
   constructor(
-    private routingService: RoutingService,
+    private routingService: RoutingService
   ) { }
 
   ngOnInit(): void { }
@@ -25,4 +25,5 @@ export class AdminComponent implements OnInit {
   onClickCalendarRoute() {
     this.routingService.NavigateToAdminCalendar();
   }
+
 }

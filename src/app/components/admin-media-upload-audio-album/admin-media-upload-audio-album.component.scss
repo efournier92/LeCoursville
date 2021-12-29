@@ -1,24 +1,4 @@
-.admin-upload-input {
-  width: 100%;
-}
-
-.admin-media-form-action-button {
-  width: 100%;
-  color: white;
-  margin-top: 12px;
-}
-
-.admin-media-form-action-button-upload {
-  background-color: #1b5e20;
-}
-
-.admin-media-form-action-button-delete {
-  background-color: #b71c1c;
-}
-
-.admin-media-form-action-button-cancel {
-  background-color: #f57f17;
-}
+@import 'src/app/styles/admin-forms';
 
 .admin-media-upload-audio-album-form-container {
   border: 0.01em solid grey;

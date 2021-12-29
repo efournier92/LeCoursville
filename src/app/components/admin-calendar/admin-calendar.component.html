@@ -1,0 +1,32 @@
+<div class="admin-calendar-container d-flex flex-column align-items-center">
+    <app-admin-routing class="w-100"></app-admin-routing>
+    <div class="admin-header">Calendar Events</div>
+    <mat-card class="admin-calendar-event-card col-lg-6" *ngFor="let event of events">
+        <mat-form-field class="admin-upload-input">
+            <input matInput placeholder="Title" [(ngModel)]="event.title">
+        </mat-form-field>
+        <mat-form-field class="admin-upload-input">
+            <mat-select placeholder="Type" [(ngModel)]="event.type">
+                <mat-option *ngFor="let type of eventTypes" [value]="type">
+                    {{ type | titlecase }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field class="admin-upload-input">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="event.date" placeholder="Date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker touchUi #picker></mat-datepicker>
+        </mat-form-field>
+        <mat-checkbox [(ngModel)]="event.isLiving">Living</mat-checkbox>
+        <div class="admin-action-buttons-container d-flex flex-column align-items-center">
+            <button mat-button class="admin-form-action-button admin-form-action-button-upload"
+                (click)="onSaveEvent(event)">
+                <span>Save</span>
+            </button>
+            <button class="admin-form-action-button admin-form-action-button-delete" *ngIf="event.id"
+                mat-button (click)="onDeleteEvent(event)">
+                <span>Delete</span>
+            </button>
+        </div>
+    </mat-card>
+</div>

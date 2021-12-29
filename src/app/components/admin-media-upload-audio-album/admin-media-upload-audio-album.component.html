@@ -23,14 +23,14 @@
                     #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
             </mat-form-field>
             <mat-checkbox class="admin-upload-input">Should Hide from Lists?</mat-checkbox>
-            <button mat-button class="admin-media-form-action-button admin-media-form-action-button-upload"
+            <button mat-button class="admin-form-action-button admin-form-action-button-upload"
                 (click)="onUploadSelectedMedia()">
                 <span *ngIf="!album.id">Upload</span>
                 <span *ngIf="album.id">Update</span>
             </button>
-            <button class="admin-media-form-action-button admin-media-form-action-button-delete" *ngIf="album.id"
+            <button class="admin-form-action-button admin-form-action-button-delete" *ngIf="album.id"
                 mat-button (click)="onDeleteSelectedMedia(album)">Delete</button>
-            <button mat-button class="admin-media-form-action-button admin-media-form-action-button-cancel"
+            <button mat-button class="admin-form-action-button admin-form-action-button-cancel"
                 (click)="onCancelSelectedMedia(album)">Clear</button>
             <mat-divider class="admin-media-upload-divider"></mat-divider>
             <div class="admin-media-upload-or-container">

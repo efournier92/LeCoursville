@@ -5,7 +5,7 @@ import { AudioAlbumUploadService } from 'src/app/services/audio-album-upload.ser
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { Media } from 'src/app/models/media/media';
-import { MediaConstants } from '../constants/media-constants';
+import { MediaConstants } from 'src/app/constants/media-constants';
 
 @Component({
   selector: 'app-admin-media-upload-audio-album',

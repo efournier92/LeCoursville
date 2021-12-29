@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { MediaConstants } from '../constants/media-constants';
-import { AudioAlbum } from '../models/media/audio-album';
-import { AnalyticsService } from '../services/analytics.service';
+import { MediaConstants } from 'src/app/constants/media-constants';
+import { AudioAlbum } from 'src/app/models/media/audio-album';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-audio',
@@ -25,6 +25,6 @@ export class AudioComponent implements OnInit {
 
   onMediaSelect(album: AudioAlbum): void {
     this.selectedAlbum = album;
-    this.analyticsService.logEvent("audio_album_select", album);
+    this.analyticsService.logEvent('audio_album_select', album);
   }
 }
