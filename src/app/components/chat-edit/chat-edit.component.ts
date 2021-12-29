@@ -9,11 +9,7 @@ import { HighlightService } from 'src/app/services/highlight.service';
 import { Highlight } from 'src/app/models/highlight';
 import { PhotosService } from 'src/app/services/photos.service';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
-import { RoutingService } from 'src/app/services/routing.service';
-
-declare interface HtmlInput extends HTMLElement {
-  value: string;
-}
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-chat-edit',
@@ -39,24 +35,30 @@ export class ChatEditComponent implements OnInit {
     private authService: AuthService,
     private photoService: PhotosService,
     private highlightService: HighlightService,
-    private routingService: RoutingService,
     private db: AngularFireDatabase,
     private confirmPrompt: ConfirmPromptService,
+    private analyticsService: AnalyticsService,
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
+    this.subscribeToUserObservable();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     );
   }
 
-  markMessageSaved(message: Message): Message {
-    message.isSaved = true;
-    message.isEditable = false;
-    return message;
-  }
+  // PUBLIC METHODS
 
-  saveMessage(message: Message): void {
+  // TODO: Abstract large methods to smaller service methods
+
+  saveMessage(newMessage: Message): void {
     const dialogRef = this.confirmPrompt.openDialog(
       'Are You Sure?',
       'Do you want to post this message to LeCoursville?',
@@ -65,47 +67,27 @@ export class ChatEditComponent implements OnInit {
       (confirmedAction: boolean) => {
         if (confirmedAction) {
           if (this.photoUpload && !this.message.isReply) {
-            this.saveMessageWithPhoto(message);
+            this.saveMessageWithPhoto(newMessage);
             return;
           }
-          message = this.markMessageSaved(message);
-          message.id = this.db.createPushId();
-          if (message.isReply) {
+          newMessage = this.markMessageSaved(newMessage);
+          newMessage.id = this.db.createPushId();
+          if (newMessage.isReply) {
             if (this.parent) {
               this.updateParent();
             }
-          } else if (!message.id) {
-            this.chatService.createMessage(message);
+          } else if (!newMessage.id) {
+            this.chatService.createMessage(newMessage);
           } else {
-            this.chatService.updateMessage(message);
+            this.chatService.updateMessage(newMessage);
           }
         }
       }
     );
-  }
 
-  saveMessageWithPhoto(message: Message): void {
-    this.isSaving = true;
-    const photoUpload = this.photoService.uploadPhoto(this.photoUpload, true);
-    const uploadFileType = this.photoUpload.type;
-    photoUpload.onUrlAvailable.subscribe(
-      (url: string) => {
-        if (url === '') { return; }
-        message.attachmentUrl = url;
-        message.attachmentType = uploadFileType;
-        message = this.markMessageSaved(message);
-        this.chatService.createMessage(message);
-        this.isSaving = false;
-      }
-    );
-  }
-
-  isMessageAuthor(message: Message): boolean {
-    if (message.authorId === this.user.id) {
-      return true;
-    } else {
-      return false;
-    }
+    this.analyticsService.logEvent('chat_edit_message_save', {
+      user: this.user, message: newMessage, isReply: this.message.isReply, parentMessage: this.parent
+    });
   }
 
   cancelEdit(): void {
@@ -118,6 +100,10 @@ export class ChatEditComponent implements OnInit {
         this.message.isEditable = false;
       }
     }
+
+    this.analyticsService.logEvent('chat_edit_message_edit_cancel', {
+      user: this.user, message: this.message, parentMessage: this.parent
+    });
   }
 
   deleteMessage(): void {
@@ -146,6 +132,10 @@ export class ChatEditComponent implements OnInit {
         }
       }
     );
+
+    this.analyticsService.logEvent('chat_edit_message_delete', {
+      user: this.user, message: this.message, parentMessage: this.parent
+    });
   }
 
   restoreMessage(): void {
@@ -153,6 +143,7 @@ export class ChatEditComponent implements OnInit {
       'Are You Sure?',
       'Do you want to restore this message to LeCoursville?',
     );
+
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
@@ -161,14 +152,10 @@ export class ChatEditComponent implements OnInit {
         }
       }
     );
-  }
 
-  updateParent(): void {
-    this.updateParentEvent.emit(this.parent);
-  }
-
-  cancelMessage(): void {
-    this.routingService.NavigateToRouteWithoutLocationChange('/chat');
+    this.analyticsService.logEvent('chat_edit_message_restore', {
+      user: this.user, message: this.message, parentMessage: this.parent
+    });
   }
 
   highlightElement(element: string, value: boolean): void {
@@ -177,5 +164,33 @@ export class ChatEditComponent implements OnInit {
 
   inputFileChangeEvent(files: any): void {
     this.photoUpload = files[0];
+  }
+
+  updateParent(): void {
+    this.updateParentEvent.emit(this.parent);
+  }
+
+  // HELPER METHODS
+
+  private markMessageSaved(message: Message): Message {
+    message.isSaved = true;
+    message.isEditable = false;
+    return message;
+  }
+
+  private saveMessageWithPhoto(message: Message): void {
+    this.isSaving = true;
+    const photoUpload = this.photoService.uploadPhoto(this.photoUpload, true);
+    const uploadFileType = this.photoUpload.type;
+    photoUpload.onUrlAvailable.subscribe(
+      (url: string) => {
+        if (url === '') { return; }
+        message.attachmentUrl = url;
+        message.attachmentType = uploadFileType;
+        message = this.markMessageSaved(message);
+        this.chatService.createMessage(message);
+        this.isSaving = false;
+      }
+    );
   }
 }

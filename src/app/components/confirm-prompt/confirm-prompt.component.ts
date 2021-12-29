@@ -14,6 +14,12 @@ export class ConfirmPromptComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) { }
 
+  // LIFECYCLE EVENTS
+
+  ngOnInit() { }
+
+  // PUBLIC METHODS
+
   onCancelClick(): void {
     this.dialogRef.close('');
   }
@@ -21,7 +27,4 @@ export class ConfirmPromptComponent implements OnInit {
   onActionClick(didUserConfirm: boolean) {
     this.dialogRef.close(didUserConfirm);
   }
-
-  ngOnInit() { }
-
 }

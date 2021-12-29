@@ -18,8 +18,8 @@ export class MediaExplorerComponent implements OnInit {
   @Input() mediaType: string;
   user: User;
   allMedia: Media[] = new Array<Media>();
-  selectedMedia: Media;
   loadedMedia: Media[];
+  selectedMedia: Media;
   eventsSubject: Subject<Media> = new Subject<Media>();
 
   constructor(
@@ -30,14 +30,23 @@ export class MediaExplorerComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
   ) { }
 
-  // LIFECYCLE
+  // LIFECYCLE HOOKS
 
   ngOnInit(): void {
     this.selectedMedia = undefined;
     this.allMedia = [];
 
     this.getQueryParams();
-    this.subscribeToAuth();
+    this.subscribeToUserObservable();
+    this.analyticsService.logEvent('component_load_media_explorer', { });
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable(): void {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
+    );
   }
 
   // PUBLIC
@@ -50,17 +59,23 @@ export class MediaExplorerComponent implements OnInit {
     }
 
     this.scrollToTop();
+
+    this.analyticsService.logEvent('media_select', { user: this.user, media: this.selectedMedia });
   }
 
   getShareableLink(): string {
+    this.analyticsService.logEvent('media_shareable_link_copy', { user: this.user, media: this.selectedMedia });
     return `${location?.href}?id=${this.selectedMedia?.id}`;
   }
 
   downloadSelectedMedia(): void {
+    this.analyticsService.logEvent('media_download', { user: this.user, media: this.selectedMedia });
+
     window.location.href = this.selectedMedia?.urls?.download;
   }
 
   navigateToSignIn() {
+    this.analyticsService.logEvent('media_sign_in_to_see_more', { user: this.user, media: this.selectedMedia });
     this.routingService.NavigateToSignIn();
   }
 
@@ -99,14 +114,6 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   // HELPERS
-
-  private subscribeToAuth() {
-    this.authService.userObservable.subscribe(
-      (user: User) => {
-        this.updateUser(user);
-      }
-    );
-  }
 
   private updateUser(user: User) {
     if (user?.id) {

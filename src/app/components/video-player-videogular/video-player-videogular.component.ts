@@ -19,6 +19,8 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
 
   constructor() { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
     this.videos = [this.video];
 
@@ -29,6 +31,17 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
     this.eventsSubscription.unsubscribe();
   }
 
+  // SUBSCRIPTIONS
+
+  private subscribeToParentMediaChanges() {
+    this.events.subscribe((media) => {
+      this.videos = [media];
+      this.videogular.play();
+    });
+  }
+
+  // PUBLIC METHODS
+
   initVideoPlayer(data: any) {
     this.videogular = data;
 
@@ -37,12 +50,5 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
         this.isLoading = true;
       }
     );
-  }
-
-  private subscribeToParentMediaChanges() {
-    this.events.subscribe((media) => {
-      this.videos = [media];
-      this.videogular.play();
-    });
   }
 }

@@ -24,22 +24,4 @@ export class AnalyticsService {
   logEvent(name: string, data: any) {
     this.analytics.logEvent(name, data);
   }
-
-  logPageView(pageName: string) {
-    const data = {
-      page: pageName,
-      user_id: this.user.id,
-    };
-    this.logEvent('page_view', data);
-  }
-
-  logMediaSelect(media: Media) {
-    const data = {
-      id: media.id,
-      name: media.title,
-      user_id: this.user.id,
-    };
-
-    this.logEvent('media_selection', data);
-  }
 }

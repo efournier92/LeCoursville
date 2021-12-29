@@ -11,7 +11,7 @@ export class AdminService {
   user: User;
   allUsers: AngularFireList<User>;
 
-  private allUsersSource = new BehaviorSubject({});
+  private allUsersSource = new BehaviorSubject({ });
   allUsersObservable = this.allUsersSource.asObservable();
 
   constructor(

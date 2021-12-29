@@ -13,10 +13,18 @@ export class ContactViewComponent implements OnInit {
 
   user: User;
 
-  constructor(public auth: AuthService) { }
+  constructor(public authService: AuthService) { }
+
+  // LIFECYCLE HOOKS
 
   ngOnInit(): void {
-    this.auth.userObservable.subscribe(
+    this.subscribeToUserObservable();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable() {
+    this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     );
   }

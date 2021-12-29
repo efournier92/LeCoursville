@@ -18,6 +18,12 @@ export class AdminUsersComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.subscribeToUserObservable();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
       (user: User) => {
         this.user = user;
@@ -28,14 +34,7 @@ export class AdminUsersComponent implements OnInit {
     );
   }
 
-  getAllUsers(): void {
-    this.adminService.allUsersObservable.subscribe(
-      (allUsers: User[]) => {
-        this.allUsers = allUsers;
-        this.sortAllUsersBy(this.sortByDateAdded);
-      }
-    );
-  }
+  // PUBLIC METHODS
 
   updateUser(user: User): void {
     user.isEditable = false;
@@ -44,12 +43,6 @@ export class AdminUsersComponent implements OnInit {
 
   deleteUser(user: User): void {
     this.adminService.deleteUser(user);
-  }
-
-  sortAllUsersBy(sortFunction: any): void {
-    if (this.allUsers.constructor === Array) {
-      this.allUsers = this.allUsers.sort(sortFunction);
-    }
   }
 
   sortByDateAdded(a: User, b: User): number {
@@ -62,5 +55,22 @@ export class AdminUsersComponent implements OnInit {
 
   removeUserRole(user: User, roleType: string): void {
     delete user.roles[roleType];
+  }
+
+  // HELPER METHODS
+
+  private getAllUsers(): void {
+    this.adminService.allUsersObservable.subscribe(
+      (allUsers: User[]) => {
+        this.allUsers = allUsers;
+        this.sortAllUsersBy(this.sortByDateAdded);
+      }
+    );
+  }
+
+  private sortAllUsersBy(sortFunction: any): void {
+    if (this.allUsers.constructor === Array) {
+      this.allUsers = this.allUsers.sort(sortFunction);
+    }
   }
 }

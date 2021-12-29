@@ -19,6 +19,8 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
     private mediaService: MediaService,
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void { }
 
   ngOnChanges(): void {
@@ -27,7 +29,8 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
     this.addTracksToPlaylist();
   }
 
-  addTracksToPlaylist(): void {
+  // HELPER METHODS
+  private addTracksToPlaylist(): void {
     this.album.listing.forEach(
       (id: string) => {
         this.mediaService.getById(id).subscribe(

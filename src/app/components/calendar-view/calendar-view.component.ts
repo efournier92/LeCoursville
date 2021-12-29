@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { DOCUMENT } from '@angular/common';
 import scrollIntoView from 'scroll-into-view-if-needed';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-calendar-view',
@@ -25,7 +26,8 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   constructor(
     public dialog: MatDialog,
-    private auth: AuthService,
+    private authService: AuthService,
+    private analyticsService: AnalyticsService,
     @Inject(DOCUMENT) private document: Document
   ) { }
 
@@ -33,10 +35,19 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
+    this.analyticsService.logEvent('component_load_calendar_view', { viewDate: this.viewDate, selectedYear: this.selectedYear });
   }
 
   ngAfterViewInit(): void {
     this.ensureTodaysDateIsInView();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable(): void {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
+    );
   }
 
   // PUBLIC METHODS
@@ -57,15 +68,5 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
         inline: 'center',
       });
     }
-  }
-
-  // SUBSCRIPTIONS
-
-  private subscribeToUserObservable(): void {
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
-    );
   }
 }

@@ -3,10 +3,10 @@ import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
 import { Media } from 'src/app/models/media/media';
 import { PhotoAlbum } from 'src/app/models/media/photo-album';
-import { Photo } from 'src/app/models/photo';
 import lgZoom from 'lightgallery/plugins/zoom';
 import lgAutoplay from 'lightgallery/plugins/autoplay';
 import { MediaService } from 'src/app/services/media.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-photo-album',
@@ -14,14 +14,12 @@ import { MediaService } from 'src/app/services/media.service';
   styleUrls: ['./photo-album.component.scss']
 })
 export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
-
-  constructor(
-    private mediaService: MediaService
-  ) { }
-  photos: Media[] = new Array<Media>();
-  private lightGallery: LightGallery;
   @Input() album: PhotoAlbum;
+
+  photos: Media[] = new Array<Media>();
   needsRefresh: any;
+
+  private lightGallery: LightGallery;
 
   lightGallerySettings = {
     plugins: [lgZoom, lgAutoplay],
@@ -33,19 +31,16 @@ export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
     showCloseIcon: true
   };
 
+  constructor(
+    private mediaService: MediaService,
+    private analyticsService: AnalyticsService,
+  ) { }
+
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
-    this.album.listing.forEach(
-      (id: string) => {
-        this.mediaService.getById(id).subscribe(
-          (media: Media) => {
-            if (media.id) {
-              this.photos.push(media);
-              this.needsRefresh = true;
-            }
-          }
-        );
-      }
-    );
+    this.initializeAlbumListing();
+    this.analyticsService.logEvent('component_load_media_photo_album', { });
   }
 
   ngAfterViewChecked(): void {
@@ -55,7 +50,29 @@ export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  // PUBLIC METHODS
+
   onLightGalleryInit = (detail: InitDetail): void => {
     this.lightGallery = detail.instance;
+  }
+
+  // HELPER METHODS
+  private initializeAlbumListing() {
+    this.album.listing.forEach(
+      (id: string) => {
+        this.subscribeToGetMediaObservable(id);
+      }
+    );
+  }
+
+  private subscribeToGetMediaObservable(id: string) {
+    this.mediaService.getById(id).subscribe(
+      (media: Media) => {
+        if (media.id) {
+          this.photos.push(media);
+          this.needsRefresh = true;
+        }
+      }
+    );
   }
 }

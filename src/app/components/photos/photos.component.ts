@@ -6,6 +6,7 @@ import { Photo } from 'src/app/models/photo';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 declare const lightGallery: any;
 
@@ -19,19 +20,6 @@ declare global {
   styleUrls: ['./photos.component.scss'],
 })
 export class PhotosComponent implements OnInit {
-
-  constructor(
-    private photosService: PhotosService,
-    private auth: AuthService,
-    public dialog: MatDialog,
-    public confirmPrompt: ConfirmPromptService,
-  ) {
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
-    );
-  }
   user: User;
   allPhotos: Photo[] = new Array<Photo>();
   loadablePhotos: Photo[] = new Array<Photo>();
@@ -47,19 +35,43 @@ export class PhotosComponent implements OnInit {
   private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
   loadedPhotosObservable: Observable<Photo[]> = this.loadedPhotosSource.asObservable();
 
+  constructor(
+    private photosService: PhotosService,
+    private authService: AuthService,
+    public dialog: MatDialog,
+    public confirmPrompt: ConfirmPromptService,
+    private analyticsService: AnalyticsService,
+  ) { }
+
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
+    this.subscribeToUserObservable();
+    this.subscribeToPhotosObservable();
     this.loadAllPhotos();
     this.years = this.photosService.getYears();
-    this.loadedPhotosObservable.subscribe(
-      () => {
-        this.updatePhotoGallery();
-      }
+    this.analyticsService.logEvent('component_load_photos', { });
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable() {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
     );
   }
 
-  downloadPhoto(photo: Photo): void {
+  private subscribeToPhotosObservable() {
+    this.loadedPhotosObservable.subscribe(
+      () => this.updatePhotoGallery()
+    );
+  }
+
+  // PUBLIC METHODS
+
+  downloadPhoto(photoToDownload: Photo): void {
     const request = new XMLHttpRequest();
-    request.open('GET', photo.url, true);
+    request.open('GET', photoToDownload.url, true);
     request.responseType = 'blob';
     request.send();
     request.onload = () => {
@@ -68,19 +80,21 @@ export class PhotosComponent implements OnInit {
       document.body.appendChild(photoElement);
       const url = window.URL.createObjectURL(blob);
       photoElement.href = url;
-      const fileName = photo.path.replace('photos/', '');
+      const fileName = photoToDownload.path.replace('photos/', '');
       photoElement.download = fileName;
       photoElement.click();
       window.URL.revokeObjectURL(url);
     };
+    this.analyticsService.logEvent('photos_download', { photo: photoToDownload, user: this.user });
   }
 
-  updatePhoto(photo: Photo): void {
-    photo.isEditable = false;
-    this.photosService.updatePhoto(photo);
+  updatePhoto(photoToUpdate: Photo): void {
+    photoToUpdate.isEditable = false;
+    this.photosService.updatePhoto(photoToUpdate);
+    this.analyticsService.logEvent('photos_update', { photo: photoToUpdate, user: this.user });
   }
 
-  deletePhoto(inputPhoto: Photo): void {
+  deletePhoto(photoToDelete: Photo): void {
     const message = 'Do you want to delete this photo from LeCoursville?';
     const dialogRef = this.confirmPrompt.openDialog(
       'Are You Sure?',
@@ -90,11 +104,11 @@ export class PhotosComponent implements OnInit {
       (confirmedAction: boolean) => {
         if (confirmedAction) {
           for (let i = 0; i < this.allPhotos.length; i++) {
-            if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === inputPhoto.id) {
+            if (this.loadedPhotos && this.loadedPhotos[i] && this.loadedPhotos[i].id && this.loadedPhotos[i].id === photoToDelete.id) {
               this.loadedPhotos.splice(i, 1);
             }
           }
-          this.photosService.deletePhoto(inputPhoto);
+          this.photosService.deletePhoto(photoToDelete);
           this.sortType = 'added';
           setTimeout(() => {
             this.showSpinner = false;
@@ -103,11 +117,12 @@ export class PhotosComponent implements OnInit {
         }
       }
     );
+    this.analyticsService.logEvent('photos_delete', { photo: photoToDelete, user: this.user });
   }
 
-  uploadPhotos(filesToUpload: any): void {
-    let message = `Do you want to upload ${filesToUpload.length} photos to LeCoursville?`;
-    if (filesToUpload.length <= 1) {
+  uploadPhotos(photosToUpload: any): void {
+    let message = `Do you want to upload ${photosToUpload.length} photos to LeCoursville?`;
+    if (photosToUpload.length <= 1) {
       message = 'Do you want to upload this photo to LeCoursville?';
     }
     const dialogRef = this.confirmPrompt.openDialog(
@@ -117,8 +132,8 @@ export class PhotosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
-          for (const file of filesToUpload) {
-            const upload = this.photosService.uploadPhoto(file, false);
+          for (const photo of photosToUpload) {
+            const upload = this.photosService.uploadPhoto(photo, false);
             this.photoUploads.push(upload);
           }
           setTimeout(() => {
@@ -128,9 +143,10 @@ export class PhotosComponent implements OnInit {
         }
       }
     );
+    this.analyticsService.logEvent('photos_upload', { photos: photosToUpload, user: this.user });
   }
 
-  completePhotoUpload(upload: PhotoUpload) {
+  completePhotoUpload(upload: PhotoUpload): void {
     this.photoUploads = this.photoUploads.filter(
       (value) => {
         return value.photo.id !== upload.photo.id;
@@ -138,41 +154,8 @@ export class PhotosComponent implements OnInit {
     );
   }
 
-  shouldRefreshPhotos(photos): boolean {
-    return photos
-      && photos.length
-      && photos.length !== 0
-      && photos.length !== this.allPhotos.length;
-  }
-
-  loadAllPhotos(): void {
-    this.photosService.getAllPhotos().valueChanges().subscribe(
-      (photos: Array<Photo>) => {
-        if (this.shouldRefreshPhotos(photos)) {
-          this.allPhotos = photos;
-          this.sortPhotosBy(this.sortRandomly);
-          this.loadMorePhotos(3);
-        }
-      }
-    );
-  }
-
-  loadAnotherPhoto(): void {
-    const newPhoto = this.loadablePhotos[this.loadedPhotos.length];
-    if (this.shouldLoadAnotherPhoto(newPhoto)) {
-      this.loadedPhotos.push(newPhoto);
-    }
-  }
-
-  private shouldLoadAnotherPhoto(newPhoto: Photo): boolean {
-    return this.loadablePhotos
-        && this.loadablePhotos.length
-        && this.loadedPhotos.length < this.loadablePhotos.length
-        && !this.loadedPhotos.some(photo => photo.id === newPhoto.id);
-  }
-
-  loadMorePhotos(numToLoad): void {
-    for (let i = 0; i < numToLoad; i++) {
+  loadMorePhotos(numberToLoad: number): void {
+    for (let i = 0; i < numberToLoad; i++) {
       this.loadAnotherPhoto();
     }
     if (this.showSpinner) {
@@ -185,19 +168,17 @@ export class PhotosComponent implements OnInit {
     }
   }
 
-  updateLoadedPhotos(photos: Photo[]): void {
-    this.loadedPhotosSource.next(photos);
-  }
-
   sortPhotosBy(sortFunction: any): void {
     this.showSpinner = true;
     this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
+    this.analyticsService.logEvent('photos_sort', { function: sortFunction, user: this.user });
   }
 
   sortRandomly(): number {
     const randomNumber = Math.floor(Math.random() * 21) - 10;
+
     return randomNumber;
   }
 
@@ -215,10 +196,10 @@ export class PhotosComponent implements OnInit {
     return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
   }
 
-  searchPhotos(searchTerm: string): void {
+  searchPhotos(query: string): void {
     this.showSpinner = true;
     this.loadablePhotos = [];
-    searchTerm = searchTerm.toLowerCase();
+    query = query.toLowerCase();
     for (const photo of this.allPhotos) {
       const info = photo.info.toLowerCase();
       const location = photo.location.toLowerCase();
@@ -228,24 +209,65 @@ export class PhotosComponent implements OnInit {
         photoBy = photo.takenBy.toLowerCase();
       }
       if (
-        info.includes(searchTerm) ||
-        location.includes(searchTerm) ||
-        year.includes(searchTerm) ||
-        photoBy.includes(searchTerm)
+        info.includes(query) ||
+        location.includes(query) ||
+        year.includes(query) ||
+        photoBy.includes(query)
       ) {
         this.loadablePhotos.push(photo);
       }
     }
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
+    this.analyticsService.logEvent('photos_query_search', { searchQuery: query, user: this.user });
   }
 
   clearSearchTerm(): void {
     this.searchTerm = '';
     this.sortPhotosBy(this.sortRandomly);
+    this.analyticsService.logEvent('photos_query_clear', { user: this.user });
   }
 
-  updatePhotoGallery(): void {
+  // HELPER METHODS
+
+  private shouldRefreshPhotos(photos): boolean {
+    return photos
+      && photos.length
+      && photos.length !== 0
+      && photos.length !== this.allPhotos.length;
+  }
+
+  private loadAllPhotos(): void {
+    this.photosService.getAllPhotos().valueChanges().subscribe(
+      (photos: Array<Photo>) => {
+        if (this.shouldRefreshPhotos(photos)) {
+          this.allPhotos = photos;
+          this.sortPhotosBy(this.sortRandomly);
+          this.loadMorePhotos(3);
+        }
+      }
+    );
+  }
+
+  private loadAnotherPhoto(): void {
+    const newPhoto = this.loadablePhotos[this.loadedPhotos.length];
+    if (this.shouldLoadAnotherPhoto(newPhoto)) {
+      this.loadedPhotos.push(newPhoto);
+    }
+  }
+
+  private shouldLoadAnotherPhoto(newPhoto: Photo): boolean {
+    return this.loadablePhotos
+      && this.loadablePhotos.length
+      && this.loadedPhotos.length < this.loadablePhotos.length
+      && !this.loadedPhotos.some(photo => photo.id === newPhoto.id);
+  }
+
+  private updateLoadedPhotos(photos: Photo[]): void {
+    this.loadedPhotosSource.next(photos);
+  }
+
+  private updatePhotoGallery(): void {
     const photoGallery = document.getElementById('lightgallery');
     const galleryId = photoGallery.getAttribute('lg-uid');
 

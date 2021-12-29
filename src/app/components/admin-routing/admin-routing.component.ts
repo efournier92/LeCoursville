@@ -12,7 +12,11 @@ export class AdminRoutingComponent implements OnInit {
     private routingService: RoutingService
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void { }
+
+  // PUBLIC METHODS
 
   onClickUsersRoute() {
     this.routingService.NavigateToAdminUsers();

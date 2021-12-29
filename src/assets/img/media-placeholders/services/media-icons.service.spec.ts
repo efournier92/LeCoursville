@@ -6,7 +6,7 @@ describe('MediaIconsService', () => {
   let service: MediaIconsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ });
     service = TestBed.inject(MediaIconsService);
   });
 

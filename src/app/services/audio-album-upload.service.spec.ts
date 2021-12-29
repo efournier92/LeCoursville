@@ -6,7 +6,7 @@ describe('AudioAlbumUploadService', () => {
   let service: AudioAlbumUploadService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ });
     service = TestBed.inject(AudioAlbumUploadService);
   });
 

@@ -11,7 +11,11 @@ export class MediaSearchInputComponent implements OnInit {
 
   constructor() { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void { }
+
+  // PUBLIC METHODS
 
   clearInput(): void {
     this.inputValue = '';

@@ -24,12 +24,16 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     private audioAlbumUploadService: AudioAlbumUploadService,
   ) { }
 
+  // LIFECYCLE EVENTS
+
   ngOnInit(): void {
     this.album = new AudioAlbum();
     this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     );
   }
+
+  // PUBLIC METHODS
 
   isUserAdmin(): boolean {
     return this.user?.roles?.admin;
@@ -48,10 +52,6 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.resetSelectedMedia();
   }
 
-  isAlbumInputValid(): boolean {
-    return (!!this.album.title && !!this.album.folderName && !!this.album.tracks);
-  }
-
   onDeleteSelectedMedia(media: Media): void {
     this.mediaService.deleteMedia(media);
     this.resetSelectedMedia();
@@ -59,12 +59,6 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   onCancelSelectedMedia(): void {
     this.resetSelectedMedia();
-  }
-
-  private resetSelectedMedia(): void {
-    this.album = new AudioAlbum();
-    this.album.folderName = '';
-    this.tracksString = '';
   }
 
   inputClearedEvent(): void {
@@ -77,5 +71,17 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   getAudioAlbumTypeId(): string {
     return MediaConstants.AUDIO_ALBUM.id;
+  }
+
+  // HELPER METHODS
+
+  private isAlbumInputValid(): boolean {
+    return (!!this.album.title && !!this.album.folderName && !!this.album.tracks);
+  }
+
+  private resetSelectedMedia(): void {
+    this.album = new AudioAlbum();
+    this.album.folderName = '';
+    this.tracksString = '';
   }
 }

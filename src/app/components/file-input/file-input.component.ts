@@ -25,10 +25,14 @@ export class FileInputComponent implements OnInit {
 
   constructor() { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit() {
     this.fileInput = document.getElementById('file-input-file') as HTMLInput;
     this.inputPlaceholder = this.inputMessage;
   }
+
+  // PUBLIC METHODS
 
   onInputChange() {
     this.fileInput = document.getElementById('file-input-file') as HTMLInput;

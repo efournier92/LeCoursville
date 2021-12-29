@@ -23,6 +23,8 @@ export class AdminMediaComponent implements OnInit {
     private jsonService: JsonService,
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
     this.jsonService.successMessagesObservable.subscribe(
       (messages: string[]) => {
@@ -30,6 +32,10 @@ export class AdminMediaComponent implements OnInit {
       }
     );
   }
+
+  // PUBLIC METHODS
+
+  // TODO: Remove redundant methods below
 
   inputFileChangeEvent(files: any): void {
     this.clearMessages();
@@ -43,25 +49,6 @@ export class AdminMediaComponent implements OnInit {
     fileReader.onerror = (error) => {
       console.log(error);
     };
-  }
-
-  httpGet(theUrl) {
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET', theUrl, false); // false for synchronous request
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
-  }
-
-  private formatFileName(name) {
-    if (name.includes('.mp3')) {
-      return name.replace('.mp3', '');
-    }
-
-    return name;
-  }
-
-  inputClearedEvent(): void {
-    this.clearMessages();
   }
 
   private clearMessages(): void {

@@ -6,7 +6,7 @@ describe('MediaTypesService', () => {
   let service: MediaTypesService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ });
     service = TestBed.inject(MediaTypesService);
   });
 

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { RoutingService } from 'src/app/services/routing.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-auth',
@@ -14,18 +15,30 @@ export class AuthComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private routingService: RoutingService,
+    private analyticsService: AnalyticsService,
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
+    this.subscribeToUserObservable();
+    this.analyticsService.logEvent('component_load_auth', { });
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
+      (user: User) => this.user = user
     );
   }
 
+  // PUBLIC METHODS
+
   onSignInSuccess(authData: any): boolean {
     const userData = authData?.authResult?.user;
+
+    this.analyticsService.logEvent('auth_sign_in', { user: userData });
 
     if (!userData) {
       this.authService.signOut();
@@ -39,6 +52,7 @@ export class AuthComponent implements OnInit {
   }
 
   onSignOutButtonClick(): void {
+    this.analyticsService.logEvent('auth_sign_out', { user: this.user });
     const dialogRef = this.authService.openSignOutDialog();
     this.authService.onSignOutDialogClose(dialogRef);
   }

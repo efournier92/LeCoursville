@@ -4,6 +4,9 @@ import { CalendarService } from 'src/app/services/calendar.service';
 import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { User } from 'src/app/models/user';
 
 interface EventsData extends Object {
   events: RecurringEvent[];
@@ -15,6 +18,7 @@ interface EventsData extends Object {
   styleUrls: ['./calendar-printer.component.scss']
 })
 export class CalendarPrinterComponent implements OnInit {
+  user: User;
   activeDate: Date;
   allEvents: RecurringEvent[];
   events: RecurringEvent[];
@@ -30,11 +34,19 @@ export class CalendarPrinterComponent implements OnInit {
     public dialogRef: MatDialogRef<CalendarPrinterComponent>,
     private calendarService: CalendarService,
     @Inject(MAT_DIALOG_DATA) public data: EventsData,
+    private authService: AuthService,
+    private analyticsService: AnalyticsService,
   ) { }
 
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
+    this.subscribeToUserObservable();
+    this.initializeCalendar();
+    this.analyticsService.logEvent('component_load_calendar_printer', { selectedYear: this.selectedYear });
+  }
+
+  initializeCalendar() {
     this.allEvents = this.data.events;
     this.events = this.allEvents;
     this.viewYears = this.calendarService.getViewYears();
@@ -42,15 +54,33 @@ export class CalendarPrinterComponent implements OnInit {
     this.activeDate = new Date('January 1, ' + this.selectedYear);
   }
 
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable(): void {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
+    );
+  }
+
   // PUBLIC METHODS
 
   async downloadPdf(): Promise<void> {
+    this.analyticsService.logEvent('calendar_printer_pdf_download', {
+      user: this.user, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      shouldPrintAnniversaries: this.shouldPrintAnniversaries
+    });
+
     await this.preparePdf();
     this.pdf.save(`LeCoursville_Calendar_${this.selectedYear}.pdf`);
     this.finishPrintJob();
   }
 
   async printPdf() {
+    this.analyticsService.logEvent('calendar_printer_pdf_download', {
+      user: this.user, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      shouldPrintAnniversaries: this.shouldPrintAnniversaries
+    });
+
     await this.preparePdf();
     this.pdf.autoPrint();
     window.open(this.pdf.output('bloburl').toString());

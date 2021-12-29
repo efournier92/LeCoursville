@@ -6,7 +6,7 @@ describe('PushIdService', () => {
   let service: PushIdFactory;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ });
     service = TestBed.inject(PushIdFactory);
   });
 

@@ -9,5 +9,7 @@ export class AdminComponent implements OnInit {
 
   constructor() { }
 
+  // LIFECYCLE EVENTS
+
   ngOnInit(): void { }
 }

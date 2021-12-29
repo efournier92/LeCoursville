@@ -16,12 +16,10 @@ export class MediaTypesCheckboxesComponent implements OnInit {
     private mediaTypesService: MediaTypesService
   ) { }
 
-  ngOnInit(): void {
-    const types = this.mediaTypesService.getVisibleTypes();
+  // LIFECYCLE HOOKS
 
-    types.forEach(type => {
-      this.allTypes.push(type as MediaType);
-    });
+  ngOnInit(): void {
+    this.initializeTypes();
   }
 
   onSelectMediaType(type: MediaType): void {
@@ -34,5 +32,15 @@ export class MediaTypesCheckboxesComponent implements OnInit {
     }
 
     this.selectMediaTypeEvent.emit(selectedTypes);
+  }
+
+  // HELPER METHODS
+
+  private initializeTypes(): void {
+    const types = this.mediaTypesService.getVisibleTypes();
+
+    types.forEach(type => {
+      this.allTypes.push(type as MediaType);
+    });
   }
 }

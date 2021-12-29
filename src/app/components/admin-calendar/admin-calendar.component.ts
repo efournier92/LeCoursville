@@ -16,6 +16,8 @@ export class AdminCalendarComponent implements OnInit {
     private calendarService: CalendarService,
   ) { }
 
+  // LIFECYCLE EVENTS
+
   ngOnInit(): void {
     this.calendarService.calendarEventsObservable.subscribe(
       (calendarEvents: RecurringEvent[]) => {
@@ -24,6 +26,8 @@ export class AdminCalendarComponent implements OnInit {
     );
   }
 
+  // PUBLIC METHODS
+
   onSaveEvent(event: RecurringEvent): void {
     this.calendarService.updateCalendarEvent(event);
   }
@@ -31,5 +35,4 @@ export class AdminCalendarComponent implements OnInit {
   onDeleteEvent(event: RecurringEvent): void {
     this.calendarService.deleteCalendarEvent(event);
   }
-
 }

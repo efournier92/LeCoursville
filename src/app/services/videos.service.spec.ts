@@ -6,7 +6,7 @@ describe('VideoService', () => {
   let service: MediaService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ });
     service = TestBed.inject(MediaService);
   });
 

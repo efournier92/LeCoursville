@@ -12,7 +12,7 @@ import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
   providedIn: 'root'
 })
 export class AuthService {
-  private userSource = new BehaviorSubject({});
+  private userSource = new BehaviorSubject({ });
   userObservable = this.userSource.asObservable();
   userObj: AngularFireObject<User>;
 
