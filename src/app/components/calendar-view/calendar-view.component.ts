@@ -1,9 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, Inject, AfterViewInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { CalendarService } from 'src/app/services/calendar.service';
 import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 import { CalendarView } from 'angular-calendar';
-import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { DOCUMENT } from '@angular/common';
@@ -28,61 +26,45 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   constructor(
     public dialog: MatDialog,
     private auth: AuthService,
-    private calendarService: CalendarService,
     @Inject(DOCUMENT) private document: Document
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void {
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
-    );
+    this.subscribeToUserObservable();
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this.ensureTodaysDateIsInView();
   }
 
-  ensureTodaysDateIsInView() {
+  // PUBLIC METHODS
+
+  isEventInActiveMonth(event: RecurringEvent): boolean {
+    return event.date.getMonth() === this.viewDate.getMonth();
+  }
+
+  // HELPER METHODS
+
+  private ensureTodaysDateIsInView(): void {
     const node = this.document.querySelector('.cal-cell.cal-day-cell.cal-today');
 
     if (node) {
       scrollIntoView(node, {
         scrollMode: 'if-needed',
         block: 'nearest',
-        inline: 'nearest',
+        inline: 'center',
       });
     }
   }
 
-  refreshCalendar(): void {
-    this.refreshView.emit();
-  }
+  // SUBSCRIPTIONS
 
-  isEventInActiveMonth(event: RecurringEvent) {
-    return event.date.getMonth() === this.viewDate.getMonth();
-  }
-
-  openDialog(event: RecurringEvent): void {
-    if (!this.user || !this.user.roles || this.user.roles.admin !== true) {
-      return;
-    }
-
-    const dialogRef = this.dialog.open(CalendarDialogComponent, {
-      width: '30%',
-      data: event,
-    });
-
-    dialogRef.afterClosed().subscribe(
-      (result: RecurringEvent) => {
-        if (!result) { return; }
-        if (result.id) {
-          this.calendarService.updateCalendarEvent(result);
-        } else {
-          this.calendarService.addCalendarEvent(result);
-        }
-        this.refreshCalendar();
+  private subscribeToUserObservable(): void {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
       }
     );
   }

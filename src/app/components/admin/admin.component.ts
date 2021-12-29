@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
   selector: 'app-admin',
@@ -8,21 +7,7 @@ import { RoutingService } from 'src/app/services/routing.service';
 })
 export class AdminComponent implements OnInit {
 
-  constructor(
-    private routingService: RoutingService,
-  ) { }
+  constructor() { }
 
   ngOnInit(): void { }
-
-  onClickUsersRoute() {
-    this.routingService.NavigateToAdminUsers();
-  }
-
-  onClickMediaRoute() {
-    this.routingService.NavigateToAdminMedia();
-  }
-
-  onClickCalendarRoute() {
-    this.routingService.NavigateToAdminCalendar();
-  }
 }

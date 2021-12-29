@@ -47,7 +47,7 @@ html, body {
   font-size: 1.2em;
 }
 
-#calendar-print-view .cal-month-view .cal-day-cell.cal-today {
+.calendar-print-view .cal-month-view .cal-day-cell.cal-today {
   background-color: white;
 }
 
@@ -85,10 +85,6 @@ app-calendar-cell {
   font-size: 0.8em;
 }
 
-.cal-month-view .cal-header .cal-cell {
-  // font-style: italic;
-}
-
 th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
   cursor: pointer;
 }
@@ -97,10 +93,23 @@ html .mat-paginator, html .mat-paginator-page-size .mat-select-trigger, body .ma
   display: none;
 }
 
-// .cal-month-view .cal-day-cell:not(:last-child) {
-//   border-right: 2px solid #616161;
-// }
+.cal-month-view {
+  background-color: #fafafa;
+}
 
-// .cal-month-view .cal-day-cell {
-//   border-right: 2px solid #616161;
-// }
+.cal-month-view .cal-day-number {
+  opacity: 0.6;
+}
+
+.cal-month-view .cal-day-cell.cal-out-month .cal-day-number {
+  opacity: 0;
+}
+
+.cal-month-view .cal-cell-row .cal-cell:hover, 
+.cal-month-view .cal-cell.cal-has-events.cal-open {
+  background-color: #fff;
+}
+
+.cal-month-view .cal-cell-row:hover {
+  background-color: #fff;
+}

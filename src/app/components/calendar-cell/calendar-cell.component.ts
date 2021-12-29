@@ -16,7 +16,11 @@ export class CalendarCellComponent implements OnInit {
     private calendarService: CalendarService,
   ) { }
 
+  // LIFECYCLE HOOKS
+
   ngOnInit(): void { }
+
+  // PUBLIC METHODS
 
   getYearsSince(event: RecurringEvent): number {
     const eventYear: number = event.date.getUTCFullYear();
@@ -26,6 +30,8 @@ export class CalendarCellComponent implements OnInit {
   shouldDisplayEvent(): boolean {
     return !this.isNonLivingAnniversary();
   }
+
+  // HELPER METHODS
 
   private isNonLivingAnniversary(): boolean {
     return AppSettings.calendar.excludeNonLivingAnniversaries

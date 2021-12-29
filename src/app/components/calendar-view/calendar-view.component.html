@@ -1,14 +1,14 @@
 <div class="calendar-view-container">
-  <div class="calendar-date d-flex flex-row justify-content-between">
-    <img class="calendar-view-logo-image" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" />
+  <!-- <div class="calendar-date d-flex flex-row justify-content-between"> -->
+    <!-- <img class="calendar-view-logo-image" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" /> -->
     <div class="d-flex flex-column justify-content-center">
       <div>
         <div class="calendar-title-name">LeCoursville Calendar</div>
-        <h3 class="calendar-title-date">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</h3>
+        <div class="calendar-title-date">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</div>
       </div>
     </div>
-    <img class="calendar-view-logo-image" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" />
-  </div>
+    <!-- <img class="calendar-view-logo-image" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" /> -->
+  <!-- </div> -->
   <ng-template #customCellTemplate let-day="day" let-locale="locale">
     <div>
       <div class="cal-cell-top">

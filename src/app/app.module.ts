@@ -38,7 +38,6 @@ import { AppComponent } from 'src/app/app.component';
 import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { CalendarCellComponent } from 'src/app/components/calendar-cell/calendar-cell.component';
 import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
-import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { CalendarViewComponent } from 'src/app/components/calendar-view/calendar-view.component';
 import { ChatComponent } from 'src/app/components/chat/chat.component';
@@ -76,7 +75,6 @@ import { AdminRoutingComponent } from './components/admin-routing/admin-routing.
     AuthComponent,
     CalendarCellComponent,
     CalendarComponent,
-    CalendarDialogComponent,
     CalendarPrinterComponent,
     CalendarViewComponent,
     ChatComponent,
@@ -142,7 +140,6 @@ import { AdminRoutingComponent } from './components/admin-routing/admin-routing.
     AppComponent,
   ],
   entryComponents: [
-    CalendarDialogComponent,
     CalendarPrinterComponent,
     ConfirmPromptComponent,
   ],

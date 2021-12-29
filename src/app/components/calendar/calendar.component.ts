@@ -3,13 +3,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
-import { CalendarDialogComponent } from 'src/app/components/calendar-dialog/calendar-dialog.component';
 import { CalendarService, Months } from 'src/app/services/calendar.service';
 import { Calendar } from 'src/app/models/calendar';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
-import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 
@@ -25,7 +23,7 @@ export class CalendarComponent implements OnInit {
   user: User;
   view = CalendarView.Month;
   months: string[] = Months;
-  years: string[];
+  years: number[];
   viewDate: Date = new Date();
   viewMonth: string;
   selectedYear: number;
@@ -41,33 +39,22 @@ export class CalendarComponent implements OnInit {
     public printerPrompt: MatDialog,
     public http: HttpClient,
     private calendarService: CalendarService,
-    private confirmPrompt: ConfirmPromptService,
     private analyticsService: AnalyticsService,
   ) { }
 
+  // LIFECYCLE
+
   ngOnInit(): void {
-    this.years = this.calendarService.getViewYears();
-    const now = new Date();
-    this.selectedYear = now.getFullYear();
-    const monthIndex: number = now.getMonth();
-    this.viewMonth = this.months[monthIndex];
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
-    );
-    this.calendarService.calendarEventsObservable.subscribe(
-      (events: RecurringEvent[]) => {
-        this.allEvents = events;
-        this.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
-      }
-    );
-    this.calendarService.calendarsObservable.subscribe(
-      (calendars: Array<Calendar>) => {
-        this.allCalendars = calendars;
-      }
-    );
+    this.initializeDates();
+
+    this.subscribeToUserObservable();
+
+    this.subscribeTocalendarEventsObservable();
+
+    this.subscribeToCalendarsObservable();
   }
+
+  // PUBLIC METHODS
 
   toggleBirthdays($event: any): void {
     const showBirthdays = $event.checked;
@@ -104,75 +91,65 @@ export class CalendarComponent implements OnInit {
     this.analyticsService.logEvent('calendar_change_view', date);
   }
 
-  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
-    this.events = new Array<RecurringEvent>();
-    for (const event of events) {
-      if (event.type === 'birth' && birthdays === false) {
-        continue;
-      }
-      if (event.type === 'anniversary' && anniversaries === false) {
-        continue;
-      }
-      const date = new Date(event.date);
-      date.setFullYear(year);
-      event.start = date;
-      event.date = new Date(event.date);
-      this.events.push(event);
-    }
-  }
-
-  private refreshCalendarView(): void {
-    this.refresh.next();
-  }
-
-  openDialog(event: any): void {
-    const dialogRef = this.dialog.open(CalendarDialogComponent, {
-      data: event,
-    });
-    dialogRef.afterClosed().subscribe(
-      (result: RecurringEvent) => {
-        if (!result) { return; }
-        const confirmPrompRef = this.confirmPrompt.openDialog(
-          'Are You Sure?',
-          'Do you want to add this event to LeCoursville?',
-        );
-        confirmPrompRef.afterClosed().subscribe(
-          (confirmedAction: boolean) => {
-            if (confirmedAction) {
-              if (result.id) {
-                this.calendarService.updateCalendarEvent(result);
-              } else {
-                this.calendarService.addCalendarEvent(result);
-              }
-              this.refreshCalendarView();
-            }
-          }
-        );
-      }
-    );
-  }
-
-  newEvent(): void {
-    const event = new Object as RecurringEvent;
-    event.isLiving = true;
-    this.openDialog(event);
-    this.analyticsService.logEvent('calendar_create_new_event', event);
-  }
-
-  saveEvents(): void {
-    for (const event of this.events) {
-      this.calendarService.addCalendarEvent(event);
-    }
-    this.analyticsService.logEvent('calendar_save_events', {});
-  }
-
   printPdf(): void {
-    this.openPrintControlsPrompt();
-  }
-
-  openPrintControlsPrompt(): void {
     this.printerPrompt.open(CalendarPrinterComponent, {
       data: { events: this.allEvents },
     });
   }
+
+    // SUBSCRIPTIONS
+
+    private subscribeToUserObservable(): void {
+      this.auth.userObservable.subscribe(
+        (user: User) => {
+          this.user = user;
+        }
+      );
+    }
+
+    private subscribeTocalendarEventsObservable(): void {
+      this.calendarService.calendarEventsObservable.subscribe(
+        (events: RecurringEvent[]) => {
+          this.allEvents = events;
+          this.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+        }
+      );
+    }
+
+    private subscribeToCalendarsObservable(): void {
+      this.calendarService.calendarsObservable.subscribe(
+        (calendars: Array<Calendar>) => {
+          this.allCalendars = calendars;
+        }
+      );
+    }
+
+    private updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
+      this.events = new Array<RecurringEvent>();
+      for (const event of events) {
+        if (event.type === 'birth' && birthdays === false) {
+          continue;
+        }
+        if (event.type === 'anniversary' && anniversaries === false) {
+          continue;
+        }
+        const date = new Date(event.date);
+        date.setFullYear(year);
+        event.start = date;
+        event.date = new Date(event.date);
+        this.events.push(event);
+      }
+    }
+
+    // HELPERS
+
+    private initializeDates(): void {
+      this.years = this.calendarService.getViewYears();
+
+      const now = new Date();
+      this.selectedYear = now.getFullYear();
+
+      const monthIndex: number = now.getMonth();
+      this.viewMonth = this.months[monthIndex];
+    }
 }

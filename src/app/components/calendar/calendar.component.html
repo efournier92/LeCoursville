@@ -1,4 +1,4 @@
-<div *ngIf="user && user.name">
+<div *ngIf="user?.name">
 
   <div class="d-flex mt-2 calendar-checkbox-tools-container">
     <div class="col-xs-8 calendar-checkbox-container">
@@ -8,12 +8,6 @@
       <mat-checkbox class="calendar-checkbox" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
         Anniversaries
       </mat-checkbox>
-    </div>
-    <span class="spacer"></span>
-    <div class="col-xs-2" *ngIf="user && user.roles.admin === true">
-      <button mat-button (click)="newEvent()">
-        <mat-icon>add</mat-icon> New Event
-      </button>
     </div>
   </div>
 
@@ -29,7 +23,7 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field class="year-select-container ml-2">
-        <mat-select placeholder="Year" value="{{ selectedYear.toString() }}"
+        <mat-select placeholder="Year" [value]="selectedYear"
           (selectionChange)="changeSelectedYear($event)">
           <div *ngFor="let year of years">
             <mat-option [value]="year">
@@ -46,17 +40,20 @@
     </div>
   </div>
 
-  <div class="d-flex justify-content-center">
-    <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
-      [(viewDate)]="viewDate" class="calendar-arrow-button-container">
-      <mat-icon class="calendar-arrow-button">keyboard_arrow_left</mat-icon>
-    </div>
-    <div class="arrow-button" mat-button (click)="changeView(viewDate)" mwlCalendarNextView [view]="view"
-      [(viewDate)]="viewDate" class="calendar-arrow-button-container">
-      <mat-icon class="calendar-arrow-button">keyboard_arrow_right</mat-icon>
+  <div class="w-100 d-flex justify-content-center">
+    <div class="d-flex w-75 justify-content-around">
+      <div class="" (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+        [(viewDate)]="viewDate">
+        <mat-icon class="calendar-arrow-button" (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+          [(viewDate)]="viewDate">keyboard_arrow_left</mat-icon>
+      </div>
+      <div class="" (click)="changeView(viewDate)" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+        <mat-icon class="calendar-arrow-button">keyboard_arrow_right</mat-icon>
+      </div>
     </div>
   </div>
 
-  <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events">
+  <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear"
+    [events]="events">
   </app-calendar-view>
 </div>

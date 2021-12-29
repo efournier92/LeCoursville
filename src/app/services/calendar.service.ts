@@ -66,12 +66,12 @@ export class CalendarService {
     this.calendarEvents.remove(event.id);
   }
 
-  getViewYears(): Array<string> {
+  getViewYears(): number[] {
     const thisYear: number = new Date().getFullYear();
-    let year = thisYear - 3;
-    const years: string[] = [];
+    let year = thisYear - 1;
+    const years: number[] = [];
     for (let i = 0; i < 7; i++) {
-      years.push(year.toString());
+      years.push(year);
       year += 1;
     }
     return years;

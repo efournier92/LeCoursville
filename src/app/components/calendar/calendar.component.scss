@@ -3,7 +3,7 @@
 }
 
 .calendar-checkbox-tools-container {
-  margin-left: 6px;
+  margin: 0 1em;
 }
 
 .calendar-checkbox-container {
@@ -17,12 +17,8 @@
 }
 
 .calendar-date-tools-container {
-  // margin-left: 20px;
+  margin: 0 2em;
 }
-
-// .calendar-cell-container {
-//   font-weight: bold;
-// }
 
 .upload-calendar-year-select {
   width: 5em;
@@ -30,10 +26,6 @@
 
 .calendar-print-button-container {
   margin-right: 10px;
-}
-
-.spacer {
-  flex: 1 1 auto;
 }
 
 .mat-button {
@@ -61,11 +53,6 @@ a[type="download"] {
   display: none;
 }
 
-.arrow-button {
-  font-size: 2em;
-  height: 2em;
-}
-
 .calendar-print-button-icon {
   margin-right: 4px;
 }
@@ -77,9 +64,9 @@ a[type="download"] {
 }
 
 .calendar-arrow-button {
-  font-size: 2em;
-  width: 1em;
-  height: 1em;
+  font-size: 5em;
+  width: 100%;
+  height: 100%;
 }
 
 .calendar-view-component {
