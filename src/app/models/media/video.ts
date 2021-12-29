@@ -7,20 +7,25 @@ export class Video extends Media {
 
     constructor(
         id: string = '',
-        name: string = '',
-        url: string = '',
-        icon: string = '',
-        location: string = '',
+        title: string = '',
+        downloadUrl: string = '',
+        iconUrl: string = '',
         date: string = '',
         duration: string = '',
-        fileName: string = '',
       ) {
-        const type = MediaConstants.VIDEO.id;
-        const format = MediaConstants.VIDEO.format;
+        super();
 
-        super(id, name, date, icon, url, format, type, fileName);
+        this.id = id;
+        this.title = title;
+        this.date = date;
 
-        this.locationId = location;
+        this.type = MediaConstants.VIDEO.id;
+        this.format = MediaConstants.VIDEO.format;
+
         this.duration = duration;
+        this.urls = {
+          download: downloadUrl,
+          icon: iconUrl,
+        };
     }
 }

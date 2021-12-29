@@ -44,6 +44,6 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   }
 
   private updateVideoUrl(video: Video): void {
-    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(video.url);
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(video.urls.download);
   }
 }

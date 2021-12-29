@@ -7,20 +7,28 @@ export class Doc extends Media {
 
     constructor(
         id: string = '',
-        name: string = '',
-        url: string = '',
-        icon: string = '',
-        locationId: string = '',
+        title: string = '',
+        downloadUrl: string = '',
+        iconUrl: string = '',
         date: string = '',
         duration: string = '',
-        fileName: string = '',
       ) {
         const type = MediaConstants.DOC.id;
         const format = MediaConstants.DOC.format;
 
-        super(id, name, date, icon, url, format, type, fileName);
+        super();
 
-        this.locationId = locationId;
+        this.id = id;
+        this.title = title;
+        this.date = date;
         this.duration = duration;
+
+        this.type = MediaConstants.DOC.id;
+        this.format = MediaConstants.DOC.format;
+
+        this.urls = {
+          download: downloadUrl,
+          icon: iconUrl,
+        };
     }
 }

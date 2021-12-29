@@ -36,7 +36,7 @@ export class AnalyticsService {
   logMediaSelect(media: Media) {
     const data = {
       id: media.id,
-      name: media.name,
+      name: media.title,
       user_id: this.user.id,
     };
 

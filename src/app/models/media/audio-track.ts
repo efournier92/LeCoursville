@@ -4,11 +4,14 @@ import { Media } from 'src/app/models/media/media';
 export class AudioTrack extends Media {
     constructor(
         id: string = '',
-        name: string = '',
-        locationId: string = '',
+        title: string = '',
       ) {
-        const type = MediaConstants.AUDIO_TRACK.id;
+        super();
 
-        super(id, name, locationId, '', '', '', '', '', type, [], '');
+        this.id = id;
+        this.title = title;
+
+        this.type = MediaConstants.AUDIO_TRACK.id;
+        this.format = MediaConstants.AUDIO_TRACK.format;
     }
 }

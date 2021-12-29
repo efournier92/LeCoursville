@@ -123,7 +123,7 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private shouldSetCurrentMedia(media: Media) {
-    return media?.urls?.location && media?.type;
+    return media?.urls?.download && media?.type;
   }
 
   private setCurrentMedia(media: Media) {

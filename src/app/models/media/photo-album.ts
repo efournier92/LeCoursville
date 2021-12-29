@@ -6,18 +6,26 @@ export class PhotoAlbum extends Media {
 
     constructor(
         id: string = '',
-        name: string = '',
-        url: string = '',
-        icon: string = '',
+        title: string = '',
+        downloadUrl: string = '',
+        iconUrl: string = '',
         date: string = '',
-        fileName: string = '',
         photos: string[] = new Array<string>(),
       ) {
-        const type = MediaConstants.PHOTO_ALBUM.id;
-        const format = MediaConstants.PHOTO_ALBUM.format;
+        super();
 
-        super(id, name, date, icon, url, format, type, fileName);
+        this.id = id;
+        this.title = title;
+        this.date = date;
+
+        this.type = MediaConstants.PHOTO_ALBUM.id;
+        this.format = MediaConstants.PHOTO_ALBUM.format;
 
         this.listing = photos;
+
+        this.urls = {
+          download: downloadUrl,
+          icon: iconUrl
+        };
     }
 }

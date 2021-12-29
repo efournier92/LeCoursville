@@ -61,6 +61,10 @@ export class MediaListComponent implements OnInit {
     return this.mediaIconsService.getPlaceholderNameByMediaType(mediaType);
   }
 
+  shouldDisplayMedia(media: Media): boolean {
+    return media?.isHidden !== true;
+  }
+
   onImageLoaded(media: any): void {
     media.isIconLoaded = true;
   }
@@ -84,4 +88,5 @@ export class MediaListComponent implements OnInit {
   shouldShowLoadMore(): boolean {
     return this.allMedia?.length && this.loadedMedia.length !== this.allMedia.length;
   }
+
 }

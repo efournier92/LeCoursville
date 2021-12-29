@@ -22,10 +22,10 @@ export class DocViewerNgxExtendedComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isLoading = true;
 
-    this.url = this.doc.url;
+    this.url = this.doc.urls.download;
 
     this.eventsSubscription = this.events.subscribe((media) => {
-      this.url = media.url;
+      this.url = media.urls.download;
     });
   }
 

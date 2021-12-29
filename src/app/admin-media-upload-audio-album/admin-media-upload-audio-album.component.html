@@ -3,24 +3,26 @@
         <form class="audio-album-upload-form">
             <mat-form-field class="admin-upload-input">
                 <mat-label>Name</mat-label>
-                <input type="text" matInput name="albumName" [(ngModel)]="album.name">
-            </mat-form-field><br />
+                <input type="text" matInput name="albumTitle" [(ngModel)]="album.title">
+            </mat-form-field>
             <mat-form-field class="admin-upload-input">
-                <mat-label>Directory ID</mat-label>
-                <input type="text" matInput name="albumLocationId" [(ngModel)]="album.ids.location">
-            </mat-form-field><br />
+                <mat-label>Folder Name</mat-label>
+                <input type="text" matInput name="albumFolderName" [(ngModel)]="album.folderName">
+            </mat-form-field>
             <mat-form-field class="admin-upload-input">
-                <mat-label>Cover ID</mat-label>
-                <input type="text" matInput name="albumCoverId" [(ngModel)]="album.ids.icon">
-            </mat-form-field><br />
+                <mat-label class="optional-field">Artist</mat-label>
+                <input type="text" matInput name="albumArtist" [(ngModel)]="album.artist">
+            </mat-form-field>
             <mat-form-field class="admin-upload-input">
-                <mat-label>Download ID</mat-label>
-                <input type="text" matInput name="albumDownloadId" [(ngModel)]="album.ids.download">
-            </mat-form-field><br />
-            <mat-form-field class="admin-upload-input">
-                <mat-label>Date</mat-label>
+                <mat-label class="optional-field">Date</mat-label>
                 <input type="text" matInput name="albumDate" [(ngModel)]="album.date">
-            </mat-form-field><br />
+            </mat-form-field>
+            <mat-form-field class="admin-upload-input" *ngIf="!album.listing">
+                <mat-label>Tracks</mat-label>
+                <textarea matInput name="albumTracks" [(ngModel)]="tracksString" cdkTextareaAutosize
+                    #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
+            </mat-form-field>
+            <mat-checkbox class="admin-upload-input">Should Hide from Lists?</mat-checkbox>
             <button mat-button class="admin-media-form-action-button admin-media-form-action-button-upload"
                 (click)="onUploadSelectedMedia()">
                 <span *ngIf="!album.id">Upload</span>
@@ -36,8 +38,8 @@
             </div>
             <mat-divider class="admin-media-upload-divider"></mat-divider>
             <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-                [shouldShowLabel]="true" [shouldShowClearButton]="true" (inputFileChangeEvent)="inputFileChangeEvent($event)"
-                (inputClearedEvent)="inputClearedEvent()">
+                [shouldShowLabel]="true" [shouldShowClearButton]="true"
+                (inputFileChangeEvent)="inputFileChangeEvent($event)" (inputClearedEvent)="inputClearedEvent()">
             </app-file-input>
         </form>
     </div>

@@ -56,9 +56,9 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
 
   private mapMediaToTrack(media: Media): Track {
     return {
-      title: media.name,
-      artist: media.author,
-      link: media.urls.location,
+      title: media.title,
+      artist: media.artist,
+      link: media.urls.download,
     };
   }
 }

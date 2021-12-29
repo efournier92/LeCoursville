@@ -10,7 +10,7 @@
     </div> -->
 
     <div class="row d-flex flex-column" *ngFor="let media of filteredMedia">
-        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" (click)="onMediaSelect(media)">
+        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" *ngIf="shouldDisplayMedia(media)" (click)="onMediaSelect(media)">
             <div class="row">
 
                 <div class="col-4 imageContainer">
@@ -26,7 +26,7 @@
 
                 <div class="col-8 justify-content-start">
                     <div class="media-details-name">
-                        {{ media.name }}
+                        {{ media.title }}
                     </div>
                     <div class="media-details-location">
                         {{ media.location }}

@@ -58,27 +58,12 @@ export class JsonService {
   }
 
   private buildSuccessfulUploadMessage(mediaFile: Media): string {
-    return `Successfully uploaded ${mediaFile.name}`;
+    return `Successfully uploaded ${mediaFile.title}`;
   }
 
   private addSuccessMessage(message: string): void {
     this.successMessages.push(message);
     this.successMessagesSource.next(this.successMessages);
-  }
-
-  private constructMediaObject(mediaFile: Media, newMedia: Media) {
-    // newMedia.id = this.pushIdFactory.create();
-    // newMedia.name = mediaFile.name || "";
-    // newMedia.date = mediaFile.date || "";
-    // newMedia.fileName = mediaFile.fileName || "";
-    // newMedia.type = mediaFile.type || "";
-    // newMedia.location.id = mediaFile.location.id || "";
-
-    // newMedia.ids.location = this.getIconUrl(mediaFile);
-    // newMedia.location.id = this.extractDriveAssetIdFromUrl(mediaFile.url);
-    // newMedia.url = this.createDrivePhotoUrl(newMedia.location.id);
-
-    // return newMedia;
   }
 
   uploadVideo(mediaFile: any): void {
@@ -151,18 +136,6 @@ export class JsonService {
     this.mediaService.create(album);
   }
 
-  private getIconUrl(mediaFile: Media): string {
-    if (!mediaFile.ids.location) {
-      return '';
-    }
-
-    const ids = this.extractDriveAssetIdFromUrl(mediaFile.ids.location);
-
-    return mediaFile?.ids.location?.includes('drive.google.com') && !mediaFile?.ids.location?.includes('http')
-      ? this.createDrivePhotoUrl(ids)
-      : mediaFile.ids.location;
-  }
-
   private extractDriveAssetIdFromUrl(url: string): string {
     if (!url?.includes('drive.google.com')) {
       return url || '';
@@ -172,17 +145,4 @@ export class JsonService {
       .replace('https://drive.google.com/file/d/', '')
       .replace('/view?usp=sharing', '');
   }
-
-  private createDrivePhotoUrl(assetId: string): string {
-    return `https://drive.google.com/uc?id=${assetId}`;
-  }
-
-  private createDriveVideoUrl(assetId: string): string {
-    return `https://drive.google.com/file/d/${assetId}/preview`;
-  }
-
-  private createDriveDocUrl(assetId: string): string {
-    return `https://drive.google.com/uc?id=${assetId}&export=download`;
-  }
-
 }

@@ -15,6 +15,8 @@ import { MediaConstants } from '../constants/media-constants';
 export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   album: AudioAlbum = new AudioAlbum();
   user: User;
+  folderName: string;
+  tracksString: string;
 
   constructor(
     private authService: AuthService,
@@ -39,8 +41,15 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   }
 
   onUploadSelectedMedia(): void {
-    this.audioAlbumUploadService.uploadAudioAlbum(this.album);
+    if (!this.isAlbumInputValid()) { return; }
+
+    this.audioAlbumUploadService.upload(this.album, this.album.folderName, this.tracksString);
+
     this.resetSelectedMedia();
+  }
+
+  isAlbumInputValid(): boolean {
+    return (!!this.album.title && !!this.album.folderName && !!this.album.tracks);
   }
 
   onDeleteSelectedMedia(media: Media): void {
@@ -54,6 +63,8 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   private resetSelectedMedia(): void {
     this.album = new AudioAlbum();
+    this.album.folderName = '';
+    this.tracksString = '';
   }
 
   inputClearedEvent(): void {

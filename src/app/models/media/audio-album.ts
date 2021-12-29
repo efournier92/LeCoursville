@@ -7,20 +7,26 @@ export class AudioAlbum extends Media {
 
     constructor(
         id: string = '',
-        name: string = '',
-        locationId: string = '',
-        iconId: string = '',
-        downloadId: string = '',
+        title: string = '',
+        iconUrl: string = '',
+        downloadUrl: string = '',
         date: string = '',
-        author: string = '',
-        fileName: string = '',
+        artist: string = '',
         tracks: Track[] = new Array<Track>(),
       ) {
-        const type = MediaConstants.AUDIO_ALBUM.id;
-        const format = MediaConstants.AUDIO_ALBUM.format;
 
-        super(id, name, locationId, iconId, downloadId, date, author, fileName, type, tracks, format);
+        super();
 
+        this.id = id;
+        this.title = title;
+        this.date = date;
+        this.artist = artist;
+        this.type = MediaConstants.AUDIO_ALBUM.id;
+        this.format = MediaConstants.AUDIO_ALBUM.format;
         this.tracks = tracks;
+        this.urls = {
+          download: downloadUrl,
+          icon: iconUrl
+        };
     }
 }
