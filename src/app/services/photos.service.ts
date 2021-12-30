@@ -125,9 +125,9 @@ export class PhotosService {
     return upload;
   }
 
-  getYears(): Array<number> {
+  getYears(): number[] {
     const thisYear: number = new Date().getFullYear();
-    const years: Array<number> = Array<number>();
+    const years: number[] = [];
     for (let i = 1800; i <= thisYear; i++) {
       years.push(i);
     }

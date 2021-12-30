@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media, UploadableMedia } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -15,7 +15,7 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
 export class MediaListComponent implements OnInit {
   @Input() mediaTypesToShow: string[];
 
-  @Output() mediaClickEvent = new EventEmitter<Media>();
+  @Output() mediaClickEvent = new EventEmitter<UploadableMedia>();
 
   user: User;
   allMedia: UploadableMedia[] = [];
@@ -60,7 +60,7 @@ export class MediaListComponent implements OnInit {
     return this.mediaIconsService.getPlaceholderNameByMediaType(mediaType);
   }
 
-  shouldDisplayMedia(media: Media): boolean {
+  shouldDisplayMedia(media: UploadableMedia): boolean {
     return media?.isHidden !== true;
   }
 
@@ -68,7 +68,7 @@ export class MediaListComponent implements OnInit {
     media.isIconLoaded = true;
   }
 
-  onMediaSelect(media: Media): void {
+  onMediaSelect(media: UploadableMedia): void {
     this.mediaClickEvent.emit(media);
     this.analyticsService.logEvent('media_list_select', { selectedMedia: media, user: this.user.id });
   }

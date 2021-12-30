@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
-import { Media, UploadableMedia } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { Video } from 'src/app/models/media/video';
 import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import { Doc } from 'src/app/models/media/doc';
@@ -57,7 +57,7 @@ export class JsonService {
     });
   }
 
-  private buildSuccessfulUploadMessage(mediaFile: Media): string {
+  private buildSuccessfulUploadMessage(mediaFile: UploadableMedia): string {
     return `Successfully uploaded ${mediaFile.title}`;
   }
 
@@ -90,7 +90,7 @@ export class JsonService {
     // this.mediaService.create(album);
   }
 
-  uploadPhoto(mediaFile: Media) {
+  uploadPhoto(mediaFile: UploadableMedia) {
     // const photo = this.constructMediaObject(mediaFile, new Media());
 
     // this.mediaService.create(photo);
@@ -99,7 +99,7 @@ export class JsonService {
   }
 
   private uploadPhotos(photos: []) {
-    // let photoIds = new Array<string>();
+    // let photoIds = [];
 
     // photos.forEach((photo: Media) => {
     //   const photoId = this.uploadPhoto(photo);
@@ -118,7 +118,7 @@ export class JsonService {
   }
 
   uploadAudioTracks(tracks: UploadableMedia[]) {
-    const ids = new Array<string>();
+    const ids = [];
 
     tracks.forEach((track: UploadableMedia) => {
       const trackId = this.uploadAudioTrack(track);

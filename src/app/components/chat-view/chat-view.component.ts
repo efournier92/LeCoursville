@@ -22,7 +22,7 @@ export class ChatViewComponent implements OnInit {
 
   user: User;
   highlights: Highlight = new Highlight();
-  likers: string[] = new Array<string>();
+  likers: string[] = [];
 
   constructor(
     public authService: AuthService,
@@ -47,7 +47,7 @@ export class ChatViewComponent implements OnInit {
 
   likeMessage(): void {
     if (!this.message.likes) {
-      this.message.likes = new Array<Like>();
+      this.message.likes = [];
     }
     for (const like of this.message.likes) {
       if (like.userId === this.user.id) {
@@ -73,7 +73,7 @@ export class ChatViewComponent implements OnInit {
     const authorName: string = this.user.name;
     const replyLevel: number = this.message.replyLevel + 1;
     if (!this.message.replies) {
-      this.message.replies = new Array<Message>();
+      this.message.replies = [];
     }
     this.message.replies.unshift(new Message('', '', '', authorId, authorName, true, true, replyLevel));
 
@@ -120,7 +120,7 @@ export class ChatViewComponent implements OnInit {
     this.likers = this.getLikers();
 
     if (!this.message.likes) {
-      this.message.likes = new Array<Like>();
+      this.message.likes = [];
     }
 
     if (this.message.replies) {
@@ -143,7 +143,7 @@ export class ChatViewComponent implements OnInit {
   }
 
   private getLikers(): string[] {
-    const likers: string[] = new Array<string>();
+    const likers: string[] = [];
     if (!this.message.likes) {
       return likers;
     }

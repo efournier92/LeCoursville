@@ -4,7 +4,7 @@ import { User } from 'src/app/models/user';
 import { AudioAlbumUploadService } from 'src/app/services/audio-album-upload.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
-import { Media, UploadableMedia } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { MediaConstants } from 'src/app/constants/media-constants';
 
 @Component({

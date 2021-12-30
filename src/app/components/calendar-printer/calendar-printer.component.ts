@@ -22,7 +22,7 @@ export class CalendarPrinterComponent implements OnInit {
   activeDate: Date;
   allEvents: RecurringEvent[];
   events: RecurringEvent[];
-  viewYears: Array<number>;
+  viewYears: number[];
   shouldPrintBirthdays = true;
   shouldPrintAnniversaries = true;
   selectedYear: number;
@@ -165,7 +165,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   private updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
     if (!events) { return; }
-    this.events = new Array<RecurringEvent>();
+    this.events = [];
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false) {
         continue;

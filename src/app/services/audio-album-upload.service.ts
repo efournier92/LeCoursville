@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
-import { MediaConstants } from 'src/app/constants/media-constants';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { MediaService } from 'src/app/services/media.service';
 import { AudioTrack } from 'src/app/models/media/audio-track';
 import { PushIdFactory as PushIdService } from 'src/app/services/push-id.service';
 import { HostingConstants } from 'src/app/constants/hosting-constants';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 
 @Injectable({ providedIn: 'root' })
 
@@ -30,8 +29,8 @@ export class AudioAlbumUploadService {
     this.mediaService.create(album);
   }
 
-  private uploadAudioTracks(tracks: Media[]) {
-    const ids = new Array<string>();
+  private uploadAudioTracks(tracks: UploadableMedia[]) {
+    const ids = [];
 
     tracks.forEach((track: AudioTrack) => {
       const trackId = this.uploadAudioTrack(track);

@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Track } from 'ngx-audio-player';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { MediaService } from 'src/app/services/media.service';
 
@@ -43,7 +43,7 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
     );
   }
 
-  private mapMediaToTrack(media: Media): Track {
+  private mapMediaToTrack(media: UploadableMedia): Track {
     return {
       title: media.title,
       artist: media.artist,

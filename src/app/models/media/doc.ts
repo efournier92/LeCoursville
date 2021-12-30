@@ -1,34 +1,37 @@
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 
-export class Doc extends Media {
-    locationId: string;
-    duration: string;
+export class Doc implements UploadableMedia {
+  id: string;
+  title: string;
+  artist: string;
+  date: string;
+  folderName: string;
+  isHidden: boolean;
+  listing: any[];
+  urls: { download: string; icon: string; };
+  type: string;
+  format: string;
+  dateUpdated: Date;
 
-    constructor(
-        id: string = '',
-        title: string = '',
-        downloadUrl: string = '',
-        iconUrl: string = '',
-        date: string = '',
-        duration: string = '',
-      ) {
-        const type = MediaConstants.DOC.id;
-        const format = MediaConstants.DOC.format;
+  constructor(
+    id: string = '',
+    title: string = '',
+    downloadUrl: string = '',
+    iconUrl: string = '',
+    date: string = '',
+  ) {
 
-        super();
+    this.id = id;
+    this.title = title;
+    this.date = date;
 
-        this.id = id;
-        this.title = title;
-        this.date = date;
-        this.duration = duration;
+    this.type = MediaConstants.DOC.id;
+    this.format = MediaConstants.DOC.format;
 
-        this.type = MediaConstants.DOC.id;
-        this.format = MediaConstants.DOC.format;
-
-        this.urls = {
-          download: downloadUrl,
-          icon: iconUrl,
-        };
-    }
+    this.urls = {
+      download: downloadUrl,
+      icon: iconUrl,
+    };
+  }
 }

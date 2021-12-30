@@ -1,31 +1,41 @@
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 
-export class PhotoAlbum extends Media {
-    listing: string[];
+export class PhotoAlbum implements UploadableMedia {
+  id: string;
+  title: string;
+  artist: string;
+  date: string;
+  folderName: string;
+  isHidden: boolean;
+  urls: { download: string; icon: string; };
+  type: string;
+  format: string;
+  dateUpdated: Date;
 
-    constructor(
-        id: string = '',
-        title: string = '',
-        downloadUrl: string = '',
-        iconUrl: string = '',
-        date: string = '',
-        photos: string[] = new Array<string>(),
-      ) {
-        super();
+  listing: string[];
 
-        this.id = id;
-        this.title = title;
-        this.date = date;
+  constructor(
+    id: string = '',
+    title: string = '',
+    downloadUrl: string = '',
+    iconUrl: string = '',
+    date: string = '',
+    photos: string[] = [],
+  ) {
 
-        this.type = MediaConstants.PHOTO_ALBUM.id;
-        this.format = MediaConstants.PHOTO_ALBUM.format;
+    this.id = id;
+    this.title = title;
+    this.date = date;
 
-        this.listing = photos;
+    this.type = MediaConstants.PHOTO_ALBUM.id;
+    this.format = MediaConstants.PHOTO_ALBUM.format;
 
-        this.urls = {
-          download: downloadUrl,
-          icon: iconUrl
-        };
-    }
+    this.listing = photos;
+
+    this.urls = {
+      download: downloadUrl,
+      icon: iconUrl
+    };
+  }
 }

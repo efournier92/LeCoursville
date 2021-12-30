@@ -21,15 +21,15 @@ declare global {
 })
 export class PhotosComponent implements OnInit {
   user: User;
-  allPhotos: Photo[] = new Array<Photo>();
-  loadablePhotos: Photo[] = new Array<Photo>();
-  loadedPhotos: Photo[] = new Array<Photo>();
+  allPhotos: Photo[] = [];
+  loadablePhotos: Photo[] = [];
+  loadedPhotos: Photo[] = [];
   foundPhotos: Photo[];
   searchTerm = '';
   years: number[];
   showSpinner = true;
   photoGallery: Element;
-  photoUploads: PhotoUpload[] = new Array<PhotoUpload>();
+  photoUploads: PhotoUpload[] = [];
   sortType = 'random';
 
   private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
@@ -239,7 +239,7 @@ export class PhotosComponent implements OnInit {
 
   private loadAllPhotos(): void {
     this.photosService.getAllPhotos().valueChanges().subscribe(
-      (photos: Array<Photo>) => {
+      (photos: Photo[]) => {
         if (this.shouldRefreshPhotos(photos)) {
           this.allPhotos = photos;
           this.sortPhotosBy(this.sortRandomly);

@@ -36,7 +36,7 @@ export class ChatService {
   chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
 
   getYears(): number[] {
-    const years: number[] = Array<number>();
+    const years: number[] = [];
     for (let i = 1880; i <= 2000; i++) {
       years.push(i);
     }

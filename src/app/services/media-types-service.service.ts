@@ -9,7 +9,7 @@ export class MediaTypesService {
   constructor() { }
 
   getAllTypes(): string[] {
-    const output = new Array<string>();
+    const output = [];
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
@@ -21,7 +21,7 @@ export class MediaTypesService {
   }
 
   getVisibleTypes(): MediaType[] {
-    const output = new Array<MediaType>();
+    const output = [];
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
@@ -35,7 +35,7 @@ export class MediaTypesService {
   }
 
   getHiddenTypeIds(): string[] {
-    const output = new Array<string>();
+    const output = [];
 
     MediaConstants.ALL_TYPES.forEach(
       type => {
@@ -49,7 +49,7 @@ export class MediaTypesService {
   }
 
   getSelectedTypes(allTypes: MediaType[]): string[] {
-    const output = new Array<string>();
+    const output = [];
 
     allTypes.forEach(
       type => {

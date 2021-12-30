@@ -48,10 +48,10 @@ export class Message {
     this.attachmentUrl = attachmentUrl;
     this.authorId = authorId;
     this.authorName = authorName;
-    this.likes = new Array<Like>();
+    this.likes = [];
     this.isReply = isReply;
     this.replyLevel = replyLevel;
-    this.replies = new Array<Message>();
+    this.replies = [];
     this.dateSent = new Date();
     this.isEditable = isEditable;
     this.isSaved = false;

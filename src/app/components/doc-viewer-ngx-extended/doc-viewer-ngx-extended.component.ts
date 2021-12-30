@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { Doc } from 'src/app/models/media/doc';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
@@ -11,7 +11,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 })
 export class DocViewerNgxExtendedComponent implements OnInit, OnDestroy {
   @Input() doc: Doc;
-  @Input() events: Observable<Media>;
+  @Input() events: Observable<UploadableMedia>;
 
   url: string;
   pdfThing: string;

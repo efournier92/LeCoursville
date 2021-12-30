@@ -8,7 +8,7 @@ import { MediaTypesService } from 'src/app/services/media-types-service.service'
   styleUrls: ['./media-types-checkboxes.component.scss']
 })
 export class MediaTypesCheckboxesComponent implements OnInit {
-  allTypes: MediaType[] = new Array<MediaType>();
+  allTypes: MediaType[] = [];
   selectedType: string;
   @Output() selectMediaTypeEvent = new EventEmitter<string[]>();
 

@@ -27,11 +27,11 @@ export class CalendarComponent implements OnInit {
   viewDate: Date = new Date();
   viewMonth: string;
   selectedYear: number;
-  allEvents: RecurringEvent[] = new Array<RecurringEvent>();
-  events: RecurringEvent[] = new Array<RecurringEvent>();
+  allEvents: RecurringEvent[] = [];
+  events: RecurringEvent[] = [];
   showBirthdays = true;
   showAnniversaries = true;
-  allCalendars: Array<Calendar>;
+  allCalendars: Calendar[];
 
   constructor(
     public authService: AuthService,
@@ -75,7 +75,7 @@ export class CalendarComponent implements OnInit {
 
   private subscribeToCalendarsObservable(): void {
     this.calendarService.calendarsObservable.subscribe(
-      (calendars: Array<Calendar>) => {
+      (calendars: Calendar[]) => {
         this.allCalendars = calendars;
       }
     );
@@ -131,7 +131,7 @@ export class CalendarComponent implements OnInit {
   }
 
   private updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
-    this.events = new Array<RecurringEvent>();
+    this.events = [];
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false) {
         continue;

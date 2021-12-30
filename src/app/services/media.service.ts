@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Media, UploadableMedia } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { MediaTypesService } from './media-types-service.service';
-import { AudioTrack } from '../models/media/audio-track';
-import { AudioAlbum } from '../models/media/audio-album';
 
 @Injectable({
   providedIn: 'root'
@@ -118,7 +116,7 @@ export class MediaService {
       && !loadedMedia.some(media => media.id === mediaFile.id);
   }
 
-  private doesAnyKeyIncludeQuery(media: Media, query: string): boolean {
+  private doesAnyKeyIncludeQuery(media: UploadableMedia, query: string): boolean {
     return Object.keys(media).some(
       (key: string) => {
           let value = media[key];

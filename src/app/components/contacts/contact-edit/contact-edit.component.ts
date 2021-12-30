@@ -53,7 +53,7 @@ export class ContactEditComponent implements OnInit {
 
   addAddress(contact: Contact): void {
     if (!contact.addresses) {
-      contact.addresses = new Array<Address>();
+      contact.addresses = [];
     }
 
     const address: Address = new Address();
@@ -64,7 +64,7 @@ export class ContactEditComponent implements OnInit {
 
   addPhone(contact: Contact): void {
     if (!contact.phones) {
-      contact.phones = new Array<Phone>();
+      contact.phones = [];
     }
     const phone: Phone = new Phone();
     contact.phones.push(phone);
@@ -74,7 +74,7 @@ export class ContactEditComponent implements OnInit {
 
   addEmail(contact: Contact): void {
     if (!contact.emails) {
-      contact.emails = new Array<Email>();
+      contact.emails = [];
     }
 
     const email: Email = new Email();

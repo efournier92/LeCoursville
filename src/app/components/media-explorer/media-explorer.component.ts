@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -18,10 +18,10 @@ import { Clipboard } from '@angular/cdk/clipboard';
 export class MediaExplorerComponent implements OnInit {
   @Input() mediaType: string;
   user: User;
-  allMedia: Media[] = new Array<Media>();
-  loadedMedia: Media[];
-  selectedMedia: Media;
-  eventsSubject: Subject<Media> = new Subject<Media>();
+  allMedia: UploadableMedia[] = [];
+  loadedMedia: UploadableMedia[];
+  selectedMedia: UploadableMedia;
+  eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
 
   constructor(
     private authService: AuthService,
@@ -53,7 +53,7 @@ export class MediaExplorerComponent implements OnInit {
 
   // PUBLIC
 
-  onMediaSelect(media: Media): void {
+  onMediaSelect(media: UploadableMedia): void {
     this.resetSelectedMedia();
 
     if (this.shouldSetCurrentMedia(media)) {
@@ -104,19 +104,19 @@ export class MediaExplorerComponent implements OnInit {
     return !!this.user?.id;
   }
 
-  isVideo(selectedMedia: Media): boolean {
+  isVideo(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.VIDEO.id;
   }
 
-  isDocument(selectedMedia: Media): boolean {
+  isDocument(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.DOC.id;
   }
 
-  isPhotoAlbum(selectedMedia: Media): boolean {
+  isPhotoAlbum(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.PHOTO_ALBUM.id;
   }
 
-  isAudioAlbum(selectedMedia: Media): boolean {
+  isAudioAlbum(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.AUDIO_ALBUM.id;
   }
 
@@ -136,18 +136,18 @@ export class MediaExplorerComponent implements OnInit {
     window.scroll(0, 0);
   }
 
-  private shouldSetCurrentMedia(media: Media) {
+  private shouldSetCurrentMedia(media: UploadableMedia) {
     return media?.urls?.download && media?.type;
   }
 
-  private setCurrentMedia(media: Media) {
+  private setCurrentMedia(media: UploadableMedia) {
     this.selectedMedia = media;
     this.emitEventToChild(media);
     this.routingService.clearQueryParams();
     this.analyticsService.logEvent('media_explorer_select', media);
   }
 
-  private emitEventToChild(media: Media) {
+  private emitEventToChild(media: UploadableMedia) {
     this.eventsSubject.next(media);
   }
 

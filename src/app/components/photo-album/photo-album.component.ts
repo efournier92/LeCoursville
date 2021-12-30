@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, AfterViewChecked } from '@angular/core';
 import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import lgZoom from 'lightgallery/plugins/zoom';
 import lgAutoplay from 'lightgallery/plugins/autoplay';
@@ -16,7 +16,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
   @Input() album: PhotoAlbum;
 
-  photos: Media[] = new Array<Media>();
+  photos: UploadableMedia[] = [];
   needsRefresh: any;
 
   private lightGallery: LightGallery;
