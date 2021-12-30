@@ -1,0 +1,18 @@
+<mat-card class="w-100">
+      <mat-card-title class="user-view-name">{{ user.name }}</mat-card-title>
+      <mat-card-subtitle *ngIf="isSuperUser()" class="user-view-id">{{ user.id }}</mat-card-subtitle>
+      <mat-card-content>
+        <div><b>Email: </b>{{ user.email }}</div>
+        <div><b>Registered: </b>{{ user.dateRegistered | date }}</div>
+        <div><b>Last Signed In: </b>{{ user.dateLastSignedIn | date }}</div>
+        <div *ngIf="shouldSeeRoles()">
+            <span> <b>Roles: </b></span>
+            <span *ngIf="user.roles.user">User</span><span *ngIf="user.roles.admin">, </span>
+            <span *ngIf="user.roles.admin">Admin</span><span *ngIf="user.roles.super">, </span>
+            <span *ngIf="user.roles.super">Super</span>
+          </div>
+      </mat-card-content>
+      <mat-card-footer class="d-flex justify-content-end user-card-footer">
+        <button mat-button (click)="onEdit()">Edit</button>
+      </mat-card-footer>
+  </mat-card>

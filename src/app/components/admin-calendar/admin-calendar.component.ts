@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CalendarEvent } from 'angular-calendar';
 import { CalendarConstants } from 'src/app/constants/calendar-constants';
 import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 import { CalendarService } from 'src/app/services/calendar.service';
@@ -20,13 +21,22 @@ export class AdminCalendarComponent implements OnInit {
 
   ngOnInit(): void {
     this.calendarService.calendarEventsObservable.subscribe(
-      (calendarEvents: RecurringEvent[]) => {
-        this.events = calendarEvents;
+      (events: RecurringEvent[]) => {
+        this.events = this.sortEvents(events);
       }
     );
   }
 
   // PUBLIC METHODS
+
+  onAddEvent(): void {
+    const event = new RecurringEvent();
+    this.events.unshift(event);
+  }
+
+  onCreateEvent(event: RecurringEvent): void {
+    this.calendarService.createCalendarEvent(event);
+  }
 
   onSaveEvent(event: RecurringEvent): void {
     this.calendarService.updateCalendarEvent(event);
@@ -34,5 +44,15 @@ export class AdminCalendarComponent implements OnInit {
 
   onDeleteEvent(event: RecurringEvent): void {
     this.calendarService.deleteCalendarEvent(event);
+  }
+
+  // HELPER METHODS
+
+  private sortEvents(events: RecurringEvent[]): RecurringEvent[] {
+    return events.sort(this.compareEventsByTimestamp);
+  }
+
+  private compareEventsByTimestamp(a: RecurringEvent, b: RecurringEvent): number {
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
   }
 }

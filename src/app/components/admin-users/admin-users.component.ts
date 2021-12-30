@@ -27,7 +27,7 @@ export class AdminUsersComponent implements OnInit {
     this.authService.userObservable.subscribe(
       (user: User) => {
         this.user = user;
-        if (this.user.roles && this.user.roles.super) {
+        if (this.user?.roles?.super) {
           this.getAllUsers();
         }
       }
@@ -37,7 +37,7 @@ export class AdminUsersComponent implements OnInit {
   // PUBLIC METHODS
 
   updateUser(user: User): void {
-    user.isEditable = false;
+    // user.isEditable = false;
     this.adminService.updateUser(user);
   }
 
@@ -55,6 +55,10 @@ export class AdminUsersComponent implements OnInit {
 
   removeUserRole(user: User, roleType: string): void {
     delete user.roles[roleType];
+  }
+
+  shouldDisplayUserCards(): boolean {
+    return this.user?.roles?.super && this.allUsers?.length > 0;
   }
 
   // HELPER METHODS

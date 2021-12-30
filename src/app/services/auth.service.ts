@@ -63,6 +63,23 @@ export class AuthService {
     this.updateUser(user);
   }
 
+  onSignIn(authData: any): void {
+    const authUser = authData?.authResult?.user;
+
+    if (!authUser?.uid) { return; }
+
+    this.userObj = this.db.object(`users/${authUser?.uid}`);
+    this.userObj.valueChanges().subscribe(
+      (foundUser: User) => {
+        if (!foundUser) {
+          this.createUser(authData);
+        }
+        foundUser.dateLastSignedIn = authData?.metadata?.lastSignInTime;
+        this.updateUser(foundUser);
+      }
+    );
+  }
+
   createUser(authData: any): void {
     const user: User = new User(authData);
     this.updateUser(user);

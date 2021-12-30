@@ -19,11 +19,11 @@ export class AudioAlbumUploadService {
   upload(album: AudioAlbum, folderName: string, tracksString: string): void {
     const tracksArray = this.getTracksArrayFromString(tracksString);
 
-    album.type = MediaConstants.AUDIO_ALBUM.id;
+    album.id = this.pushIdService.create();
     album.urls.download = this.getHostedZipLocation(folderName);
     album.urls.icon = this.getAlbumCoverLocation(folderName);
 
-    const allTracks = this.createTracksFromFileNames(tracksArray, folderName, album?.urls?.icon);
+    const allTracks = this.createTracksFromFileNames(tracksArray, folderName, album?.urls?.icon, album?.artist, album?.date);
 
     album.listing = this.uploadAudioTracks(allTracks);
 
@@ -33,7 +33,7 @@ export class AudioAlbumUploadService {
   private uploadAudioTracks(tracks: Media[]) {
     const ids = new Array<string>();
 
-    tracks.forEach((track: Media) => {
+    tracks.forEach((track: AudioTrack) => {
       const trackId = this.uploadAudioTrack(track);
       ids.push(trackId);
     });
@@ -69,22 +69,22 @@ export class AudioAlbumUploadService {
     return url.replace(/ /g, '+');
   }
 
-  private createTracksFromFileNames(fileNames: string[], folderName: string, coverUrl: string): any[] {
+  private createTracksFromFileNames(fileNames: string[], folderName: string, iconUrl: string, artist: string, date: string): AudioTrack[] {
     const output = [];
     const albumConstants = HostingConstants.Albums;
     const albumFolders = HostingConstants.Albums.folderNames;
 
     for (const fileName of fileNames) {
-      const track = new AudioTrack();
       if (fileName) {
-        track.title = this.formatFileName(fileName);
-        const fileLocation =
+        const id = this.pushIdService.create();
+        const title = this.formatFileName(fileName);
+        const downloadUrl =
           `${albumConstants.baseUrl}/${albumFolders.music}/${albumFolders.albums}/${folderName}/${fileName}`
             .replace(/ /g, '+');
 
-        track.id = this.pushIdService.create();
-        track.urls.download = fileLocation;
-        track.urls.icon = coverUrl;
+        const track = new AudioTrack(id, title, artist, date);
+        track.urls.download = downloadUrl;
+        track.urls.icon = iconUrl;
 
         output.push(track);
       }

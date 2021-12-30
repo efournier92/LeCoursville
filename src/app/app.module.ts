@@ -63,6 +63,8 @@ import { AdminMediaUploadAudioAlbumComponent } from 'src/app/components/admin-me
 import { AudioComponent } from 'src/app/components/audio/audio.component';
 import { AdminCalendarComponent } from 'src/app/components/admin-calendar/admin-calendar.component';
 import { AdminRoutingComponent } from './components/admin-routing/admin-routing.component';
+import { UserViewComponent } from './components/user-view/user-view.component';
+import { UserEditComponent } from './components/user-edit/user-edit.component';
 
 @NgModule({
   declarations: [
@@ -98,6 +100,8 @@ import { AdminRoutingComponent } from './components/admin-routing/admin-routing.
     AudioComponent,
     AdminCalendarComponent,
     AdminRoutingComponent,
+    UserViewComponent,
+    UserEditComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),

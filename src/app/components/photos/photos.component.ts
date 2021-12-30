@@ -85,13 +85,13 @@ export class PhotosComponent implements OnInit {
       photoElement.click();
       window.URL.revokeObjectURL(url);
     };
-    this.analyticsService.logEvent('photos_download', { photo: photoToDownload, user: this.user });
+    this.analyticsService.logEvent('photos_download', { photo: photoToDownload, user: this.user.id });
   }
 
   updatePhoto(photoToUpdate: Photo): void {
     photoToUpdate.isEditable = false;
     this.photosService.updatePhoto(photoToUpdate);
-    this.analyticsService.logEvent('photos_update', { photo: photoToUpdate, user: this.user });
+    this.analyticsService.logEvent('photos_update', { photo: photoToUpdate, user: this.user.id });
   }
 
   deletePhoto(photoToDelete: Photo): void {
@@ -117,7 +117,7 @@ export class PhotosComponent implements OnInit {
         }
       }
     );
-    this.analyticsService.logEvent('photos_delete', { photo: photoToDelete, user: this.user });
+    this.analyticsService.logEvent('photos_delete', { photo: photoToDelete, user: this.user.id });
   }
 
   uploadPhotos(photosToUpload: any): void {
@@ -143,7 +143,7 @@ export class PhotosComponent implements OnInit {
         }
       }
     );
-    this.analyticsService.logEvent('photos_upload', { photos: photosToUpload, user: this.user });
+    this.analyticsService.logEvent('photos_upload', { photos: photosToUpload, user: this.user.id });
   }
 
   completePhotoUpload(upload: PhotoUpload): void {
@@ -173,7 +173,7 @@ export class PhotosComponent implements OnInit {
     this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
-    this.analyticsService.logEvent('photos_sort', { function: sortFunction, user: this.user });
+    this.analyticsService.logEvent('photos_sort', { function: sortFunction, user: this.user.id });
   }
 
   sortRandomly(): number {
@@ -219,13 +219,13 @@ export class PhotosComponent implements OnInit {
     }
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
-    this.analyticsService.logEvent('photos_query_search', { searchQuery: query, user: this.user });
+    this.analyticsService.logEvent('photos_query_search', { searchQuery: query, user: this.user.id });
   }
 
   clearSearchTerm(): void {
     this.searchTerm = '';
     this.sortPhotosBy(this.sortRandomly);
-    this.analyticsService.logEvent('photos_query_clear', { user: this.user });
+    this.analyticsService.logEvent('photos_query_clear', { user: this.user.id });
   }
 
   // HELPER METHODS

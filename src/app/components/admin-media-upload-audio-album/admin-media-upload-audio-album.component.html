@@ -2,7 +2,7 @@
     <div class="admin-media-upload-audio-album-form-container">
         <form class="audio-album-upload-form">
             <mat-form-field class="admin-upload-input">
-                <mat-label>Name</mat-label>
+                <mat-label>Title</mat-label>
                 <input type="text" matInput name="albumTitle" [(ngModel)]="album.title">
             </mat-form-field>
             <mat-form-field class="admin-upload-input">
@@ -22,7 +22,7 @@
                 <textarea matInput name="albumTracks" [(ngModel)]="tracksString" cdkTextareaAutosize
                     #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
             </mat-form-field>
-            <mat-checkbox class="admin-upload-input">Should Hide from Lists?</mat-checkbox>
+            <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="album.isHidden">Should Hide from Lists?</mat-checkbox>
             <button mat-button class="admin-form-action-button admin-form-action-button-upload"
                 (click)="onUploadSelectedMedia()">
                 <span *ngIf="!album.id">Upload</span>

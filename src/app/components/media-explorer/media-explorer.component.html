@@ -3,7 +3,7 @@
 
         <div class="media-explorer-actions-container row justify-content-end">
             <button *ngIf="shouldShowShareableLinkButton()" mat-fab matTooltip="Copy Link" color="secondary" class="m-1"
-                [cdkCopyToClipboard]="getShareableLink()">
+                (click)="onGetShareableLink()">
                 <mat-icon>share</mat-icon>
             </button>
             <button *ngIf="shouldShowDownloadButton()" mat-fab matTooltip="Download Link" color="secondary" class="m-1"

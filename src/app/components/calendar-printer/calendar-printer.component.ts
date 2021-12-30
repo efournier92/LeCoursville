@@ -66,7 +66,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async downloadPdf(): Promise<void> {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      user: this.user, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      user: this.user.id, shouldPrintBirthdays: this.shouldPrintBirthdays,
       shouldPrintAnniversaries: this.shouldPrintAnniversaries
     });
 
@@ -77,7 +77,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async printPdf() {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      user: this.user, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      user: this.user.id, shouldPrintBirthdays: this.shouldPrintBirthdays,
       shouldPrintAnniversaries: this.shouldPrintAnniversaries
     });
 

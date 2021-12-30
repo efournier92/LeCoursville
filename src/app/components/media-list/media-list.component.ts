@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media/media';
+import { Media, UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -18,8 +18,8 @@ export class MediaListComponent implements OnInit {
   @Output() mediaClickEvent = new EventEmitter<Media>();
 
   user: User;
-  allMedia: Array<Media> = [];
-  filteredMedia: Array<Media>;
+  allMedia: UploadableMedia[] = [];
+  filteredMedia: UploadableMedia[];
 
   constructor(
     private authService: AuthService,
@@ -49,6 +49,7 @@ export class MediaListComponent implements OnInit {
       (mediaList) => {
         this.allMedia = mediaList;
         this.filteredMedia = this.filterAllMediaByType();
+        this.filteredMedia = this.sortMedia(this.filteredMedia);
       }
     );
   }
@@ -69,17 +70,17 @@ export class MediaListComponent implements OnInit {
 
   onMediaSelect(media: Media): void {
     this.mediaClickEvent.emit(media);
-    this.analyticsService.logEvent('media_list_select', { selectedMedia: media, user: this.user });
+    this.analyticsService.logEvent('media_list_select', { selectedMedia: media, user: this.user.id });
   }
 
   onSelectMediaType(selectedTypes: string[]): void {
     this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
-    this.analyticsService.logEvent('media_list_select_type', { selectedMediaType: selectedTypes, user: this.user });
+    this.analyticsService.logEvent('media_list_select_type', { selectedMediaType: selectedTypes, user: this.user.id });
   }
 
   onSearchInputChange(query: string): void {
     this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
-    this.analyticsService.logEvent('media_list_search', { searchQuery: query, user: this.user });
+    this.analyticsService.logEvent('media_list_search', { searchQuery: query, user: this.user.id });
   }
 
   // HELPER METHODS
@@ -105,6 +106,14 @@ export class MediaListComponent implements OnInit {
 
   private filterAllMediaByType() {
     return this.mediaService.filterByTypes(this.mediaTypesToShow, this.allMedia);
+  }
+
+  private sortMedia(mediaList: UploadableMedia[]): UploadableMedia[] {
+    return mediaList.sort(this.compareMediaByTimestamp);
+  }
+
+  private compareMediaByTimestamp(a: UploadableMedia, b: UploadableMedia): number {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
   }
 
 }

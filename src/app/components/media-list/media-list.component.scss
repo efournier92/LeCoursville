@@ -55,6 +55,12 @@
   font-weight: 300;
 }
 
+.media-details-artist {
+  @extend .media-details;
+  font-size: 12px;
+  font-weight: 200;
+}
+
 .media-details-date {
   @extend .media-details;
   font-size: 12px;

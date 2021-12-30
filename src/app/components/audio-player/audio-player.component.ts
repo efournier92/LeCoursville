@@ -30,31 +30,17 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
   }
 
   // HELPER METHODS
-  private addTracksToPlaylist(): void {
+
+  addTracksToPlaylist(): void {
     this.album.listing.forEach(
       (id: string) => {
-        this.mediaService.getById(id).subscribe(
-          (media: Media) => {
-            if (media.id) {
-              const track = this.mapMediaToTrack(media);
-              this.allTracks.push(track);
-            }
-            if (this.isFinishedLoading()) {
-              this.finalizePlaylist();
-            }
-          }
-        );
+        const audioTrack = this.mediaService.getMediaById(id);
+        if (audioTrack.id) {
+          const track = this.mapMediaToTrack(audioTrack);
+          this.playlist.push(track);
+        }
       }
     );
-  }
-
-  private finalizePlaylist(): void {
-    this.allTracks.sort((a, b) => (a.title > b.title) ? 1 : -1);
-    this.playlist = this.allTracks;
-  }
-
-  private isFinishedLoading(): boolean {
-    return this.allTracks.length === this.album.listing.length;
   }
 
   private mapMediaToTrack(media: Media): Track {

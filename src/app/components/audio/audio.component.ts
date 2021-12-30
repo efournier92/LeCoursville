@@ -23,7 +23,7 @@ export class AudioComponent implements OnInit {
 
   // LIFECYCLE HOOKS
 
-  ngOnInit(): void { 
+  ngOnInit(): void {
     this.subscribeToUserObservable();
   }
 
@@ -43,6 +43,6 @@ export class AudioComponent implements OnInit {
 
   onMediaSelect(album: AudioAlbum): void {
     this.selectedAlbum = album;
-    this.analyticsService.logEvent('audio_album_select', { audioAlbum: album, user: this.user });
+    // this.analyticsService.logEvent('audio_album_select', { audioAlbum: album, user: this.user.id });
   }
 }

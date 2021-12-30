@@ -3,7 +3,6 @@ import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { _ } from 'core-js';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-admin-media',
@@ -35,7 +34,7 @@ export class AdminMediaComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  // TODO: Remove redundant methods below
+  // TODO: Remove redundant methods below 
 
   inputFileChangeEvent(files: any): void {
     this.clearMessages();

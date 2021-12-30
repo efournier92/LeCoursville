@@ -1,20 +1,23 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Media } from 'src/app/models/media/media';
+import { Media, UploadableMedia } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { MediaTypesService } from './media-types-service.service';
+import { AudioTrack } from '../models/media/audio-track';
+import { AudioAlbum } from '../models/media/audio-album';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MediaService {
   user: any;
-  mediaList: AngularFireList<Media>;
+  mediaList: AngularFireList<UploadableMedia>;
 
-  private mediaSource: BehaviorSubject<Media[]> = new BehaviorSubject<Media[]>([]);
-  mediaObservable: Observable<Media[]> = this.mediaSource.asObservable();
+  private mediaSource: BehaviorSubject<UploadableMedia[]> = new BehaviorSubject<UploadableMedia[]>([]);
+  mediaObservable: Observable<UploadableMedia[]> = this.mediaSource.asObservable();
+  allMedia: UploadableMedia[];
 
   constructor(
     private db: AngularFireDatabase,
@@ -28,7 +31,8 @@ export class MediaService {
         }
 
         this.getMedia().valueChanges().subscribe(
-          (mediaList: Media[]) => {
+          (mediaList: UploadableMedia[]) => {
+            this.allMedia = mediaList;
             this.updateMediaEvent(mediaList);
           }
         );
@@ -36,11 +40,11 @@ export class MediaService {
     );
   }
 
-  updateMediaEvent(mediaFiles: Media[]): void {
+  updateMediaEvent(mediaFiles: UploadableMedia[]): void {
     this.mediaSource.next(mediaFiles);
   }
 
-  create(media: Media): void {
+  create(media: UploadableMedia): void {
     if (!media || !media.id) {
       media.id = this.db.createPushId();
     }
@@ -48,46 +52,32 @@ export class MediaService {
     this.mediaList.update(media.id, media);
   }
 
-  getMedia(): AngularFireList<Media> {
+  getMedia(): AngularFireList<UploadableMedia> {
     this.mediaList = this.db.list('media');
     return this.mediaList;
   }
 
-  getById(id: string): Observable<Media> {
-    const mediaObj = this.db.object(`media/${id}`);
-    const mediaByIdSource: BehaviorSubject<Media> = new BehaviorSubject<Media>(new Media());
-    const mediaByIdObservable: Observable<Media> = mediaByIdSource.asObservable();
-
-    function updateMediaEvent(media: Media): void {
-      mediaByIdSource.next(media);
-    }
-    mediaObj.valueChanges().subscribe(
-      (media: Media) => {
-        if (media && media.id) {
-          updateMediaEvent(media);
-        }
-      }
-    );
-    return mediaByIdObservable;
+  getMediaById(id: string): UploadableMedia {
+    return this.allMedia.find(x => x.id === id);
   }
 
-  filterByTypes(selectedTypes: string[], allMedia: Media[]): Media[] {
+  filterByTypes(selectedTypes: string[], allMedia: UploadableMedia[]): UploadableMedia[] {
     const hiddenTypes = this.mediaTypesService.getHiddenTypeIds();
 
     return allMedia.filter(
-      (media: Media) => !hiddenTypes?.includes(media.type) && selectedTypes?.includes(media.type)
+      (media: UploadableMedia) => !hiddenTypes?.includes(media.type) && selectedTypes?.includes(media.type)
     );
   }
 
-  filterByQuery(query: string, allMedia: Media[]): Media[] {
+  filterByQuery(query: string, allMedia: UploadableMedia[]): UploadableMedia[] {
     return allMedia.filter(
-      (media: Media) => {
+      (media: UploadableMedia) => {
         return this.doesAnyKeyIncludeQuery(media, query);
       }
     );
   }
 
-  loadMoreMedia(numberToLoad: number, allMedia: Media[], loadedMedia: Media[]): Media[] {
+  loadMoreMedia(numberToLoad: number, allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): UploadableMedia[] {
     for (let i = 0; i < numberToLoad; i++) {
       loadedMedia = this.loadAnotherMediaFile(allMedia, loadedMedia);
     }
@@ -95,7 +85,7 @@ export class MediaService {
     return this.filterMedia(loadedMedia);
   }
 
-  deleteMedia(media: Media): void {
+  deleteMedia(media: UploadableMedia): void {
     if (media?.listing?.length > 0) {
       media.listing.forEach((id: string) => {
         this.mediaList.remove(id);
@@ -109,11 +99,11 @@ export class MediaService {
 
   }
 
-  private filterMedia(mediaList: Media[], ): Media[] {
+  private filterMedia(mediaList: UploadableMedia[], ): UploadableMedia[] {
     return mediaList.filter(media => !this.mediaTypesService.getHiddenTypeIds().includes(media.type));
   }
 
-  private loadAnotherMediaFile(allMedia: Media[], loadedMedia: Media[]): Media[] {
+  private loadAnotherMediaFile(allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): UploadableMedia[] {
     const newMedia = allMedia[loadedMedia.length];
 
     if (this.shouldLoadMediaFile(newMedia, allMedia, loadedMedia)) {
@@ -123,7 +113,7 @@ export class MediaService {
     return loadedMedia;
   }
 
-  private shouldLoadMediaFile(mediaFile: Media, allMedia: Media[], loadedMedia: Media[]): boolean {
+  private shouldLoadMediaFile(mediaFile: UploadableMedia, allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): boolean {
     return loadedMedia.length < allMedia.length
       && !loadedMedia.some(media => media.id === mediaFile.id);
   }
@@ -152,7 +142,7 @@ export class MediaService {
     return typeof input === 'string';
   }
 
-  tryLoadingFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
+  tryLoadingFirstBatch(allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): UploadableMedia[] {
     if (this.shouldLoadFirstBatch(allMedia, loadedMedia)) {
       loadedMedia = this.loadFirstBatch(allMedia, loadedMedia);
     }
@@ -160,11 +150,11 @@ export class MediaService {
     return this.filterMedia(loadedMedia);
   }
 
-  private shouldLoadFirstBatch(allMedia: Media[], loadedMedia: Media[]): boolean  {
+  private shouldLoadFirstBatch(allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): boolean  {
     return allMedia.length && !loadedMedia.length;
   }
 
-  private loadFirstBatch(allMedia: Media[], loadedMedia: Media[]): Media[] {
+  private loadFirstBatch(allMedia: UploadableMedia[], loadedMedia: UploadableMedia[]): UploadableMedia[] {
     return this.loadMoreMedia(10000, allMedia, loadedMedia);
   }
 }

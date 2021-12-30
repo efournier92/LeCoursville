@@ -1,0 +1,44 @@
+<mat-card class="user-card">
+    <form>
+        <mat-form-field class="user-edit-form-field w-100">
+            <input matInput placeholder="Name" name="user-name" [(ngModel)]="userToEdit.name">
+        </mat-form-field>
+        <br>
+        <div><b>Email: </b>{{ userToEdit.email }}</div>
+        <div><b>Registered: </b>{{ userToEdit.dateRegistered | date }}</div>
+        <div><b>Last Signed In: </b>{{ userToEdit.dateLastSignedIn | date }}</div>
+        <!-- <mat-form-field class="user-edit-form-field">
+            <input matInput [matDatepicker]="dateRegisteredPicker" placeholder="Date Registered"
+                name="user-date-registered" [(ngModel)]="user.dateRegistered">
+            <mat-datepicker-toggle matSuffix [for]="dateRegisteredPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dateRegisteredPicker></mat-datepicker>
+        </mat-form-field> -->
+        <br>
+        <div *ngIf="isSuperUser()" class="d-flex justify-content-around">
+            <!-- USER ROLE -->
+            <mat-checkbox name="user-roles-user" [(ngModel)]="userToEdit.roles.user">
+                User
+            </mat-checkbox>
+            <mat-checkbox name="user-roles-user" *ngIf="!userToEdit?.roles?.user" (click)="addUserRole(userToEdit, 'user')">User
+            </mat-checkbox>
+            <!-- ADMIN ROLE -->
+            <mat-checkbox name="user-roles-admin" *ngIf="userToEdit?.roles?.admin" [(ngModel)]="userToEdit.roles.admin"
+                (click)="removeUserRole(user, 'admin')">Admin</mat-checkbox>
+            <mat-checkbox name="user-roles-admin" *ngIf="!userToEdit?.roles?.admin" (click)="addUserRole(userToEdit, 'admin')">Admin
+            </mat-checkbox>
+            <!-- SUPER ROLE -->
+            <mat-checkbox name="user-roles-super" *ngIf="userToEdit?.roles?.super" [(ngModel)]="userToEdit.roles.super"
+                (click)="removeUserRole(user, 'super')">Super</mat-checkbox>
+            <mat-checkbox name="user-roles-super" *ngIf="!userToEdit?.roles?.super" (click)="addUserRole(userToEdit, 'super')">Super
+            </mat-checkbox>
+        </div>
+    </form>
+    <mat-card-footer class="d-flex justify-content-around user-card-footer">
+        <!-- <mat-icon class="user-card-controls-icon" (click)="deleteUser(user)">delete</mat-icon>
+        <mat-icon class="user-card-controls-icon" (click)="updateUser(user)">save</mat-icon> -->
+        <button mat-button (click)="onDeleteUser(userToEdit)">Delete</button>
+        <button mat-button (click)="onSaveUser(userToEdit)">Save</button>
+        <button mat-button (click)="onCancelEdit()">Cancel</button>
+        <!-- <mat-icon class="user-card-controls-icon" (click)="onCancelEdit()">cancel</mat-icon> -->
+    </mat-card-footer>
+</mat-card>

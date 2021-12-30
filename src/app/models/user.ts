@@ -9,13 +9,15 @@ export class User {
   name: string;
   email: string;
   roles: AuthRoles;
-  dateRegistered: Date = new Date();
-  isEditable: boolean;
+  dateRegistered: Date;
+  dateLastSignedIn: Date;
 
   constructor(authData: any) {
     this.id = authData.uid;
     this.name = authData.displayName;
     this.email = authData.email;
-    this.roles = { user: true };
+    this.dateRegistered = authData.metadata?.creationTime;
+    this.dateLastSignedIn = authData.metadata?.lastSignInTime;
+    this.roles = { user: true, admin: false, super: false };
   }
 }

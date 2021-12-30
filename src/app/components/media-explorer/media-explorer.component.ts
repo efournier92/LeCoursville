@@ -8,6 +8,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { RoutingService } from 'src/app/services/routing.service';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Component({
   selector: 'app-media-explorer',
@@ -28,6 +29,7 @@ export class MediaExplorerComponent implements OnInit {
     private analyticsService: AnalyticsService,
     private routingService: RoutingService,
     private activatedRoute: ActivatedRoute,
+    private clipboard: Clipboard,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -60,22 +62,27 @@ export class MediaExplorerComponent implements OnInit {
 
     this.scrollToTop();
 
-    this.analyticsService.logEvent('media_select', { user: this.user, media: this.selectedMedia });
+    this.analyticsService.logEvent('media_select', { media: this.selectedMedia, user: this.user.id });
   }
 
   getShareableLink(): string {
-    this.analyticsService.logEvent('media_shareable_link_copy', { user: this.user, media: this.selectedMedia });
     return `${location?.href}?id=${this.selectedMedia?.id}`;
   }
 
+  onGetShareableLink(): void {
+    const link = this.getShareableLink();
+    this.clipboard.copy(link);
+    this.analyticsService.logEvent('media_shareable_link_copy', { shareableLink: link, media: this.selectedMedia, user: this.user.id });
+  }
+
   downloadSelectedMedia(): void {
-    this.analyticsService.logEvent('media_download', { user: this.user, media: this.selectedMedia });
+    this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
 
     window.location.href = this.selectedMedia?.urls?.download;
   }
 
   navigateToSignIn() {
-    this.analyticsService.logEvent('media_sign_in_to_see_more', { user: this.user, media: this.selectedMedia });
+    this.analyticsService.logEvent('media_sign_in_to_see_more', { media: this.selectedMedia, user: this.user.id });
     this.routingService.NavigateToSignIn();
   }
 
@@ -158,13 +165,10 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private loadMediaByQueryId(id: string) {
-    this.mediaService.getById(id).subscribe(
-      (media: Media) => {
-        if (media?.id === id) {
-          this.selectedMedia = media;
-          this.routingService.clearQueryParams();
-        }
-      }
-    );
+    const media = this.mediaService.getMediaById(id);
+    if (media?.id === id) {
+      this.selectedMedia = media;
+      this.routingService.clearQueryParams();
+    }
   }
 }

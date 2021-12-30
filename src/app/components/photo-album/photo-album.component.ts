@@ -60,19 +60,19 @@ export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
   private initializeAlbumListing() {
     this.album.listing.forEach(
       (id: string) => {
-        this.subscribeToGetMediaObservable(id);
+        // this.subscribeToGetMediaObservable(id);
       }
     );
   }
 
   private subscribeToGetMediaObservable(id: string) {
-    this.mediaService.getById(id).subscribe(
-      (media: Media) => {
-        if (media.id) {
-          this.photos.push(media);
-          this.needsRefresh = true;
-        }
-      }
-    );
+    // this.mediaService.getById(id).subscribe(
+    //   (media: Media) => {
+    //     if (media.id) {
+    //       this.photos.push(media);
+    //       this.needsRefresh = true;
+    //     }
+    //   }
+    // );
   }
 }

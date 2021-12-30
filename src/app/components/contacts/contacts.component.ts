@@ -58,22 +58,22 @@ export class ContactsComponent implements OnInit {
 
   filterContacts(event: any): void {
     this.filteredContacts = this.filter.transform(this.contacts, { name: event.target.value });
-    this.analyticsService.logEvent('contacts_filter', { filtrationEvent: event, filtrationValue: event.target.value, user: this.user });
+    this.analyticsService.logEvent('contacts_filter', { filtrationEvent: event, filtrationValue: event.target.value, user: this.user.id });
   }
 
   downloadPdf(): void {
     this.contactsPrinterService.downloadPdf(this.filteredContacts);
-    this.analyticsService.logEvent('contacts_pdf_download', { filteredContracts: this.filteredContacts, user: this.user });
+    this.analyticsService.logEvent('contacts_pdf_download', { filteredContracts: this.filteredContacts, user: this.user.id });
   }
 
   printPdf(): void {
     this.contactsPrinterService.printPdf(this.filteredContacts);
-    this.analyticsService.logEvent('contacts_pdf_print', { filteredContracts: this.filteredContacts, user: this.user });
+    this.analyticsService.logEvent('contacts_pdf_print', { filteredContracts: this.filteredContacts, user: this.user.id });
   }
 
   switchFamily(family: string): void {
     this.filteredContacts = this.filter.transform(this.contacts, { family });
-    this.analyticsService.logEvent('contacts_switch_family', { filteredContracts: this.filteredContacts, user: this.user });
+    this.analyticsService.logEvent('contacts_switch_family', { filteredContracts: this.filteredContacts, user: this.user.id });
   }
 
   newContact(): void {
@@ -87,7 +87,7 @@ export class ContactsComponent implements OnInit {
         if (confirmedAction) {
           const contact: Contact = new Contact();
           this.contactsService.newContact(contact);
-          this.analyticsService.logEvent('contacts_new_create', { newContact: contact, user: this.user });
+          this.analyticsService.logEvent('contacts_new_create', { newContact: contact, user: this.user.id });
         }
       }
     );

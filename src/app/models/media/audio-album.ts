@@ -1,32 +1,37 @@
-import { Track } from 'ngx-audio-player';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { Media } from 'src/app/models/media/media';
+import { UploadableMedia } from 'src/app/models/media/media';
 
-export class AudioAlbum extends Media {
-    tracks: Track[];
+export class AudioAlbum implements UploadableMedia {
+  id: string;
+  title: string;
+  artist: string;
+  date: string;
+  folderName: string;
+  isHidden: boolean;
+  listing: any[];
+  urls: { download: string; icon: string };
+  type: string;
+  format: string;
+  dateUpdated: Date;
 
-    constructor(
-        id: string = '',
-        title: string = '',
-        iconUrl: string = '',
-        downloadUrl: string = '',
-        date: string = '',
-        artist: string = '',
-        tracks: Track[] = new Array<Track>(),
-      ) {
-
-        super();
-
-        this.id = id;
-        this.title = title;
-        this.date = date;
-        this.artist = artist;
-        this.type = MediaConstants.AUDIO_ALBUM.id;
-        this.format = MediaConstants.AUDIO_ALBUM.format;
-        this.tracks = tracks;
-        this.urls = {
-          download: downloadUrl,
-          icon: iconUrl
-        };
-    }
+  constructor(
+    id?: string,
+    title?: string,
+    folderName?: string,
+    artist?: string,
+    date?: string,
+    isHidden?: boolean,
+    listing?: string[],
+  ) {
+    this.id = id;
+    this.title = title;
+    this.folderName = folderName;
+    this.artist = artist;
+    this.date = date;
+    this.isHidden = isHidden || false;
+    this.listing = listing;
+    this.urls = { download: '', icon: '' };
+    this.type = MediaConstants.AUDIO_ALBUM.id;
+    this.format = MediaConstants.AUDIO_ALBUM.format;
+  }
 }

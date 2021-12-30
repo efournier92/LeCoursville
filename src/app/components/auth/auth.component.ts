@@ -11,6 +11,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 })
 export class AuthComponent implements OnInit {
   user: User;
+  isEditing: boolean;
 
   constructor(
     private authService: AuthService,
@@ -21,6 +22,7 @@ export class AuthComponent implements OnInit {
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
+    this.isEditing = false;
     this.subscribeToUserObservable();
     this.analyticsService.logEvent('component_load_auth', { });
   }
@@ -45,15 +47,23 @@ export class AuthComponent implements OnInit {
       return false;
     }
 
-    this.authService.createUser(userData);
-    this.routingService.NavigateToMedia();
+    this.authService.onSignIn(authData);
+    this.routingService.NavigateToAudio();
 
     return true;
   }
 
   onSignOutButtonClick(): void {
-    this.analyticsService.logEvent('auth_sign_out', { user: this.user });
+    this.analyticsService.logEvent('auth_sign_out', { user: this.user.id });
     const dialogRef = this.authService.openSignOutDialog();
     this.authService.onSignOutDialogClose(dialogRef);
+  }
+
+  onEdit(): void {
+    this.isEditing = true;
+  }
+
+  onCancelEdit(): void {
+    this.isEditing = false;
   }
 }

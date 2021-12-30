@@ -53,7 +53,7 @@ export class CalendarService {
     return this.calendarEvents;
   }
 
-  addCalendarEvent(event: RecurringEvent): void {
+  createCalendarEvent(event: RecurringEvent): void {
     event.id = this.db.createPushId();
     this.calendarEvents.update(event.id, event);
   }

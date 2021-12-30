@@ -59,10 +59,10 @@ const routes: Routes =
       component: PhotosComponent,
       canActivate: [AuthGuardService],
     },
-      // {
-      //   path: 'media',
-      //   component: MediaExplorerComponent,
-      // },
+      {
+        path: 'media',
+        component: MediaExplorerComponent,
+      },
     {
       path: 'audio',
       component: AudioComponent,

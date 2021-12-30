@@ -4,7 +4,7 @@ import { User } from 'src/app/models/user';
 import { AudioAlbumUploadService } from 'src/app/services/audio-album-upload.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
-import { Media } from 'src/app/models/media/media';
+import { Media, UploadableMedia } from 'src/app/models/media/media';
 import { MediaConstants } from 'src/app/constants/media-constants';
 
 @Component({
@@ -52,7 +52,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.resetSelectedMedia();
   }
 
-  onDeleteSelectedMedia(media: Media): void {
+  onDeleteSelectedMedia(media: UploadableMedia  ): void {
     this.mediaService.deleteMedia(media);
     this.resetSelectedMedia();
   }
@@ -76,7 +76,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   // HELPER METHODS
 
   private isAlbumInputValid(): boolean {
-    return (!!this.album.title && !!this.album.folderName && !!this.album.tracks);
+    return (!!this.album.title && !!this.album.folderName);
   }
 
   private resetSelectedMedia(): void {

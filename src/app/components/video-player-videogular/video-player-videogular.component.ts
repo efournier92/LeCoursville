@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media/video';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
   selector: 'app-video-player-videogular',
@@ -17,7 +18,9 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
 
   private eventsSubscription: Subscription;
 
-  constructor() { }
+  constructor(
+    private analyticsService: AnalyticsService,
+  ) { }
 
   // LIFECYCLE HOOKS
 
@@ -25,6 +28,8 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
     this.videos = [this.video];
 
     this.subscribeToParentMediaChanges();
+
+    this.analyticsService.logEvent('component_load_video_player_videogular', { video: this.video });
   }
 
   ngOnDestroy() {

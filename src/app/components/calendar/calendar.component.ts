@@ -86,26 +86,26 @@ export class CalendarComponent implements OnInit {
   toggleBirthdays($event: any): void {
     const showBirthdays = $event.checked;
     this.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent('calendar_toggle_birthdays', { user: this.user, event: $event, isChecked: $event.checked });
+    this.analyticsService.logEvent('calendar_toggle_birthdays', { user: this.user.id, event: $event, isChecked: $event.checked });
   }
 
   toggleAnniversaries($event: any): void {
     const showAnniversaries = $event.checked;
     this.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
-    this.analyticsService.logEvent('calendar_toggle_anniversaries', { user: this.user, event: $event, isChecked: $event.checked });
+    this.analyticsService.logEvent('calendar_toggle_anniversaries', { user: this.user.id, event: $event, isChecked: $event.checked });
   }
 
   changeViewMonth($event: any): void {
     const monthName = $event.value;
     this.viewDate = new Date(monthName + '1,' + this.selectedYear);
-    this.analyticsService.logEvent('calendar_change_view_month', { user: this.user, event: $event, newMonth: $event.value });
+    this.analyticsService.logEvent('calendar_change_view_month', { user: this.user.id, event: $event, newMonth: $event.value });
   }
 
   changeSelectedYear($event: any): void {
     this.selectedYear = $event.value;
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
     this.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent('calendar_change_selected_year', { user: this.user, event: $event, newYear: $event.value });
+    this.analyticsService.logEvent('calendar_change_selected_year', { user: this.user.id, event: $event, newYear: $event.value });
   }
 
   changeView(date: Date): void {
@@ -116,7 +116,7 @@ export class CalendarComponent implements OnInit {
       this.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
     this.analyticsService.logEvent('calendar_change_selected_year', {
-      user: this.user, newDate: date, selectedYear: this.selectedYear,
+      user: this.user.id, newDate: date, selectedYear: this.selectedYear,
       isShowingBirthdays: this.showBirthdays, isShowingAnniversaries: this.showAnniversaries
     });
   }
@@ -126,7 +126,7 @@ export class CalendarComponent implements OnInit {
       data: { events: this.allEvents },
     });
     this.analyticsService.logEvent('calendar_open_print_dialog', {
-      user: this.user, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
+      user: this.user.id, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
       isShowingAnniversaries: this.showAnniversaries });
   }
 

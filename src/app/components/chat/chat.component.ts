@@ -57,7 +57,7 @@ export class ChatComponent implements OnInit {
     const authorId: string = this.user.id;
     const authorName: string = this.user.name;
     this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
-    this.analyticsService.logEvent('chat_message_create', { user: this.user });
+    this.analyticsService.logEvent('chat_message_create', { user: this.user.id });
   }
 
   // HELPER METHODS
@@ -84,6 +84,6 @@ export class ChatComponent implements OnInit {
     } else {
       message.isEditable = false;
     }
-    this.analyticsService.logEvent('chat_message_edit_cancel', { user: this.user });
+    this.analyticsService.logEvent('chat_message_edit_cancel', { user: this.user.id });
   }
 }

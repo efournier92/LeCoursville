@@ -86,7 +86,7 @@ export class ChatEditComponent implements OnInit {
     );
 
     this.analyticsService.logEvent('chat_edit_message_save', {
-      user: this.user, message: newMessage, isReply: this.message.isReply, parentMessage: this.parent
+      user: this.user.id, message: newMessage, isReply: this.message.isReply, parentMessage: this.parent
     });
   }
 
@@ -102,7 +102,7 @@ export class ChatEditComponent implements OnInit {
     }
 
     this.analyticsService.logEvent('chat_edit_message_edit_cancel', {
-      user: this.user, message: this.message, parentMessage: this.parent
+      user: this.user.id, message: this.message, parentMessage: this.parent
     });
   }
 
@@ -134,7 +134,7 @@ export class ChatEditComponent implements OnInit {
     );
 
     this.analyticsService.logEvent('chat_edit_message_delete', {
-      user: this.user, message: this.message, parentMessage: this.parent
+      user: this.user.id, message: this.message, parentMessage: this.parent
     });
   }
 
@@ -154,7 +154,7 @@ export class ChatEditComponent implements OnInit {
     );
 
     this.analyticsService.logEvent('chat_edit_message_restore', {
-      user: this.user, message: this.message, parentMessage: this.parent
+      user: this.user.id, message: this.message, parentMessage: this.parent
     });
   }
 

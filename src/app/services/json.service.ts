@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
-import { Media } from 'src/app/models/media/media';
+import { Media, UploadableMedia } from 'src/app/models/media/media';
 import { Video } from 'src/app/models/media/video';
 import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import { Doc } from 'src/app/models/media/doc';
@@ -117,10 +117,10 @@ export class JsonService {
     return track.id;
   }
 
-  uploadAudioTracks(tracks: Media[]) {
+  uploadAudioTracks(tracks: UploadableMedia[]) {
     const ids = new Array<string>();
 
-    tracks.forEach((track: Media) => {
+    tracks.forEach((track: UploadableMedia) => {
       const trackId = this.uploadAudioTrack(track);
       ids.push(trackId);
     });
