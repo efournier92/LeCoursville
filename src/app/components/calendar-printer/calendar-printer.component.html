@@ -20,10 +20,10 @@
       </mat-form-field>
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox class="example-margin" (change)="refreshPrintJob()" [(ngModel)]="shouldPrintBirthdays">Birthdays</mat-checkbox>
+      <mat-checkbox color="warn" (change)="refreshPrintJob()" [(ngModel)]="shouldPrintBirthdays">Birthdays</mat-checkbox>
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox class="example-margin" [(ngModel)]="shouldPrintAnniversaries">Anniversaries</mat-checkbox>
+      <mat-checkbox color="warn" [(ngModel)]="shouldPrintAnniversaries">Anniversaries</mat-checkbox>
     </div>
     <div class="d-flex justify-content-around">
       <button mat-raised-button color="primary" class="print-action-button" (click)="downloadPdf()">Download</button>

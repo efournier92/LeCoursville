@@ -92,5 +92,4 @@ export class AdminMediaComponent implements OnInit {
       this.errorMessages.push(validationResponse.error.stack);
     }
   }
-
 }

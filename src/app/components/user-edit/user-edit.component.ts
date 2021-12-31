@@ -9,7 +9,8 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./user-edit.component.scss']
 })
 export class UserEditComponent implements OnInit {
-  @Input() userToEdit: User;
+  @Input() userOnCard: User;
+  @Input() isAdminMode = false;
 
   @Output() cancelEditClickedEvent = new EventEmitter();
 
@@ -22,7 +23,6 @@ export class UserEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
-    this.ensureUserRulesExist();
   }
 
   // SUBSCRIPTIONS
@@ -36,14 +36,7 @@ export class UserEditComponent implements OnInit {
   // PUBLIC METHODS
 
   updateUser(user: User): void {
-    this.authService.updateUser(user);
-  }
-
-  addUserRole(user: User, roleType: string): void {
-    if (!user.roles?.admin || !user.roles?.super) { 
-      user.roles = { user: true, admin: false, super: false };
-    }
-    user.roles[roleType] = true;
+    this.adminService.updateUser(user);
   }
 
   isSuperUser(): boolean {
@@ -52,15 +45,21 @@ export class UserEditComponent implements OnInit {
 
   onSaveUser(user: User): void {
     this.updateUser(user);
-    this.emitCancelEditEvent();
+    if (this.isAdminMode) {
+      this.emitCancelEditEvent();
+    }
   }
 
   onDeleteUser(user: User): void {
-    this.deleteUser(this.userSignedIn);
+    this.deleteUser(user);
   }
 
   onCancelEdit(): void {
     this.emitCancelEditEvent();
+  }
+
+  shouldSeeRoles(): boolean {
+    return this.authService.isUserAdmin();
   }
 
   // HELPER METHODS
@@ -71,15 +70,5 @@ export class UserEditComponent implements OnInit {
 
   private emitCancelEditEvent(): void {
     this.cancelEditClickedEvent.emit();
-  }
-
-  private ensureUserRulesExist(): void {
-    if (!this.userToEdit.roles) {
-      this.userToEdit.roles = { user: true, admin: false, super: false };
-    } else if (!this.userToEdit.roles.admin) {
-      this.userToEdit.roles = { user: this.userToEdit.roles.user, admin: false, super: false };
-    } else if (!this.userToEdit.roles.super) {
-      this.userToEdit.roles = { user: this.userToEdit.roles.user, admin: this.userToEdit.roles.super, super: false };
-    }
   }
 }

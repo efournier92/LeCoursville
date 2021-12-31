@@ -22,6 +22,8 @@ export class AuthComponent implements OnInit {
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
+    // Remove any extraneous URL information
+    this.routingService.NavigateToSignIn();
     this.isEditing = false;
     this.subscribeToUserObservable();
     this.analyticsService.logEvent('component_load_auth', { });

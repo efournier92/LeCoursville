@@ -7,6 +7,7 @@ export class Doc implements UploadableMedia {
   artist: string;
   date: string;
   folderName: string;
+  fileName: string;
   isHidden: boolean;
   listing: any[];
   urls: { download: string; icon: string; };

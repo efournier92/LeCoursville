@@ -7,11 +7,11 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-audio',
-  templateUrl: './audio.component.html',
-  styleUrls: ['./audio.component.scss']
+  selector: 'app-media-audio',
+  templateUrl: './media-audio.component.html',
+  styleUrls: ['./media-audio.component.scss']
 })
-export class AudioComponent implements OnInit {
+export class MediaAudioComponent implements OnInit {
   selectedAlbum: AudioAlbum;
   eventsSubject: Subject<AudioAlbum> = new Subject<AudioAlbum>();
   user: User;
@@ -43,6 +43,6 @@ export class AudioComponent implements OnInit {
 
   onMediaSelect(album: AudioAlbum): void {
     this.selectedAlbum = album;
-    // this.analyticsService.logEvent('audio_album_select', { audioAlbum: album, user: this.user.id });
+    this.analyticsService.logEvent('audio_album_select', { audioAlbum: album, user: this.user.id });
   }
 }

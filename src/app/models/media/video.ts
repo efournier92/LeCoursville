@@ -7,6 +7,7 @@ export class Video implements UploadableMedia {
   artist: string;
   date: string;
   folderName: string;
+  fileName: string;
   isHidden: boolean;
   listing: any[];
   urls: { download: string; icon: string; };
@@ -21,12 +22,14 @@ export class Video implements UploadableMedia {
     title: string = '',
     downloadUrl: string = '',
     iconUrl: string = '',
+    fileName: string = '',
     date: string = '',
     duration: string = '',
   ) {
     this.id = id;
     this.title = title;
     this.date = date;
+    this.fileName = fileName;
 
     this.type = MediaConstants.VIDEO.id;
     this.format = MediaConstants.VIDEO.format;

@@ -1,13 +1,18 @@
-<div *ngIf="user?.name">
+<div class="calendar-component-container" *ngIf="user?.name">
 
-  <div class="d-flex mt-2 calendar-checkbox-tools-container">
+  <div class="d-flex justify-content-between mt-2 calendar-top-tools-container">
     <div class="col-xs-8 calendar-checkbox-container">
-      <mat-checkbox class="calendar-checkbox" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
+      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">
         Birthdays
       </mat-checkbox>
-      <mat-checkbox class="calendar-checkbox" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
+      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">
         Anniversaries
       </mat-checkbox>
+    </div>
+    <div class="d-flex justify-content-center calendar-print-button-container">
+      <button mat-button (click)="printPdf()">
+        <mat-icon class="calendar-print-button-icon">print</mat-icon> Print
+      </button>
     </div>
   </div>
 
@@ -33,21 +38,20 @@
         </mat-select>
       </mat-form-field>
     </div>
-    <div class="d-flex justify-content-center calendar-print-button-container">
-      <button mat-button (click)="printPdf()">
-        <mat-icon class="calendar-print-button-icon">print</mat-icon> Print
-      </button>
-    </div>
   </div>
 
   <div class="w-100 d-flex justify-content-center">
     <div class="d-flex w-75 justify-content-around">
-      <div class="" (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
+      <!-- <div class="" (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
         [(viewDate)]="viewDate">
         <mat-icon class="calendar-arrow-button" (click)="changeView(viewDate)" mwlCalendarPreviousView [view]="view"
           [(viewDate)]="viewDate">keyboard_arrow_left</mat-icon>
+      </div> -->
+
+      <div mwlCalendarPreviousView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate">
+        <mat-icon class="calendar-arrow-button">keyboard_arrow_left</mat-icon>
       </div>
-      <div class="" (click)="changeView(viewDate)" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+      <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate">
         <mat-icon class="calendar-arrow-button">keyboard_arrow_right</mat-icon>
       </div>
     </div>

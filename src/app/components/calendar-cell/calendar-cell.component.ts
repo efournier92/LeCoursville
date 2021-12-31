@@ -22,9 +22,10 @@ export class CalendarCellComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  getYearsSince(event: RecurringEvent): number {
-    const eventYear: number = event.date.getUTCFullYear();
-    return this.calendarService.getYearsSince(eventYear, this.selectedYear);
+  getYearsSinceString(event: RecurringEvent): string   {
+    const eventYear = event.date.getUTCFullYear();
+    return this.calendarService.getYearsSince(eventYear, this.selectedYear).toString();
+    // return this.calendarService.formatYearsSinceString(yearsSince, 3);
   }
 
   shouldDisplayEvent(): boolean {

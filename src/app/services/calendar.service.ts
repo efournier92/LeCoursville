@@ -44,6 +44,12 @@ export class CalendarService {
     return +selectedYear - +eventYear;
   }
 
+  formatYearsSinceString(years: number, totalCharacters: number = 3) {
+    const charactersInYears = years.toString().length;
+    const chractersToAdd = totalCharacters - charactersInYears;
+    return ' '.repeat(chractersToAdd) + years;
+  }
+
   updateCalendarEventsEvent(calendarEvents: RecurringEvent[]) {
     this.calendarEventsSource.next(calendarEvents);
   }
@@ -75,5 +81,32 @@ export class CalendarService {
       year += 1;
     }
     return years;
+  }
+
+  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): RecurringEvent[] {
+    let output = [];
+    for (const event of events) {
+      if (event.type === 'birth' && birthdays === false) {
+        continue;
+      }
+      if (event.type === 'anniversary' && anniversaries === false) {
+        continue;
+      }
+      const date = new Date(event.date);
+      date.setFullYear(year);
+      event.start = date;
+      event.date = new Date(event.date);
+      output.push(event);
+    }
+    output = this.sortEvents(output);
+    return output;
+  }
+
+  private sortEvents(events: RecurringEvent[]): RecurringEvent[] {
+    return events.sort(this.compareMessagesByTimestamp);
+  }
+
+  private compareMessagesByTimestamp(a: RecurringEvent, b: RecurringEvent): number {
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
   }
 }

@@ -1,5 +1,5 @@
 .calendar-cell-container {
-  margin-left: 0.75em;
+  margin-left: 0.25em;
   font-size: 1em;
   font-weight: 500;
 }
@@ -10,20 +10,16 @@
 
 .calendar-years-since-container {
   line-height: 1em;
-  margin-right: 0.75em;
 }
 
-.calendar-years-since-span {
-  margin-top: -2px;
+.calendar-years-since {
+  width:1.6em;
+  text-align: right;
+  margin-right: 0.5em
 }
 
 .calendar-event-title-container {
-  float: right;
   line-height: 1em;
-}
-
-.calendar-icon {
-  font-size: 1.2em;
 }
 
 .birthday-color {

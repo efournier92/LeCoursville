@@ -49,7 +49,7 @@ export class CalendarComponent implements OnInit {
 
     this.subscribeToUserObservable();
 
-    this.subscribeTocalendarEventsObservable();
+    this.subscribeToCalendarEventsObservable();
 
     this.subscribeToCalendarsObservable();
 
@@ -64,11 +64,11 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  private subscribeTocalendarEventsObservable(): void {
+  private subscribeToCalendarEventsObservable(): void {
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
-        this.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+        this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
       }
     );
   }
@@ -85,13 +85,13 @@ export class CalendarComponent implements OnInit {
 
   toggleBirthdays($event: any): void {
     const showBirthdays = $event.checked;
-    this.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
     this.analyticsService.logEvent('calendar_toggle_birthdays', { user: this.user.id, event: $event, isChecked: $event.checked });
   }
 
   toggleAnniversaries($event: any): void {
     const showAnniversaries = $event.checked;
-    this.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
     this.analyticsService.logEvent('calendar_toggle_anniversaries', { user: this.user.id, event: $event, isChecked: $event.checked });
   }
 
@@ -104,7 +104,7 @@ export class CalendarComponent implements OnInit {
   changeSelectedYear($event: any): void {
     this.selectedYear = $event.value;
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
-    this.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
     this.analyticsService.logEvent('calendar_change_selected_year', { user: this.user.id, event: $event, newYear: $event.value });
   }
 
@@ -113,7 +113,7 @@ export class CalendarComponent implements OnInit {
     const selectedYear = date.getFullYear();
     if (selectedYear !== this.selectedYear) {
       this.selectedYear = selectedYear;
-      this.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
+      this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
     this.analyticsService.logEvent('calendar_change_selected_year', {
       user: this.user.id, newDate: date, selectedYear: this.selectedYear,
@@ -128,23 +128,6 @@ export class CalendarComponent implements OnInit {
     this.analyticsService.logEvent('calendar_open_print_dialog', {
       user: this.user.id, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
       isShowingAnniversaries: this.showAnniversaries });
-  }
-
-  private updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
-    this.events = [];
-    for (const event of events) {
-      if (event.type === 'birth' && birthdays === false) {
-        continue;
-      }
-      if (event.type === 'anniversary' && anniversaries === false) {
-        continue;
-      }
-      const date = new Date(event.date);
-      date.setFullYear(year);
-      event.start = date;
-      event.date = new Date(event.date);
-      this.events.push(event);
-    }
   }
 
   // HELPERS

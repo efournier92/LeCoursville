@@ -8,7 +8,7 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./user-view.component.scss']
 })
 export class UserViewComponent implements OnInit {
-  @Input() user: User;
+  @Input() userOnCard: User;
 
   @Output() editClickedEvent = new EventEmitter();
 
@@ -29,10 +29,10 @@ export class UserViewComponent implements OnInit {
   }
 
   isAdminUser(): boolean {
-    return this.user?.roles?.admin;
+    return this.userOnCard?.roles?.admin;
   }
 
   isSuperUser(): boolean {
-    return this.user?.roles?.super;
+    return this.userOnCard?.roles?.super;
   }
 }

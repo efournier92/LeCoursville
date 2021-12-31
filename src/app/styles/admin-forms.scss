@@ -17,7 +17,7 @@
 
 .admin-form-action-button-upload {
   color: white;
-  background-color: #1b5e20;
+  background-color: #81C784;
 }
 
 .admin-form-action-button-delete {
@@ -28,4 +28,10 @@
 .admin-form-action-button-cancel {
   color: white;
   background-color: #f57f17;
+}
+
+.admin-media-upload-form-container {
+  border: 0.01em solid grey;
+  padding: 2em;
+  margin: 1em;
 }

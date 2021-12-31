@@ -11,12 +11,16 @@ export class AppComponent implements OnInit {
   user: User;
 
   constructor(
-    private auth: AuthService,
+    private authService: AuthService,
   ) {
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-      }
+    this.subscribeToUserObservable();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable(): void {
+    this.authService.userObservable.subscribe(
+      (user: User) => this.user = user
     );
   }
 

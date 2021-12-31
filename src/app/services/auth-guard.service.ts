@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
-import { CanActivate } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot } from '@angular/router';
 import { User } from 'src/app/models/user';
 import { RoutingService } from 'src/app/services/routing.service';
+import { Observable, Subscription } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -11,19 +13,22 @@ export class AuthGuardService implements CanActivate {
   user: User;
 
   constructor(
-    public auth: AuthService,
+    public authService: AuthService,
     public routingService: RoutingService
   ) {
-    this.auth.userObservable.subscribe(
-      (user: User) => this.user = user,
+    this.authService.userObservable.subscribe(
+      user => user
     );
   }
 
   canActivate(): boolean {
-    if (!this.user) {
-      this.routingService.NavigateToRoute('/');
+    const isUserSignedIn = this.authService.isUserSignedIn();
+
+    if (isUserSignedIn) {
+      return true;
+    } else {
+      this.routingService.NavigateToSignIn();
       return false;
     }
-    return true;
   }
 }

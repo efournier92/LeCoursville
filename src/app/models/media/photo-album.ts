@@ -7,6 +7,7 @@ export class PhotoAlbum implements UploadableMedia {
   artist: string;
   date: string;
   folderName: string;
+  fileName: string;
   isHidden: boolean;
   urls: { download: string; icon: string; };
   type: string;
@@ -23,7 +24,6 @@ export class PhotoAlbum implements UploadableMedia {
     date: string = '',
     photos: string[] = [],
   ) {
-
     this.id = id;
     this.title = title;
     this.date = date;

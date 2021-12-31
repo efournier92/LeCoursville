@@ -4,6 +4,7 @@ import { ChatService } from 'src/app/services/chat.service';
 import { User } from 'src/app/models/user';
 import { Message } from 'src/app/models/message';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { AppSettings } from 'src/environments/app-settings';
 
 @Component({
   selector: 'app-chat',
@@ -42,6 +43,7 @@ export class ChatComponent implements OnInit {
   private subscribeToChatObservable(): void {
     this.chatService.chatObservable.subscribe(
       (messages: Message[]) => {
+        messages = this.filterOldMessages(messages);
         this.messages = messages.sort(this.compareMessagesByTimestamp);
         this.bumpStickies();
       }
@@ -60,6 +62,19 @@ export class ChatComponent implements OnInit {
     this.analyticsService.logEvent('chat_message_create', { user: this.user.id });
   }
 
+  updateMessages(message: Message): void {
+    this.chatService.updateMessage(message);
+  }
+
+  cancelEdit(message: Message): void {
+    if (!message.isSaved) {
+      this.messages.shift();
+    } else {
+      message.isEditable = false;
+    }
+    this.analyticsService.logEvent('chat_message_edit_cancel', { user: this.user.id });
+  }
+
   // HELPER METHODS
 
   private bumpStickies(): any {
@@ -74,16 +89,8 @@ export class ChatComponent implements OnInit {
     return new Date(b.dateSent).getTime() - new Date(a.dateSent).getTime();
   }
 
-  updateMessages(message: Message): void {
-    this.chatService.updateMessage(message);
-  }
-
-  cancelEdit(message: Message): void {
-    if (!message.isSaved) {
-      this.messages.shift();
-    } else {
-      message.isEditable = false;
-    }
-    this.analyticsService.logEvent('chat_message_edit_cancel', { user: this.user.id });
+  private filterOldMessages(messages: Message[]): Message[] {
+    const filtrationThesholdDate = new Date(new Date().setMonth(new Date().getMonth() - AppSettings.chat.includeMessagesFromHowManyMonths));
+    return messages.filter(message => new Date(message.dateSent) > filtrationThesholdDate);
   }
 }

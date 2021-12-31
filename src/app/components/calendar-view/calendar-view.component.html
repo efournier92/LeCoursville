@@ -3,7 +3,6 @@
     <!-- <img class="calendar-view-logo-image" src="./assets/img/logo/LeCours_Logo_Inward_Blue.png" /> -->
     <div class="d-flex flex-column justify-content-center">
       <div>
-        <div class="calendar-title-name">LeCoursville Calendar</div>
         <div class="calendar-title-date">{{ viewDate | calendarDate:(view + 'ViewTitle') }}</div>
       </div>
     </div>
@@ -23,6 +22,7 @@
     <div class="calendar-month-view-container">
       <mwl-calendar-month-view [activeDay]="activeDay" [viewDate]="viewDate" [events]="events" [cellTemplate]="customCellTemplate">
       </mwl-calendar-month-view>
+      <div class="calendar-title-website">lecoursville.com</div>
     </div>  
   </div>
 </div>

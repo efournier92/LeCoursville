@@ -1,0 +1,43 @@
+<div *ngIf="user?.roles?.admin">
+    <div class="admin-media-upload-form-container">
+        <form class="admin-media-upload-upload-form">
+            <mat-form-field class="admin-upload-input">
+                <mat-label>Title</mat-label>
+                <input type="text" matInput name="videoTitle" [(ngModel)]="video.title">
+            </mat-form-field>
+            <mat-form-field class="admin-upload-input">
+                <mat-label>File Name</mat-label>
+                <input type="text" matInput name="videoFileName" [(ngModel)]="video.fileName">
+            </mat-form-field>
+            <mat-form-field class="admin-upload-input">
+                <mat-label class="optional-field">Date</mat-label>
+                <input type="text" matInput name="videoDate" [(ngModel)]="video.date">
+            </mat-form-field>
+            <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="video.isHidden">Should Hide from Lists?</mat-checkbox>
+            <button mat-button class="admin-form-action-button admin-form-action-button-upload"
+                (click)="onUploadSelectedMedia()">
+                <span *ngIf="!video.id">Upload</span>
+                <span *ngIf="video.id">Update</span>
+            </button>
+            <button class="admin-form-action-button admin-form-action-button-delete" *ngIf="video.id"
+                mat-button (click)="onDeleteSelectedMedia(video)">Delete</button>
+            <button mat-button class="admin-form-action-button admin-form-action-button-cancel"
+                (click)="onCancelSelectedMedia(video)">Clear</button>
+            <mat-divider class="admin-media-upload-divider"></mat-divider>
+            <div class="admin-media-upload-or-container">
+                <span class="admin-media-upload-or-span">OR</span>
+            </div>
+            <mat-divider class="admin-media-upload-divider"></mat-divider>
+            <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+                [shouldShowLabel]="true" [shouldShowClearButton]="true"
+                (inputFileChangeEvent)="inputFileChangeEvent($event)" (inputClearedEvent)="inputClearedEvent()">
+            </app-file-input>
+        </form>
+    </div>
+
+    <div class="admin-media-list-container">
+        <app-media-list [mediaTypesToShow]="getVideoTypeId()" (mediaClickEvent)="onMediaSelect($event)">
+        </app-media-list>
+    </div>
+
+</div>

@@ -8,8 +8,8 @@
 @include mat-core();
 
 $my-theme-primary: mat-palette($mat-green, 900);
-$my-theme-accent: mat-palette($mat-green, 500);
-$my-theme-warn: mat-palette($mat-green, A400);
+$my-theme-accent: mat-palette($mat-amber, 500);
+$my-theme-warn: mat-palette($mat-red, 500);
 
 $my-theme: mat-light-theme(
   $my-theme-primary,
@@ -67,18 +67,22 @@ html, body {
 }
 
 .cal-month-view .cal-day-cell:not(:last-child) {
-  border-right: 2px solid #616161;
+  border-right: 2px solid #424242;
 }
 
 .cal-month-view .cal-days {
-  border-top: 2px solid #616161;
-  border-left: 2px solid #616161;
-  border-right: 2px solid #616161;
+  border-top: 2px solid #424242;
+  border-left: 2px solid #424242;
+  border-right: 2px solid #424242;
 }
 
 .cal-month-view .cal-day-cell {
   // border-right: 2px solid #e1e1e1;
-  border-bottom: 1.8px solid #616161;
+  border-bottom: 1px solid #424242;
+}
+
+.cal-month-view .cal-days .cal-cell-row {
+  border-bottom-color: #424242;
 }
 
 app-calendar-cell {
@@ -94,7 +98,7 @@ html .mat-paginator, html .mat-paginator-page-size .mat-select-trigger, body .ma
 }
 
 .cal-month-view {
-  background-color: #fafafa;
+  background-color: #fff;
 }
 
 .cal-month-view .cal-day-number {

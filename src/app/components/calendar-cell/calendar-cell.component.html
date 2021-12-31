@@ -2,8 +2,8 @@
   [ngClass]="{ 'event-living': event.isLiving, 'event-not-living': !event.isLiving }">
   <div class="calendar-cell-event-container d-flex">
     <div class="calendar-years-since-container">
-      <span class="calendar-years-since-span" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
-        {{ getYearsSince(event) }}</span>
+      <div class="calendar-years-since" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
+        {{ getYearsSinceString(event) }}</div>
     </div>
     <div class="calendar-event-title-container">
       {{ event.title }}

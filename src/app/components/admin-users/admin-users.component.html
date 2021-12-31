@@ -8,7 +8,7 @@
 
   <div class="row justify-content-center admin-user-card-container" *ngIf="shouldDisplayUserCards()">
     <div class="m-2 col-md-5" *ngFor="let cardUser of allUsers">
-      <app-user-edit [userToEdit]="cardUser">
+      <app-user-edit [userOnCard]="cardUser" [isAdminMode]="true" (cancelEditClickedEvent)="updateUser(cardUser)">
       </app-user-edit>
     </div>
   </div>

@@ -15,6 +15,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { FileSaverModule } from 'ngx-filesaver';
 import { FilterPipeModule } from 'ngx-filter-pipe';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -60,11 +61,14 @@ import { VideoPlayerDriveIframeComponent } from 'src/app/components/video-player
 import { VideoPlayerVideogularComponent } from 'src/app/components/video-player-videogular/video-player-videogular.component';
 import { DocViewerNgxExtendedComponent } from 'src/app/components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component';
 import { AdminMediaUploadAudioAlbumComponent } from 'src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component';
-import { AudioComponent } from 'src/app/components/audio/audio.component';
 import { AdminCalendarComponent } from 'src/app/components/admin-calendar/admin-calendar.component';
 import { AdminRoutingComponent } from './components/admin-routing/admin-routing.component';
 import { UserViewComponent } from './components/user-view/user-view.component';
 import { UserEditComponent } from './components/user-edit/user-edit.component';
+import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.component';
+import { MediaVideoComponent } from './components/media-video/media-video.component';
+import { AdminMediaUploadVideoComponent } from './components/admin-media-upload-video/admin-media-upload-video.component';
+import { NavbarLinksComponent } from './components/navbar-links/navbar-links.component';
 
 @NgModule({
   declarations: [
@@ -97,11 +101,14 @@ import { UserEditComponent } from './components/user-edit/user-edit.component';
     VideoPlayerVideogularComponent,
     DocViewerNgxExtendedComponent,
     AdminMediaUploadAudioAlbumComponent,
-    AudioComponent,
     AdminCalendarComponent,
     AdminRoutingComponent,
     UserViewComponent,
     UserEditComponent,
+    MediaAudioComponent,
+    MediaVideoComponent,
+    AdminMediaUploadVideoComponent,
+    NavbarLinksComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -117,6 +124,7 @@ import { UserEditComponent } from './components/user-edit/user-edit.component';
       useFactory: adapterFactory,
     }),
     ClipboardModule,
+    FileSaverModule,
     FilterPipeModule,
     FirebaseUIModule.forRoot(AuthConfig),
     FontAwesomeModule,

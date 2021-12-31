@@ -28,6 +28,12 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   ngOnInit(): void {
     this.album = new AudioAlbum();
+    this.subscribeToUserObservable();
+  }
+
+  // SUBSCRIPTIONS
+
+  private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     );
@@ -40,7 +46,6 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   }
 
   onMediaSelect(album: AudioAlbum): void {
-    console.log(`Selected Album: `, album);
     this.album = album;
   }
 
@@ -52,7 +57,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.resetSelectedMedia();
   }
 
-  onDeleteSelectedMedia(media: UploadableMedia  ): void {
+  onDeleteSelectedMedia(media: UploadableMedia): void {
     this.mediaService.deleteMedia(media);
     this.resetSelectedMedia();
   }

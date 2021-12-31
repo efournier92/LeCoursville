@@ -1,0 +1,14 @@
+<div *ngIf="!isMenuList" class="toolbar-routes-buttons-inline">
+    <button mat-button *ngFor="let button of buttons" [routerLink]="button.link">
+      <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
+      <span>{{ button.title }}</span>
+    </button>
+  </div>
+  
+  <div *ngIf="isMenuList" class="toolbar-routes-buttons-inline">
+    <button mat-menu-item *ngFor="let button of buttons" [routerLink]="button.link">
+      <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
+      <span>{{ button.title }}</span>
+    </button>
+  </div>
+  

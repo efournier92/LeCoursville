@@ -9,6 +9,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { Clipboard } from '@angular/cdk/clipboard';
+import { FileDownloadService } from 'src/app/services/file-download.service';
+import * as saveAs from 'file-saver';
 
 @Component({
   selector: 'app-media-explorer',
@@ -16,7 +18,8 @@ import { Clipboard } from '@angular/cdk/clipboard';
   styleUrls: ['./media-explorer.component.scss']
 })
 export class MediaExplorerComponent implements OnInit {
-  @Input() mediaType: string;
+  @Input() mediaTypesToShow: string;
+
   user: User;
   allMedia: UploadableMedia[] = [];
   loadedMedia: UploadableMedia[];
@@ -30,6 +33,7 @@ export class MediaExplorerComponent implements OnInit {
     private routingService: RoutingService,
     private activatedRoute: ActivatedRoute,
     private clipboard: Clipboard,
+    private downloadService: FileDownloadService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -38,8 +42,15 @@ export class MediaExplorerComponent implements OnInit {
     this.selectedMedia = undefined;
     this.allMedia = [];
 
-    this.getQueryParams();
-    this.subscribeToUserObservable();
+    // this.mediaService.getMedia().valueChanges().subscribe(
+    this.mediaService.mediaObservable.subscribe(
+      (mediaList: UploadableMedia[]) => {
+        this.allMedia = mediaList;
+        this.getQueryParams();
+        this.subscribeToUserObservable();
+      }
+    );
+
     this.analyticsService.logEvent('component_load_media_explorer', { });
   }
 
@@ -76,9 +87,16 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   downloadSelectedMedia(): void {
-    this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
 
-    window.location.href = this.selectedMedia?.urls?.download;
+    // this.downloadService
+    //   .download(this.selectedMedia.urls.download)
+    //   .subscribe(blob => saveAs(blob, this.selectedMedia.fileName));
+
+    // this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
+
+    // window.location.href = this.selectedMedia?.urls?.download;
+    window.open(this.selectedMedia?.urls?.download, '_blank');
+
   }
 
   navigateToSignIn() {
@@ -143,7 +161,9 @@ export class MediaExplorerComponent implements OnInit {
   private setCurrentMedia(media: UploadableMedia) {
     this.selectedMedia = media;
     this.emitEventToChild(media);
-    this.routingService.clearQueryParams();
+    if (this.authService.isUserSignedIn()) {
+      this.routingService.clearQueryParams();
+    }
     this.analyticsService.logEvent('media_explorer_select', media);
   }
 
@@ -159,6 +179,9 @@ export class MediaExplorerComponent implements OnInit {
 
   private getMediaIdFromQueryParams(params) {
     const idFromParams = params.id;
+    if (!idFromParams && !this.authService.isUserSignedIn()) {
+      this.routingService.NavigateToSignIn();
+    }
     if (idFromParams) {
       this.loadMediaByQueryId(idFromParams);
     }
@@ -168,7 +191,9 @@ export class MediaExplorerComponent implements OnInit {
     const media = this.mediaService.getMediaById(id);
     if (media?.id === id) {
       this.selectedMedia = media;
-      this.routingService.clearQueryParams();
+      if (this.authService.isUserSignedIn()) {
+        this.routingService.clearQueryParams();
+      }
     }
   }
 }

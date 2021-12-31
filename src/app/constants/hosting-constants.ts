@@ -9,4 +9,10 @@ export abstract class HostingConstants {
             zips: '_Zips',
         },
     };
+    static readonly Videos = {
+        baseUrl: 'https://assets.lecoursville.com/Video',
+        folderNames: {
+            icons: 'Icons',
+        },
+    };
 }

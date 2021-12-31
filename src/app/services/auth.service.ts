@@ -12,9 +12,10 @@ import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
   providedIn: 'root'
 })
 export class AuthService {
-  private userSource = new BehaviorSubject({ });
-  userObservable = this.userSource.asObservable();
+  user: User;
   userObj: AngularFireObject<User>;
+  private userSource = new BehaviorSubject({});
+  userObservable = this.userSource.asObservable();
 
   constructor(
     private db: AngularFireDatabase,
@@ -33,7 +34,9 @@ export class AuthService {
     this.userObj = this.db.object(`users/${authData.uid}`);
     this.userObj.valueChanges().subscribe(
       (user: User) => {
-        this.setUser(user, authData);
+        this.userSource.next(user);
+        this.user = user;
+        this.setUser(authData, user);
       }
     );
   }
@@ -52,42 +55,47 @@ export class AuthService {
   }
 
   updateUser(user: User): void {
+    if (!user) { return; }
     this.userSource.next(user);
     this.db.object(`users/${user.id}`).update(user);
+    this.setUserInLocalStorage(user);
   }
 
-  setUser(user: User, authData: any): void {
-    if (!user) {
-      this.createUser(authData);
+  setUser(authData: any, existingUser: User): void {
+    if (!existingUser) {
+      this.createUser(authData, existingUser);
     }
-    this.updateUser(user);
+    this.updateUser(existingUser);
   }
 
   onSignIn(authData: any): void {
     const authUser = authData?.authResult?.user;
 
     if (!authUser?.uid) { return; }
-
     this.userObj = this.db.object(`users/${authUser?.uid}`);
     this.userObj.valueChanges().subscribe(
-      (foundUser: User) => {
-        if (!foundUser) {
-          this.createUser(authData);
+      (existingUser: User) => {
+        if (!existingUser) {
+          this.createUser(authData, existingUser);
+          return;
         }
-        foundUser.dateLastSignedIn = authData?.metadata?.lastSignInTime;
-        this.updateUser(foundUser);
+        const authUserObj = authData?.authResult?.user || authData;
+        existingUser.dateLastSignedIn = authUserObj?.metadata?.lastSignInTime;
+        this.updateUser(existingUser);
       }
     );
   }
 
-  createUser(authData: any): void {
-    const user: User = new User(authData);
+  createUser(authData: any, existingUser: User): void {
+    const user: User = new User(authData, existingUser);
     this.updateUser(user);
+    this.setUserInLocalStorage(user);
   }
 
   signOut(): void {
     this.angularFireAuth.signOut().then(() => {
       this.userObj = undefined;
+      this.removeUserFromLocalStorage();
       this.routingService.RefreshCurrentRoute();
     });
   }
@@ -107,5 +115,27 @@ export class AuthService {
         }
       }
     );
+  }
+
+  private getUserFromLocalStorage() {
+    return JSON.parse(localStorage.getItem('user'));
+  }
+
+  private setUserInLocalStorage(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  private removeUserFromLocalStorage() {
+    localStorage.removeItem('user');
+  }
+
+  isUserSignedIn(): boolean {
+    const user = this.getUserFromLocalStorage();
+    return !!user?.id;
+  }
+
+  isUserAdmin(): boolean {
+    const user = this.getUserFromLocalStorage();
+    return !!user?.roles?.admin;
   }
 }

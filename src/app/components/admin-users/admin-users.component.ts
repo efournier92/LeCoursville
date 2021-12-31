@@ -49,16 +49,20 @@ export class AdminUsersComponent implements OnInit {
     return new Date(b.dateRegistered).getTime() - new Date(a.dateRegistered).getTime();
   }
 
-  addUserRole(user: User, roleType: string): void {
-    user.roles[roleType] = true;
-  }
+  // addUserRole(user: User, roleType: string): void {
+  //   user.roles[roleType] = true;
+  // }
 
-  removeUserRole(user: User, roleType: string): void {
-    delete user.roles[roleType];
-  }
+  // removeUserRole(user: User, roleType: string): void {
+  //   delete user.roles[roleType];
+  // }
 
   shouldDisplayUserCards(): boolean {
     return this.user?.roles?.super && this.allUsers?.length > 0;
+  }
+
+  onCancelEdit() {
+    this.getAllUsers();
   }
 
   // HELPER METHODS

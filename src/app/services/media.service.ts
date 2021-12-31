@@ -5,6 +5,7 @@ import { UploadableMedia } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { MediaTypesService } from './media-types-service.service';
+import { MediaAudioComponent } from '../components/media-audio/media-audio.component';
 
 @Injectable({
   providedIn: 'root'
@@ -27,13 +28,13 @@ export class MediaService {
         if (user) {
           this.user = user;
         }
+      }
+    );
 
-        this.getMedia().valueChanges().subscribe(
-          (mediaList: UploadableMedia[]) => {
-            this.allMedia = mediaList;
-            this.updateMediaEvent(mediaList);
-          }
-        );
+    this.getMedia().valueChanges().subscribe(
+      (mediaList: UploadableMedia[]) => {
+        this.allMedia = mediaList;
+        this.updateMediaEvent(mediaList);
       }
     );
   }
@@ -56,7 +57,11 @@ export class MediaService {
   }
 
   getMediaById(id: string): UploadableMedia {
-    return this.allMedia.find(x => x.id === id);
+    if (this.allMedia?.length > 0) {
+      return this.allMedia.find(x => x.id === id);
+    }
+
+    return {} as UploadableMedia;
   }
 
   filterByTypes(selectedTypes: string[], allMedia: UploadableMedia[]): UploadableMedia[] {

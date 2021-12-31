@@ -117,7 +117,7 @@ export class PhotosService {
     const photoUploadSource = new BehaviorSubject('');
     const onUrlAvailable = photoUploadSource.asObservable();
 
-    const upload = new Object as PhotoUpload;
+    const upload = new Object() as PhotoUpload;
     upload.task = task;
     upload.photo = photo;
     upload.onUrlAvailable = onUrlAvailable;

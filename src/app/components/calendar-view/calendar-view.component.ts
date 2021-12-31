@@ -39,7 +39,7 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.ensureTodaysDateIsInView();
+    // this.ensureTodaysDateIsInView();
   }
 
   // SUBSCRIPTIONS

@@ -2,7 +2,6 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media/video';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
   selector: 'app-video-player-drive-iframe',
@@ -22,7 +21,6 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
 
   constructor(
     private sanitizer: DomSanitizer,
-    private routingService: RoutingService,
   ) { }
 
   ngOnInit(): void {
@@ -37,10 +35,6 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.eventsSubscription.unsubscribe();
-  }
-
-  getLinkToShare(): string {
-    return this.routingService.getCurrentLocation();
   }
 
   private updateVideoUrl(video: Video): void {

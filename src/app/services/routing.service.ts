@@ -24,7 +24,15 @@ export class RoutingService {
   }
 
   NavigateToAudio() {
-    this.NavigateToRoute('/audio');
+    this.NavigateToRoute('/media/audio');
+  }
+
+  NavigateToVideo() {
+    this.NavigateToRoute('/media/video');
+  }
+
+  NavigateToAdmin() {
+    this.NavigateToRoute('/admin');
   }
 
   NavigateToAdminUsers() {

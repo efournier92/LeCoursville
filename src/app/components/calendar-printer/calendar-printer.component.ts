@@ -90,7 +90,8 @@ export class CalendarPrinterComponent implements OnInit {
   refreshPrintJob(): void {
     this.activeDate = new Date('January 1, ' + this.selectedYear);
     this.pdf = new jsPDF('l', 'in', 'letter');
-    this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+    this.allEvents =
+      this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
   }
 
   // HELPER METHODS
@@ -123,9 +124,9 @@ export class CalendarPrinterComponent implements OnInit {
     if (!this.isFirstMonth()) {
       this.addPage();
     }
-
     this.updateCalendarMonth();
-    this.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+    this.events =
+      this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
     this.updateProgressBar();
   }
 
@@ -149,14 +150,14 @@ export class CalendarPrinterComponent implements OnInit {
   private async capturePage(): Promise<void> {
     const calendarElement = document.querySelector('.calendar-print-view');
 
-    await html2canvas(calendarElement[0], {scale: 2}).then(
+    await html2canvas(document.querySelector('.calendar-print-view'), {scale: 2}).then(
       (canvas: any) => {
         const imgWidth = 10;
         const imgHeight = 8;
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const leftMargin = 0.475;
-        const topMargin = 0.4;
+        const topMargin = 0.6;
 
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
       }
