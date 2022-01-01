@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { User } from 'src/app/models/user';
-import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-user-view',
@@ -20,7 +19,7 @@ export class UserViewComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  shouldSeeRoles(): boolean {
+  shouldDisplayRoles(): boolean {
     return this.isAdminUser();
   }
 
@@ -34,5 +33,9 @@ export class UserViewComponent implements OnInit {
 
   isSuperUser(): boolean {
     return this.userOnCard?.roles?.super;
+  }
+
+  shouldDisplayUserId(): boolean {
+    return this.isAdminUser() || this.isSuperUser();
   }
 }

@@ -75,11 +75,13 @@ export class MediaListComponent implements OnInit {
 
   onSelectMediaType(selectedTypes: string[]): void {
     this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
+    this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_select_type', { selectedMediaType: selectedTypes, user: this.user.id });
   }
 
   onSearchInputChange(query: string): void {
     this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
+    this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_search', { searchQuery: query, user: this.user.id });
   }
 
@@ -92,6 +94,7 @@ export class MediaListComponent implements OnInit {
 
     if (this.mediaTypesToShow) {
       this.filteredMedia = this.filterAllMediaByType();
+      this.filteredMedia = this.sortMedia(this.filteredMedia);
     }
   }
 
@@ -113,7 +116,7 @@ export class MediaListComponent implements OnInit {
   }
 
   private compareMediaByTimestamp(a: UploadableMedia, b: UploadableMedia): number {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return a.date.localeCompare(b.date);
   }
 
 }

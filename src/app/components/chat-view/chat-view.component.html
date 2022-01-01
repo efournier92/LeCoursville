@@ -5,7 +5,7 @@
         <span class="fa-stack" (click)="likeMessage()" (mouseover)="highlightElement('like', true)"
           (mouseleave)="highlightElement('like', false)">
           <span [matMenuTriggerFor]="menu" class="fa fa-heart-o fa-2x"
-            [ngStyle]="{ color: highlights.like === true  ? '#F44336' : '#FF8A65' }"></span>
+            [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"></span>
           <mat-menu #menu="matMenu">
             <div *ngFor="let liker of likers">
               <button mat-menu-item disabled>
@@ -15,15 +15,15 @@
             </div>
           </mat-menu>
           <strong class="fa-stack-1x unselectable message-likes-container" *ngIf="getLikes() !== 0"
-            [ngStyle]="{ color: highlights.like === true  ? '#F44336' : '#FF8A65' }">
+            [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }">
             {{ getLikes() }}
           </strong>
         </span>
       </div>
       <span class="calendar-icon-label d-flex justify-content-center"
-        [ngStyle]="{ color: highlights.like === true  ? '#F44336' : '#FF8A65' }">Like</span>
+        [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }">Like</span>
     </div>
-    <div class="mb-3" [ngStyle]="{ color: highlights.reply === true  ? '#F44336' : '#FF8A65' }">
+    <div class="mb-3" [ngStyle]="{ color: highlights.reply === true  ? '#FF9800' : '#F44336' }">
       <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('reply', true)"
         (mouseleave)="highlightElement('reply', false)" (click)="replyMessage()">
         <span class="fa fa-reply-all fa-2x"></span>
@@ -31,7 +31,7 @@
       <span class="calendar-icon-label d-flex justify-content-center">Reply</span>
     </div>
     <div *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)"
-      [ngStyle]="{ color: highlights.edit === true  ? '#F44336' : '#FF8A65' }">
+      [ngStyle]="{ color: highlights.edit === true  ? '#FF9800' : '#F44336' }">
       <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('edit', true)"
         (mouseleave)="highlightElement('edit', false)" (click)="editMessage()">
         <span class="fa fa-edit fa-2x"></span>
@@ -60,8 +60,8 @@
           {{ message.dateSent | date:'short' }}
         </mat-card-subtitle>
       </mat-card-title>
-      <div class="chat-message-body">
-        {{ message.body }}
+      <div class="chat-message-body" [innerHTML]="message.body">
+        <!-- {{ message.body }} -->
       </div>
       <br>
       <img mat-card-image src="{{ message.attachmentUrl }}" class="massage-attachment-image"

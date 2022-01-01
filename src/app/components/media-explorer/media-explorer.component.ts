@@ -21,7 +21,7 @@ export class MediaExplorerComponent implements OnInit {
   @Input() mediaTypesToShow: string;
 
   user: User;
-  allMedia: UploadableMedia[] = [];
+  // allMedia: UploadableMedia[] = [];
   loadedMedia: UploadableMedia[];
   selectedMedia: UploadableMedia;
   eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
@@ -40,18 +40,21 @@ export class MediaExplorerComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedMedia = undefined;
-    this.allMedia = [];
+    // this.allMedia = [];
 
     // this.mediaService.getMedia().valueChanges().subscribe(
     this.mediaService.mediaObservable.subscribe(
       (mediaList: UploadableMedia[]) => {
-        this.allMedia = mediaList;
+        // this.allMedia = this.sortMediaByDate(mediaList);
         this.getQueryParams();
         this.subscribeToUserObservable();
       }
     );
 
     this.analyticsService.logEvent('component_load_media_explorer', { });
+  }
+  sortMediaByDate(mediaList: UploadableMedia[]): UploadableMedia[] {
+    throw new Error('Method not implemented.');
   }
 
   // SUBSCRIPTIONS
@@ -87,16 +90,10 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   downloadSelectedMedia(): void {
+    this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
 
-    // this.downloadService
-    //   .download(this.selectedMedia.urls.download)
-    //   .subscribe(blob => saveAs(blob, this.selectedMedia.fileName));
-
-    // this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
-
-    // window.location.href = this.selectedMedia?.urls?.download;
-    window.open(this.selectedMedia?.urls?.download, '_blank');
-
+    window.location.href = this.selectedMedia?.urls?.download;
+    // window.open(this.selectedMedia?.urls?.download, '_blank');
   }
 
   navigateToSignIn() {
@@ -115,7 +112,7 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   shouldShowDownloadButton() {
-    return this.hasSelectedMedia();
+    return this.hasSelectedMedia() && this.isMediaDowloadLinkAZip(this.selectedMedia);
   }
 
   shouldDisplayMediaList(): boolean {
@@ -140,10 +137,8 @@ export class MediaExplorerComponent implements OnInit {
 
   // HELPERS
 
-  private updateUser(user: User) {
-    if (user?.id) {
-      this.user = user;
-    }
+  private isMediaDowloadLinkAZip(media: UploadableMedia): boolean {
+    return media?.urls?.download.includes('.zip');
   }
 
   private resetSelectedMedia(): void {
