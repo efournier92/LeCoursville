@@ -43,12 +43,18 @@ export class ContactEditComponent implements OnInit {
   updateContact(contact: Contact): void {
     contact.isEditable = false;
     this.contactsService.updateContact(contact);
-    this.analyticsService.logEvent('contacts_update', { updatedContact: contact, user: this.user.id });
+    this.analyticsService.logEvent('contacts_update', {
+      updatedContactId: contact?.id, updatedContactName: contact?.name,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   deleteContact(contact: Contact): void {
     this.contactsService.deleteContact(contact);
-    this.analyticsService.logEvent('contacts_delete', { deletedContact: contact, user: this.user.id });
+    this.analyticsService.logEvent('contacts_delete', {
+      deletedContactId: contact?.id, deletedContactName: contact?.name,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   addAddress(contact: Contact): void {
@@ -59,7 +65,10 @@ export class ContactEditComponent implements OnInit {
     const address: Address = new Address();
     contact.addresses.push(address);
 
-    this.analyticsService.logEvent('contacts_add_address', { updatedContact: contact, newAddress: address, user: this.user.id });
+    this.analyticsService.logEvent('contacts_add_address', {
+      deletedContactId: contact?.id, deletedContactName: contact?.name,
+      newAddress: address, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   addPhone(contact: Contact): void {
@@ -69,7 +78,10 @@ export class ContactEditComponent implements OnInit {
     const phone: Phone = new Phone();
     contact.phones.push(phone);
 
-    this.analyticsService.logEvent('contacts_add_phone', { updatedContact: contact, newPhone: phone, user: this.user.id });
+    this.analyticsService.logEvent('contacts_add_phone', {
+      deletedContactId: contact?.id, deletedContactName: contact?.name, newPhone: phone,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   addEmail(contact: Contact): void {
@@ -80,24 +92,33 @@ export class ContactEditComponent implements OnInit {
     const email: Email = new Email();
     contact.emails.push(email);
 
-    this.analyticsService.logEvent('contacts_add_email', { updatedContact: contact, newEmail: email, user: this.user.id });
+    this.analyticsService.logEvent('contacts_add_email', {
+      deletedContactId: contact?.id, deletedContactName: contact?.name, newEmail: email,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   removeAddress(addresses: any, index: number): void {
     addresses.pop(index);
 
-    this.analyticsService.logEvent('contacts_remove_address', { removedAddress: addresses[index], user: this.user.id });
+    this.analyticsService.logEvent('contacts_remove_address', {
+      removedAddress: addresses[index], userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   removePhone(phones: Phone[], index: number): void {
     phones.splice(index, 1);
 
-    this.analyticsService.logEvent('contacts_remove_phone', { removedAddress: phones[index], user: this.user.id });
+    this.analyticsService.logEvent('contacts_remove_phone', {
+      removedAddress: phones[index], userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   removeEmail(emails: Email[], index: number): void {
     emails.splice(index, 1);
 
-    this.analyticsService.logEvent('contacts_remove_email', { removedAddress: emails[index], user: this.user.id });
+    this.analyticsService.logEvent('contacts_remove_email', {
+      removedAddress: emails[index], userId: this.user?.id, userName: this.user?.name,
+    });
   }
 }

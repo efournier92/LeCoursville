@@ -43,7 +43,9 @@ export class CalendarPrinterComponent implements OnInit {
   ngOnInit(): void {
     this.subscribeToUserObservable();
     this.initializeCalendar();
-    this.analyticsService.logEvent('component_load_calendar_printer', { selectedYear: this.selectedYear });
+    this.analyticsService.logEvent('component_load_calendar_printer', {
+      selectedYear: this.selectedYear,
+    });
   }
 
   initializeCalendar() {
@@ -66,7 +68,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async downloadPdf(): Promise<void> {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      user: this.user.id, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      userId: this.user?.id, userName: this.user?.name, shouldPrintBirthdays: this.shouldPrintBirthdays,
       shouldPrintAnniversaries: this.shouldPrintAnniversaries
     });
 
@@ -77,7 +79,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async printPdf() {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      user: this.user.id, shouldPrintBirthdays: this.shouldPrintBirthdays,
+      userId: this.user?.id, userName: this.user?.name, shouldPrintBirthdays: this.shouldPrintBirthdays,
       shouldPrintAnniversaries: this.shouldPrintAnniversaries
     });
 
@@ -162,25 +164,5 @@ export class CalendarPrinterComponent implements OnInit {
         this.pdf.addImage(imgData, 'JPEG', leftMargin, topMargin, imgWidth, imgHeight, '', 'FAST');
       }
     );
-  }
-
-  private updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): void {
-    if (!events) { return; }
-    this.events = [];
-    for (const event of events) {
-      if (event.type === 'birth' && birthdays === false) {
-        continue;
-      }
-
-      if (event.type === 'anniversary' && anniversaries === false) {
-        continue;
-      }
-
-      const date = new Date(event.date);
-      date.setFullYear(year);
-      event.start = date;
-      event.date = new Date(event.date);
-      this.events.push(event);
-    }
   }
 }

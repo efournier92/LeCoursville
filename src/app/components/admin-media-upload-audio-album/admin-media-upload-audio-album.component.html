@@ -9,15 +9,15 @@
                 <mat-label>Folder Name</mat-label>
                 <input type="text" matInput name="albumFolderName" [(ngModel)]="album.folderName">
             </mat-form-field>
-            <mat-form-field class="admin-upload-input">
+            <!-- <mat-form-field class="admin-upload-input">
                 <mat-label class="optional-field">Artist</mat-label>
                 <input type="text" matInput name="albumArtist" [(ngModel)]="album.artist">
-            </mat-form-field>
+            </mat-form-field> -->
             <mat-form-field class="admin-upload-input">
                 <mat-label class="optional-field">Date</mat-label>
                 <input type="text" matInput name="albumDate" [(ngModel)]="album.date">
             </mat-form-field>
-            <mat-form-field class="admin-upload-input" *ngIf="!album.listing">
+            <mat-form-field class="admin-upload-input" *ngIf="!isAlbumAlreadyUploaded()">
                 <mat-label>Tracks</mat-label>
                 <textarea matInput name="albumTracks" [(ngModel)]="tracksString" cdkTextareaAutosize
                     #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
@@ -25,8 +25,8 @@
             <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="album.isHidden">Should Hide from Lists?</mat-checkbox>
             <button mat-button class="admin-form-action-button admin-form-action-button-upload"
                 (click)="onUploadSelectedMedia()">
-                <span *ngIf="!album.id">Upload</span>
-                <span *ngIf="album.id">Update</span>
+                <span *ngIf="!isAlbumAlreadyUploaded()">Upload</span>
+                <span *ngIf="isAlbumAlreadyUploaded()">Update</span>
             </button>
             <button class="admin-form-action-button admin-form-action-button-delete" *ngIf="album.id"
                 mat-button (click)="onDeleteSelectedMedia(album)">Delete</button>
@@ -37,17 +37,15 @@
                 <span class="admin-media-upload-or-span">OR</span>
             </div>
             <mat-divider class="admin-media-upload-divider"></mat-divider>
-            <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
+            <!-- <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
                 [shouldShowLabel]="true" [shouldShowClearButton]="true"
                 (inputFileChangeEvent)="inputFileChangeEvent($event)" (inputClearedEvent)="inputClearedEvent()">
-            </app-file-input>
+            </app-file-input> -->
         </form>
     </div>
-
     <div class="admin-media-list-container">
-        <app-media-list [mediaType]="getAudioAlbumTypeId()" (mediaClickEvent)="onMediaSelect($event)"
+        <app-media-list [mediaTypesToShow]="getAudioAlbumTypeId()" [isAdminMode]="true" (mediaClickEvent)="onMediaSelect($event)"
             *ngIf="isUserAdmin()">
         </app-media-list>
     </div>
-
 </div>

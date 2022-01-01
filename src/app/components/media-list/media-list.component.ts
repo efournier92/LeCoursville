@@ -14,6 +14,7 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
 })
 export class MediaListComponent implements OnInit {
   @Input() mediaTypesToShow: string[];
+  @Input() isAdminMode = false;
 
   @Output() mediaClickEvent = new EventEmitter<UploadableMedia>();
 
@@ -61,7 +62,7 @@ export class MediaListComponent implements OnInit {
   }
 
   shouldDisplayMedia(media: UploadableMedia): boolean {
-    return media?.isHidden !== true;
+    return this.isAdminMode || media?.isHidden !== true;
   }
 
   onImageLoaded(media: any): void {
@@ -70,19 +71,25 @@ export class MediaListComponent implements OnInit {
 
   onMediaSelect(media: UploadableMedia): void {
     this.mediaClickEvent.emit(media);
-    this.analyticsService.logEvent('media_list_select', { selectedMedia: media, user: this.user.id });
+    this.analyticsService.logEvent('media_list_select', {
+      mediaTitle: media?.title, mediaId: media?.id, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   onSelectMediaType(selectedTypes: string[]): void {
     this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
     this.filteredMedia = this.sortMedia(this.filteredMedia);
-    this.analyticsService.logEvent('media_list_select_type', { selectedMediaType: selectedTypes, user: this.user.id });
+    this.analyticsService.logEvent('media_list_select_type', {
+      selectedMediaType: selectedTypes.toString(), userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   onSearchInputChange(query: string): void {
     this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
     this.filteredMedia = this.sortMedia(this.filteredMedia);
-    this.analyticsService.logEvent('media_list_search', { searchQuery: query, user: this.user.id });
+    this.analyticsService.logEvent('media_list_search', {
+      searchQuery: query, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   // HELPER METHODS

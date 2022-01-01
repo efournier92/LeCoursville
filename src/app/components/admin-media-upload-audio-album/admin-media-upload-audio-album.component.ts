@@ -78,6 +78,10 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     return MediaConstants.AUDIO_ALBUM.id;
   }
 
+  isAlbumAlreadyUploaded(): boolean {
+    return !!this.album?.id;
+  }
+
   // HELPER METHODS
 
   private isAlbumInputValid(): boolean {

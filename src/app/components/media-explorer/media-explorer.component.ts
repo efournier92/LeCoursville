@@ -9,8 +9,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { FileDownloadService } from 'src/app/services/file-download.service';
-import * as saveAs from 'file-saver';
 
 @Component({
   selector: 'app-media-explorer',
@@ -33,7 +31,6 @@ export class MediaExplorerComponent implements OnInit {
     private routingService: RoutingService,
     private activatedRoute: ActivatedRoute,
     private clipboard: Clipboard,
-    private downloadService: FileDownloadService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -76,7 +73,10 @@ export class MediaExplorerComponent implements OnInit {
 
     this.scrollToTop();
 
-    this.analyticsService.logEvent('media_select', { media: this.selectedMedia, user: this.user.id });
+    this.analyticsService.logEvent('media_select', {
+      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   getShareableLink(): string {
@@ -86,18 +86,26 @@ export class MediaExplorerComponent implements OnInit {
   onGetShareableLink(): void {
     const link = this.getShareableLink();
     this.clipboard.copy(link);
-    this.analyticsService.logEvent('media_shareable_link_copy', { shareableLink: link, media: this.selectedMedia, user: this.user.id });
+    this.analyticsService.logEvent('media_shareable_link_copy', {
+      shareableLink: link, mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   downloadSelectedMedia(): void {
-    this.analyticsService.logEvent('media_download', { media: this.selectedMedia, user: this.user.id });
+    this.analyticsService.logEvent('media_download', {
+      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
+      userId: this.user?.id, userName: this.user?.name,
+    });
 
     window.location.href = this.selectedMedia?.urls?.download;
-    // window.open(this.selectedMedia?.urls?.download, '_blank');
   }
 
   navigateToSignIn() {
-    this.analyticsService.logEvent('media_sign_in_to_see_more', { media: this.selectedMedia, user: this.user.id });
+    this.analyticsService.logEvent('media_sign_in_to_see_more', {
+      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
+      userId: this.user?.id, userName: this.user?.name,
+    });
     this.routingService.NavigateToSignIn();
   }
 
@@ -159,7 +167,10 @@ export class MediaExplorerComponent implements OnInit {
     if (this.authService.isUserSignedIn()) {
       this.routingService.clearQueryParams();
     }
-    this.analyticsService.logEvent('media_explorer_select', media);
+    this.analyticsService.logEvent('media_explorer_select', {
+      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
+      userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   private emitEventToChild(media: UploadableMedia) {

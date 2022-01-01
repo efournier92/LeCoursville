@@ -1,6 +1,6 @@
 {
   "name": "lecoursville",
-  "version": "2022.1.3",
+  "version": "2022.1.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -33,7 +33,6 @@
     "aws-sdk": "^2.1048.0",
     "bootstrap": "^5.0.1",
     "date-fns": "^2.22.1",
-    "file-saver": "^2.0.5",
     "firebase": "^8.6",
     "firebaseui-angular": "^5.1.2",
     "font-awesome": "^4.7.0",

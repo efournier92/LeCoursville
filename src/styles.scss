@@ -8,7 +8,7 @@
 @include mat-core();
 
 $my-theme-primary: mat-palette($mat-green, 900);
-$my-theme-accent: mat-palette($mat-amber, 500);
+$my-theme-accent: mat-palette($mat-amber, 800);
 $my-theme-warn: mat-palette($mat-red, 500);
 
 $my-theme: mat-light-theme(

@@ -36,7 +36,7 @@
     </div>
 
     <div class="admin-media-list-container">
-        <app-media-list [mediaTypesToShow]="getVideoTypeId()" (mediaClickEvent)="onMediaSelect($event)">
+        <app-media-list [mediaTypesToShow]="getVideoTypeId()" [isAdminMode]="false" (mediaClickEvent)="onMediaSelect($event)">
         </app-media-list>
     </div>
 

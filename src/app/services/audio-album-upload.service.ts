@@ -16,15 +16,17 @@ export class AudioAlbumUploadService {
   ) { }
 
   upload(album: AudioAlbum, folderName: string, tracksString: string): void {
-    const tracksArray = this.getTracksArrayFromString(tracksString);
-
-    album.id = this.pushIdService.create();
     album.urls.download = this.getHostedZipLocation(folderName);
     album.urls.icon = this.getAlbumCoverLocation(folderName);
+    album.artist = '';
 
-    const allTracks = this.createTracksFromFileNames(tracksArray, folderName, album?.urls?.icon, album?.artist, album?.date);
-
-    album.listing = this.uploadAudioTracks(allTracks);
+    let tracksArray: string[];
+    if (!album?.id) {
+      album.id = this.pushIdService.create();
+      tracksArray = this.getTracksArrayFromString(tracksString);
+      const allTracks = this.createTracksFromFileNames(tracksArray, folderName, album?.urls?.icon, album?.artist, album?.date);
+      album.listing = this.uploadAudioTracks(allTracks);
+    }
 
     this.mediaService.create(album);
   }

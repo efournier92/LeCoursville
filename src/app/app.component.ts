@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { AnalyticsService } from './services/analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private analyticsService: AnalyticsService,
   ) {
     this.subscribeToUserObservable();
   }
@@ -24,5 +26,19 @@ export class AppComponent implements OnInit {
     );
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.logErrorsForAnalytics();
+  }
+
+  private logErrorsForAnalytics() {
+    window.addEventListener('error', (err: ErrorEvent) => {
+      this.analyticsService.logEvent('Error', {
+        message: err?.message,
+        lineInfo: err?.lineno,
+        userAgent: window?.navigator?.userAgent,
+        userId: this.user?.id,
+        userName: this.user?.name,
+      });
+    });
+  }
 }

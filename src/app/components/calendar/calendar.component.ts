@@ -53,7 +53,8 @@ export class CalendarComponent implements OnInit {
 
     this.subscribeToCalendarsObservable();
 
-    this.analyticsService.logEvent('component_load_calendar', { viewDate: this.viewDate, selectedYear: this.selectedYear });
+    this.analyticsService.logEvent('component_load_calendar',
+      { viewDate: this?.viewDate, selectedYear: this.selectedYear });
   }
 
   // SUBSCRIPTIONS
@@ -83,29 +84,37 @@ export class CalendarComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  toggleBirthdays($event: any): void {
-    const showBirthdays = $event.checked;
+  toggleBirthdays(event: any): void {
+    const showBirthdays = event.checked;
     this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent('calendar_toggle_birthdays', { user: this.user.id, event: $event, isChecked: $event.checked });
+    this.analyticsService.logEvent('calendar_toggle_birthdays', {
+      isChecked: event?.checked, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
-  toggleAnniversaries($event: any): void {
-    const showAnniversaries = $event.checked;
+  toggleAnniversaries(event: any): void {
+    const showAnniversaries = event.checked;
     this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
-    this.analyticsService.logEvent('calendar_toggle_anniversaries', { user: this.user.id, event: $event, isChecked: $event.checked });
+    this.analyticsService.logEvent('calendar_toggle_anniversaries', {
+      isChecked: event?.checked, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
-  changeViewMonth($event: any): void {
-    const monthName = $event.value;
+  changeViewMonth(event: any): void {
+    const monthName = event.value;
     this.viewDate = new Date(monthName + '1,' + this.selectedYear);
-    this.analyticsService.logEvent('calendar_change_view_month', { user: this.user.id, event: $event, newMonth: $event.value });
+    this.analyticsService.logEvent('calendar_change_view_month', {
+      newMonth: event?.value, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
-  changeSelectedYear($event: any): void {
-    this.selectedYear = $event.value;
+  changeSelectedYear(event: any): void {
+    this.selectedYear = event.value;
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
     this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
-    this.analyticsService.logEvent('calendar_change_selected_year', { user: this.user.id, event: $event, newYear: $event.value });
+    this.analyticsService.logEvent('calendar_change_selected_year', {
+      newYear: event?.value, userId: this.user?.id, userName: this.user?.name,
+    });
   }
 
   changeView(date: Date): void {
@@ -116,8 +125,8 @@ export class CalendarComponent implements OnInit {
       this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
     this.analyticsService.logEvent('calendar_change_selected_year', {
-      user: this.user.id, newDate: date, selectedYear: this.selectedYear,
-      isShowingBirthdays: this.showBirthdays, isShowingAnniversaries: this.showAnniversaries
+      newDate: date, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
+      isShowingAnniversaries: this.showAnniversaries, userId: this.user?.id, userName: this.user?.name,
     });
   }
 
@@ -126,8 +135,9 @@ export class CalendarComponent implements OnInit {
       data: { events: this.allEvents },
     });
     this.analyticsService.logEvent('calendar_open_print_dialog', {
-      user: this.user.id, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
-      isShowingAnniversaries: this.showAnniversaries });
+      userId: this.user?.id, userName: this.user?.name, selectedYear: this.selectedYear,
+      isShowingBirthdays: this.showBirthdays, isShowingAnniversaries: this.showAnniversaries,
+    });
   }
 
   // HELPERS

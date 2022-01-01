@@ -64,7 +64,8 @@ export class ChatViewComponent implements OnInit {
     this.likers = this.getLikers();
 
     this.analyticsService.logEvent('chat_view_message_like', {
-      user: this.user.id, message: this.message, parentMessage: this.parent, likers: this.likers
+      userId: this.user?.id, userName: this.user?.name, messageId: this.message?.id,
+      messageTitle: this.message?.title, parentMessage: this.parent, likers: this.likers,
     });
   }
 
@@ -78,7 +79,8 @@ export class ChatViewComponent implements OnInit {
     this.message.replies.unshift(new Message('', '', '', authorId, authorName, true, true, replyLevel));
 
     this.analyticsService.logEvent('chat_view_message_reply', {
-      user: this.user.id, message: this.message, parentMessage: this.parent,
+      user: this.user?.id, messageId: this.message?.id,
+      messageTitle: this.message?.title, parentMessage: this.parent,
     });
   }
 

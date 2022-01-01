@@ -27,17 +27,14 @@
     </div>
   </div>
 </div>
-<div class="photo-upload-input-container d-flex flex-row justify-content-end" *ngIf="user && user.roles && user.roles.admin">
+<div class="photo-upload-input-container d-flex flex-row justify-content-end"
+  *ngIf="user && user.roles && user.roles.admin">
   <div class="d-flex flex-column">
-    <app-file-input
-      [matIcon]="'file_upload'"
-      [inputMessage]="'Upload Photos'"
-      [shouldAllowMultipleFiles]="true"
-      [shouldShowClearButton]="false"
-      [shouldAllowMultipleFiles]="false"
-      (inputFileChangeEvent)="uploadPhotos($event)">
+    <app-file-input [matIcon]="'file_upload'" [inputMessage]="'Upload Photos'" [shouldAllowMultipleFiles]="true"
+      [shouldShowClearButton]="false" [shouldAllowMultipleFiles]="false" (inputFileChangeEvent)="uploadPhotos($event)">
     </app-file-input>
-    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload" (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
+    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload"
+      (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
   </div>
 </div>
 <div class="d-flex justify-content-center align-items-center mt-5" *ngIf="showSpinner">
@@ -63,11 +60,13 @@
         <button mat-button (click)="downloadPhoto(photo)" *ngIf="!photo.isEditable">
           <mat-icon>cloud_download</mat-icon>
         </button>
-        <button mat-button *ngIf="user.roles && user.roles.admin && !photo.isEditable" (click)="photo.isEditable = true">
+        <button mat-button *ngIf="user.roles && user.roles.admin && !photo.isEditable"
+          (click)="photo.isEditable = true">
           <mat-icon>edit</mat-icon>
         </button>
       </mat-card-footer>
-      <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.isEditable" class="contact-edit-footer d-flex justify-content-end">
+      <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.isEditable"
+        class="contact-edit-footer d-flex justify-content-end">
         <div class="input-group mb-1">
           <form>
             <div class="form-row">
@@ -90,7 +89,8 @@
                 </div>
                 <br>
                 <div class="form-group col-6">
-                  <input type="text" class="form-control" name="photo-by" [(ngModel)]="photo.takenBy" placeholder="Photo By">
+                  <input type="text" class="form-control" name="photo-by" [(ngModel)]="photo.takenBy"
+                    placeholder="Photo By">
                 </div>
               </div>
             </div>
@@ -109,6 +109,8 @@
         </div>
       </mat-card-footer>
     </mat-card>
+    <div class="d-flex justify-content-center m-5">
+      <button mat-raised-button color="primary" (click)="loadMorePhotos(10)">Load More</button>
+    </div>
   </div>
 </div>
-<div infiniteScroll [infiniteScrollDistance]="1" [infiniteScrollThrottle]="150" (scrolled)="loadMorePhotos(1)"></div>

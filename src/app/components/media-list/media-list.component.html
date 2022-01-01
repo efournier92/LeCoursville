@@ -12,7 +12,6 @@
     <div class="row d-flex flex-column" *ngFor="let media of filteredMedia">
         <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" *ngIf="shouldDisplayMedia(media)" (click)="onMediaSelect(media)">
             <div class="row">
-
                 <div class="col-4 imageContainer">
                     <div class="d-flex flex-column justify-content-center h-100">
                         <mat-icon class="media-list-placeholder-icon" [hidden]="media.isIconLoaded">
@@ -23,7 +22,6 @@
                         <img [src]="media.urls.icon" (load)="onImageLoaded(media)" [hidden]="!media.isIconLoaded">
                     </div>
                 </div>
-
                 <div class="col-8 justify-content-start">
                     <div class="media-details-name">
                         {{ media.title }}
@@ -41,7 +39,6 @@
                         {{ media.duration }}
                     </div>
                 </div>
-
             </div>
         </button>
     </div>

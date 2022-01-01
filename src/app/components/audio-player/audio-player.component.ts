@@ -32,7 +32,7 @@ export class AudioPlayerComponent implements OnInit, OnChanges {
   // HELPER METHODS
 
   addTracksToPlaylist(): void {
-    this.album.listing.forEach(
+    this.album?.listing?.forEach(
       (id: string) => {
         const audioTrack = this.mediaService.getMediaById(id);
         if (audioTrack.id) {

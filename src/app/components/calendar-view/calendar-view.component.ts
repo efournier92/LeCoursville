@@ -35,7 +35,9 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
-    this.analyticsService.logEvent('component_load_calendar_view', { viewDate: this.viewDate, selectedYear: this.selectedYear });
+    this.analyticsService.logEvent('component_load_calendar_view', {
+      viewDate: this.viewDate, selectedYear: this.selectedYear,
+    });
   }
 
   ngAfterViewInit(): void {

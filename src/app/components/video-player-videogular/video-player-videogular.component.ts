@@ -29,7 +29,9 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
 
     this.subscribeToParentMediaChanges();
 
-    this.analyticsService.logEvent('component_load_video_player_videogular', { video: this.video });
+    this.analyticsService.logEvent('component_load_video_player_videogular', {
+      videoTitle: this.video?.title, videoId: this.video?.id,
+    });
   }
 
   ngOnDestroy() {
