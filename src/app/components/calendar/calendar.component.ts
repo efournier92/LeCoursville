@@ -54,7 +54,7 @@ export class CalendarComponent implements OnInit {
     this.subscribeToCalendarsObservable();
 
     this.analyticsService.logEvent('component_load_calendar',
-      { viewDate: this?.viewDate, selectedYear: this.selectedYear });
+      { viewDate: this?.viewDate.toString() });
   }
 
   // SUBSCRIPTIONS
@@ -88,7 +88,7 @@ export class CalendarComponent implements OnInit {
     const showBirthdays = event.checked;
     this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
     this.analyticsService.logEvent('calendar_toggle_birthdays', {
-      isChecked: event?.checked, userId: this.user?.id, userName: this.user?.name,
+      isTrue: event?.checked, userId: this.user?.id,
     });
   }
 
@@ -96,7 +96,7 @@ export class CalendarComponent implements OnInit {
     const showAnniversaries = event.checked;
     this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
     this.analyticsService.logEvent('calendar_toggle_anniversaries', {
-      isChecked: event?.checked, userId: this.user?.id, userName: this.user?.name,
+      isTrue: event?.checked, userId: this.user?.id,
     });
   }
 
@@ -104,7 +104,8 @@ export class CalendarComponent implements OnInit {
     const monthName = event.value;
     this.viewDate = new Date(monthName + '1,' + this.selectedYear);
     this.analyticsService.logEvent('calendar_change_view_month', {
-      newMonth: event?.value, userId: this.user?.id, userName: this.user?.name,
+      value: event?.value, date: this.viewDate.toString(),
+      userId: this.user?.id,
     });
   }
 
@@ -113,7 +114,8 @@ export class CalendarComponent implements OnInit {
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
     this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
     this.analyticsService.logEvent('calendar_change_selected_year', {
-      newYear: event?.value, userId: this.user?.id, userName: this.user?.name,
+      value: event?.value, date: this.viewDate.toString(),
+      userId: this.user?.id,
     });
   }
 
@@ -125,8 +127,9 @@ export class CalendarComponent implements OnInit {
       this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
     }
     this.analyticsService.logEvent('calendar_change_selected_year', {
-      newDate: date, selectedYear: this.selectedYear, isShowingBirthdays: this.showBirthdays,
-      isShowingAnniversaries: this.showAnniversaries, userId: this.user?.id, userName: this.user?.name,
+      newDate: date.toString(),
+      isTrue: `Birthdays: ${this.showBirthdays}; Anniversaries: ${this.showAnniversaries}`,
+      userId: this.user?.id,
     });
   }
 
@@ -135,8 +138,9 @@ export class CalendarComponent implements OnInit {
       data: { events: this.allEvents },
     });
     this.analyticsService.logEvent('calendar_open_print_dialog', {
-      userId: this.user?.id, userName: this.user?.name, selectedYear: this.selectedYear,
-      isShowingBirthdays: this.showBirthdays, isShowingAnniversaries: this.showAnniversaries,
+      date: this.viewDate.toString(),
+      isTrue: `Birthdays: ${this.showBirthdays}; Anniversaries: ${this.showAnniversaries}`,
+      userId: this.user?.id,
     });
   }
 

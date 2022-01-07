@@ -59,28 +59,28 @@ export class ContactsComponent implements OnInit {
   filterContacts(event: any): void {
     this.filteredContacts = this.filter.transform(this.contacts, { name: event?.target?.value });
     this.analyticsService.logEvent('contacts_filter', {
-      filtrationValue: event?.target?.value, userId: this.user?.id, userName: this.user?.name,
+      value: event?.target?.value, userId: this.user?.id,
     });
   }
 
   downloadPdf(): void {
     this.contactsPrinterService.downloadPdf(this.filteredContacts);
     this.analyticsService.logEvent('contacts_pdf_download', {
-      userId: this.user.id, userName: this.user?.name,
+      userId: this.user.id,
     });
   }
 
   printPdf(): void {
     this.contactsPrinterService.printPdf(this.filteredContacts);
     this.analyticsService.logEvent('contacts_pdf_print', {
-      userId: this.user.id, userName: this.user?.name,
+      userId: this.user.id,
     });
   }
 
   switchFamily(family: string): void {
     this.filteredContacts = this.filter.transform(this.contacts, { family });
     this.analyticsService.logEvent('contacts_switch_family', {
-      userId: this.user.id, userName: this.user?.name,
+      userId: this.user.id,
     });
   }
 
@@ -96,8 +96,8 @@ export class ContactsComponent implements OnInit {
           const contact: Contact = new Contact();
           this.contactsService.newContact(contact);
           this.analyticsService.logEvent('contacts_new_create', {
-            newName: contact?.id, newContactName: contact?.name,
-            userId: this.user?.id, userName: this.user?.name,
+            value: contact?.id, name: contact?.name,
+            userId: this.user?.id,
           });
         }
       }

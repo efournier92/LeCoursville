@@ -68,8 +68,8 @@ export class CalendarPrinterComponent implements OnInit {
 
   async downloadPdf(): Promise<void> {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      userId: this.user?.id, userName: this.user?.name, shouldPrintBirthdays: this.shouldPrintBirthdays,
-      shouldPrintAnniversaries: this.shouldPrintAnniversaries
+      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}`,
+      userId: this.user?.id,
     });
 
     await this.preparePdf();
@@ -79,8 +79,8 @@ export class CalendarPrinterComponent implements OnInit {
 
   async printPdf() {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      userId: this.user?.id, userName: this.user?.name, shouldPrintBirthdays: this.shouldPrintBirthdays,
-      shouldPrintAnniversaries: this.shouldPrintAnniversaries
+      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}`,
+      userId: this.user?.id,
     });
 
     await this.preparePdf();
@@ -93,7 +93,8 @@ export class CalendarPrinterComponent implements OnInit {
     this.activeDate = new Date('January 1, ' + this.selectedYear);
     this.pdf = new jsPDF('l', 'in', 'letter');
     this.allEvents =
-      this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+      this.calendarService
+        .updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
   }
 
   // HELPER METHODS

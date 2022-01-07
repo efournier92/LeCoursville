@@ -72,7 +72,7 @@ export class MediaListComponent implements OnInit {
   onMediaSelect(media: UploadableMedia): void {
     this.mediaClickEvent.emit(media);
     this.analyticsService.logEvent('media_list_select', {
-      mediaTitle: media?.title, mediaId: media?.id, userId: this.user?.id, userName: this.user?.name,
+      id: media?.id, title: media?.title, userId: this.user?.id,
     });
   }
 
@@ -80,7 +80,7 @@ export class MediaListComponent implements OnInit {
     this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
     this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_select_type', {
-      selectedMediaType: selectedTypes.toString(), userId: this.user?.id, userName: this.user?.name,
+      type: selectedTypes.toString(), userId: this.user?.id,
     });
   }
 
@@ -88,7 +88,7 @@ export class MediaListComponent implements OnInit {
     this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
     this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_search', {
-      searchQuery: query, userId: this.user?.id, userName: this.user?.name,
+      query, userId: this.user?.id,
     });
   }
 

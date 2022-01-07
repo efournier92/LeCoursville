@@ -42,7 +42,7 @@ export class MediaVideoComponent implements OnInit {
   onMediaSelect(video: AudioAlbum): void {
     this.selectedAlbum = video;
     this.analyticsService.logEvent('video_select', {
-      videoTitle: video?.title, videoId: video?.id, userId: this.user?.id, userName: this.user?.name,
+      title: video?.title, id: video?.id, userId: this.user?.id,
     });
   }
 }

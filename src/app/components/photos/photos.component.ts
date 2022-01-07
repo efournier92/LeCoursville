@@ -86,7 +86,7 @@ export class PhotosComponent implements OnInit {
       window.URL.revokeObjectURL(url);
     };
     this.analyticsService.logEvent('photos_download', {
-      photo: photoToDownload?.id, userId: this.user?.id, userName: this.user?.name,
+      id: photoToDownload?.id, userId: this.user?.id,
     });
   }
 
@@ -94,7 +94,7 @@ export class PhotosComponent implements OnInit {
     photoToUpdate.isEditable = false;
     this.photosService.updatePhoto(photoToUpdate);
     this.analyticsService.logEvent('photos_update', {
-      photo: photoToUpdate?.id, userId: this.user?.id, userName: this.user?.name,
+      id: photoToUpdate?.id, userId: this.user?.id,
     });
   }
 
@@ -122,7 +122,7 @@ export class PhotosComponent implements OnInit {
       }
     );
     this.analyticsService.logEvent('photos_delete', {
-      photo: photoToDelete?.id, userId: this.user?.id, userName: this.user?.name,
+      id: photoToDelete?.id, userId: this.user?.id,
     });
   }
 
@@ -150,7 +150,7 @@ export class PhotosComponent implements OnInit {
       }
     );
     this.analyticsService.logEvent('photos_upload', {
-      photos: photosToUpload?.id, userId: this.user?.id, userName: this.user?.name,
+      id: photosToUpload?.id, userId: this.user?.id,
     });
   }
 
@@ -174,6 +174,10 @@ export class PhotosComponent implements OnInit {
     } else {
       this.updateLoadedPhotos(this.loadedPhotos);
     }
+
+    this.analyticsService.logEvent('photos_load_more', {
+      value: numberToLoad, userId: this.user?.id,
+    });
   }
 
   sortPhotosBy(sortFunction: any): void {
@@ -182,7 +186,7 @@ export class PhotosComponent implements OnInit {
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
     this.analyticsService.logEvent('photos_sort', {
-      function: sortFunction, userId: this.user?.id, userName: this.user?.name,
+      value: sortFunction, userId: this.user?.id,
     });
   }
 
@@ -230,7 +234,7 @@ export class PhotosComponent implements OnInit {
     this.loadedPhotos = [];
     this.loadMorePhotos(3);
     this.analyticsService.logEvent('photos_query_search', {
-      searchQuery: query, userId: this.user?.id, userName: this.user?.name,
+      query, userId: this.user?.id,
     });
   }
 
@@ -238,7 +242,7 @@ export class PhotosComponent implements OnInit {
     this.searchTerm = '';
     this.sortPhotosBy(this.sortRandomly);
     this.analyticsService.logEvent('photos_query_clear', {
-      userId: this.user?.id, userName: this.user?.name,
+      userId: this.user?.id,
     });
   }
 

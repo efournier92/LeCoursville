@@ -44,16 +44,16 @@ export class ContactEditComponent implements OnInit {
     contact.isEditable = false;
     this.contactsService.updateContact(contact);
     this.analyticsService.logEvent('contacts_update', {
-      updatedContactId: contact?.id, updatedContactName: contact?.name,
-      userId: this.user?.id, userName: this.user?.name,
+      id: contact?.id, name: contact?.name,
+      userId: this.user?.id,
     });
   }
 
   deleteContact(contact: Contact): void {
     this.contactsService.deleteContact(contact);
     this.analyticsService.logEvent('contacts_delete', {
-      deletedContactId: contact?.id, deletedContactName: contact?.name,
-      userId: this.user?.id, userName: this.user?.name,
+      id: contact?.id, name: contact?.name,
+      userId: this.user?.id,
     });
   }
 
@@ -66,8 +66,8 @@ export class ContactEditComponent implements OnInit {
     contact.addresses.push(address);
 
     this.analyticsService.logEvent('contacts_add_address', {
-      deletedContactId: contact?.id, deletedContactName: contact?.name,
-      newAddress: address, userId: this.user?.id, userName: this.user?.name,
+      id: contact?.id, name: contact?.name,
+      value: address, userId: this.user?.id,
     });
   }
 
@@ -79,8 +79,8 @@ export class ContactEditComponent implements OnInit {
     contact.phones.push(phone);
 
     this.analyticsService.logEvent('contacts_add_phone', {
-      deletedContactId: contact?.id, deletedContactName: contact?.name, newPhone: phone,
-      userId: this.user?.id, userName: this.user?.name,
+      id: contact?.id, name: contact?.name, value: phone.info,
+      userId: this.user?.id,
     });
   }
 
@@ -93,8 +93,8 @@ export class ContactEditComponent implements OnInit {
     contact.emails.push(email);
 
     this.analyticsService.logEvent('contacts_add_email', {
-      deletedContactId: contact?.id, deletedContactName: contact?.name, newEmail: email,
-      userId: this.user?.id, userName: this.user?.name,
+      id: contact?.id, name: contact?.name, newEmail: email,
+      userId: this.user?.id,
     });
   }
 
@@ -102,7 +102,7 @@ export class ContactEditComponent implements OnInit {
     addresses.pop(index);
 
     this.analyticsService.logEvent('contacts_remove_address', {
-      removedAddress: addresses[index], userId: this.user?.id, userName: this.user?.name,
+      removedAddress: addresses[index], userId: this.user?.id,
     });
   }
 
@@ -110,7 +110,7 @@ export class ContactEditComponent implements OnInit {
     phones.splice(index, 1);
 
     this.analyticsService.logEvent('contacts_remove_phone', {
-      removedAddress: phones[index], userId: this.user?.id, userName: this.user?.name,
+      removedAddress: phones[index], userId: this.user?.id,
     });
   }
 
@@ -118,7 +118,7 @@ export class ContactEditComponent implements OnInit {
     emails.splice(index, 1);
 
     this.analyticsService.logEvent('contacts_remove_email', {
-      removedAddress: emails[index], userId: this.user?.id, userName: this.user?.name,
+      removedAddress: emails[index], userId: this.user?.id,
     });
   }
 }

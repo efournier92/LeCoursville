@@ -50,6 +50,7 @@ export class MediaExplorerComponent implements OnInit {
 
     this.analyticsService.logEvent('component_load_media_explorer', { });
   }
+
   sortMediaByDate(mediaList: UploadableMedia[]): UploadableMedia[] {
     throw new Error('Method not implemented.');
   }
@@ -74,8 +75,8 @@ export class MediaExplorerComponent implements OnInit {
     this.scrollToTop();
 
     this.analyticsService.logEvent('media_select', {
-      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
-      userId: this.user?.id, userName: this.user?.name,
+      id: this.selectedMedia?.id, title: this.selectedMedia?.title,
+      type: this.selectedMedia.type, userId: this.user?.id,
     });
   }
 
@@ -87,15 +88,16 @@ export class MediaExplorerComponent implements OnInit {
     const link = this.getShareableLink();
     this.clipboard.copy(link);
     this.analyticsService.logEvent('media_shareable_link_copy', {
-      shareableLink: link, mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
-      userId: this.user?.id, userName: this.user?.name,
+      id: this.selectedMedia?.id, type: this.selectedMedia?.type,
+      value: link, title: this.selectedMedia?.title,
+      userId: this.user?.id,
     });
   }
 
   downloadSelectedMedia(): void {
     this.analyticsService.logEvent('media_download', {
-      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
-      userId: this.user?.id, userName: this.user?.name,
+      id: this.selectedMedia?.id, title: this.selectedMedia?.title, type: this.selectedMedia.type,
+      userId: this.user?.id,
     });
 
     window.location.href = this.selectedMedia?.urls?.download;
@@ -103,8 +105,8 @@ export class MediaExplorerComponent implements OnInit {
 
   navigateToSignIn() {
     this.analyticsService.logEvent('media_sign_in_to_see_more', {
-      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
-      userId: this.user?.id, userName: this.user?.name,
+      title: this.selectedMedia?.title, id: this.selectedMedia?.id, type: this.selectedMedia.type,
+      userId: this.user?.id,
     });
     this.routingService.NavigateToSignIn();
   }
@@ -168,8 +170,8 @@ export class MediaExplorerComponent implements OnInit {
       this.routingService.clearQueryParams();
     }
     this.analyticsService.logEvent('media_explorer_select', {
-      mediaTitle: this.selectedMedia?.title, mediaId: this.selectedMedia?.id,
-      userId: this.user?.id, userName: this.user?.name,
+      title: this.selectedMedia?.title, id: this.selectedMedia?.id, type: this.selectedMedia.type,
+      userId: this.user?.id,
     });
   }
 
@@ -197,6 +199,11 @@ export class MediaExplorerComponent implements OnInit {
     const media = this.mediaService.getMediaById(id);
     if (media?.id === id) {
       this.selectedMedia = media;
+      this.analyticsService.logEvent('media_explorer_load_by_query_param', {
+        id: this.selectedMedia?.id, type: this.selectedMedia.type,
+        title: this.selectedMedia?.title,
+        userId: this.user?.id,
+      });
       if (this.authService.isUserSignedIn()) {
         this.routingService.clearQueryParams();
       }

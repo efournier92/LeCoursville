@@ -43,7 +43,8 @@ export class AuthComponent implements OnInit {
     const userData = authData?.authResult?.user;
 
     this.analyticsService.logEvent('auth_sign_in',
-      { userId: userData?.uid, userName: userData?.displayName });
+      { userId: userData?.uid }
+    );
 
     if (!userData) {
       this.authService.signOut();
@@ -58,7 +59,8 @@ export class AuthComponent implements OnInit {
 
   onSignOutButtonClick(): void {
     this.analyticsService.logEvent('auth_sign_out',
-      { userId: this.user?.id, userName: this.user?.name });
+      { userId: this.user?.id }
+    );
     const dialogRef = this.authService.openSignOutDialog();
     this.authService.onSignOutDialogClose(dialogRef);
   }

@@ -44,8 +44,8 @@ export class MediaAudioComponent implements OnInit {
   onMediaSelect(album: AudioAlbum): void {
     this.selectedAlbum = album;
     this.analyticsService.logEvent('audio_album_select', {
-      audioAlbumId: album?.id, audioAlbumName: album?.title,
-      userId: this.user?.id, userName: this.user?.name,
+      id: album?.id, title: album?.title,
+      userId: this.user?.id,
     });
   }
 }

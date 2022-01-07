@@ -34,10 +34,10 @@ export class AppComponent implements OnInit {
     window.addEventListener('error', (err: ErrorEvent) => {
       this.analyticsService.logEvent('Error', {
         message: err?.message,
-        lineInfo: err?.lineno,
+        value: err?.lineno,
         userAgent: window?.navigator?.userAgent,
         userId: this.user?.id,
-        userName: this.user?.name,
+       
       });
     });
   }
