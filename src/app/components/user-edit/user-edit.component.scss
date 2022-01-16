@@ -1,0 +1,15 @@
+.inline-nowrap {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.user-edit-display-properties {
+    @extend .inline-nowrap;
+    margin-right: 2em;
+    font-weight: bold;
+}
+
+.user-edit-display-values {
+    @extend .inline-nowrap;
+    position: absolute;
+}

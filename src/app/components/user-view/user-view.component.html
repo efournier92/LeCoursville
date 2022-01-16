@@ -4,7 +4,7 @@
   <mat-card-content>
     <div><b>Email: </b>{{ userOnCard.email }}</div>
     <div><b>Registered: </b>{{ userOnCard.dateRegistered | date }}</div>
-    <div><b>Last Signed In: </b>{{ userOnCard.dateLastSignedIn | date }}</div>
+    <div><b>Last Active: </b>{{ userOnCard.dateLastActive | date }}</div>
     <div *ngIf="shouldDisplayRoles()">
       <span> <b>Roles: </b></span>
       <span *ngIf="userOnCard.roles.user">User</span><span *ngIf="userOnCard.roles.admin">, </span>

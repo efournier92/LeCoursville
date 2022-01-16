@@ -44,6 +44,7 @@ export class AdminService {
   }
 
   deleteUser(user: User): void {
-    this.allUsers.remove(user.id);
+    // this.allUsers.remove(user.id);
+    this.db.object(`/users/${user.id}`).remove();
   }
 }

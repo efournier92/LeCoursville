@@ -3,11 +3,23 @@
         <mat-form-field class="user-edit-form-field w-100">
             <input matInput placeholder="Name" name="user-name" [(ngModel)]="userOnCard.name">
         </mat-form-field>
-        <br>
-        <div><b>Email: </b>{{ userOnCard.email }}</div>
-        <div><b>Registered: </b>{{ userOnCard.dateRegistered | date }}</div>
-        <div><b>Last Signed In: </b>{{ userOnCard.dateLastSignedIn | date }}</div>
-        <br>
+
+        <div class="user-edit-display-container">
+            <div class="user-edit-display-properties">
+                <div class="user-edit-card-button-row-property">Email:</div>
+                <div class="user-edit-card-button-row-property">ID:</div>
+                <div class="user-edit-card-button-row-property">Registered:</div>
+                <div class="user-edit-card-button-row-property">Last Active:</div>
+            </div>
+
+            <div class="user-edit-display-values">
+                <div>{{ userOnCard.email }}</div>
+                <div>{{ userOnCard.id }}</div>
+                <div>{{ userOnCard.dateRegistered | date }}</div>
+                <div>{{ userOnCard.dateLastActive | date }}</div>
+            </div>
+        </div>
+        
         <div *ngIf="isSuperUser()" class="d-flex justify-content-around">
             <mat-checkbox name="user-roles-user" [(ngModel)]="userOnCard.roles.user">
                 User

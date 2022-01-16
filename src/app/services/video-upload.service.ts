@@ -28,13 +28,15 @@ export class VideoUploadService {
     const videoConstants = HostingConstants.Videos;
     const videoFolders = HostingConstants.Videos.folderNames;
     const fileNameWithoutExtension = fileName.replace(/\.[^/.]+$/, '');
+    const encodedFileName = encodeURIComponent(fileNameWithoutExtension);
 
-    return `${videoConstants.baseUrl}/${videoFolders.icons}/${fileNameWithoutExtension}.jpg`;
+    return `${videoConstants.baseUrl}/${videoFolders.icons}/${encodedFileName}.jpg`;
   }
 
   private getDownloadLocation(fileName: string): string {
     const videoConstants = HostingConstants.Videos;
+    const encodedFileName = encodeURIComponent(fileName);
 
-    return `${videoConstants.baseUrl}/${fileName}`;
+    return `${videoConstants.baseUrl}/${encodedFileName}`;
   }
 }

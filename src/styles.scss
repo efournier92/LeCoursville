@@ -77,7 +77,6 @@ html, body {
 }
 
 .cal-month-view .cal-day-cell {
-  // border-right: 2px solid #e1e1e1;
   border-bottom: 1px solid #424242;
 }
 
@@ -87,14 +86,6 @@ html, body {
 
 app-calendar-cell {
   font-size: 0.8em;
-}
-
-th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type {
-  cursor: pointer;
-}
-
-html .mat-paginator, html .mat-paginator-page-size .mat-select-trigger, body .mat-paginator, body .mat-paginator-page-size .mat-select-trigger {
-  display: none;
 }
 
 .cal-month-view {
@@ -116,4 +107,8 @@ html .mat-paginator, html .mat-paginator-page-size .mat-select-trigger, body .ma
 
 .cal-month-view .cal-cell-row:hover {
   background-color: #fff;
+}
+
+.cal-month-view .cal-day-cell.cal-in-month.cal-has-events {
+  cursor: initial;
 }

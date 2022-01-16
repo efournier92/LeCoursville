@@ -1,13 +1,40 @@
 <div class="admin-users-component-container">
-  
+
   <app-admin-routing class="w-100"></app-admin-routing>
 
-  <div class="statistics-container">
-    <b>Total Users: </b>{{ allUsers ? allUsers.length : 0 }}
+  <div class="d-flex justify-content-between w-100 p-1">
+    <mat-form-field class="filter-users-form-field">
+      <mat-label>Filter Users</mat-label>
+      <input matInput type="text" [(ngModel)]="sortSettings.filterQuery" (input)="onFilterQueryChange($event.target.value)">
+      <button *ngIf="sortSettings.filterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <div>
+      <button mat-button [matMenuTriggerFor]="menu">Sort By: {{ getSortPropertyText() }}</button>
+      <button mat-button (click)="reverseDisplayedUsersSortOrder()">
+        <mat-icon *ngIf="!isSortDescending()">arrow_drop_up</mat-icon>
+        <mat-icon *ngIf="isSortDescending()">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="sortByDateLastActive()">Date Last Active</button>
+        <button mat-menu-item (click)="sortByName()">Name</button>
+        <button mat-menu-item (click)="sortByEmail()">Email</button>
+        <button mat-menu-item (click)="sortByDateRegistered()">Date Registered</button>
+      </mat-menu>
+    </div>
   </div>
 
-  <div class="row justify-content-center admin-user-card-container" *ngIf="shouldDisplayUserCards()">
-    <div class="m-2 col-md-5" *ngFor="let cardUser of allUsers">
+  <mat-paginator class="admin-users-paginator" [length]="getTotalUsers()" [pageSize]="sortSettings.usersPerPage" (page)="onUpdateUserRange($event)">
+  </mat-paginator>
+
+  <div class="d-flex justify-content-center w-100">
+    <mat-spinner *ngIf="!shouldDisplayUserCards()"></mat-spinner>
+  </div>
+
+  <div class="row justify-content-center admin-user-card-container mb-3" *ngIf="shouldDisplayUserCards()">
+    <div class="m-2 col-lg-5" *ngFor="let cardUser of displayedUsers">
       <app-user-edit [userOnCard]="cardUser" [isAdminMode]="true" (cancelEditClickedEvent)="updateUser(cardUser)">
       </app-user-edit>
     </div>

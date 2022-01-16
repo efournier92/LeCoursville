@@ -10,7 +10,7 @@ export class User {
   email: string;
   roles: AuthRoles;
   dateRegistered: Date;
-  dateLastSignedIn: Date;
+  dateLastActive: Date;
 
   constructor(authData: any, existingUser: User) {
     const authUser = authData?.authResult?.user || authData;
@@ -19,7 +19,7 @@ export class User {
     this.name = existingUser?.name || authUser?.displayName;
     this.email = existingUser?.email || authUser?.email;
     this.dateRegistered = existingUser?.dateRegistered || authUser?.metadata?.creationTime;
-    this.dateLastSignedIn = authUser?.metadata.lastSignInTime;
+    this.dateLastActive = authUser?.metadata.lastSignInTime;
     this.roles = existingUser?.roles || { user: true, admin: false, super: false };
   }
 }
