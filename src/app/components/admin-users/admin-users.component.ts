@@ -20,7 +20,6 @@ export class AdminUsersComponent implements OnInit {
   hasUpdated: boolean;
   totalUsers: number;
   totalFilteredUsers: number;
-  isLoading: boolean;
 
   constructor(
     private authService: AuthService,
@@ -30,9 +29,6 @@ export class AdminUsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
-
-    this.isLoading = true;
-
     this.initializeSortSettings();
   }
 
@@ -82,7 +78,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   shouldDisplayUserCards(): boolean {
-    return this.user?.roles?.super && this.allUsers?.length > 0 && !this.isLoading;
+    return this.user?.roles?.super && this.allUsers?.length > 0;
   }
 
   onCancelEdit(): void {
@@ -165,10 +161,10 @@ export class AdminUsersComponent implements OnInit {
     this.adminService.allUsersObservable.subscribe(
       (users: User[]) => {
         if (users.length && users.length !== this.totalUsers) {
+          if (!this.sortSettings?.filterQuery) { this.initializeSortSettings(); }
           this.allUsers = users;
           this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
           this.totalUsers = users.length;
-          this.isLoading = false;
         }
       }
     );
@@ -181,7 +177,7 @@ export class AdminUsersComponent implements OnInit {
 
     if (!usersToSort?.length) { return usersToSort; }
 
-    users = this.filterUsers(usersToSort, sortSettings.filterQuery);
+    users = this.filterUsers(usersToSort, sortSettings?.filterQuery);
     users = this.sortUsers(users, sortSettings);
     users = this.displayUserPage(users, sortSettings);
 

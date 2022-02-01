@@ -23,6 +23,7 @@ export class MediaExplorerComponent implements OnInit {
   loadedMedia: UploadableMedia[];
   selectedMedia: UploadableMedia;
   eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
+  isLoading: boolean;
 
   constructor(
     private authService: AuthService,
@@ -66,6 +67,7 @@ export class MediaExplorerComponent implements OnInit {
   // PUBLIC
 
   onMediaSelect(media: UploadableMedia): void {
+    this.isLoading = true;
     this.resetSelectedMedia();
 
     if (this.shouldSetCurrentMedia(media)) {
@@ -142,7 +144,7 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   isAudioAlbum(selectedMedia: UploadableMedia): boolean {
-    return selectedMedia?.type === MediaConstants.AUDIO_ALBUM.id;
+    return !this.isLoading && selectedMedia?.type === MediaConstants.AUDIO_ALBUM.id;
   }
 
   // HELPERS
@@ -165,6 +167,7 @@ export class MediaExplorerComponent implements OnInit {
 
   private setCurrentMedia(media: UploadableMedia) {
     this.selectedMedia = media;
+    this.waitToDisplaySelectedMedia();
     this.emitEventToChild(media);
     if (this.authService.isUserSignedIn()) {
       this.routingService.clearQueryParams();
@@ -173,6 +176,12 @@ export class MediaExplorerComponent implements OnInit {
       title: this.selectedMedia?.title, id: this.selectedMedia?.id, type: this.selectedMedia.type,
       userId: this.user?.id,
     });
+  }
+
+  // Unfornate means to prevent audio-player bug when switching between playlists
+  private waitToDisplaySelectedMedia() {
+    // this.isLoading = false;
+    setTimeout(() => { this.isLoading = false; }, 1);
   }
 
   private emitEventToChild(media: UploadableMedia) {

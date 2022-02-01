@@ -112,3 +112,21 @@ app-calendar-cell {
 .cal-month-view .cal-day-cell.cal-in-month.cal-has-events {
   cursor: initial;
 }
+
+.ngx-audio-player {
+  .mat-cell {
+    cursor: pointer;
+  }
+  .mat-expansion-panel-header {
+    display: none;
+  }
+  table thead {
+    display: none;
+  }
+  .mat-paginator-page-size-label {
+    display: none;
+  }
+  .mat-paginator-page-size-value {
+    display: none;
+  }
+}

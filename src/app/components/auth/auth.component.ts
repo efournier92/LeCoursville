@@ -11,7 +11,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 })
 export class AuthComponent implements OnInit {
   user: User;
-  isEditing: boolean;
+  isEditMode: boolean;
 
   constructor(
     private authService: AuthService,
@@ -24,7 +24,7 @@ export class AuthComponent implements OnInit {
   ngOnInit(): void {
     // Remove any extraneous URL information
     this.routingService.NavigateToSignIn();
-    this.isEditing = false;
+    this.isEditMode = false;
     this.subscribeToUserObservable();
     this.analyticsService.logEvent('component_load_auth', { });
   }
@@ -66,10 +66,10 @@ export class AuthComponent implements OnInit {
   }
 
   onEdit(): void {
-    this.isEditing = true;
+    this.isEditMode = true;
   }
 
   onCancelEdit(): void {
-    this.isEditing = false;
+    this.isEditMode = false;
   }
 }
