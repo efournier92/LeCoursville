@@ -18,6 +18,7 @@ export class AdminUsersComponent implements OnInit {
   displayedUsers: User[];
   sortSettings: SortSettings;
   hasUpdated: boolean;
+  totalUsers: number;
   totalFilteredUsers: number;
   isLoading: boolean;
 
@@ -156,18 +157,17 @@ export class AdminUsersComponent implements OnInit {
     const filterQuery = '';
     const usersPerPage = 10;
     const currentPageIndex = 0;
-    const hasSorted = false;
 
-    this.sortSettings = new SortSettings(sortDirection, sortProperty.key, filterQuery, usersPerPage, currentPageIndex, hasSorted);
+    this.sortSettings = new SortSettings(sortDirection, sortProperty.key, filterQuery, usersPerPage, currentPageIndex);
   }
 
   private getAllUsers(): void {
     this.adminService.allUsersObservable.subscribe(
       (users: User[]) => {
-        if (users.length) {
+        if (users.length && users.length !== this.totalUsers) {
           this.allUsers = users;
           this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
-          this.sortSettings.hasSorted = true;
+          this.totalUsers = users.length;
           this.isLoading = false;
         }
       }

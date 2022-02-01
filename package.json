@@ -1,6 +1,6 @@
 {
   "name": "lecoursville",
-  "version": "2022.1.16",
+  "version": "22.1.31",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { AnalyticsService } from './services/analytics.service';
+import { VersionService } from './services/version.service';
+
+declare global {
+  interface Window { version: any; }
+}
 
 @Component({
   selector: 'app-root',
@@ -14,9 +19,8 @@ export class AppComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private analyticsService: AnalyticsService,
-  ) {
-    this.subscribeToUserObservable();
-  }
+    private versionService: VersionService,
+  ) { }
 
   // SUBSCRIPTIONS
 
@@ -27,17 +31,24 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.logErrorsForAnalytics();
+    this.subscribeToUserObservable();
+    this.writeVersionToWindow();
+    this.listenForErrors();
   }
 
-  private logErrorsForAnalytics() {
+  // HELPERS
+
+  private writeVersionToWindow() {
+    window.version = this.versionService.getAppVersion();
+  }
+
+  private listenForErrors() {
     window.addEventListener('error', (err: ErrorEvent) => {
       this.analyticsService.logEvent('Error', {
         message: err?.message,
         value: err?.lineno,
         userAgent: window?.navigator?.userAgent,
         userId: this.user?.id,
-       
       });
     });
   }

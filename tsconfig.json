@@ -16,6 +16,7 @@
     "target": "es2017",
     "module": "es2020",
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "lib": [
       "es2018",
       "dom"

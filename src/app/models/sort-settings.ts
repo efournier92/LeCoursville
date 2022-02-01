@@ -4,7 +4,6 @@ export class SortSettings {
   filterQuery: string;
   usersPerPage: number;
   currentPageIndex: number;
-  hasSorted: boolean;
 
   constructor(
     order: string,
@@ -12,13 +11,11 @@ export class SortSettings {
     filterQuery: string,
     usersPerPage: number,
     currentPageIndex: number,
-    hasSorted: boolean
   ) {
     this.direction = order;
     this.sortProperty = sortProperty;
     this.filterQuery = filterQuery;
     this.usersPerPage = usersPerPage;
     this.currentPageIndex = currentPageIndex;
-    this.hasSorted = hasSorted;
   }
 }
