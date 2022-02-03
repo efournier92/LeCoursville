@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
-import { AngularFireStorage } from '@angular/fire/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Message } from 'src/app/models/message';
 import { AuthService } from 'src/app/services/auth.service';
@@ -10,52 +9,21 @@ import { User } from 'src/app/models/user';
   providedIn: 'root'
 })
 export class ChatService {
+  messages: AngularFireList<Message>;
+  chatObservable: Observable<Message[]>;
+
+  private messagesSource: BehaviorSubject<Message[]>;
 
   constructor(
     private db: AngularFireDatabase,
-    private storage: AngularFireStorage,
     private auth: AuthService,
   ) {
-    this.auth.userObservable.subscribe(
-      (user: User) => {
-        if (user) {
-          this.getMessages().valueChanges().subscribe(
-            (messages: Message[]) => {
-              this.updateMessagesEvent(messages);
-            }
-          );
-        }
-      }
-    );
-  }
-  messages: AngularFireList<Message>;
-  messageCount = 0;
-  increment = 8;
-
-  private messagesSource: BehaviorSubject<Message[]> = new BehaviorSubject([]);
-  chatObservable: Observable<Message[]> = this.messagesSource.asObservable();
-
-  getYears(): number[] {
-    const years: number[] = [];
-    for (let i = 1880; i <= 2000; i++) {
-      years.push(i);
-    }
-    return years;
+    this.messagesSource = new BehaviorSubject([]);
+    this.chatObservable = this.messagesSource.asObservable();
+    this.subscribeToUserObservable();
   }
 
-  updateMessagesEvent(messages: Message[]): void {
-    this.messagesSource.next(messages);
-  }
-
-  getMessages(): AngularFireList<Message> {
-    this.messageCount = this.messageCount + this.increment;
-    this.messages = this.db.list('messages', ref => ref.limitToFirst(this.messageCount));
-    return this.messages;
-  }
-
-  updateMessages(messages) {
-    this.messages = messages;
-  }
+  // PUBLIC
 
   createMessage(message: Message): void {
     message.id = this.db.createPushId();
@@ -68,5 +36,34 @@ export class ChatService {
 
   deleteMessage(message: Message): void {
     this.messages.remove(message.id);
+  }
+
+  // HELPERS
+
+  private getMessages(): AngularFireList<Message> {
+    this.messages = this.db.list('messages');
+    return this.messages;
+  }
+
+  private updateMessagesEvent(messages: Message[]): void {
+    this.messagesSource.next(messages);
+  }
+
+  private subscribeToUserObservable() {
+    this.auth.userObservable.subscribe(
+      (user: User) => {
+        if (user) {
+          this.subscribeToGetMessages();
+        }
+      }
+    );
+  }
+
+  private subscribeToGetMessages(): void {
+    this.getMessages().valueChanges().subscribe(
+      (messages: Message[]) => {
+        this.updateMessagesEvent(messages);
+      }
+    );
   }
 }

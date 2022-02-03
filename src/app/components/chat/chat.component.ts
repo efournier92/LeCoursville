@@ -28,7 +28,6 @@ export class ChatComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
-    this.subscribeToChatObservable();
     this.analyticsService.logEvent('component_load_chat', { });
   }
 
@@ -36,7 +35,10 @@ export class ChatComponent implements OnInit {
 
   private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => {
+        this.user = user;
+        this.subscribeToChatObservable();
+      }
     );
   }
 
