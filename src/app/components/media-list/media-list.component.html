@@ -1,16 +1,25 @@
 <div class="media-list-container row">
 
-    <!-- <div class="media-search-input-container">
-        <app-media-search-input (inputChangeEvent)="onSearchInputChange($event)"></app-media-search-input>
-    </div>
+    <form class="media-list-filters-container">
+        <mat-form-field class="media-list-filters-input" appearance="standard">
+            <mat-label>Search</mat-label>
+            <input matInput name="media-list-filters-input-search-query" (input)="onSearchInputChange($event)"
+                [(ngModel)]="searchQuery">
+        </mat-form-field>
 
-    <div class="media-types-checkboxes-container">
-        <app-media-types-checkboxes (selectMediaTypeEvent)="onSelectMediaType($event)">
-        </app-media-types-checkboxes>
-    </div> -->
+        <!-- <mat-form-field class="media-list-filters-input" appearance="standard">
+            <mat-label>Sort By</mat-label>
+            <mat-select (selectionChange)="onSortBySelectionChange($event)">
+                <mat-option *ngFor="let type of sortTypes" [value]="type">
+                    {{ type }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field> -->
+    </form>
 
     <div class="row d-flex flex-column" *ngFor="let media of filteredMedia">
-        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" *ngIf="shouldDisplayMedia(media)" (click)="onMediaSelect(media)">
+        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" *ngIf="shouldDisplayMedia(media)"
+            (click)="onMediaSelect(media)">
             <div class="row">
                 <div class="col-4 imageContainer">
                     <div class="d-flex flex-column justify-content-center h-100">

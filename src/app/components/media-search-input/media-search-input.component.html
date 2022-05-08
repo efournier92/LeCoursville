@@ -1,8 +1,8 @@
 <div class="media-search-input-container">
 
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="standard">
         <mat-label>
-            <mat-icon>search</mat-icon> Search Media
+            <mat-icon>search</mat-icon> Search
         </mat-label>
         <input matInput type="text" (input)="onInputChange($event.target.value)">
         <button *ngIf="inputValue" matSuffix mat-icon-button aria-label="Clear" (click)="clearInput()">

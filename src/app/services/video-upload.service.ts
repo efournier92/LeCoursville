@@ -18,6 +18,7 @@ export class VideoUploadService {
       video.id = this.pushIdService.create();
     }
 
+    video.dateUpdated = new Date();
     video.urls.icon = this.getIconLocation(video.fileName);
     video.urls.download = this.getDownloadLocation(video.fileName);
 

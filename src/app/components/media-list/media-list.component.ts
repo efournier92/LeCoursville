@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
+import { AdminService } from 'src/app/services/admin.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
@@ -21,12 +22,16 @@ export class MediaListComponent implements OnInit {
   user: User;
   allMedia: UploadableMedia[] = [];
   filteredMedia: UploadableMedia[];
+  searchQuery: string;
+  sortTypes: string[];
+  selectedSortType: string;
 
   constructor(
     private authService: AuthService,
     private mediaService: MediaService,
     private mediaIconsService: MediaIconsService,
     private analyticsService: AnalyticsService,
+    private adminService: AdminService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -35,6 +40,9 @@ export class MediaListComponent implements OnInit {
     this.subscribeToUserObservable();
     this.subscribeToMediaObservable();
     this.initializeList();
+    this.searchQuery = '';
+    this.sortTypes = ['Date Added', 'Date Recorded'];
+    this.selectedSortType = this.sortTypes[0];
   }
 
   // SUBSCRIPTIONS
@@ -49,8 +57,11 @@ export class MediaListComponent implements OnInit {
     this.mediaService.mediaObservable.subscribe(
       (mediaList) => {
         this.allMedia = mediaList;
-        this.filteredMedia = this.filterAllMediaByType();
+        this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
         this.filteredMedia = this.sortMedia(this.filteredMedia);
+        function randomDate(start, end) {
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
       }
     );
   }
@@ -84,12 +95,19 @@ export class MediaListComponent implements OnInit {
     });
   }
 
-  onSearchInputChange(query: string): void {
-    this.filteredMedia = this.mediaService.filterByQuery(query, this.allMedia);
+  onSearchInputChange(event: any): void {
+    const query = this.searchQuery;
+    this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
+    this.filteredMedia = this.mediaService.filterByQuery(query, this.filteredMedia);
     this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_search', {
       query, userId: this.user?.id,
     });
+  }
+
+  onSortBySelectionChange(event: any): void {
+    this.selectedSortType = event?.value;
+    this.filteredMedia = this.sortMedia(this.filteredMedia);
   }
 
   // HELPER METHODS
@@ -100,7 +118,7 @@ export class MediaListComponent implements OnInit {
     }
 
     if (this.mediaTypesToShow) {
-      this.filteredMedia = this.filterAllMediaByType();
+      this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
       this.filteredMedia = this.sortMedia(this.filteredMedia);
     }
   }
@@ -114,16 +132,23 @@ export class MediaListComponent implements OnInit {
     ];
   }
 
-  private filterAllMediaByType() {
-    return this.mediaService.filterByTypes(this.mediaTypesToShow, this.allMedia);
+  private filterMediaByType(mediaTypesToShow: string[], mediaToFilter: UploadableMedia[]) {
+    return this.mediaService.filterByTypes(mediaTypesToShow, mediaToFilter);
   }
 
   private sortMedia(mediaList: UploadableMedia[]): UploadableMedia[] {
-    return mediaList.sort(this.compareMediaByTimestamp);
+    if (this.selectedSortType === 'Date Added') {
+      return mediaList.sort(this.compareMediaByDateUpdated);
+    } else {
+      return mediaList.sort(this.compareMediaByTimestamp);
+    }
+  }
+
+  private compareMediaByDateUpdated(a: UploadableMedia, b: UploadableMedia): number {
+    return b.dateUpdated?.getTime() - a.dateUpdated?.getTime();
   }
 
   private compareMediaByTimestamp(a: UploadableMedia, b: UploadableMedia): number {
     return a.date.localeCompare(b.date);
   }
-
 }

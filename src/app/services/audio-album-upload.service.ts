@@ -28,6 +28,8 @@ export class AudioAlbumUploadService {
       album.listing = this.uploadAudioTracks(allTracks);
     }
 
+    album.dateUpdated = new Date();
+
     this.mediaService.create(album);
   }
 
