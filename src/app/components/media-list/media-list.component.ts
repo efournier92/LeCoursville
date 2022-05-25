@@ -138,10 +138,22 @@ export class MediaListComponent implements OnInit {
 
   private sortMedia(mediaList: UploadableMedia[]): UploadableMedia[] {
     if (this.selectedSortType === 'Date Added') {
-      return mediaList.sort(this.compareMediaByDateUpdated);
+      mediaList = mediaList.sort(this.compareMediaByDateUpdated);
     } else {
-      return mediaList.sort(this.compareMediaByTimestamp);
+      mediaList = mediaList.sort(this.compareMediaByTimestamp);
     }
+    return this.bumpStickies(mediaList);
+  }
+
+  private bumpStickies(mediaList: UploadableMedia[]): UploadableMedia[] {
+    mediaList.forEach((media, index) => {
+      if (media.isSticky) {
+        const stickyItem = mediaList.splice(index, 1) [0];
+        mediaList.splice(0, 0, stickyItem);
+      }
+    });
+
+    return mediaList;
   }
 
   private compareMediaByDateUpdated(a: UploadableMedia, b: UploadableMedia): number {

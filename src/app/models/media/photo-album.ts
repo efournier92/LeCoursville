@@ -8,6 +8,7 @@ export class PhotoAlbum implements UploadableMedia {
   date: string;
   folderName: string;
   fileName: string;
+  isSticky: boolean;
   isHidden: boolean;
   urls: { download: string; icon: string; };
   type: string;

@@ -22,6 +22,7 @@
                 <textarea matInput name="albumTracks" [(ngModel)]="tracksString" cdkTextareaAutosize
                     #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
             </mat-form-field>
+            <mat-checkbox class="admin-upload-input mb-2" name="isSticky" [(ngModel)]="album.isSticky">Is Sticky?</mat-checkbox>
             <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="album.isHidden">Should Hide from Lists?</mat-checkbox>
             <button mat-button class="admin-form-action-button admin-form-action-button-upload"
                 (click)="onUploadSelectedMedia()">
@@ -32,15 +33,6 @@
                 mat-button (click)="onDeleteSelectedMedia(album)">Delete</button>
             <button mat-button class="admin-form-action-button admin-form-action-button-cancel"
                 (click)="onCancelSelectedMedia(album)">Clear</button>
-            <mat-divider class="admin-media-upload-divider"></mat-divider>
-            <div class="admin-media-upload-or-container">
-                <span class="admin-media-upload-or-span">OR</span>
-            </div>
-            <mat-divider class="admin-media-upload-divider"></mat-divider>
-            <!-- <app-file-input [matIcon]="'attach_file'" [inputMessage]="'JSON File'" [shouldAllowMultipleFiles]="false"
-                [shouldShowLabel]="true" [shouldShowClearButton]="true"
-                (inputFileChangeEvent)="inputFileChangeEvent($event)" (inputClearedEvent)="inputClearedEvent()">
-            </app-file-input> -->
         </form>
     </div>
     <div class="admin-media-list-container">

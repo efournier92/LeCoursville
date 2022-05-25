@@ -8,6 +8,7 @@ export class Video implements UploadableMedia {
   date: string;
   folderName: string;
   fileName: string;
+  isSticky: boolean;
   isHidden: boolean;
   listing: any[];
   urls: { download: string; icon: string; };

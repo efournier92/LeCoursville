@@ -8,6 +8,7 @@ export class AudioTrack implements UploadableMedia {
   date: string;
   folderName: string;
   fileName: string;
+  isSticky: boolean;
   isHidden: boolean;
   listing: any[];
   urls: { icon: string; download: string; };
