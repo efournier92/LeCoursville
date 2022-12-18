@@ -1,21 +1,26 @@
-@import '~@angular/material/theming';
-@import '~firebaseui/dist/firebaseui.css';
+@use '@angular/material' as mat;
+@import '@angular/material/theming';
+@import 'firebaseui/dist/firebaseui.css';
 @import "../node_modules/angular-calendar/css/angular-calendar.css";
-@import "~bootstrap/dist/css/bootstrap.css";
-@import "~font-awesome/css/font-awesome.css";
-@import '~lightgallery/scss/lightgallery-bundle.scss';
+@import "bootstrap/dist/css/bootstrap.css";
+@import "font-awesome/css/font-awesome.css";
+@import 'lightgallery/scss/lightgallery-bundle.scss';
 
 @include mat-core();
 
-$my-theme-primary: mat-palette($mat-green, 900);
-$my-theme-accent: mat-palette($mat-amber, 800);
-$my-theme-warn: mat-palette($mat-red, 500);
+$primary: mat-palette($mat-green, 900);
+$accent: mat-palette($mat-amber, 800);
+$warn: mat-palette($mat-red, 500);
 
-$my-theme: mat-light-theme(
-  $my-theme-primary,
-  $my-theme-accent,
-  $my-theme-warn,
-);
+$my-theme: mat.define-light-theme((
+ color: (
+   primary: $primary,
+   accent: $accent,
+   warn: $warn,
+ ),
+ typography: mat.define-typography-config(),
+ density: 0,
+));
 
 html, body {
   @include angular-material-theme($my-theme);

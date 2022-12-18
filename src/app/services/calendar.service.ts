@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AngularFireList, AngularFireDatabase } from '@angular/fire/database';
-import { AngularFireStorageReference, AngularFireStorage, AngularFireUploadTask } from '@angular/fire/storage';
+import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireStorageReference, AngularFireStorage, AngularFireUploadTask } from '@angular/fire/compat/storage';
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';

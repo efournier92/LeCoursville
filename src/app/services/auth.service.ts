@@ -1,6 +1,6 @@
 import { Injectable, OnInit } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFireDatabase, AngularFireObject } from '@angular/fire/database';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireDatabase, AngularFireObject } from '@angular/fire/compat/database';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from 'src/app/models/user';

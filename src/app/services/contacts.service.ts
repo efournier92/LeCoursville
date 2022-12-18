@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
+import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Contact } from 'src/app/models/contact';
 import { AuthService } from 'src/app/services/auth.service';

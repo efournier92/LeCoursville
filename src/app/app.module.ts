@@ -5,11 +5,11 @@ import { NgModule } from '@angular/core';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 // Imports
-import { AngularFireModule } from '@angular/fire';
-import { AngularFireDatabaseModule } from '@angular/fire/database';
-import { AngularFireStorageModule } from '@angular/fire/storage';
-import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
-import { AngularFireAuthModule } from '@angular/fire/auth';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+import { AngularFireAnalyticsModule } from '@angular/fire/compat/analytics';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -69,6 +69,9 @@ import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.
 import { MediaVideoComponent } from './components/media-video/media-video.component';
 import { AdminMediaUploadVideoComponent } from './components/admin-media-upload-video/admin-media-upload-video.component';
 import { NavbarLinksComponent } from './components/navbar-links/navbar-links.component';
+import { ExpressionsComponent } from './components/expressions/expressions.component';
+import { ExpressionsEditComponent } from './components/expressions-edit/expressions-edit.component';
+import { ExpressionsEditDialogComponent } from './components/expressions-edit-dialog/expressions-edit-dialog.component';
 
 @NgModule({
   declarations: [
@@ -109,6 +112,9 @@ import { NavbarLinksComponent } from './components/navbar-links/navbar-links.com
     MediaVideoComponent,
     AdminMediaUploadVideoComponent,
     NavbarLinksComponent,
+    ExpressionsComponent,
+    ExpressionsEditComponent,
+    ExpressionsEditDialogComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -150,6 +156,7 @@ import { NavbarLinksComponent } from './components/navbar-links/navbar-links.com
   entryComponents: [
     CalendarPrinterComponent,
     ConfirmPromptComponent,
+    ExpressionsEditDialogComponent,
   ],
   exports: [
     ContactEditComponent,

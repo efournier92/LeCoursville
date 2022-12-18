@@ -14,6 +14,7 @@ import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-
 import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.component';
 import { MediaVideoComponent } from './components/media-video/media-video.component';
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
+import { ExpressionsComponent } from './components/expressions/expressions.component';
 
 const routes: Routes =
   [
@@ -34,6 +35,11 @@ const routes: Routes =
     {
       path: 'chat',
       component: ChatComponent,
+      canActivate: [AuthGuardService],
+    },
+    {
+      path: 'expressions',
+      component: ExpressionsComponent,
       canActivate: [AuthGuardService],
     },
     {

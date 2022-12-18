@@ -48,3 +48,6 @@ Thumbs.db
 # Enviroment Secrets
 src/environments/*
 
+# Tags
+tags
+
