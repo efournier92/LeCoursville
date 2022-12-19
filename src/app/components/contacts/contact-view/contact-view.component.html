@@ -10,24 +10,28 @@
         <h4 mat-line>{{ address.street }}</h4>
         <h4 mat-line>{{ address.city }}, {{ address.state }} {{ address.zip }}</h4>
       </mat-list-item>
-      <mat-list-item *ngFor="let phone of contact.phones">
-        <mat-icon mat-list-icon>phone</mat-icon>
-        <h4 mat-line *ngIf="phone.info !== ''">
-          {{ phone.info | titlecase}}
-        </h4>
-        <h4 mat-line>
-          {{ phone.number }}
-        </h4>
-      </mat-list-item>
-      <mat-list-item *ngFor="let email of contact.emails">
-        <mat-icon mat-list-icon>email</mat-icon>
-        <h4 mat-line *ngIf="email.info !== ''">
-          {{ email.info | titlecase }}
-        </h4>
-        <h4 mat-line>
-          {{ email.address }}
-        </h4>
-      </mat-list-item>
+      <div *ngFor="let phone of contact.phones">
+        <mat-list-item *ngIf="phone.number">
+          <mat-icon mat-list-icon *ngIf="phone.number">phone</mat-icon>
+          <h4 mat-line *ngIf="phone.number">
+            {{ phone.info | titlecase}}
+          </h4>
+          <h4 mat-line *ngIf="phone.number">
+            {{ phone.number }}
+          </h4>
+        </mat-list-item>
+      </div>
+      <div *ngFor="let email of contact.emails">
+        <mat-list-item *ngIf="email.address">
+          <mat-icon mat-list-icon>email</mat-icon>
+          <h4 mat-line *ngIf="email.info !== ''">
+            {{ email.info | titlecase }}
+          </h4>
+          <h4 mat-line>
+            {{ email.address }}
+          </h4>
+        </mat-list-item>
+      </div>
     </mat-list>
   </mat-card-content>
   <mat-card-footer *ngIf="user.roles.admin" class="d-flex justify-content-end">
