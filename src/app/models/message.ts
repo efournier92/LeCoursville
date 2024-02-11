@@ -41,7 +41,7 @@ export class Message {
     authorName: string,
     isReply: boolean,
     isEditable: boolean,
-    replyLevel: number
+    replyLevel: number,
   ) {
     this.title = title;
     this.body = body;

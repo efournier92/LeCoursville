@@ -1,0 +1,32 @@
+<div class="expressions-component d-flex flex-column align-items-center">
+    <mat-card class="chat-card-container mt-3 mb-1" *ngFor="let expression of expressions">
+        <app-chat-view *ngIf="!expression.isEditable" [message]=expression [parent]="expression"
+            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-chat-view>
+        <app-chat-edit *ngIf="expression.isEditable" [message]=expression [parent]="expression"
+            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-chat-edit>
+    </mat-card>
+    <!-- <div class="d-flex justify-content-end w-100 m-2">
+        <app-expressions-edit></app-expressions-edit>
+    </div>
+    <div class="card-container">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>
+                    {{ expression.title }}
+                </mat-card-title>
+                <mat-card-subtitle>Attributed To {{ expression.attribution }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content class="expression-content">
+                <p>
+                    {{ expression.body }}
+                </p>
+                <mat-card-subtitle class="byline">{{ expression.authorName }} - {{ expression.yearWritten }}</mat-card-subtitle>
+            </mat-card-content>
+            <div class="d-flex justify-content-end w-100 m-2">
+                <button mat-mini-fab>
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </div>
+        </mat-card>
+    </div> -->
+</div>
