@@ -12,7 +12,7 @@ export class Expression extends Message {
     attribution: string,
   ){
     super(title, body, '', '', authorName, false, false, 0);
-    this.yearWritten
+    this.yearWritten = yearWritten;
     this.attribution = attribution;
   }
 }

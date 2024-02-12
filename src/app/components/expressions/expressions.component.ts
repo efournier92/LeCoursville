@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Expression } from 'src/app/models/expression';
+import { ExpressionConstants } from 'src/app/constants/expression-constants';
 
 @Component({
   selector: 'app-expressions',
@@ -8,6 +9,8 @@ import { Expression } from 'src/app/models/expression';
 })
 export class ExpressionsComponent implements OnInit {
   expressions: Expression[];
+  headerText: string = ExpressionConstants.HeaderText;
+  headerAttribution: string = ExpressionConstants.HeaderAttribution;
 
   constructor() { }
 
@@ -21,5 +24,6 @@ export class ExpressionsComponent implements OnInit {
 
     const expression = new Expression(title, body, authorName, yearWritten, attribution);
     this.expressions = [expression, expression]
+    console.log('Expressions', this.expressions);
   }
 }

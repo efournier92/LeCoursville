@@ -70,6 +70,7 @@ import { MediaVideoComponent } from './components/media-video/media-video.compon
 import { AdminMediaUploadVideoComponent } from './components/admin-media-upload-video/admin-media-upload-video.component';
 import { NavbarLinksComponent } from './components/navbar-links/navbar-links.component';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
+import { ExpressionViewComponent } from 'src/app/components/expression-view/expression-view.component';
 import { ExpressionsEditComponent } from './components/expressions-edit/expressions-edit.component';
 import { ExpressionsEditDialogComponent } from './components/expressions-edit-dialog/expressions-edit-dialog.component';
 
@@ -113,6 +114,7 @@ import { ExpressionsEditDialogComponent } from './components/expressions-edit-di
     AdminMediaUploadVideoComponent,
     NavbarLinksComponent,
     ExpressionsComponent,
+    ExpressionViewComponent,
     ExpressionsEditComponent,
     ExpressionsEditDialogComponent,
   ],

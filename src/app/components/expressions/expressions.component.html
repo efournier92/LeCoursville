@@ -1,7 +1,10 @@
 <div class="expressions-component d-flex flex-column align-items-center">
+    <div class="expressions-header-text">{{ headerText }}</div>
+    <div class="expressions-header-attribution">- {{ headerAttribution }}</div>
+
     <mat-card class="chat-card-container mt-3 mb-1" *ngFor="let expression of expressions">
-        <app-chat-view *ngIf="!expression.isEditable" [message]=expression [parent]="expression"
-            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-chat-view>
+        <app-expression-view *ngIf="!expression.isEditable" [message]=expression [parent]="expression"
+            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-expression-view>
         <app-chat-edit *ngIf="expression.isEditable" [message]=expression [parent]="expression"
             (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-chat-edit>
     </mat-card>
