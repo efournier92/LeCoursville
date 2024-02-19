@@ -71,7 +71,7 @@ import { AdminMediaUploadVideoComponent } from './components/admin-media-upload-
 import { NavbarLinksComponent } from './components/navbar-links/navbar-links.component';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { ExpressionViewComponent } from 'src/app/components/expression-view/expression-view.component';
-import { ExpressionsEditComponent } from './components/expressions-edit/expressions-edit.component';
+import { ExpressionEditComponent } from './components/expression-edit/expression-edit.component';
 import { ExpressionsEditDialogComponent } from './components/expressions-edit-dialog/expressions-edit-dialog.component';
 
 @NgModule({
@@ -115,7 +115,7 @@ import { ExpressionsEditDialogComponent } from './components/expressions-edit-di
     NavbarLinksComponent,
     ExpressionsComponent,
     ExpressionViewComponent,
-    ExpressionsEditComponent,
+    ExpressionEditComponent,
     ExpressionsEditDialogComponent,
   ],
   imports: [

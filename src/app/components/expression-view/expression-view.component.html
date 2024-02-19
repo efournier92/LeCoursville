@@ -74,8 +74,8 @@
   </div>
 </div>
 <mat-card-content *ngFor="let reply of message.replies">
-  <app-chat-view *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
-  </app-chat-view>
-  <app-chat-edit *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
-  </app-chat-edit>
+  <app-expression-view *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
+  </app-expression-view>
+  <app-expression-edit *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
+  </app-expression-edit>
 </mat-card-content>
