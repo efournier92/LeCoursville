@@ -72,7 +72,6 @@ import { NavbarLinksComponent } from './components/navbar-links/navbar-links.com
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { ExpressionViewComponent } from 'src/app/components/expression-view/expression-view.component';
 import { ExpressionEditComponent } from './components/expression-edit/expression-edit.component';
-import { ExpressionsEditDialogComponent } from './components/expressions-edit-dialog/expressions-edit-dialog.component';
 
 @NgModule({
   declarations: [
@@ -116,7 +115,6 @@ import { ExpressionsEditDialogComponent } from './components/expressions-edit-di
     ExpressionsComponent,
     ExpressionViewComponent,
     ExpressionEditComponent,
-    ExpressionsEditDialogComponent,
   ],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -158,7 +156,6 @@ import { ExpressionsEditDialogComponent } from './components/expressions-edit-di
   entryComponents: [
     CalendarPrinterComponent,
     ConfirmPromptComponent,
-    ExpressionsEditDialogComponent,
   ],
   exports: [
     ContactEditComponent,
