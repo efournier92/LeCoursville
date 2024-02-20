@@ -1,43 +1,43 @@
 <div class="expressions-component">
-  <div class="mt-3 ml-3 d-flex justify-content-end">
-    <button class="create-message-button" mat-button (click)="create()">
+  <div class="ml-3 d-flex justify-content-end">
+    <button class="create-expression-button"
+            mat-button
+            (click)="create()">
       <mat-icon>add</mat-icon>
       <span class="ml-2">Create Expression</span>
     </button>
   </div>
+  <div class="expressions-header-container">
+    <span class="expressions-header-text">
+      {{ headerText }}
+    </span>
+    <span class="expressions-header-attribution">
+      - {{ headerAttribution }}
+    </span>
+  </div>
 
-    <div class="expressions-header-text">{{ headerText }}</div>
-    <div class="expressions-header-attribution">- {{ headerAttribution }}</div>
+  <div class="w-100 d-flex justify-content-center" *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+  </div>
 
-
-    <mat-card class="chat-card-container mt-3 mb-1" *ngFor="let expression of expressions">
-        <app-expression-view *ngIf="!expression.isEditable" [message]=expression [parent]="expression"
-            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-expression-view>
-        <app-expression-edit *ngIf="expression.isEditable" [message]=expression [parent]="expression"
-            (updateParentEvent)="updateMessages($event)" (cancelEditEvent)="cancelEdit($event)"></app-expression-edit>
+  <div class="expressions-container" *ngIf="!isLoading">
+    <mat-card
+        class="chat-card-container mt-3 mb-4"
+        *ngFor="let expression of expressions">
+      <app-expression-view
+          *ngIf="!expression.isEditable"
+          [message]=expression
+          [parent]="expression"
+          (updateParentEvent)="updateMessages($event)"
+          (cancelEditEvent)="cancelEdit($event)">
+      </app-expression-view>
+      <app-expression-edit
+          *ngIf="expression.isEditable"
+          [message]=expression
+          [parent]="expression"
+          (updateParentEvent)="updateMessages($event)"
+          (cancelEditEvent)="cancelEdit($event)">
+      </app-expression-edit>
     </mat-card>
-    <!-- <div class="d-flex justify-content-end w-100 m-2">
-        <app-expressions-edit></app-expressions-edit>
-    </div>
-    <div class="card-container">
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>
-                    {{ expression.title }}
-                </mat-card-title>
-                <mat-card-subtitle>Attributed To {{ expression.attribution }}</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="expression-content">
-                <p>
-                    {{ expression.body }}
-                </p>
-                <mat-card-subtitle class="byline">{{ expression.authorName }} - {{ expression.yearWritten }}</mat-card-subtitle>
-            </mat-card-content>
-            <div class="d-flex justify-content-end w-100 m-2">
-                <button mat-mini-fab>
-                    <mat-icon>edit</mat-icon>
-                </button>
-            </div>
-        </mat-card>
-    </div> -->
+  </div>
 </div>

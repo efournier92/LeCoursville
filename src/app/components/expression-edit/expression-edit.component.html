@@ -35,11 +35,11 @@
           [ngStyle]="{ color: highlights.send === true  ? '#FF9800' : '#F44336' }">
           <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('send', true)"
             (mouseleave)="highlightElement('send', false)" (click)="saveMessage(message)">
-            <span class="fa fa-share-square fa-2x"></span>
+            <span class="fa fa-floppy-o fa-2x"></span>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center">Send</span>
+          <span class="calendar-icon-label d-flex justify-content-center">Save</span>
         </div>
-        <div class="mb-3 chat-edit-button-sticky" *ngIf="shouldShowStickyButton()"
+        <div class="mb-3 chat-edit-button-sticky" *ngIf="shouldShowStickyButton"
           [ngStyle]="{ color: highlights.sticky === true  ? '#FF9800' : '#F44336' }">
           <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('sticky', true)"
             (mouseleave)="highlightElement('sticky', false)">
@@ -52,11 +52,6 @@
     <mat-divider class="chat-divider-vertical" [vertical]="true"></mat-divider>
     <div class="chat-edit-message-form-container col-9">
       <mat-card-content>
-        <mat-card-title>
-          <mat-card-subtitle class="chat-message-author-name">
-            {{ message.author }}
-          </mat-card-subtitle>
-        </mat-card-title>
         <div class="title-input-container" *ngIf="!message.isReply">
           <mat-form-field class="w-100">
             <input matInput class="chat-edit-input-title" placeholder="Title" [(ngModel)]="message.title">

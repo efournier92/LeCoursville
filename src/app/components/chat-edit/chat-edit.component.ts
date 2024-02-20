@@ -29,6 +29,7 @@ export class ChatEditComponent implements OnInit {
   autosize: CdkTextareaAutosize;
   photoUpload: any;
   isSaving = false;
+  shouldShowStickyButton = false;
 
   constructor(
     private chatService: ChatService,
@@ -50,7 +51,11 @@ export class ChatEditComponent implements OnInit {
 
   private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => {
+        this.user = user
+        if (this.user?.roles?.super)
+          this.shouldShowStickyButton = true
+      }
     );
   }
 
@@ -175,10 +180,6 @@ export class ChatEditComponent implements OnInit {
 
   updateParent(): void {
     this.updateParentEvent.emit(this.parent);
-  }
-
-  shouldShowStickyButton(): boolean {
-    return !!this.user?.roles?.super;
   }
 
   // HELPER METHODS

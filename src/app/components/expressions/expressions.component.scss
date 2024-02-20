@@ -1,40 +1,55 @@
 .card-container {
-    width: 60%;
+  width: 60%;
 }
 
 .byline {
-    font-style: italic;
+  font-style: italic;
 }
 
 .expression-content {
-    margin-left: 16px;
+  margin-left: 16px;
 }
 
 .expressions-component {
-    width: 80%;
-    margin: 2em 10%;
+  width: 80%;
+  margin: 1em 10%;
+}
+
+.expressions-header-container {
+  margin-bottom: 2em;
 }
 
 .expressions-header-text {
   font-style: italic;
   color: #616161;
-  text-align: center;
+  font-size: 1.2em;
 }
 
 .expressions-header-attribution {
   color: #616161;
-  text-align: center;
-  margin-top: 0.5em;
-  // margin-left: 4em;
-  // margin: 2em auto 0 auto;
-
   width: 100%;
+  margin-left: 8px;
 }
 
 .expression-attribution {
-  margin-left: 2em;
+  margin-top: -0.8em;
+  margin-left: 0.5em;
+}
+
+.expression-title {
+  font-style: italic;
+}
+
+.expression-body {
+  // margin-bottom: 16px;
+  // font-style: italic;
 }
 
 .expression-author {
-  margin-left: 1em;
+  margin-top: 4px;
+  font-size: 0.9em;
+}
+
+.create-expression-button {
+  margin-bottom: 1em;
 }

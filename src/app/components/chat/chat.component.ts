@@ -5,6 +5,7 @@ import { User } from 'src/app/models/user';
 import { Message } from 'src/app/models/message';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AppSettings } from 'src/environments/app-settings';
+import { ExpressionConstants } from 'src/app/constants/expression-constants';
 
 @Component({
   selector: 'app-chat',
@@ -45,7 +46,7 @@ export class ChatComponent implements OnInit {
   private subscribeToChatObservable(): void {
     this.chatService.chatObservable.subscribe(
       (messages: Message[]) => {
-        messages = this.filterOldMessages(messages);
+        messages = this.filterRelevantMessages(messages);
         this.messages = messages.sort(this.compareMessagesByTimestamp);
         this.bumpStickies();
       }
@@ -95,8 +96,20 @@ export class ChatComponent implements OnInit {
     return new Date(b.dateSent).getTime() - new Date(a.dateSent).getTime();
   }
 
+  private filterRelevantMessages(messages: Message[]): Message[] {
+    let recentMessages = this.filterOldMessages(messages)
+    return this.filterChatType(recentMessages)
+  }
+
   private filterOldMessages(messages: Message[]): Message[] {
     const filtrationThesholdDate = new Date(new Date().setMonth(new Date().getMonth() - AppSettings.chat.includeMessagesFromHowManyMonths));
     return messages.filter(message => new Date(message.dateSent) > filtrationThesholdDate);
+  }
+
+  // TODO: Abstract with Expression type, take array
+  private filterChatType(messages: Message[]): Message[] {
+    const type = ExpressionConstants.Types.Chat;
+
+    return messages.filter(message => message.messageType === type || !message.messageType);
   }
 }

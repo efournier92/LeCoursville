@@ -1,4 +1,5 @@
 import { User } from 'src/app/models/user';
+import { ExpressionConstants } from 'src/app/constants/expression-constants';
 
 export class Like {
   userId: string;
@@ -18,9 +19,9 @@ export class Message {
   id: string;
   title: string;
   body: string;
-  attachmentId: string;
-  attachmentType: string;
-  attachmentUrl: string;
+  attachmentId: string = '';
+  attachmentType: string = '';
+  attachmentUrl: string = '';
   authorName: string;
   authorId: string;
   isReply: boolean;
@@ -32,6 +33,7 @@ export class Message {
   isSaved: boolean;
   isDeleted: boolean;
   isSticky: boolean;
+  messageType: string;
 
   constructor(
     title: string,
@@ -57,5 +59,6 @@ export class Message {
     this.isSaved = false;
     this.isDeleted = false;
     this.isSticky = false;
+    this.messageType = ExpressionConstants.Types.Chat
   }
 }

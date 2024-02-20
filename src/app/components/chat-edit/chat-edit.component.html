@@ -39,7 +39,7 @@
           </div>
           <span class="calendar-icon-label d-flex justify-content-center">Send</span>
         </div>
-        <div class="mb-3 chat-edit-button-sticky" *ngIf="shouldShowStickyButton()"
+        <div class="mb-3 chat-edit-button-sticky" *ngIf="shouldShowStickyButton"
           [ngStyle]="{ color: highlights.sticky === true  ? '#FF9800' : '#F44336' }">
           <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('sticky', true)"
             (mouseleave)="highlightElement('sticky', false)">

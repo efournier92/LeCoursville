@@ -17,6 +17,7 @@ export class ExpressionsComponent implements OnInit {
   expressions: Expression[];
   headerText: string = ExpressionConstants.HeaderText;
   headerAttribution: string = ExpressionConstants.HeaderAttribution;
+  isLoading: boolean = true;
 
   constructor(
     private chatService: ChatService,
@@ -27,18 +28,6 @@ export class ExpressionsComponent implements OnInit {
   ngOnInit(): void {
     this.subscribeToUserObservable();
     this.analyticsService.logEvent('component_load_expressions', { });
-
-
-    const title = 'Kissed His Bague';
-    const body = '"Kissed his bague" has remained a true classic of an expression. The phrase originates from the French word for ring (\'bague\' may be the French spelling) and the custom of Roman Catholics to kiss the ring of a high ranking prelate of the Church. The expression has provoked more than a little amusement when deftly employed by some of the LeCoursville citizenry.';
-    const authorName = 'Richard LeCours';
-    const yearWritten = '1984';
-    const attribution = 'Annette Miller';
-    const type = 'expression';
-
-    const expression = new Expression(title, body, authorName, yearWritten, attribution);
-    this.expressions = [expression, expression]
-    console.log('Expressions', this.expressions);
   }
 
   private subscribeToUserObservable(): void {
@@ -55,27 +44,62 @@ export class ExpressionsComponent implements OnInit {
       if (expression.isEditable === true) { return; }
     }
     const authorId: string = this.user.id;
-    const authorName: string = this.user.name;
-    this.expressions.unshift(new Expression('', '', '', authorId, authorName));
-    // TODO: Move to its own function
+    this.expressions.unshift(new Expression(true))
     this.analyticsService.logEvent('expression_create', {
+      userId: this.user?.id,
+    });
+  }
+
+  updateMessages(message: Message): void {
+    this.chatService.updateMessage(message);
+  }
+
+  cancelEdit(expression: Expression): void {
+    if (!expression.isSaved) {
+      this.expressions.shift();
+    } else {
+      expression.isEditable = false;
+    }
+    this.analyticsService.logEvent('chat_message_edit_cancel', {
       userId: this.user?.id,
     });
   }
 
   private subscribeToChatObservable(): void {
     this.chatService.chatObservable.subscribe(
-      (messages: Expression[]) => {
-        messages = this.filterExpressions(messages);
-        // TODO: Randomize sorting
-        // this.expressions = messages.sort(this.compareMessagesByTimestamp);
+      (expressions: Expression[]) => {
+        this.onExpressionsChanged(expressions)
       }
     );
   }
 
-  private filterExpressions(messages: Expression[]): Expression[] {
+  private onExpressionsChanged(expressions: Expression[]): void {
+    expressions = this.filterExpressionType(expressions);
+
+    if (expressions.length) {
+      setTimeout(() => {
+        this.isLoading = false
+      }, 500);
+    }
+
+    expressions = this.shuffleArray(expressions);
+
+    this.expressions =expressions
+  }
+
+  // TODO: Abstract with Expression type
+  private filterExpressionType(expressions: Expression[]): Expression[] {
     const type = ExpressionConstants.Types.Expression
 
-    return messages.filter(message => message.messageType === type);
+    return expressions.filter(message => message.messageType === type);
+  }
+
+  private shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * array.length);
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+
+    return array
   }
 }

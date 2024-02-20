@@ -29,6 +29,7 @@ export class ExpressionEditComponent implements OnInit {
   autosize: CdkTextareaAutosize;
   photoUpload: any;
   isSaving = false;
+  shouldShowStickyButton = false;
 
   constructor(
     private chatService: ChatService,
@@ -50,7 +51,11 @@ export class ExpressionEditComponent implements OnInit {
 
   private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => {
+        this.user = user
+        if (this.user?.roles?.super)
+          this.shouldShowStickyButton = true
+      }
     );
   }
 
@@ -66,10 +71,6 @@ export class ExpressionEditComponent implements OnInit {
     dialogRef.afterClosed().subscribe(
       (confirmedAction: boolean) => {
         if (confirmedAction) {
-          if (this.photoUpload && !this.message.isReply) {
-            this.saveMessageWithPhoto(newMessage);
-            return;
-          }
           newMessage = this.markMessageSaved(newMessage);
           newMessage.id = newMessage.id || this.db.createPushId();
           if (newMessage.isReply) {
@@ -175,10 +176,6 @@ export class ExpressionEditComponent implements OnInit {
 
   updateParent(): void {
     this.updateParentEvent.emit(this.parent);
-  }
-
-  shouldShowStickyButton(): boolean {
-    return !!this.user?.roles?.super;
   }
 
   // HELPER METHODS
