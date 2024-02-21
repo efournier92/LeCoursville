@@ -83,13 +83,17 @@ export class CalendarService {
     return years;
   }
 
-  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean): RecurringEvent[] {
+  // TODO: Take array with birthays, anniversaries, notLiving
+  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean, notLiving: boolean): RecurringEvent[] {
     let output = [];
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false) {
         continue;
       }
       if (event.type === 'anniversary' && anniversaries === false) {
+        continue;
+      }
+      if (!event.isLiving && notLiving === false) {
         continue;
       }
       const date = new Date(event.date);

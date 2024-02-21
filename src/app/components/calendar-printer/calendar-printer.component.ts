@@ -25,6 +25,7 @@ export class CalendarPrinterComponent implements OnInit {
   viewYears: number[];
   shouldPrintBirthdays = true;
   shouldPrintAnniversaries = true;
+  shouldPrintNotLiving = false;
   selectedYear: number;
   printProgress = 0;
   printAction: string;
@@ -68,7 +69,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async downloadPdf(): Promise<void> {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}`,
+      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}; NotLiving: ${this.shouldPrintNotLiving}`,
       userId: this.user?.id,
     });
 
@@ -79,7 +80,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   async printPdf() {
     this.analyticsService.logEvent('calendar_printer_pdf_download', {
-      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}`,
+      isTrue: `Birthdays: ${this.shouldPrintBirthdays}; Anniversaries: ${this.shouldPrintAnniversaries}; NotLiving: ${this.shouldPrintNotLiving}`,
       userId: this.user?.id,
     });
 
@@ -94,7 +95,7 @@ export class CalendarPrinterComponent implements OnInit {
     this.pdf = new jsPDF('l', 'in', 'letter');
     this.allEvents =
       this.calendarService
-        .updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+        .updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries, this.shouldPrintNotLiving);
   }
 
   // HELPER METHODS
@@ -129,7 +130,7 @@ export class CalendarPrinterComponent implements OnInit {
     }
     this.updateCalendarMonth();
     this.events =
-      this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries);
+      this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.shouldPrintBirthdays, this.shouldPrintAnniversaries, this.shouldPrintNotLiving);
     this.updateProgressBar();
   }
 

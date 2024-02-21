@@ -31,6 +31,7 @@ export class CalendarComponent implements OnInit {
   events: RecurringEvent[] = [];
   showBirthdays = true;
   showAnniversaries = true;
+  showNotLiving = false;
   allCalendars: Calendar[];
 
   constructor(
@@ -69,7 +70,7 @@ export class CalendarComponent implements OnInit {
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
-        this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+        this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
       }
     );
   }
@@ -86,7 +87,7 @@ export class CalendarComponent implements OnInit {
 
   toggleBirthdays(event: any): void {
     const showBirthdays = event.checked;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries, this.showNotLiving);
     this.analyticsService.logEvent('calendar_toggle_birthdays', {
       isTrue: event?.checked, userId: this.user?.id,
     });
@@ -94,8 +95,16 @@ export class CalendarComponent implements OnInit {
 
   toggleAnniversaries(event: any): void {
     const showAnniversaries = event.checked;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries, this.showNotLiving);
     this.analyticsService.logEvent('calendar_toggle_anniversaries', {
+      isTrue: event?.checked, userId: this.user?.id,
+    });
+  }
+
+  toggleNotLiving(event: any): void {
+    const showNotLiving = event.checked;
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, showNotLiving);
+    this.analyticsService.logEvent('calendar_toggle_notLiving', {
       isTrue: event?.checked, userId: this.user?.id,
     });
   }
@@ -112,7 +121,7 @@ export class CalendarComponent implements OnInit {
   changeSelectedYear(event: any): void {
     this.selectedYear = event.value;
     this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
-    this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries);
+    this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
     this.analyticsService.logEvent('calendar_change_selected_year', {
       value: event?.value, date: this.viewDate.toString(),
       userId: this.user?.id,
@@ -124,7 +133,7 @@ export class CalendarComponent implements OnInit {
     const selectedYear = date.getFullYear();
     if (selectedYear !== this.selectedYear) {
       this.selectedYear = selectedYear;
-      this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries);
+      this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
     }
     this.analyticsService.logEvent('calendar_change_selected_year', {
       newDate: date.toString(),
