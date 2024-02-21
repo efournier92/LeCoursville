@@ -84,24 +84,20 @@ export class ContactsComponent implements OnInit {
     });
   }
 
-  newContact(): void {
-    const dialogRef = this.confirmPrompt.openDialog(
-      'Are You Sure?',
-      'Do you want to add this contact to LeCoursville?',
-    );
-
-    dialogRef.afterClosed().subscribe(
-      (confirmedAction: boolean) => {
-        if (confirmedAction) {
-          const contact: Contact = new Contact();
-          this.contactsService.newContact(contact);
-          this.analyticsService.logEvent('contacts_new_create', {
-            value: contact?.id, name: contact?.name,
-            userId: this.user?.id,
-          });
-        }
-      }
-    );
+  displayAllFamilies(): void {
+    this.filteredContacts = this.contacts
   }
 
+  newContact(): void {
+    this.displayAllFamilies();
+
+    const contact: Contact = new Contact();
+    contact.isEditable = true;
+    this.contacts.unshift(contact);
+
+    this.analyticsService.logEvent('contacts_new_create', {
+      value: contact?.id, name: contact?.name,
+      userId: this.user?.id,
+    });
+  }
 }

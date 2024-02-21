@@ -5,7 +5,8 @@ import { User } from 'src/app/models/user';
 import { Message } from 'src/app/models/message';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AppSettings } from 'src/environments/app-settings';
-import { ExpressionConstants } from 'src/app/constants/expression-constants';
+import { MessageConstants } from 'src/app/constants/message-constants';
+import { ArrayService } from 'src/app/services/array.service';
 
 @Component({
   selector: 'app-chat',
@@ -20,9 +21,10 @@ export class ChatComponent implements OnInit {
   years: number[];
 
   constructor(
-    private chatService: ChatService,
+    public chatService: ChatService,
     private authService: AuthService,
-    private analyticsService: AnalyticsService,
+    public analyticsService: AnalyticsService,
+    public arrayService: ArrayService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -46,14 +48,18 @@ export class ChatComponent implements OnInit {
   private subscribeToChatObservable(): void {
     this.chatService.chatObservable.subscribe(
       (messages: Message[]) => {
-        messages = this.filterRelevantMessages(messages);
-        this.messages = messages.sort(this.compareMessagesByTimestamp);
-        this.bumpStickies();
+        this.onChatObservableUpdate(messages)
       }
     );
   }
 
   // PUBLIC METHODS
+
+  onChatObservableUpdate(messages: Message[]) {
+    messages = this.filterRelevantMessages(messages);
+    this.messages = messages.sort(this.compareMessagesByTimestamp);
+    this.bumpStickies();
+  }
 
   createMessage(): void {
     for (const message of this.messages) {
@@ -97,19 +103,12 @@ export class ChatComponent implements OnInit {
   }
 
   private filterRelevantMessages(messages: Message[]): Message[] {
-    let recentMessages = this.filterOldMessages(messages)
-    return this.filterChatType(recentMessages)
+    messages = this.chatService.filterByType(messages, MessageConstants.Types.Chat);
+    return this.filterOldMessages(messages)
   }
 
   private filterOldMessages(messages: Message[]): Message[] {
     const filtrationThesholdDate = new Date(new Date().setMonth(new Date().getMonth() - AppSettings.chat.includeMessagesFromHowManyMonths));
     return messages.filter(message => new Date(message.dateSent) > filtrationThesholdDate);
-  }
-
-  // TODO: Abstract with Expression type, take array
-  private filterChatType(messages: Message[]): Message[] {
-    const type = ExpressionConstants.Types.Chat;
-
-    return messages.filter(message => message.messageType === type || !message.messageType);
   }
 }

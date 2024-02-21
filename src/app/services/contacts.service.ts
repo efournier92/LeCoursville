@@ -52,6 +52,10 @@ export class ContactsService {
   }
 
   updateContact(contact: Contact): void {
+    if (!contact.id) {
+      contact.id = this.db.createPushId();
+    }
+
     this.contacts.update(contact.id, contact);
   }
 

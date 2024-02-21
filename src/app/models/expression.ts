@@ -1,5 +1,5 @@
 import { Message } from "./message";
-import { ExpressionConstants } from 'src/app/constants/expression-constants';
+import { MessageConstants } from 'src/app/constants/message-constants';
 
 export class Expression extends Message {
   yearWritten: string;
@@ -16,6 +16,6 @@ export class Expression extends Message {
     super(title, body, '', '', author, false, isEditable, 0);
     this.yearWritten = yearWritten;
     this.attribution = attribution;
-    this.messageType = ExpressionConstants.Types.Expression
+    this.messageType = MessageConstants.Types.Expression
   }
 }

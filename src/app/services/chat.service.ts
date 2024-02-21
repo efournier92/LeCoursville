@@ -38,6 +38,10 @@ export class ChatService {
     this.messages.remove(message.id);
   }
 
+  filterByType(messages: Message[], type: string): any[] {
+    return messages.filter(message => message.messageType === type);
+  }
+
   // HELPERS
 
   private getMessages(): AngularFireList<Message> {

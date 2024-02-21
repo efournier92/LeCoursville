@@ -5,6 +5,7 @@ import { User } from 'src/app/models/user';
 import { AppSettings } from 'src/environments/app-settings';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { ArrayService } from 'src/app/services/array.service';
 
 @Component({
   selector: 'app-contact-edit',
@@ -21,6 +22,7 @@ export class ContactEditComponent implements OnInit {
     private authService: AuthService,
     private contactsService: ContactsService,
     private analyticsService: AnalyticsService,
+    private arrayService: ArrayService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -99,7 +101,7 @@ export class ContactEditComponent implements OnInit {
   }
 
   removeAddress(addresses: any, index: number): void {
-    addresses.pop(index);
+    addresses = this.arrayService.removeByIndex(addresses, index);
 
     this.analyticsService.logEvent('contacts_remove_address', {
       removedAddress: addresses[index], userId: this.user?.id,
@@ -107,7 +109,7 @@ export class ContactEditComponent implements OnInit {
   }
 
   removePhone(phones: Phone[], index: number): void {
-    phones.splice(index, 1);
+    phones = this.arrayService.removeByIndex(phones, index);
 
     this.analyticsService.logEvent('contacts_remove_phone', {
       removedAddress: phones[index], userId: this.user?.id,
@@ -115,7 +117,7 @@ export class ContactEditComponent implements OnInit {
   }
 
   removeEmail(emails: Email[], index: number): void {
-    emails.splice(index, 1);
+    emails = this.arrayService.removeByIndex(emails, index);
 
     this.analyticsService.logEvent('contacts_remove_email', {
       removedAddress: emails[index], userId: this.user?.id,

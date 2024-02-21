@@ -1,45 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from 'src/app/models/user';
-import { Message } from 'src/app/models/message';
-import { AuthService } from 'src/app/services/auth.service';
-import { ChatService } from 'src/app/services/chat.service';
-import { AnalyticsService } from 'src/app/services/analytics.service';
+import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { Expression } from 'src/app/models/expression';
 import { ExpressionConstants } from 'src/app/constants/expression-constants';
+import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
   selector: 'app-expressions',
   templateUrl: './expressions.component.html',
   styleUrls: ['./expressions.component.scss']
 })
-export class ExpressionsComponent implements OnInit {
-  user: User;
+export class ExpressionsComponent extends ChatComponent implements OnInit {
   expressions: Expression[];
   headerText: string = ExpressionConstants.HeaderText;
   headerAttribution: string = ExpressionConstants.HeaderAttribution;
   isLoading: boolean = true;
 
-  constructor(
-    private chatService: ChatService,
-    private authService: AuthService,
-    private analyticsService: AnalyticsService,
-  ) { }
-
-  ngOnInit(): void {
-    this.subscribeToUserObservable();
-    this.analyticsService.logEvent('component_load_expressions', { });
-  }
-
-  private subscribeToUserObservable(): void {
-    this.authService.userObservable.subscribe(
-      (user: User) => {
-        this.user = user;
-        this.subscribeToChatObservable();
-      }
-    );
-  }
-
-  create(): void {
+  createExpression(): void {
     for (const expression of this.expressions) {
       if (expression.isEditable === true) { return; }
     }
@@ -50,56 +26,18 @@ export class ExpressionsComponent implements OnInit {
     });
   }
 
-  updateMessages(message: Message): void {
-    this.chatService.updateMessage(message);
-  }
-
-  cancelEdit(expression: Expression): void {
-    if (!expression.isSaved) {
-      this.expressions.shift();
-    } else {
-      expression.isEditable = false;
-    }
-    this.analyticsService.logEvent('chat_message_edit_cancel', {
-      userId: this.user?.id,
-    });
-  }
-
-  private subscribeToChatObservable(): void {
-    this.chatService.chatObservable.subscribe(
-      (expressions: Expression[]) => {
-        this.onExpressionsChanged(expressions)
-      }
-    );
-  }
-
-  private onExpressionsChanged(expressions: Expression[]): void {
-    expressions = this.filterExpressionType(expressions);
+  onChatObservableUpdate(expressions: Expression[]): void {
+    expressions = this.chatService.filterByType(expressions, MessageConstants.Types.Expression);
 
     if (expressions.length) {
+      // Hide initial sorting process from UI
       setTimeout(() => {
         this.isLoading = false
       }, 500);
     }
 
-    expressions = this.shuffleArray(expressions);
+    expressions = this.arrayService.shuffle(expressions);
 
     this.expressions =expressions
-  }
-
-  // TODO: Abstract with Expression type
-  private filterExpressionType(expressions: Expression[]): Expression[] {
-    const type = ExpressionConstants.Types.Expression
-
-    return expressions.filter(message => message.messageType === type);
-  }
-
-  private shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * array.length);
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-
-    return array
   }
 }

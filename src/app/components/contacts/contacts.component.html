@@ -1,12 +1,27 @@
 <div class="d-flex justify-content-around">
   <mat-form-field class="search-field col-xs-4 mt-1 ml-3">
-    <input matInput type="text" (keyup)="filterContacts($event)" placeholder="Search">
+    <input
+        matInput
+        type="text"
+        (keyup)="filterContacts($event)"
+        placeholder="Search">
   </mat-form-field>
-  <button mat-button class="filter-family-expand-button mt-3" [matMenuTriggerFor]="byFamilyMenu">
+  <button
+      mat-button
+      class="filter-family-expand-button mt-3"
+      [matMenuTriggerFor]="byFamilyMenu">
     By Family <mat-icon>keyboard_arrow_down</mat-icon>
   </button>
   <mat-menu #byFamilyMenu="matMenu">
-    <button mat-menu-item *ngFor="let family of families" (click)="switchFamily(family)">
+    <button
+        mat-menu-item
+        (click)="displayAllFamilies()">
+      All
+    </button>
+    <button
+        mat-menu-item
+        *ngFor="let family of families"
+        (click)="switchFamily(family)">
       {{ family }}
     </button>
   </mat-menu>
@@ -19,14 +34,24 @@
     </button>
   </div>
 </div>
-<div class="contact-add-button-container d-flex justify-content-end" *ngIf="user && user.roles && user.roles.admin">
+<div
+    class="contact-add-button-container d-flex justify-content-end"
+    *ngIf="user && user.roles && user.roles.admin">
   <button mat-button (click)="newContact()">
     <mat-icon>add</mat-icon> New Contact
   </button>
 </div>
 <div class="contact-card-container d-flex justify-content-center row">
-  <div *ngFor="let contact of filteredContacts" class="col-lg-5 col-xs-11 mt-2 mb-2">
-    <app-contact-view *ngIf="!contact.isEditable" [contact]="contact"></app-contact-view>
-    <app-contact-edit *ngIf="contact.isEditable" [contact]="contact"></app-contact-edit>
+  <div
+      *ngFor="let contact of filteredContacts"
+      class="col-lg-5 col-xs-11 col-xl-4 mt-2 mb-2">
+    <app-contact-view
+        *ngIf="!contact.isEditable"
+        [contact]="contact">
+    </app-contact-view>
+    <app-contact-edit
+        *ngIf="contact.isEditable"
+        [contact]="contact">
+    </app-contact-edit>
   </div>
 </div>

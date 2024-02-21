@@ -1,5 +1,5 @@
 import { User } from 'src/app/models/user';
-import { ExpressionConstants } from 'src/app/constants/expression-constants';
+import { MessageConstants } from 'src/app/constants/message-constants';
 
 export class Like {
   userId: string;
@@ -59,6 +59,7 @@ export class Message {
     this.isSaved = false;
     this.isDeleted = false;
     this.isSticky = false;
-    this.messageType = ExpressionConstants.Types.Chat
+    this.messageType = MessageConstants.Types.Chat
   }
 }
+
