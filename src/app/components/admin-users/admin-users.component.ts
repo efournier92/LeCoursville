@@ -125,7 +125,6 @@ export class AdminUsersComponent implements OnInit {
     this.totalFilteredUsers = totalFilteredUsers;
   }
 
-
   onUpdateUserRange(event: PageEvent): void {
     this.sortSettings.currentPageIndex = event.pageIndex;
     this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
@@ -151,10 +150,10 @@ export class AdminUsersComponent implements OnInit {
     const sortDirection = SortingConstants.Directions.descending;
     const sortProperty = SortingConstants.Users.properties.dateLastActive;
     const filterQuery = '';
-    const usersPerPage = 10;
+    const itemsPerPage = 10;
     const currentPageIndex = 0;
 
-    this.sortSettings = new SortSettings(sortDirection, sortProperty.key, filterQuery, usersPerPage, currentPageIndex);
+    this.sortSettings = new SortSettings(sortDirection, sortProperty.key, filterQuery, itemsPerPage, currentPageIndex);
   }
 
   private getAllUsers(): void {
@@ -208,8 +207,8 @@ export class AdminUsersComponent implements OnInit {
   private displayUserPage(users: User[], sortSettings: SortSettings): User[] {
     let output: User[];
 
-    const start = sortSettings.currentPageIndex === 0 ? 0 : sortSettings.currentPageIndex * sortSettings.usersPerPage;
-    const end = start + sortSettings.usersPerPage;
+    const start = sortSettings.currentPageIndex === 0 ? 0 : sortSettings.currentPageIndex * sortSettings.itemsPerPage;
+    const end = start + sortSettings.itemsPerPage;
 
     if (users.length) {
       output = users?.slice(start, end);

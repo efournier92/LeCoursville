@@ -1,0 +1,99 @@
+import { SortSettings } from 'src/app/models/sort-settings';
+
+class DisplayToggle {
+  id: string;
+  name: string;
+  isToggled: boolean;
+  conditionalPropertyKey: string;
+  conditionalPropertyOperator: string;
+  conditionalPropertyValue: string;
+}
+
+export class SortSettingsForCalendar extends SortSettings {
+  displayToggles: DisplayToggle[];
+  displayToggleStates: Object;
+
+  constructor(
+    order: string,
+    sortProperty: string,
+    filterQuery: string,
+    itemsPerPage: number,
+    currentPageIndex: number,
+  ) {
+    super(order, sortProperty, filterQuery, itemsPerPage, currentPageIndex);
+
+    this.displayToggles = [
+      {
+        id: 'birthday',
+        name: 'Birthday',
+        isToggled: true,
+        conditionalPropertyKey: 'type',
+        conditionalPropertyOperator: '&&',
+        conditionalPropertyValue: "'birth'",
+      },
+      {
+        id: 'anniversary',
+        name: 'Anniversary',
+        isToggled: true,
+        conditionalPropertyKey: 'type',
+        conditionalPropertyOperator: '||',
+        conditionalPropertyValue: "'anniversary'",
+      },
+      {
+        id: 'living',
+        name: 'Is Living',
+        isToggled: true,
+        conditionalPropertyKey: 'isLiving',
+        conditionalPropertyOperator: '&&',
+        conditionalPropertyValue: "true",
+      },
+    ];
+
+    this.displayToggleStates = {};
+    this.displayToggles.forEach((toggle) => {
+      this.displayToggleStates[toggle.id] = toggle.isToggled;
+    });
+  }
+
+  public getToggleQuery(): string {
+    let toggleQuery: string = 'true';
+
+    toggleQuery = this.getTypeToggleQuery(toggleQuery);
+    toggleQuery = this.getOtherToggleQuery(toggleQuery);
+
+    return toggleQuery;
+  }
+
+  private getTypeToggleQuery(toggleQuery): string {
+    const typeToggles = this.displayToggles.filter(toggle => toggle.conditionalPropertyKey === 'type');
+
+    if (typeToggles.length) {
+      typeToggles.forEach((toggle, index) => {
+        if (index === 0) {
+          toggleQuery += ` ${toggle.conditionalPropertyOperator} (`;
+        } else {
+          toggleQuery += ` ${toggle.conditionalPropertyOperator}`;
+        }
+        const operator = toggle.isToggled ? '===' : '!==';
+        toggleQuery += ` event['${toggle.conditionalPropertyKey}'] ${operator} ${toggle.conditionalPropertyValue}`
+      })
+      toggleQuery += ` )`;
+    }
+
+    return toggleQuery;
+  }
+
+  private getOtherToggleQuery(toggleQuery): string {
+    const otherToggles = this.displayToggles.filter(toggle => toggle.conditionalPropertyKey !== 'type');
+
+    if (otherToggles.length) {
+      otherToggles.forEach(toggle => {
+        const operator = toggle.isToggled ? '===' : '!==';
+        toggleQuery += ` ${toggle.conditionalPropertyOperator} event['${toggle.conditionalPropertyKey}'] ${operator} ${toggle.conditionalPropertyValue}`
+      })
+    }
+
+    return toggleQuery;
+  }
+}
+

@@ -24,14 +24,14 @@
             </mat-form-field>
             <mat-checkbox class="admin-upload-input mb-2" name="isSticky" [(ngModel)]="album.isSticky">Is Sticky?</mat-checkbox>
             <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="album.isHidden">Should Hide from Lists?</mat-checkbox>
-            <button mat-button class="admin-form-action-button admin-form-action-button-upload"
+            <button mat-button class="admin-form-action-button admin-form-action-button-upload w-100"
                 (click)="onUploadSelectedMedia()">
                 <span *ngIf="!isAlbumAlreadyUploaded()">Upload</span>
                 <span *ngIf="isAlbumAlreadyUploaded()">Update</span>
             </button>
-            <button class="admin-form-action-button admin-form-action-button-delete" *ngIf="album.id"
+            <button class="admin-form-action-button admin-form-action-button-delete w-100" *ngIf="album.id"
                 mat-button (click)="onDeleteSelectedMedia(album)">Delete</button>
-            <button mat-button class="admin-form-action-button admin-form-action-button-cancel"
+            <button mat-button class="admin-form-action-button admin-form-action-button-cancel w-100"
                 (click)="onCancelSelectedMedia(album)">Clear</button>
         </form>
     </div>

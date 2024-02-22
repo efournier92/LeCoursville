@@ -1,40 +1,42 @@
 <mat-card class="user-card" *ngIf="userSignedIn?.id">
-    <form>
-        <mat-form-field class="user-edit-form-field w-100">
-            <input matInput placeholder="Name" name="user-name" [(ngModel)]="userOnCard.name">
-        </mat-form-field>
+  <form>
+    <mat-form-field class="user-edit-form-field w-100">
+      <input matInput placeholder="Name" name="user-name" [(ngModel)]="userOnCard.name">
+    </mat-form-field>
+    <mat-form-field class="user-edit-form-field w-100">
+      <input matInput placeholder="Email" name="user-email" [(ngModel)]="userOnCard.email">
+    </mat-form-field>
 
-        <div class="user-edit-display-container">
-            <div class="user-edit-display-properties">
-                <div class="user-edit-card-button-row-property">Email:</div>
-                <div class="user-edit-card-button-row-property">ID:</div>
-                <div class="user-edit-card-button-row-property">Registered:</div>
-                <div class="user-edit-card-button-row-property">Last Active:</div>
-            </div>
+    <div class="user-edit-display-container">
+      <div class="user-edit-display-properties">
+        <div class="user-edit-card-button-row-property">ID:</div>
+        <div class="user-edit-card-button-row-property">Registered:</div>
+        <div class="user-edit-card-button-row-property">Last Active:</div>
+      </div>
 
-            <div class="user-edit-display-values">
-                <div>{{ userOnCard.email }}</div>
-                <div>{{ userOnCard.id }}</div>
-                <div>{{ userOnCard.dateRegistered | date }}</div>
-                <div>{{ userOnCard.dateLastActive | date }}</div>
-            </div>
-        </div>
-        
-        <div *ngIf="isSuperUser()" class="d-flex justify-content-around">
-            <mat-checkbox name="user-roles-user" [(ngModel)]="userOnCard.roles.user">
-                User
-            </mat-checkbox>
-            <mat-checkbox name="user-roles-admin" [(ngModel)]="userOnCard.roles.admin">
-                Admin
-            </mat-checkbox>
-            <mat-checkbox name="user-roles-super" [(ngModel)]="userOnCard.roles.super">
-                Super
-            </mat-checkbox>
-        </div>
-    </form>
-    <mat-card-footer class="d-flex justify-content-around user-card-footer">
-        <button mat-button *ngIf="userSignedIn?.roles?.super" (click)="onDeleteUser(userOnCard)">Delete</button>
-        <button mat-button (click)="onSaveUser(userOnCard)">Save</button>
-        <button mat-button *ngIf="!isAdminMode" (click)="onCancelEdit()">Cancel</button>
-    </mat-card-footer>
+      <div class="user-edit-display-values">
+        <div>{{ userOnCard.id }}</div>
+        <div>{{ userOnCard.dateRegistered | date }}</div>
+        <div>{{ userOnCard.dateLastActive | date }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="isSuperUser()" class="d-flex justify-content-around">
+      <mat-checkbox name="user-roles-user" [(ngModel)]="userOnCard.roles.user">
+        User
+      </mat-checkbox>
+      <mat-checkbox name="user-roles-admin" [(ngModel)]="userOnCard.roles.admin">
+        Admin
+      </mat-checkbox>
+      <mat-checkbox name="user-roles-super" [(ngModel)]="userOnCard.roles.super">
+        Super
+      </mat-checkbox>
+    </div>
+  </form>
+
+  <mat-card-footer class="d-flex justify-content-around user-card-footer">
+    <button mat-button *ngIf="userSignedIn?.roles?.super" (click)="onDeleteUser(userOnCard)">Delete</button>
+    <button mat-button *ngIf="!isAdminMode" (click)="onCancelEdit()">Cancel</button>
+    <button mat-button (click)="onSaveUser(userOnCard)">Save</button>
+  </mat-card-footer>
 </mat-card>
