@@ -19,10 +19,12 @@ export abstract class SortingConstants {
     ascending: 'ASC',
     descending: 'DESC',
   };
+
   static readonly Types = {
     string: 'string',
     date: 'date',
   };
+
   static readonly Users = {
     properties: {
       id: new SortProperty('id', 'ID', this.Types.string),
@@ -32,11 +34,12 @@ export abstract class SortingConstants {
       dateRegistered: new SortProperty('dateRegistered', 'Date Registered', this.Types.date),
     },
   };
+
   static readonly Calendar = {
     properties: {
-      id: new SortProperty('title', 'Title', this.Types.string),
-      name: new SortProperty('type', 'Type', this.Types.string),
-      email: new SortProperty('date', 'Date', this.Types.date),
+      title: new SortProperty('title', 'Title', this.Types.string),
+      type: new SortProperty('type', 'Type', this.Types.string),
+      date: new SortProperty('date', 'Date', this.Types.date),
     },
   };
 }

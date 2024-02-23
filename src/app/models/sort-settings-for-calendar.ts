@@ -1,4 +1,6 @@
 import { SortSettings } from 'src/app/models/sort-settings';
+import { SortingConstants } from 'src/app/constants/sorting-constants';
+import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
 
 class DisplayToggle {
   id: string;
@@ -13,14 +15,16 @@ export class SortSettingsForCalendar extends SortSettings {
   displayToggles: DisplayToggle[];
   displayToggleStates: Object;
 
-  constructor(
-    order: string,
-    sortProperty: string,
-    filterQuery: string,
-    itemsPerPage: number,
-    currentPageIndex: number,
-  ) {
-    super(order, sortProperty, filterQuery, itemsPerPage, currentPageIndex);
+  constructor() {
+    const sortDirection = SortingConstants.Directions.ascending;
+    const sortProperty = SortingConstants.Calendar.properties.date;
+    const filterQuery = '';
+    const itemsPerPage = 48;
+    const currentPageIndex = 0;
+
+    super(sortDirection, sortProperty.key, filterQuery, itemsPerPage, currentPageIndex);
+
+    this.sortProperties = SortingConstants.Calendar.properties;
 
     this.displayToggles = [
       {
@@ -55,6 +59,21 @@ export class SortSettingsForCalendar extends SortSettings {
     });
   }
 
+  getItemsToDisplay(itemsToSort: RecurringEvent[]): RecurringEvent[] {
+    let items: RecurringEvent[];
+
+    if (!itemsToSort?.length) {
+      return itemsToSort;
+    }
+
+    items = this.filterItems(itemsToSort);
+    items = this.filterItemsByToggles(items);
+    items = this.sortItems(items);
+    items = this.getPaginatedItems(items);
+
+    return items;
+  }
+
   public getToggleQuery(): string {
     let toggleQuery: string = 'true';
 
@@ -62,6 +81,12 @@ export class SortSettingsForCalendar extends SortSettings {
     toggleQuery = this.getOtherToggleQuery(toggleQuery);
 
     return toggleQuery;
+  }
+
+  public filterItemsByToggles(items: RecurringEvent[]): RecurringEvent[] {
+    const toggleQuery = this.getToggleQuery()
+
+    return items.filter(event => eval(toggleQuery))
   }
 
   private getTypeToggleQuery(toggleQuery): string {

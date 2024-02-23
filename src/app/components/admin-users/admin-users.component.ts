@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { AdminService } from 'src/app/services/admin.service';
 import { User } from 'src/app/models/user';
-import { UserSortService } from 'src/app/services/user-sort.service';
-import { SortSettings } from 'src/app/models/sort-settings';
+import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
 import { SortingConstants } from 'src/app/constants/sorting-constants';
 import { PageEvent } from '@angular/material/paginator';
 
@@ -16,20 +15,16 @@ export class AdminUsersComponent implements OnInit {
   user: User;
   allUsers: User[];
   displayedUsers: User[];
-  sortSettings: SortSettings;
-  hasUpdated: boolean;
-  totalUsers: number;
-  totalFilteredUsers: number;
+  sortSettings: SortSettingsForUsers;
 
   constructor(
     private authService: AuthService,
     private adminService: AdminService,
-    private userSortService: UserSortService,
   ) { }
 
   ngOnInit(): void {
-    this.subscribeToUserObservable();
     this.initializeSortSettings();
+    this.subscribeToUserObservable();
   }
 
   // SUBSCRIPTIONS
@@ -57,24 +52,7 @@ export class AdminUsersComponent implements OnInit {
 
   onFilterQueryChange(query: string): void {
     this.sortSettings.filterQuery = query;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
-  }
-
-  doesAnyValueIncludeQuery(values: string[], query: string): boolean {
-    let output = false;
-
-    for (const value of values) {
-      if (this.doesValueIncludeQuery(value, query)) {
-        output = true;
-        break;
-      }
-    }
-
-    return output;
-  }
-
-  doesValueIncludeQuery(value: string, query: string): boolean {
-    return value.toLowerCase().includes(query.toLocaleLowerCase());
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   shouldDisplayUserCards(): boolean {
@@ -85,49 +63,42 @@ export class AdminUsersComponent implements OnInit {
     this.getAllUsers();
   }
 
+  // TODO: Move and abstract
   sortByDateLastActive(): void {
     if (this.sortSettings.sortProperty === SortingConstants.Users.properties.dateLastActive.key) {
-      this.reverseSortDirection();
+      this.sortSettings.reverseSortDirection();
     }
     this.sortSettings.sortProperty = SortingConstants.Users.properties.dateLastActive.key;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByDateRegistered(): void {
     if (this.sortSettings.sortProperty === SortingConstants.Users.properties.dateRegistered.key) {
-      this.reverseSortDirection();
+      this.sortSettings.reverseSortDirection();
     }
     this.sortSettings.sortProperty = SortingConstants.Users.properties.dateRegistered.key;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByName(): void {
     if (this.sortSettings.sortProperty === SortingConstants.Users.properties.name.key) {
-      this.reverseSortDirection();
+      this.sortSettings.reverseSortDirection();
     }
     this.sortSettings.sortProperty = SortingConstants.Users.properties.name.key;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByEmail(): void {
     if (this.sortSettings.sortProperty === SortingConstants.Users.properties.email.key) {
-      this.reverseSortDirection();
+      this.sortSettings.reverseSortDirection();
     }
     this.sortSettings.sortProperty = SortingConstants.Users.properties.email.key;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
-  }
-
-  getTotalUsers(): number {
-    return this.totalFilteredUsers;
-  }
-
-  setTotalUsers(totalFilteredUsers: number): void {
-    this.totalFilteredUsers = totalFilteredUsers;
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   onUpdateUserRange(event: PageEvent): void {
     this.sortSettings.currentPageIndex = event.pageIndex;
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   isSortDescending(): boolean {
@@ -135,9 +106,9 @@ export class AdminUsersComponent implements OnInit {
   }
 
   reverseDisplayedUsersSortOrder(): void {
-    this.reverseSortDirection();
+    this.sortSettings.reverseSortDirection();
 
-    this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
+    this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   getSortPropertyText(): string {
@@ -147,80 +118,19 @@ export class AdminUsersComponent implements OnInit {
   // HELPER METHODS
 
   private initializeSortSettings(): void {
-    const sortDirection = SortingConstants.Directions.descending;
-    const sortProperty = SortingConstants.Users.properties.dateLastActive;
-    const filterQuery = '';
-    const itemsPerPage = 10;
-    const currentPageIndex = 0;
-
-    this.sortSettings = new SortSettings(sortDirection, sortProperty.key, filterQuery, itemsPerPage, currentPageIndex);
+    this.sortSettings = new SortSettingsForUsers();
   }
 
   private getAllUsers(): void {
     this.adminService.allUsersObservable.subscribe(
       (users: User[]) => {
-        if (users.length && users.length !== this.totalUsers) {
+        if (users.length && users.length !== this.sortSettings.totalItems) {
           if (!this.sortSettings?.filterQuery) { this.initializeSortSettings(); }
           this.allUsers = users;
-          this.displayedUsers = this.refreshDisplayedUsers(this.allUsers, this.sortSettings);
-          this.totalUsers = users.length;
+          this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
+          this.sortSettings.totalItems = users.length;
         }
       }
     );
-  }
-
-  // TODO: Abstract below into generic search service
-
-  private refreshDisplayedUsers(usersToSort: User[], sortSettings: SortSettings): User[] {
-    let users: User[];
-
-    if (!usersToSort?.length) { return usersToSort; }
-
-    users = this.filterUsers(usersToSort, sortSettings?.filterQuery);
-    users = this.sortUsers(users, sortSettings);
-    users = this.displayUserPage(users, sortSettings);
-
-    return users;
-  }
-
-  private filterUsers(usersToSort: User[], query: string): User[] {
-    if (!usersToSort.length) { return usersToSort; }
-
-    const output = usersToSort.filter(
-      (user: User) => {
-        return this.doesAnyValueIncludeQuery([user.id, user.name, user.email], query);
-      }
-    );
-
-    this.setTotalUsers(output.length);
-
-    return output;
-  }
-
-  private sortUsers(users: User[], sortSettings: SortSettings): User[] {
-    const sortResponse = this.userSortService.sort(users, sortSettings);
-    this.sortSettings = sortResponse.settings;
-
-    return sortResponse.users;
-  }
-
-  private displayUserPage(users: User[], sortSettings: SortSettings): User[] {
-    let output: User[];
-
-    const start = sortSettings.currentPageIndex === 0 ? 0 : sortSettings.currentPageIndex * sortSettings.itemsPerPage;
-    const end = start + sortSettings.itemsPerPage;
-
-    if (users.length) {
-      output = users?.slice(start, end);
-    }
-
-    return output;
-  }
-
-  private reverseSortDirection(): void {
-    this.sortSettings.direction =
-      this.sortSettings.direction === SortingConstants.Directions.ascending
-        ? SortingConstants.Directions.descending
-        : SortingConstants.Directions.ascending;
   }
 }

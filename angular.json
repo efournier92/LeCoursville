@@ -55,8 +55,8 @@
               }
             ],
             "styles": [
-              "./node_modules/@videogular/ngx-videogular/fonts/videogular.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "./node_modules/@videogular/ngx-videogular/fonts/videogular.css"
             ],
             "scripts": []
           },

@@ -157,10 +157,17 @@ export class MediaListComponent implements OnInit {
   }
 
   private compareMediaByDateUpdated(a: UploadableMedia, b: UploadableMedia): number {
-    return b.dateUpdated?.getTime() - a.dateUpdated?.getTime();
+    const aDate = this.getTimeFromDateString(a.dateUpdated);
+    const bDate = this.getTimeFromDateString(b.dateUpdated);
+
+    return bDate - aDate;
   }
 
   private compareMediaByTimestamp(a: UploadableMedia, b: UploadableMedia): number {
     return a.date.localeCompare(b.date);
+  }
+
+  private getTimeFromDateString(dateString: any): number {
+    return new Date(dateString).getTime();
   }
 }
