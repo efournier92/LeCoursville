@@ -16,6 +16,11 @@ export class NavbarLinksComponent implements OnInit {
 
   buttons: LinkableButton[] = [
     {
+      title: 'Expressions',
+      link: '/expressions',
+      icon: 'format_quote',
+    },
+    {
       title: 'Music',
       link: '/media/audio',
       icon: 'library_music',

@@ -6,7 +6,7 @@ import { ChatEditComponent } from 'src/app/components/chat-edit/chat-edit.compon
   templateUrl: './expression-edit.component.html',
   styleUrls: ['./expression-edit.component.scss']
 })
-export class ExpressionEditComponent extends ChatEditComponent implements OnInit {
-  // Inherits the functionality as messages
+export class ExpressionEditComponent extends ChatEditComponent {
+  // Inherits functionality from messages
   // Maintained as a separate component for templating purposes
 }

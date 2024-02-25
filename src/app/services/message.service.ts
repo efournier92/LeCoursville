@@ -8,9 +8,9 @@ import { User } from 'src/app/models/user';
 @Injectable({
   providedIn: 'root'
 })
-export class ChatService {
+export class MessageService {
   messages: AngularFireList<Message>;
-  chatObservable: Observable<Message[]>;
+  messagesObservable: Observable<Message[]>;
 
   private messagesSource: BehaviorSubject<Message[]>;
 
@@ -19,13 +19,13 @@ export class ChatService {
     private auth: AuthService,
   ) {
     this.messagesSource = new BehaviorSubject([]);
-    this.chatObservable = this.messagesSource.asObservable();
+    this.messagesObservable = this.messagesSource.asObservable();
     this.subscribeToUserObservable();
   }
 
   // PUBLIC
 
-  createMessage(message: Message): void {
+  create(message: Message): void {
     message.id = this.db.createPushId();
     this.messages.update(message.id, message);
   }

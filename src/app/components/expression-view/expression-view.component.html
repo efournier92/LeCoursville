@@ -2,41 +2,41 @@
     class="row mb-4 chat-card-content-container"
     [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
   <div class="col-1 chat-tools-container">
-    <div class="mb-3">
-      <div class="d-flex justify-content-center mt-2">
-        <span
-            class="fa-stack"
-            (click)="likeMessage()"
-            (mouseover)="highlightElement('like', true)"
-            (mouseleave)="highlightElement('like', false)">
-          <span
-              class="fa fa-heart-o fa-2x"
-              [matMenuTriggerFor]="menu"
-              [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }">
-          </span>
-          <mat-menu #menu="matMenu">
-            <div *ngFor="let liker of likers">
-              <button mat-menu-item disabled>
-                <span>{{ liker }}</span>
-              </button>
-              <mat-divider
-                  *ngIf="likers.length !== 1">
-              </mat-divider>
-            </div>
-          </mat-menu>
-          <strong
-              class="fa-stack-1x unselectable message-likes-container" *ngIf="getLikes() !== 0"
-              [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }">
-            {{ getLikes() }}
-          </strong>
-        </span>
-      </div>
-      <span
-          class="calendar-icon-label d-flex justify-content-center"
-          [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }">
-        Like
-      </span>
-    </div>
+    <!-- <div class="mb-3"> -->
+      <!-- <div class="d-flex justify-content-center mt-2"> -->
+        <!-- <span -->
+        <!--     class="fa-stack" -->
+        <!--     (click)="likeMessage()" -->
+        <!--     (mouseover)="highlightElement('like', true)" -->
+        <!--     (mouseleave)="highlightElement('like', false)"> -->
+        <!--   <span -->
+        <!--       class="fa fa-heart-o fa-2x" -->
+        <!--       [matMenuTriggerFor]="menu" -->
+        <!--       [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
+        <!--   </span> -->
+        <!--   <mat-menu #menu="matMenu"> -->
+        <!--     <div *ngFor="let liker of likers"> -->
+        <!--       <button mat-menu-item disabled> -->
+        <!--         <span>{{ liker }}</span> -->
+        <!--       </button> -->
+        <!--       <mat-divider -->
+        <!--           *ngIf="likers.length !== 1"> -->
+        <!--       </mat-divider> -->
+        <!--     </div> -->
+        <!--   </mat-menu> -->
+        <!--   <strong -->
+        <!--       class="fa-stack-1x unselectable message-likes-container" *ngIf="getLikes() !== 0" -->
+        <!--       [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
+        <!--     {{ getLikes() }} -->
+        <!--   </strong> -->
+        <!-- </span> -->
+      <!-- </div> -->
+      <!-- <span -->
+      <!--     class="calendar-icon-label d-flex justify-content-center" -->
+      <!--     [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
+      <!--   Like -->
+      <!-- </span> -->
+    <!-- </div> -->
     <div class="mb-3" [ngStyle]="{ color: highlights.reply === true  ? '#FF9800' : '#F44336' }">
       <div
           class="d-flex flex-row justify-content-center"

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ChatComponent } from 'src/app/components/chat/chat.component';
+import { MessageComponent } from 'src/app/components/message/message.component';
 import { Expression } from 'src/app/models/expression';
 import { ExpressionConstants } from 'src/app/constants/expression-constants';
 import { MessageConstants } from 'src/app/constants/message-constants';
@@ -9,13 +9,22 @@ import { MessageConstants } from 'src/app/constants/message-constants';
   templateUrl: './expressions.component.html',
   styleUrls: ['./expressions.component.scss']
 })
-export class ExpressionsComponent extends ChatComponent implements OnInit {
+export class ExpressionsComponent extends MessageComponent {
   expressions: Expression[];
   headerText: string = ExpressionConstants.HeaderText;
   headerAttribution: string = ExpressionConstants.HeaderAttribution;
   isLoading: boolean = true;
+  messageType: string = MessageConstants.Types.Expression;
 
-  createExpression(): void {
+  // LIFECYCLE HOOKS
+
+  ngOnInit(): void {
+    super.ngOnInit();
+  }
+
+  // PUBLIC METHODS
+
+  create(): void {
     for (const expression of this.expressions) {
       if (expression.isEditable === true) { return; }
     }
@@ -26,8 +35,8 @@ export class ExpressionsComponent extends ChatComponent implements OnInit {
     });
   }
 
-  onChatObservableUpdate(expressions: Expression[]): void {
-    expressions = this.chatService.filterByType(expressions, MessageConstants.Types.Expression);
+  onMessagesObservableUpdate(expressions: Expression[]): void {
+    expressions = this.messageService.filterByType(expressions, MessageConstants.Types.Expression);
 
     if (expressions.length) {
       // Hide initial sorting process from UI

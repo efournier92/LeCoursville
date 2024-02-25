@@ -1,8 +1,10 @@
 <div class="expressions-component">
-  <div class="ml-3 d-flex justify-content-end">
+  <div
+    class="ml-3 d-flex justify-content-end"
+    *ngIf="user && user.roles && user.roles.admin">
     <button class="create-expression-button"
             mat-button
-            (click)="createExpression()">
+            (click)="create()">
       <mat-icon>add</mat-icon>
       <span class="ml-2">Create Expression</span>
     </button>
