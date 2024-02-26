@@ -1,6 +1,5 @@
-import { SortSettings } from 'src/app/models/sort-settings';
-import { SortingConstants } from 'src/app/constants/sorting-constants';
-import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { SortSettings, SortProperty } from 'src/app/models/sort-settings';
+import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 
 class DisplayToggle {
   id: string;
@@ -14,17 +13,23 @@ class DisplayToggle {
 export class SortSettingsForCalendar extends SortSettings {
   displayToggles: DisplayToggle[];
   displayToggleStates: Object;
+  sortProperties = {
+    title: new SortProperty('title', 'Title', this.types.string),
+    type: new SortProperty('type', 'Type', this.types.string),
+    date: new SortProperty('date', 'Date', this.types.date),
+  };
 
   constructor() {
-    const sortDirection = SortingConstants.Directions.ascending;
-    const sortProperty = SortingConstants.Calendar.properties.date;
+    const sortDirection = '';
+    const sortProperty = '';
     const filterQuery = '';
     const itemsPerPage = 48;
     const currentPageIndex = 0;
 
-    super(sortDirection, sortProperty.key, filterQuery, itemsPerPage, currentPageIndex);
+    super(sortDirection, sortProperty, filterQuery, itemsPerPage, currentPageIndex);
 
-    this.sortProperties = SortingConstants.Calendar.properties;
+    this.direction = this.directions.descending;
+    this.sortProperty = this.sortProperties.date.key;
 
     this.displayToggles = [
       {

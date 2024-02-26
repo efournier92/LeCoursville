@@ -4,7 +4,7 @@
   </div>
   <div class="row mb-4 chat-card-content-container" *ngIf="!isSaving"
     [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
-    <div class="col-1 chat-tools-container">
+    <div class="col-2 col-md-1 chat-tools-container">
       <div class="d-flex justify-content-center flex-column mt-2">
         <div class="mb-3" *ngIf="message.isSaved"
           [ngStyle]="{ color: highlights.trash === true  ? '#FF9800' : '#F44336' }">
@@ -54,20 +54,20 @@
       <mat-card-content>
         <div class="title-input-container" *ngIf="!message.isReply">
           <mat-form-field class="w-100">
-            <input matInput class="chat-edit-input-title" placeholder="Title" [(ngModel)]="message.title">
-          </mat-form-field>
-          <mat-form-field class="w-100">
-            <input matInput class="chat-edit-input-author" placeholder="Author" [(ngModel)]="message.author">
+            <input matInput class="chat-edit-input-title" placeholder="Expression" [(ngModel)]="message.title">
           </mat-form-field>
           <mat-form-field class="w-100">
             <input matInput class="chat-edit-input-author" placeholder="Attribution" [(ngModel)]="message.attribution">
+          </mat-form-field>
+          <mat-form-field class="w-100">
+            <input matInput class="chat-edit-input-author" placeholder="Author" [(ngModel)]="message.authorName">
           </mat-form-field>
           <mat-form-field class="w-100">
             <input matInput class="chat-edit-input-author" placeholder="Year Written" [(ngModel)]="message.yearWritten">
           </mat-form-field>
         </div>
         <mat-form-field class="w-100">
-          <textarea matInput class="chat-edit-input-body" placeholder="Expression" cdkTextareaAutosize
+          <textarea matInput class="chat-edit-input-body" placeholder="Description" cdkTextareaAutosize
             #autosize="cdkTextareaAutosize" #input [(ngModel)]="message.body"></textarea>
         </mat-form-field>
       </mat-card-content>

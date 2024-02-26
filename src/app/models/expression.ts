@@ -7,13 +7,14 @@ export class Expression extends Message {
 
   constructor(
     isEditable: boolean = false,
+    authorId: string,
     title: string = '',
     body: string = '',
-    author: string = '',
+    authorName: string = '',
     yearWritten: string = '',
     attribution: string = '',
-  ){
-    super(title, body, '', '', author, false, isEditable, 0);
+  ) {
+    super(title, body, '', authorId, authorName, false, isEditable, 0);
     this.yearWritten = yearWritten;
     this.attribution = attribution;
     this.messageType = MessageConstants.Types.Expression

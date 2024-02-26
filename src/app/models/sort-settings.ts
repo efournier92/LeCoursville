@@ -1,14 +1,46 @@
-import { SortingConstants, SortProperty } from 'src/app/constants/sorting-constants';
+import { ArrayService } from 'src/app/services/array.service'
+
+export class SortProperty {
+  key: string;
+  value: string;
+  type: string;
+
+  constructor(
+    key: string,
+    value: string,
+    type: string,
+  ) {
+    this.key = key;
+    this.value = value;
+    this.type = type;
+  }
+}
 
 export abstract class SortSettings {
+  arrayService: ArrayService = new ArrayService();
+
   direction: string;
-  sortProperties: Object;
   sortProperty: string;
+  sortProperties: Object;
+  sortableAttributes: SortProperty[];
   filterQuery: string = '';
   itemsPerPage: number = 20;
   currentPageIndex: number = 0;
   totalItems: number = 0;
   totalFilteredItems: number = 0;
+  sortPropertyTitles: string[];
+  sortPropertyTitle: string;
+  isRandom: boolean = false;
+
+  directions = {
+    ascending: 'ASC',
+    descending: 'DESC',
+  };
+
+  types = {
+    string: 'string',
+    date: 'date',
+  };
 
   constructor(
     direction: string,
@@ -42,9 +74,12 @@ export abstract class SortSettings {
   }
 
   sortItems(items: any[]): any[] {
-    this.sortProperty = this.sortProperty;
-
-    return items.sort(this.getSortFunction());
+    // TODO: This could be better
+    if (this.isRandom) {
+      return this.arrayService.shuffle(items);
+    } else {
+      return items.sort(this.getSortFunction());
+    }
   }
 
   getItemsToDisplay(itemsToSort: any[]): any[] {
@@ -66,6 +101,33 @@ export abstract class SortSettings {
     return output;
   }
 
+  // TODO: SortProperties should be restructured as an iterable
+  // TODO: This should not need to happen
+  getSortPropertyTitles(): string[] {
+    const sortPropertyTitles: string[] = [];
+
+    Object.keys(this.sortProperties).forEach((propertyKey: string) => {
+      sortPropertyTitles.push(this.sortProperties[propertyKey].value);
+    });
+
+    return sortPropertyTitles;
+  }
+
+  setSortPropertyByTitle(title): void {
+    // TODO: abstract magic string
+    if (title === 'Random') {
+      this.sortPropertyTitle = title;
+      this.isRandom = true;
+    } else {
+      const property = Object.values(this.sortProperties).find((prop: SortProperty) => prop.value === title);
+
+      this.sortPropertyTitle = title;
+
+      this.sortProperty = property.key;
+
+      this.isRandom = false;
+    }
+  }
   // HELPER METHODS
 
   private doesAnyValueIncludeQuery(values: string[]): boolean {
@@ -87,9 +149,9 @@ export abstract class SortSettings {
 
   reverseSortDirection(): void {
     this.direction =
-      this.direction === SortingConstants.Directions.ascending
-        ? SortingConstants.Directions.descending
-        : SortingConstants.Directions.ascending;
+      this.direction === this.directions.ascending
+        ? this.directions.descending
+        : this.directions.ascending;
   }
 
   private getQueryProperties(item: any): any[] {
@@ -119,21 +181,21 @@ export abstract class SortSettings {
   }
 
   private isAscending(direction: string): boolean {
-    return direction === SortingConstants.Directions.ascending;
+    return direction === this.directions.ascending;
   }
 
   private isDescending(direction: string): boolean {
-    return direction === SortingConstants.Directions.descending;
+    return direction === this.directions.descending;
   }
 
   private isText(sortProperty: string) {
     const prop: SortProperty = this.sortProperties[sortProperty];
-    return prop.type === SortingConstants.Types.string;
+    return prop.type === this.types.string;
   }
 
   private isDate(sortProperty: string) {
     const prop: SortProperty = this.sortProperties[sortProperty];
-    return prop.type === SortingConstants.Types.date;
+    return prop.type === this.types.date;
   }
 
   private isTextAscending(direction: string, sortProperty: string) {

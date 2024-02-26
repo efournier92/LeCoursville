@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CalendarEvent } from 'angular-calendar';
 import { CalendarConstants } from 'src/app/constants/calendar-constants';
-import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarService } from 'src/app/services/calendar.service';
 import { PageEvent } from '@angular/material/paginator';
 import { SortSettingsForCalendar } from 'src/app/models/sort-settings-for-calendar';
-import { SortingConstants } from 'src/app/constants/sorting-constants';
 
 @Component({
   selector: 'app-admin-calendar',
@@ -16,6 +15,7 @@ export class AdminCalendarComponent implements OnInit {
   allEvents: RecurringEvent[];
   displayedEvents: RecurringEvent[];
   sortSettings: SortSettingsForCalendar;
+  eventTypes = CalendarConstants.EventTypes;
 
   constructor(
     private calendarService: CalendarService,

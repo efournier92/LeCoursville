@@ -1,7 +1,7 @@
 <div
-    class="row mb-4 chat-card-content-container"
+    class="row chat-card-content-container"
     [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
-  <div class="col-1 chat-tools-container">
+  <div class="col-2 col-md-1 chat-tools-container">
     <!-- <div class="mb-3"> -->
       <!-- <div class="d-flex justify-content-center mt-2"> -->
         <!-- <span -->
@@ -45,7 +45,7 @@
           (click)="replyMessage()">
         <span class="fa fa-reply-all fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center">Reply</span>
+      <span class="calendar-icon-label d-flex justify-content-center">Comment</span>
     </div>
     <div
         *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)"
@@ -85,7 +85,7 @@
           [innerHTML]="message.body">
       </div>
       <mat-card-subtitle class="expression-attribution expression-author">
-        - {{ message.author }}, {{ message.yearWritten }}
+        - {{ message.authorName }}, {{ message.yearWritten }}
       </mat-card-subtitle>
       <br>
       <img

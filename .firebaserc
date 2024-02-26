@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "lecoursville-dev"
-  }
+    "default": "lecoursville-dev",
+    "production": "lecoursville"
+  },
+  "targets": {},
+  "etags": {}
 }

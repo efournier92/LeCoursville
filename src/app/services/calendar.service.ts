@@ -4,7 +4,7 @@ import { AngularFireStorageReference, AngularFireStorage, AngularFireUploadTask 
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
-import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 
 export const Months: string[] = [
   'January', 'February', 'March', 'April', 'May', 'June', 'July',

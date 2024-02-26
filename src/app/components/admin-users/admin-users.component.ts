@@ -3,7 +3,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { AdminService } from 'src/app/services/admin.service';
 import { User } from 'src/app/models/user';
 import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
-import { SortingConstants } from 'src/app/constants/sorting-constants';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -65,34 +64,34 @@ export class AdminUsersComponent implements OnInit {
 
   // TODO: Move and abstract
   sortByDateLastActive(): void {
-    if (this.sortSettings.sortProperty === SortingConstants.Users.properties.dateLastActive.key) {
+    if (this.sortSettings.sortProperty === this.sortSettings.sortProperties.dateLastActive.key) {
       this.sortSettings.reverseSortDirection();
     }
-    this.sortSettings.sortProperty = SortingConstants.Users.properties.dateLastActive.key;
+    this.sortSettings.sortProperty = this.sortSettings.sortProperties.dateLastActive.key;
     this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByDateRegistered(): void {
-    if (this.sortSettings.sortProperty === SortingConstants.Users.properties.dateRegistered.key) {
+    if (this.sortSettings.sortProperty === this.sortSettings.sortProperties.dateRegistered.key) {
       this.sortSettings.reverseSortDirection();
     }
-    this.sortSettings.sortProperty = SortingConstants.Users.properties.dateRegistered.key;
+    this.sortSettings.sortProperty = this.sortSettings.sortProperties.dateRegistered.key;
     this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByName(): void {
-    if (this.sortSettings.sortProperty === SortingConstants.Users.properties.name.key) {
+    if (this.sortSettings.sortProperty === this.sortSettings.sortProperties.name.key) {
       this.sortSettings.reverseSortDirection();
     }
-    this.sortSettings.sortProperty = SortingConstants.Users.properties.name.key;
+    this.sortSettings.sortProperty = this.sortSettings.sortProperties.name.key;
     this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
   sortByEmail(): void {
-    if (this.sortSettings.sortProperty === SortingConstants.Users.properties.email.key) {
+    if (this.sortSettings.sortProperty === this.sortSettings.sortProperties.email.key) {
       this.sortSettings.reverseSortDirection();
     }
-    this.sortSettings.sortProperty = SortingConstants.Users.properties.email.key;
+    this.sortSettings.sortProperty = this.sortSettings.sortProperties.email.key;
     this.displayedUsers = this.sortSettings.getItemsToDisplay(this.allUsers);
   }
 
@@ -102,7 +101,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   isSortDescending(): boolean {
-    return this.sortSettings.direction === SortingConstants.Directions.descending;
+    return this.sortSettings.direction === this.sortSettings.directions.descending;
   }
 
   reverseDisplayedUsersSortOrder(): void {
@@ -112,7 +111,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   getSortPropertyText(): string {
-    return SortingConstants.Users.properties[this.sortSettings.sortProperty].value;
+    return this.sortSettings.sortProperties[this.sortSettings.sortProperty].value;
   }
 
   // HELPER METHODS

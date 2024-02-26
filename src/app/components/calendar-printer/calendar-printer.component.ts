@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CalendarService } from 'src/app/services/calendar.service';
-import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { AnalyticsService } from 'src/app/services/analytics.service';

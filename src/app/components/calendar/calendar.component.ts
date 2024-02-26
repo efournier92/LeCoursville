@@ -9,7 +9,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { AnalyticsService } from 'src/app/services/analytics.service';
-import { RecurringEvent } from 'src/app/interfaces/RecurringEvent';
+import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 
 @Component({
   selector: 'app-calendar',
