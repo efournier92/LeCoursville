@@ -1,59 +1,62 @@
-import { ArrayService } from 'src/app/services/array.service'
-
 export class SortProperty {
   key: string;
-  value: string;
+  title: string;
   type: string;
 
   constructor(
     key: string,
-    value: string,
+    title: string,
     type: string,
   ) {
     this.key = key;
-    this.value = value;
+    this.title = title;
     this.type = type;
   }
 }
 
 export abstract class SortSettings {
-  arrayService: ArrayService = new ArrayService();
-
-  direction: string;
-  sortProperty: string;
-  sortProperties: Object;
-  sortableAttributes: SortProperty[];
-  filterQuery: string = '';
+  sortableProperties: SortProperty[];
+  activeSortProperty: SortProperty;
+  activeDirection: string;
+  activeFilterQuery: string = '';
   itemsPerPage: number = 20;
   currentPageIndex: number = 0;
   totalItems: number = 0;
   totalFilteredItems: number = 0;
-  sortPropertyTitles: string[];
-  sortPropertyTitle: string;
-  isRandom: boolean = false;
 
-  directions = {
+  // CONSTANTS
+
+  sortableDirections = {
     ascending: 'ASC',
     descending: 'DESC',
   };
 
-  types = {
+  sortableTypes = {
     string: 'string',
     date: 'date',
+    random: 'random',
   };
 
-  constructor(
-    direction: string,
-    sortProperty: string,
-    filterQuery: string,
-    itemsPerPage: number,
-    currentPageIndex: number,
-  ) {
-    this.direction = direction;
-    this.sortProperty = sortProperty;
-    this.filterQuery = filterQuery;
-    this.itemsPerPage = itemsPerPage;
-    this.currentPageIndex = currentPageIndex;
+  availableSortProperties = {
+    id: new SortProperty('id', 'ID', this.sortableTypes.string),
+    title: new SortProperty('title', 'Title', this.sortableTypes.string),
+    body: new SortProperty('body', 'Body', this.sortableTypes.string),
+    name: new SortProperty('name', 'Name', this.sortableTypes.string),
+    email: new SortProperty('email', 'Email', this.sortableTypes.string),
+    type: new SortProperty('type', 'Type', this.sortableTypes.string),
+    authorName: new SortProperty('authorName', 'Author', this.sortableTypes.string),
+    attribution: new SortProperty('attribution', 'Attribution', this.sortableTypes.string),
+    yearWritten: new SortProperty('yearWritten', 'Year Written', this.sortableTypes.string),
+    date: new SortProperty('date', 'Date', this.sortableTypes.date),
+    dateSent: new SortProperty('dateSent', 'Date Created', this.sortableTypes.date),
+    dateLastActive: new SortProperty('dateLastActive', 'Date Last Active', this.sortableTypes.date),
+    dateRegistered: new SortProperty('dateRegistered', 'Date Registered', this.sortableTypes.date),
+    random: new SortProperty('random', 'Random', this.sortableTypes.random),
+  };
+
+  constructor() {
+    this.activeDirection = this.sortableDirections.descending;
+    this.currentPageIndex = 0;
   }
 
   // PUBLIC METHODS
@@ -74,12 +77,7 @@ export abstract class SortSettings {
   }
 
   sortItems(items: any[]): any[] {
-    // TODO: This could be better
-    if (this.isRandom) {
-      return this.arrayService.shuffle(items);
-    } else {
-      return items.sort(this.getSortFunction());
-    }
+    return items.sort(this.getSortFunction());
   }
 
   getItemsToDisplay(itemsToSort: any[]): any[] {
@@ -101,33 +99,25 @@ export abstract class SortSettings {
     return output;
   }
 
-  // TODO: SortProperties should be restructured as an iterable
-  // TODO: This should not need to happen
-  getSortPropertyTitles(): string[] {
-    const sortPropertyTitles: string[] = [];
-
-    Object.keys(this.sortProperties).forEach((propertyKey: string) => {
-      sortPropertyTitles.push(this.sortProperties[propertyKey].value);
-    });
-
-    return sortPropertyTitles;
+  getSortPropertyByKey(key): SortProperty {
+    return this.sortableProperties.find(prop => prop.key === key);
   }
 
-  setSortPropertyByTitle(title): void {
-    // TODO: abstract magic string
-    if (title === 'Random') {
-      this.sortPropertyTitle = title;
-      this.isRandom = true;
-    } else {
-      const property = Object.values(this.sortProperties).find((prop: SortProperty) => prop.value === title);
-
-      this.sortPropertyTitle = title;
-
-      this.sortProperty = property.key;
-
-      this.isRandom = false;
-    }
+  doesValueIncludeQuery(value: string): boolean {
+    return value.toLowerCase().includes(this.activeFilterQuery.toLocaleLowerCase());
   }
+
+  reverseSortDirection(): void {
+    this.activeDirection =
+      this.activeDirection === this.sortableDirections.ascending
+        ? this.sortableDirections.descending
+        : this.sortableDirections.ascending;
+  }
+
+  isSortDescending(): boolean {
+    return this.activeDirection === this.sortableDirections.descending
+  }
+
   // HELPER METHODS
 
   private doesAnyValueIncludeQuery(values: string[]): boolean {
@@ -143,74 +133,68 @@ export abstract class SortSettings {
     return filteredItems;
   }
 
-  doesValueIncludeQuery(value: string): boolean {
-    return value.toLowerCase().includes(this.filterQuery.toLocaleLowerCase());
-  }
-
-  reverseSortDirection(): void {
-    this.direction =
-      this.direction === this.directions.ascending
-        ? this.directions.descending
-        : this.directions.ascending;
-  }
+  // HELPER METHODS
 
   private getQueryProperties(item: any): any[] {
-    const queryProperties = [];
-
-    Object.keys(this.sortProperties).forEach(property => {
-      queryProperties.push(item[property]);
-    });
-
-    return queryProperties;
+    return this.sortableProperties
+      .map(prop => item[prop.key])
+      .filter(el => el !== undefined);
   }
 
-  // SORT FUNCTIONS
+  // SORT METHODS
 
   private getSortFunction() {
-    if (this.isTextAscending(this.direction, this.sortProperty)) {
-      return (a: any, b: any) => a[this.sortProperty] > b[this.sortProperty] ? -1 : 1;
-    } else if (this.isTextDescending(this.direction, this.sortProperty)) {
-      return (a: any, b: any) => b[this.sortProperty] > a[this.sortProperty] ? -1 : 1;
-    } else if (this.isDateAscending(this.direction, this.sortProperty)) {
-      return (a: any, b: any) => new Date(a[this.sortProperty]).getTime() - new Date(b[this.sortProperty]).getTime();
-    } else if (this.isDateDescending(this.direction, this.sortProperty)) {
-      return (a: any, b: any) => new Date(b[this.sortProperty]).getTime() - new Date(a[this.sortProperty]).getTime();
+    const activeSortPropertyKey = this.activeSortProperty.key;
+    if (this.isRandom()) {
+      return () => Math.random() - 0.5;
+    } else if (this.isTextAscending(this.activeDirection, activeSortPropertyKey)) {
+      return (a: any, b: any) => a[activeSortPropertyKey] > b[activeSortPropertyKey] ? -1 : 1;
+    } else if (this.isTextDescending(this.activeDirection, activeSortPropertyKey)) {
+      return (a: any, b: any) => b[activeSortPropertyKey] > a[activeSortPropertyKey] ? -1 : 1;
+    } else if (this.isDateAscending(this.activeDirection, activeSortPropertyKey)) {
+      return (a: any, b: any) => new Date(a[activeSortPropertyKey]).getTime() - new Date(b[activeSortPropertyKey]).getTime();
+    } else if (this.isDateDescending(this.activeDirection, activeSortPropertyKey)) {
+      return (a: any, b: any) => new Date(b[activeSortPropertyKey]).getTime() - new Date(a[activeSortPropertyKey]).getTime();
     } else {
       return () => 1;
     }
   }
 
+  private isRandom(): boolean {
+    return this.activeSortProperty.key === 'random';
+  }
+
   private isAscending(direction: string): boolean {
-    return direction === this.directions.ascending;
+    return direction === this.sortableDirections.ascending;
   }
 
   private isDescending(direction: string): boolean {
-    return direction === this.directions.descending;
+    return direction === this.sortableDirections.descending;
   }
 
-  private isText(sortProperty: string) {
-    const prop: SortProperty = this.sortProperties[sortProperty];
-    return prop.type === this.types.string;
+  private isText(key: string) {
+    const prop: SortProperty = this.getSortPropertyByKey(key);
+    return prop.type === this.sortableTypes.string;
   }
 
-  private isDate(sortProperty: string) {
-    const prop: SortProperty = this.sortProperties[sortProperty];
-    return prop.type === this.types.date;
+  private isDate(key: string) {
+    const prop: SortProperty = this.getSortPropertyByKey(key);
+    return prop.type === this.sortableTypes.date;
   }
 
-  private isTextAscending(direction: string, sortProperty: string) {
-    return this.isText(sortProperty) && this.isAscending(direction);
+  private isTextAscending(direction: string, activeSortProperty: string) {
+    return this.isText(activeSortProperty) && this.isAscending(direction);
   }
 
-  private isTextDescending(direction: string, sortProperty: string) {
-    return this.isText(sortProperty) && this.isDescending(direction);
+  private isTextDescending(direction: string, activeSortProperty: string) {
+    return this.isText(activeSortProperty) && this.isDescending(direction);
   }
 
-  private isDateAscending(direction: string, sortProperty: string) {
-    return this.isDate(sortProperty) && this.isAscending(direction);
+  private isDateAscending(direction: string, activeSortProperty: string) {
+    return this.isDate(activeSortProperty) && this.isAscending(direction);
   }
 
-  private isDateDescending(direction: string, sortProperty: string) {
-    return this.isDate(sortProperty) && this.isDescending(direction);
+  private isDateDescending(direction: string, activeSortProperty: string) {
+    return this.isDate(activeSortProperty) && this.isDescending(direction);
   }
 }

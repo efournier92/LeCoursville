@@ -11,8 +11,8 @@
     <div class="d-flex flex-column justify-content-left">
       <mat-form-field class="filter-users-form-field">
         <mat-label>Filter Events</mat-label>
-        <input matInput type="text" [(ngModel)]="sortSettings.filterQuery" (input)="onFilterQueryChange($event.target.value)">
-        <button *ngIf="sortSettings.filterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
+        <input matInput type="text" [(ngModel)]="sortSettings.activeFilterQuery" (input)="onFilterQueryChange($event.target.value)">
+        <button *ngIf="sortSettings.activeFilterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>

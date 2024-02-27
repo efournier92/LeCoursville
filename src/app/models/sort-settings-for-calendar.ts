@@ -13,23 +13,17 @@ class DisplayToggle {
 export class SortSettingsForCalendar extends SortSettings {
   displayToggles: DisplayToggle[];
   displayToggleStates: Object;
-  sortProperties = {
-    title: new SortProperty('title', 'Title', this.types.string),
-    type: new SortProperty('type', 'Type', this.types.string),
-    date: new SortProperty('date', 'Date', this.types.date),
-  };
+  sortableProperties: SortProperty[] = [
+    this.availableSortProperties.title,
+    this.availableSortProperties.type,
+    this.availableSortProperties.date,
+  ];
 
   constructor() {
-    const sortDirection = '';
-    const sortProperty = '';
-    const filterQuery = '';
-    const itemsPerPage = 48;
-    const currentPageIndex = 0;
+    super();
 
-    super(sortDirection, sortProperty, filterQuery, itemsPerPage, currentPageIndex);
-
-    this.direction = this.directions.descending;
-    this.sortProperty = this.sortProperties.date.key;
+    this.itemsPerPage = 48
+    this.activeSortProperty = this.getSortPropertyByKey(this.availableSortProperties.date.key);
 
     this.displayToggles = [
       {
@@ -64,6 +58,8 @@ export class SortSettingsForCalendar extends SortSettings {
     });
   }
 
+  // PUBLIC METHODS
+
   getItemsToDisplay(itemsToSort: RecurringEvent[]): RecurringEvent[] {
     let items: RecurringEvent[];
 
@@ -78,6 +74,8 @@ export class SortSettingsForCalendar extends SortSettings {
 
     return items;
   }
+
+  // HELPER METHODS
 
   public getToggleQuery(): string {
     let toggleQuery: string = 'true';

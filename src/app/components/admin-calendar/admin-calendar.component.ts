@@ -58,7 +58,7 @@ export class AdminCalendarComponent implements OnInit {
   }
 
   onFilterQueryChange(query: string): void {
-    this.sortSettings.filterQuery = query;
+    this.sortSettings.activeFilterQuery = query;
     this.sortSettings.currentPageIndex = 0;
     this.displayedEvents = this.sortSettings.getItemsToDisplay(this.allEvents);
   }

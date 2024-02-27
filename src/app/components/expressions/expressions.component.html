@@ -22,19 +22,18 @@
       </button>
     </mat-form-field>
 
-    <button mat-button [matMenuTriggerFor]="menu">Sort By: {{ sortSettings.sortPropertyTitle }}</button>
-    <!-- <button mat-button (click)="reverseDisplayedUsersSortOrder()"> -->
-    <!--   <mat-icon *ngIf="!isSortDescending()">arrow_drop_up</mat-icon> -->
-    <!--   <mat-icon *ngIf="isSortDescending()">arrow_drop_down</mat-icon> -->
-    <!-- </button> -->
+    <div>
+      <button mat-button [matMenuTriggerFor]="menu">Sort By: {{ sortSettings.activeSortProperty?.title }}</button>
+      <button mat-button (click)="reverseSortDirection()">
+        <mat-icon *ngIf="!sortSettings.isSortDescending()">arrow_drop_up</mat-icon>
+        <mat-icon *ngIf="sortSettings.isSortDescending()">arrow_drop_down</mat-icon>
+      </button>
+    </div>
     <mat-menu #menu="matMenu">
       <button
           mat-menu-item
-          (click)="setSortProperty('Random')">Random</button>
-      <button
-          mat-menu-item
-          *ngFor="let sortProperty of sortSettings.sortPropertyTitles"
-          (click)="setSortProperty(sortProperty)">{{sortProperty}}</button>
+          *ngFor="let sortProperty of sortSettings.sortableProperties"
+      r   (click)="setSortProperty(sortProperty)">{{ sortProperty.title }}</button>
     </mat-menu>
 
   </div>

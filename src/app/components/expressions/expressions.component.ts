@@ -41,7 +41,7 @@ export class ExpressionsComponent extends MessageComponent {
   }
 
   onFilterQueryChange(query: string): void {
-    this.sortSettings.filterQuery = query;
+    this.sortSettings.activeFilterQuery = query;
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
   }
 
@@ -59,8 +59,17 @@ export class ExpressionsComponent extends MessageComponent {
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
   }
 
-  setSortProperty(propertyTitle) {
-    this.sortSettings.setSortPropertyByTitle(propertyTitle);
+  setSortProperty(activeSortProperty) {
+    if (this.sortSettings.activeSortProperty === activeSortProperty)
+      this.sortSettings.reverseSortDirection()
+
+    this.sortSettings.activeSortProperty = activeSortProperty;
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
+  }
+
+  reverseSortDirection() {
+    this.sortSettings.reverseSortDirection()
+    this.displayedItems = this.displayedItems.reverse();
+    console.log(`direction`, this.sortSettings.activeDirection);
   }
 }
