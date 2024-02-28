@@ -19,6 +19,7 @@ export abstract class SortSettings {
   activeSortProperty: SortProperty;
   activeDirection: string;
   activeFilterQuery: string = '';
+  activeFilterParams: Object = {};
   itemsPerPage: number = 20;
   currentPageIndex: number = 0;
   totalItems: number = 0;
@@ -66,7 +67,7 @@ export abstract class SortSettings {
 
     const filteredItems = items.filter(
       (item: any) => {
-        const queryProperties = this.getQueryProperties(item);
+        const queryProperties = this.getAllQueryProperties(item);
         return this.doesAnyValueIncludeQuery(queryProperties);
       }
     );
@@ -74,6 +75,31 @@ export abstract class SortSettings {
     this.totalItems = filteredItems.length
 
     return filteredItems;
+  }
+
+  filterItemsByParams(items: any[]): any[] {
+    if (!Object.keys(this.activeFilterParams).length || !items.length) { return items; }
+
+    const relevantProperties = Object.keys(this.activeFilterParams);
+
+    const filteredItems = items.filter(
+      (item: any) => {
+        let isMatch = false;
+        Object.entries(this.activeFilterParams).forEach(([key, value]) => {
+          isMatch = isMatch || item[key]?.toLowerCase().includes(value.toLowerCase());
+        })
+        return isMatch;
+      }
+    );
+
+    this.totalItems = filteredItems.length
+
+    return filteredItems;
+  }
+
+  hasActiveFilterParams(): boolean {
+    return this.activeFilterParams
+      && Object.keys(this.activeFilterParams).length > 0
   }
 
   sortItems(items: any[]): any[] {
@@ -135,12 +161,18 @@ export abstract class SortSettings {
 
   // HELPER METHODS
 
-  private getQueryProperties(item: any): any[] {
+  private getAllQueryProperties(item: any): any[] {
     return this.sortableProperties
       .map(prop => item[prop.key])
       .filter(el => el !== undefined);
   }
 
+  private getRelevantQueryProperties(item: any, relevantProperties: string[]): any[] {
+    return this.sortableProperties
+      .filter(prop => relevantProperties.includes(prop.key))
+      .map(prop => item[prop.key])
+      .filter(el => el !== undefined);
+  }
   // SORT METHODS
 
   private getSortFunction() {

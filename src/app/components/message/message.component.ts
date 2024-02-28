@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { MessageService } from 'src/app/services/message.service';
 import { User } from 'src/app/models/user';
@@ -16,17 +17,20 @@ import { ArrayService } from 'src/app/services/array.service';
 })
 export abstract class MessageComponent implements OnInit {
   user: User;
-  messages: Message[];
+  allItems: Message[];
+  displayedItems: Message[];
   url: string;
   loading = true;
   years: number[];
   messageType: string;
+  queryParams: Object;
 
   constructor(
     public messageService: MessageService,
     private authService: AuthService,
     public analyticsService: AnalyticsService,
     public arrayService: ArrayService,
+    private activatedRoute: ActivatedRoute,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -51,6 +55,7 @@ export abstract class MessageComponent implements OnInit {
     this.messageService.messagesObservable.subscribe(
       (messages: Message[]) => {
         this.onMessagesObservableUpdate(messages)
+        this.getQueryParams();
       }
     );
   }
@@ -60,11 +65,11 @@ export abstract class MessageComponent implements OnInit {
   onMessagesObservableUpdate(messages: Message[]) {
     console.error("Inheriting members must define a specific implementation of the `onMessagesObservableUpdate` method.");
     messages = this.filterRelevantMessages(messages);
-    this.messages = messages.sort(this.compareMessagesByTimestamp);
+    this.allItems = messages.sort(this.compareMessagesByTimestamp);
     this.bumpStickies();
   }
 
-  create(): void {
+  onCreate(): void {
     console.error("Inheriting members must define a specific implementation of the `createMessage` method.");
   }
 
@@ -74,7 +79,7 @@ export abstract class MessageComponent implements OnInit {
 
   cancelEdit(message: Message): void {
     if (!message.isSaved) {
-      this.messages.shift();
+      this.allItems.shift();
     } else {
       message.isEditable = false;
     }
@@ -85,10 +90,10 @@ export abstract class MessageComponent implements OnInit {
   }
 
   bumpStickies(): any {
-    const stickyMessages = this.messages.filter(message => message.isSticky === true).reverse();
-    this.messages = this.messages.filter(message => message.isSticky !== true);
+    const stickyMessages = this.allItems.filter(message => message.isSticky === true).reverse();
+    this.allItems = this.allItems.filter(message => message.isSticky !== true);
     for (const message of stickyMessages) {
-      this.messages.unshift(message);
+      this.allItems.unshift(message);
     }
   }
 
@@ -102,9 +107,15 @@ export abstract class MessageComponent implements OnInit {
   }
 
   // HELPER METHODS
-  //
+
   private filterOldMessages(messages: Message[]): Message[] {
     const filtrationThesholdDate = new Date(new Date().setMonth(new Date().getMonth() - AppSettings.messages.includeMessagesFromHowManyMonths));
     return messages.filter(message => new Date(message.dateSent) > filtrationThesholdDate);
+  }
+
+  getQueryParams() {
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.queryParams = params;
+    });
   }
 }

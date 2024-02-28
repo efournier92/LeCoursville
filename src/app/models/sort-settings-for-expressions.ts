@@ -22,6 +22,7 @@ export class SortSettingsForExpressions extends SortSettings {
       return items;
     }
 
+    items = this.filterItemsByParams(items);
     items = this.filterItems(items);
     items = this.sortItems(items);
 

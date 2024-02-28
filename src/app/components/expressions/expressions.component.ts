@@ -16,8 +16,6 @@ export class ExpressionsComponent extends MessageComponent {
   isLoading: boolean = true;
   messageType: string = MessageConstants.Types.Expression;
   sortSettings: SortSettingsForExpressions = new SortSettingsForExpressions();
-  allItems: Expression[];
-  displayedItems: Expression[];
 
   // LIFECYCLE HOOKS
 
@@ -27,20 +25,21 @@ export class ExpressionsComponent extends MessageComponent {
 
   // PUBLIC METHODS
 
-  create(): void {
+  onCreate(): void {
     for (const expression of this.allItems) {
       if (expression.isEditable === true) { return; }
     }
 
     const authorId: string = this.user.id;
 
-    this.allItems.unshift(new Expression(true, authorId));
+    this.displayedItems.unshift(new Expression(true, authorId));
     this.analyticsService.logEvent('expression_create', {
       userId: this.user?.id,
     });
   }
 
   onFilterQueryChange(query: string): void {
+    this.sortSettings.activeFilterParams = {};
     this.sortSettings.activeFilterQuery = query;
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
   }
@@ -54,6 +53,8 @@ export class ExpressionsComponent extends MessageComponent {
         this.isLoading = false
       }, 500);
     }
+
+    this.sortSettings.activeFilterParams = this.queryParams;
 
     this.allItems = expressions;
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
@@ -71,5 +72,18 @@ export class ExpressionsComponent extends MessageComponent {
     this.sortSettings.reverseSortDirection()
     this.displayedItems = this.displayedItems.reverse();
     console.log(`direction`, this.sortSettings.activeDirection);
+  }
+
+  filterByQueryParams() {
+    console.log('Params', this.queryParams);
+  }
+
+  shouldDisplayShowAllButton(): boolean {
+    return this.sortSettings.hasActiveFilterParams();
+  }
+
+  onShowAll() {
+    this.sortSettings.activeFilterParams = {};
+    this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
   }
 }

@@ -19,13 +19,13 @@ export class ChatComponent extends MessageComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  create(): void {
-    for (const message of this.messages) {
+  onCreate(): void {
+    for (const message of this.allItems) {
       if (message.isEditable === true) { return; }
     }
     const authorId: string = this.user.id;
     const authorName: string = this.user.name;
-    this.messages.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
+    this.allItems.unshift(new Message('', '', '', authorId, authorName, false, true, 0));
     this.analyticsService.logEvent('chat_message_create', {
       userId: this.user?.id,
     });
@@ -33,7 +33,7 @@ export class ChatComponent extends MessageComponent implements OnInit {
 
   onMessagesObservableUpdate(messages: Message[]) {
     messages = this.filterRelevantMessages(messages);
-    this.messages = messages.sort(this.compareMessagesByTimestamp);
+    this.allItems = messages.sort(this.compareMessagesByTimestamp);
     this.bumpStickies();
   }
 }

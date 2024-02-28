@@ -1,72 +1,115 @@
 <div class="expressions-component">
   <div
-      class="ml-3 d-flex justify-content-end"
-      *ngIf="user && user.roles && user.roles.admin">
-    <button class="create-expression-button"
-            mat-button
-            (click)="create()">
+    class="ml-3 d-flex justify-content-end"
+    *ngIf="user && user.roles && user.roles.admin"
+  >
+    <button
+      class="create-expression-button"
+      mat-button
+      (click)="onCreate()"
+    >
       <mat-icon>add</mat-icon>
       <span class="ml-2">Create Expression</span>
     </button>
-
   </div>
 
   <div
-      class="ml-3 d-flex justify-content-between"
-      *ngIf="user && user.roles && user.roles.admin">
+    class="ml-3 d-flex justify-content-between"
+    *ngIf="user && user.roles && user.roles.admin"
+  >
     <mat-form-field class="filter-users-form-field">
       <mat-label>Search</mat-label>
-      <input matInput type="text" [(ngModel)]="sortSettings.filterQuery" (input)="onFilterQueryChange($event.target.value)">
-      <button *ngIf="sortSettings.filterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="sortSettings.activeFilterQuery"
+        (input)="onFilterQueryChange($event.target.value)"
+      />
+      <button
+        *ngIf="sortSettings.activeFilterQuery"
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="onFilterQueryChange('')"
+      >
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
 
     <div>
-      <button mat-button [matMenuTriggerFor]="menu">Sort By: {{ sortSettings.activeSortProperty?.title }}</button>
-      <button mat-button (click)="reverseSortDirection()">
-        <mat-icon *ngIf="!sortSettings.isSortDescending()">arrow_drop_up</mat-icon>
-        <mat-icon *ngIf="sortSettings.isSortDescending()">arrow_drop_down</mat-icon>
+      <button
+        mat-button
+        [matMenuTriggerFor]="menu"
+      >
+        Sort By: {{ sortSettings.activeSortProperty?.title }}
+      </button>
+      <button
+        mat-button
+        (click)="reverseSortDirection()"
+      >
+        <mat-icon *ngIf="!sortSettings.isSortDescending()"
+          >arrow_drop_up</mat-icon
+        >
+        <mat-icon *ngIf="sortSettings.isSortDescending()"
+          >arrow_drop_down</mat-icon
+        >
       </button>
     </div>
     <mat-menu #menu="matMenu">
       <button
-          mat-menu-item
-          *ngFor="let sortProperty of sortSettings.sortableProperties"
-      r   (click)="setSortProperty(sortProperty)">{{ sortProperty.title }}</button>
+        mat-menu-item
+        *ngFor="let sortProperty of sortSettings.sortableProperties"
+        r
+        (click)="setSortProperty(sortProperty)"
+      >
+        {{ sortProperty.title }}
+      </button>
     </mat-menu>
-
-  </div>
-  <div class="expressions-header-container">
-    <span class="expressions-header-text">
-      {{ headerText }}
-    </span>
-    <span class="expressions-header-attribution">
-      - {{ headerAttribution }}
-    </span>
   </div>
 
-  <div class="w-100 d-flex justify-content-center" *ngIf="isLoading">
+  <div
+    class="ml-3 d-flex justify-content-start"
+    *ngIf="shouldDisplayShowAllButton()"
+  >
+    <button
+      class="create-expression-button"
+      mat-button
+      (click)="onShowAll()"
+    >
+      <span class="ml-2">Show All</span>
+    </button>
+  </div>
+
+  <div
+    class="w-100 d-flex justify-content-center"
+    *ngIf="isLoading"
+  >
     <mat-spinner></mat-spinner>
   </div>
 
-  <div class="expressions-container" *ngIf="!isLoading">
+  <div
+    class="expressions-container"
+    *ngIf="!isLoading"
+  >
     <mat-card
-        class="chat-card-container mt-5"
-        *ngFor="let expression of displayedItems">
+      class="chat-card-container mt-5"
+      *ngFor="let expression of displayedItems"
+    >
       <app-expression-view
-          *ngIf="!expression.isEditable"
-          [message]=expression
-          [parent]="expression"
-          (updateParentEvent)="updateMessages($event)"
-          (cancelEditEvent)="cancelEdit($event)">
+        *ngIf="!expression.isEditable"
+        [message]="expression"
+        [parent]="expression"
+        (updateParentEvent)="updateMessages($event)"
+        (cancelEditEvent)="cancelEdit($event)"
+      >
       </app-expression-view>
       <app-expression-edit
-          *ngIf="expression.isEditable"
-          [message]=expression
-          [parent]="expression"
-          (updateParentEvent)="updateMessages($event)"
-          (cancelEditEvent)="cancelEdit($event)">
+        *ngIf="expression.isEditable"
+        [message]="expression"
+        [parent]="expression"
+        (updateParentEvent)="updateMessages($event)"
+        (cancelEditEvent)="cancelEdit($event)"
+      >
       </app-expression-edit>
     </mat-card>
   </div>
