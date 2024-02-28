@@ -1,39 +1,86 @@
 <div *ngIf="user?.roles?.admin">
-    <div class="admin-media-upload-form-container">
-        <form class="admin-media-upload-upload-form">
-            <mat-form-field class="admin-upload-input">
-                <mat-label>Title</mat-label>
-                <input type="text" matInput name="videoTitle" [(ngModel)]="video.title">
-            </mat-form-field>
-            <mat-form-field class="admin-upload-input">
-                <mat-label>File Name</mat-label>
-                <input type="text" matInput name="videoFileName" [(ngModel)]="video.fileName">
-            </mat-form-field>
-            <mat-form-field class="admin-upload-input">
-                <mat-label class="optional-field">Date</mat-label>
-                <input type="text" matInput name="videoDate" [(ngModel)]="video.date">
-            </mat-form-field>
-            <mat-form-field class="admin-upload-input">
-                <mat-label class="optional-field">ID</mat-label>
-                <input type="text" matInput name="videoId" [(ngModel)]="video.id">
-            </mat-form-field>
-            <mat-checkbox class="admin-upload-input mb-2" name="isSticky" [(ngModel)]="video.isSticky">Is Sticky?</mat-checkbox>
-            <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="video.isHidden">Should Hide from Lists?</mat-checkbox>
-            <button mat-button class="admin-form-action-button admin-form-action-button-upload w-100"
-                (click)="onUploadSelectedMedia()">
-                <span *ngIf="!video.id">Upload</span>
-                <span *ngIf="video.id">Update</span>
-            </button>
-            <button class="admin-form-action-button admin-form-action-button-delete w-100" *ngIf="video.id"
-                mat-button (click)="onDeleteSelectedMedia(video)">Delete</button>
-            <button mat-button class="admin-form-action-button admin-form-action-button-cancel w-100"
-                (click)="onCancelSelectedMedia(video)">Clear</button>
-        </form>
-    </div>
+  <div class="admin-media-upload-form-container">
+    <form class="admin-media-upload-upload-form">
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Title</mat-label>
+        <input
+          type="text"
+          matInput
+          name="videoTitle"
+          [(ngModel)]="video.title"
+        />
+      </mat-form-field>
+      <mat-form-field class="admin-upload-input">
+        <mat-label>File Name</mat-label>
+        <input
+          type="text"
+          matInput
+          name="videoFileName"
+          [(ngModel)]="video.fileName"
+        />
+      </mat-form-field>
+      <mat-form-field class="admin-upload-input">
+        <mat-label class="optional-field">Date</mat-label>
+        <input
+          type="text"
+          matInput
+          name="videoDate"
+          [(ngModel)]="video.date"
+        />
+      </mat-form-field>
+      <mat-form-field class="admin-upload-input">
+        <mat-label class="optional-field">ID</mat-label>
+        <input
+          type="text"
+          matInput
+          name="videoId"
+          [(ngModel)]="video.id"
+        />
+      </mat-form-field>
+      <mat-checkbox
+        class="admin-upload-input mb-2"
+        name="isSticky"
+        [(ngModel)]="video.isSticky"
+        >Is Sticky?</mat-checkbox
+      >
+      <mat-checkbox
+        class="admin-upload-input"
+        name="isHidden"
+        [(ngModel)]="video.isHidden"
+        >Should Hide from Lists?</mat-checkbox
+      >
+      <button
+        mat-button
+        class="admin-form-action-button admin-form-action-button-upload w-100"
+        (click)="onUploadSelectedMedia()"
+      >
+        <span *ngIf="!video.id">Upload</span>
+        <span *ngIf="video.id">Update</span>
+      </button>
+      <button
+        class="admin-form-action-button admin-form-action-button-delete w-100"
+        *ngIf="video.id"
+        mat-button
+        (click)="onDeleteSelectedMedia(video)"
+      >
+        Delete
+      </button>
+      <button
+        mat-button
+        class="admin-form-action-button admin-form-action-button-cancel w-100"
+        (click)="onCancelSelectedMedia(video)"
+      >
+        Clear
+      </button>
+    </form>
+  </div>
 
-    <div class="admin-media-list-container">
-        <app-media-list [mediaTypesToShow]="getVideoTypeId()" [isAdminMode]="false" (mediaClickEvent)="onMediaSelect($event)">
-        </app-media-list>
-    </div>
-
+  <div class="admin-media-list-container">
+    <app-media-list
+      [mediaTypesToShow]="getVideoTypeId()"
+      [isAdminMode]="false"
+      (mediaClickEvent)="onMediaSelect($event)"
+    >
+    </app-media-list>
+  </div>
 </div>

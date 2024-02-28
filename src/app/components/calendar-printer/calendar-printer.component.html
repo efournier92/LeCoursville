@@ -1,16 +1,25 @@
 <div class="calendar-printer-container">
   <div class="calendar-print-view">
-    <app-calendar-view [viewDate]="activeDate" [selectedYear]="selectedYear" [events]="events"></app-calendar-view>
+    <app-calendar-view
+      [viewDate]="activeDate"
+      [selectedYear]="selectedYear"
+      [events]="events"
+    ></app-calendar-view>
   </div>
-  <div *ngIf="printProgress === 0" class="calendar-printer-container">
+  <div
+    *ngIf="printProgress === 0"
+    class="calendar-printer-container"
+  >
     <label for="basic-url">
-      <h3>
-        Print Calendar
-      </h3>
+      <h3>Print Calendar</h3>
     </label>
     <div class="input-group mb-3">
       <mat-form-field class="year-select-container ml-2">
-        <mat-select placeholder="Year" [(value)]="selectedYear" (selectionChange)="refreshPrintJob()">
+        <mat-select
+          placeholder="Year"
+          [(value)]="selectedYear"
+          (selectionChange)="refreshPrintJob()"
+        >
           <div *ngFor="let year of viewYears">
             <mat-option [value]="year">
               {{ year }}
@@ -20,21 +29,52 @@
       </mat-form-field>
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox color="warn" (change)="refreshPrintJob()" [(ngModel)]="shouldPrintBirthdays">Birthdays</mat-checkbox>
+      <mat-checkbox
+        color="warn"
+        (change)="refreshPrintJob()"
+        [(ngModel)]="shouldPrintBirthdays"
+        >Birthdays</mat-checkbox
+      >
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox color="warn" [(ngModel)]="shouldPrintAnniversaries">Anniversaries</mat-checkbox>
+      <mat-checkbox
+        color="warn"
+        [(ngModel)]="shouldPrintAnniversaries"
+        >Anniversaries</mat-checkbox
+      >
     </div>
     <div class="input-group mb-3">
-      <mat-checkbox color="warn" [(ngModel)]="shouldPrintNotLiving">Include Not Living</mat-checkbox>
+      <mat-checkbox
+        color="warn"
+        [(ngModel)]="shouldPrintNotLiving"
+        >Include Not Living</mat-checkbox
+      >
     </div>
     <div class="d-flex justify-content-around">
-      <button mat-raised-button color="primary" class="print-action-button" (click)="downloadPdf()">Download</button>
-      <button mat-raised-button color="primary" class="print-action-button" (click)="printPdf()">Print</button>
+      <button
+        mat-raised-button
+        color="primary"
+        class="print-action-button"
+        (click)="downloadPdf()"
+      >
+        Download
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        class="print-action-button"
+        (click)="printPdf()"
+      >
+        Print
+      </button>
     </div>
   </div>
   <div *ngIf="printProgress !== 0">
     <div>Preparing {{ selectedYear }} Calendar...</div>
-    <mat-progress-bar class="mt-2 mb-2" mode="determinate" value="{{printProgress}}"></mat-progress-bar>
+    <mat-progress-bar
+      class="mt-2 mb-2"
+      mode="determinate"
+      value="{{ printProgress }}"
+    ></mat-progress-bar>
   </div>
 </div>

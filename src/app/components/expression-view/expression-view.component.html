@@ -1,70 +1,52 @@
 <div
-    class="row chat-card-content-container"
-    [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
+  class="row chat-card-content-container"
+  [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
+>
   <div class="col-2 col-md-1 chat-tools-container">
-    <!-- <div class="mb-3"> -->
-      <!-- <div class="d-flex justify-content-center mt-2"> -->
-        <!-- <span -->
-        <!--     class="fa-stack" -->
-        <!--     (click)="likeMessage()" -->
-        <!--     (mouseover)="highlightElement('like', true)" -->
-        <!--     (mouseleave)="highlightElement('like', false)"> -->
-        <!--   <span -->
-        <!--       class="fa fa-heart-o fa-2x" -->
-        <!--       [matMenuTriggerFor]="menu" -->
-        <!--       [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
-        <!--   </span> -->
-        <!--   <mat-menu #menu="matMenu"> -->
-        <!--     <div *ngFor="let liker of likers"> -->
-        <!--       <button mat-menu-item disabled> -->
-        <!--         <span>{{ liker }}</span> -->
-        <!--       </button> -->
-        <!--       <mat-divider -->
-        <!--           *ngIf="likers.length !== 1"> -->
-        <!--       </mat-divider> -->
-        <!--     </div> -->
-        <!--   </mat-menu> -->
-        <!--   <strong -->
-        <!--       class="fa-stack-1x unselectable message-likes-container" *ngIf="getLikes() !== 0" -->
-        <!--       [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
-        <!--     {{ getLikes() }} -->
-        <!--   </strong> -->
-        <!-- </span> -->
-      <!-- </div> -->
-      <!-- <span -->
-      <!--     class="calendar-icon-label d-flex justify-content-center" -->
-      <!--     [ngStyle]="{ color: highlights.like === true  ? '#FF9800' : '#F44336' }"> -->
-      <!--   Like -->
-      <!-- </span> -->
-    <!-- </div> -->
-    <div class="mb-3" [ngStyle]="{ color: highlights.reply === true  ? '#FF9800' : '#F44336' }">
+    <div
+      class="mb-3"
+      [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
+    >
       <div
-          class="d-flex flex-row justify-content-center"
-          (mouseover)="highlightElement('reply', true)"
-          (mouseleave)="highlightElement('reply', false)"
-          (click)="replyMessage()">
+        class="d-flex flex-row justify-content-center"
+        (mouseover)="highlightElement('reply', true)"
+        (mouseleave)="highlightElement('reply', false)"
+        (click)="replyMessage()"
+      >
         <span class="fa fa-reply-all fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center">Comment</span>
+      <span class="calendar-icon-label d-flex justify-content-center"
+        >Comment</span
+      >
     </div>
     <div
-        *ngIf="message.authorId === user.id || (user && user.roles && user.roles.admin)"
-        [ngStyle]="{ color: highlights.edit === true  ? '#FF9800' : '#F44336' }">
+      *ngIf="
+        message.authorId === user.id || (user && user.roles && user.roles.admin)
+      "
+      [ngStyle]="{ color: highlights.edit === true ? '#FF9800' : '#F44336' }"
+    >
       <div
-          class="d-flex flex-row justify-content-center"
-          (mouseover)="highlightElement('edit', true)"
-          (mouseleave)="highlightElement('edit', false)"
-          (click)="editMessage()">
+        class="d-flex flex-row justify-content-center"
+        (mouseover)="highlightElement('edit', true)"
+        (mouseleave)="highlightElement('edit', false)"
+        (click)="editMessage()"
+      >
         <span class="fa fa-edit fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center">Edit</span>
+      <span class="calendar-icon-label d-flex justify-content-center"
+        >Edit</span
+      >
     </div>
   </div>
-  <mat-divider class="chat-divider-vertical" [vertical]="true"></mat-divider>
+  <mat-divider
+    class="chat-divider-vertical"
+    [vertical]="true"
+  ></mat-divider>
   <div class="chat-view-message-container col-9">
     <mat-card-content
-        class="chat-view-message-deleted-container col-9"
-        *ngIf="message.isDeleted">
+      class="chat-view-message-deleted-container col-9"
+      *ngIf="message.isDeleted"
+    >
       <mat-card-title>
         <mat-card-subtitle class="chat-message-author-name">
           <i>This message was deleted.</i>
@@ -73,57 +55,62 @@
     </mat-card-content>
     <mat-card-content *ngIf="!message.isDeleted">
       <mat-card-title
-          class="expression-title"
-          *ngIf="!message.isReply">
+        class="expression-title"
+        *ngIf="!message.isReply"
+      >
         "{{ message.title }}"
       </mat-card-title>
       <mat-card-subtitle class="expression-attribution">
         - {{ message.attribution }}
       </mat-card-subtitle>
       <div
-          class="expression-body"
-          [innerHTML]="message.body">
-      </div>
+        class="expression-body"
+        [innerHTML]="message.body"
+      ></div>
       <mat-card-subtitle class="expression-attribution expression-author">
         - {{ message.authorName }}, {{ message.yearWritten }}
       </mat-card-subtitle>
-      <br>
+      <br />
       <img
-          mat-card-image
-          src="{{ message.attachmentUrl }}"
-          class="massage-attachment-image"
-          *ngIf="getAttachmentType(message) === 'photo'">
+        mat-card-image
+        src="{{ message.attachmentUrl }}"
+        class="massage-attachment-image"
+        *ngIf="getAttachmentType(message) === 'photo'"
+      />
       <a
-          mat-button
-          [href]="message.attachmentUrl"
-          class="view-attachment-button"
-          target="_blank"
-          *ngIf="getAttachmentType(message) === 'document'">
+        mat-button
+        [href]="message.attachmentUrl"
+        class="view-attachment-button"
+        target="_blank"
+        *ngIf="getAttachmentType(message) === 'document'"
+      >
         View Attachment
       </a>
       <a
-          mae-button
-          [href]="message.attachmentUrl"
-          class="view-attachment-button"
-          download
-          *ngIf="getAttachmentType(message) === 'other'">
+        mae-button
+        [href]="message.attachmentUrl"
+        class="view-attachment-button"
+        download
+        *ngIf="getAttachmentType(message) === 'other'"
+      >
         Download Attachment
       </a>
     </mat-card-content>
   </div>
 </div>
-<mat-card-content
-    *ngFor="let reply of message.replies">
+<mat-card-content *ngFor="let reply of message.replies">
   <app-chat-view
-      *ngIf="!reply.isEditable"
-      [message]="reply"
-      [parent]="message"
-      (updateParentEvent)="updateParent()">
+    *ngIf="!reply.isEditable"
+    [message]="reply"
+    [parent]="message"
+    (updateParentEvent)="updateParent()"
+  >
   </app-chat-view>
   <app-chat-edit
-      *ngIf="reply.isEditable"
-      [message]="reply"
-      [parent]="message"
-      (updateParentEvent)="updateParent()">
+    *ngIf="reply.isEditable"
+    [message]="reply"
+    [parent]="message"
+    (updateParentEvent)="updateParent()"
+  >
   </app-chat-edit>
 </mat-card-content>

@@ -1,43 +1,96 @@
 <div *ngIf="user?.roles?.admin">
-    <div class="admin-media-upload-form-container">
-        <form class="audio-album-upload-form">
-            <mat-form-field class="admin-upload-input">
-                <mat-label>Title</mat-label>
-                <input type="text" matInput name="albumTitle" [(ngModel)]="album.title">
-            </mat-form-field>
-            <mat-form-field class="admin-upload-input">
-                <mat-label>Folder Name</mat-label>
-                <input type="text" matInput name="albumFolderName" [(ngModel)]="album.folderName">
-            </mat-form-field>
-            <!-- <mat-form-field class="admin-upload-input">
+  <div class="admin-media-upload-form-container">
+    <form class="audio-album-upload-form">
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Title</mat-label>
+        <input
+          type="text"
+          matInput
+          name="albumTitle"
+          [(ngModel)]="album.title"
+        />
+      </mat-form-field>
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Folder Name</mat-label>
+        <input
+          type="text"
+          matInput
+          name="albumFolderName"
+          [(ngModel)]="album.folderName"
+        />
+      </mat-form-field>
+      <!-- <mat-form-field class="admin-upload-input">
                 <mat-label class="optional-field">Artist</mat-label>
                 <input type="text" matInput name="albumArtist" [(ngModel)]="album.artist">
             </mat-form-field> -->
-            <mat-form-field class="admin-upload-input">
-                <mat-label class="optional-field">Date</mat-label>
-                <input type="text" matInput name="albumDate" [(ngModel)]="album.date">
-            </mat-form-field>
-            <mat-form-field class="admin-upload-input" *ngIf="!isAlbumAlreadyUploaded()">
-                <mat-label>Tracks</mat-label>
-                <textarea matInput name="albumTracks" [(ngModel)]="tracksString" cdkTextareaAutosize
-                    #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
-            </mat-form-field>
-            <mat-checkbox class="admin-upload-input mb-2" name="isSticky" [(ngModel)]="album.isSticky">Is Sticky?</mat-checkbox>
-            <mat-checkbox class="admin-upload-input" name="isHidden" [(ngModel)]="album.isHidden">Should Hide from Lists?</mat-checkbox>
-            <button mat-button class="admin-form-action-button admin-form-action-button-upload w-100"
-                (click)="onUploadSelectedMedia()">
-                <span *ngIf="!isAlbumAlreadyUploaded()">Upload</span>
-                <span *ngIf="isAlbumAlreadyUploaded()">Update</span>
-            </button>
-            <button class="admin-form-action-button admin-form-action-button-delete w-100" *ngIf="album.id"
-                mat-button (click)="onDeleteSelectedMedia(album)">Delete</button>
-            <button mat-button class="admin-form-action-button admin-form-action-button-cancel w-100"
-                (click)="onCancelSelectedMedia(album)">Clear</button>
-        </form>
-    </div>
-    <div class="admin-media-list-container">
-        <app-media-list [mediaTypesToShow]="getAudioAlbumTypeId()" [isAdminMode]="true" (mediaClickEvent)="onMediaSelect($event)"
-            *ngIf="isUserAdmin()">
-        </app-media-list>
-    </div>
+      <mat-form-field class="admin-upload-input">
+        <mat-label class="optional-field">Date</mat-label>
+        <input
+          type="text"
+          matInput
+          name="albumDate"
+          [(ngModel)]="album.date"
+        />
+      </mat-form-field>
+      <mat-form-field
+        class="admin-upload-input"
+        *ngIf="!isAlbumAlreadyUploaded()"
+      >
+        <mat-label>Tracks</mat-label>
+        <textarea
+          matInput
+          name="albumTracks"
+          [(ngModel)]="tracksString"
+          cdkTextareaAutosize
+          #autosize="cdkTextareaAutosize"
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="20"
+        ></textarea>
+      </mat-form-field>
+      <mat-checkbox
+        class="admin-upload-input mb-2"
+        name="isSticky"
+        [(ngModel)]="album.isSticky"
+        >Is Sticky?</mat-checkbox
+      >
+      <mat-checkbox
+        class="admin-upload-input"
+        name="isHidden"
+        [(ngModel)]="album.isHidden"
+        >Should Hide from Lists?</mat-checkbox
+      >
+      <button
+        mat-button
+        class="admin-form-action-button admin-form-action-button-upload w-100"
+        (click)="onUploadSelectedMedia()"
+      >
+        <span *ngIf="!isAlbumAlreadyUploaded()">Upload</span>
+        <span *ngIf="isAlbumAlreadyUploaded()">Update</span>
+      </button>
+      <button
+        class="admin-form-action-button admin-form-action-button-delete w-100"
+        *ngIf="album.id"
+        mat-button
+        (click)="onDeleteSelectedMedia(album)"
+      >
+        Delete
+      </button>
+      <button
+        mat-button
+        class="admin-form-action-button admin-form-action-button-cancel w-100"
+        (click)="onCancelSelectedMedia(album)"
+      >
+        Clear
+      </button>
+    </form>
+  </div>
+  <div class="admin-media-list-container">
+    <app-media-list
+      [mediaTypesToShow]="getAudioAlbumTypeId()"
+      [isAdminMode]="true"
+      (mediaClickEvent)="onMediaSelect($event)"
+      *ngIf="isUserAdmin()"
+    >
+    </app-media-list>
+  </div>
 </div>

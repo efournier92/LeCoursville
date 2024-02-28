@@ -1,13 +1,19 @@
 <div class="media-list-container row">
+  <form class="media-list-filters-container">
+    <mat-form-field
+      class="media-list-filters-input"
+      appearance="standard"
+    >
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        name="media-list-filters-input-search-query"
+        (input)="onSearchInputChange($event)"
+        [(ngModel)]="searchQuery"
+      />
+    </mat-form-field>
 
-    <form class="media-list-filters-container">
-        <mat-form-field class="media-list-filters-input" appearance="standard">
-            <mat-label>Search</mat-label>
-            <input matInput name="media-list-filters-input-search-query" (input)="onSearchInputChange($event)"
-                [(ngModel)]="searchQuery">
-        </mat-form-field>
-
-        <!-- <mat-form-field class="media-list-filters-input" appearance="standard">
+    <!-- <mat-form-field class="media-list-filters-input" appearance="standard">
             <mat-label>Sort By</mat-label>
             <mat-select (selectionChange)="onSortBySelectionChange($event)">
                 <mat-option *ngFor="let type of sortTypes" [value]="type">
@@ -15,40 +21,53 @@
                 </mat-option>
             </mat-select>
         </mat-form-field> -->
-    </form>
-
-    <div class="row d-flex flex-column" *ngFor="let media of filteredMedia">
-        <button mat-button class="mb-3 col-12 col-md-12 col-lg-12" *ngIf="shouldDisplayMedia(media)"
-            (click)="onMediaSelect(media)">
-            <div class="row">
-                <div class="col-4 imageContainer">
-                    <div class="d-flex flex-column justify-content-center h-100">
-                        <mat-icon class="media-list-placeholder-icon" [hidden]="media.isIconLoaded">
-                            {{ getPlaceholderName(media.type) }}
-                        </mat-icon>
-                    </div>
-                    <div class="imageCenterer">
-                        <img [src]="media.urls.icon" (load)="onImageLoaded(media)" [hidden]="!media.isIconLoaded">
-                    </div>
-                </div>
-                <div class="col-8 justify-content-start">
-                    <div class="media-details-name">
-                        {{ media.title }}
-                    </div>
-                    <div class="media-details-artist">
-                        {{ media.artist }}
-                    </div>
-                    <div class="media-details-location">
-                        {{ media.location }}
-                    </div>
-                    <div class="media-details-date">
-                        {{ media.date }}
-                    </div>
-                    <div class="media-details-duration">
-                        {{ media.duration }}
-                    </div>
-                </div>
-            </div>
-        </button>
-    </div>
+  </form>
+  <div
+    class="row d-flex flex-column"
+    *ngFor="let media of filteredMedia"
+  >
+    <button
+      mat-button
+      class="mb-3 col-12 col-md-12 col-lg-12"
+      *ngIf="shouldDisplayMedia(media)"
+      (click)="onMediaSelect(media)"
+    >
+      <div class="row">
+        <div class="col-4 imageContainer">
+          <div class="d-flex flex-column justify-content-center h-100">
+            <mat-icon
+              class="media-list-placeholder-icon"
+              [hidden]="media.isIconLoaded"
+            >
+              {{ getPlaceholderName(media.type) }}
+            </mat-icon>
+          </div>
+          <div class="imageCenterer">
+            <img
+              [src]="media.urls.icon"
+              (load)="onImageLoaded(media)"
+              [hidden]="!media.isIconLoaded"
+            />
+          </div>
+        </div>
+        <div class="col-8 justify-content-start">
+          <div class="media-details-name">
+            {{ media.title }}
+          </div>
+          <div class="media-details-artist">
+            {{ media.artist }}
+          </div>
+          <div class="media-details-location">
+            {{ media.location }}
+          </div>
+          <div class="media-details-date">
+            {{ media.date }}
+          </div>
+          <div class="media-details-duration">
+            {{ media.duration }}
+          </div>
+        </div>
+      </div>
+    </button>
+  </div>
 </div>

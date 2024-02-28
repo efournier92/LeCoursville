@@ -1,43 +1,95 @@
 <div class="admin-users-component-container m-3">
-
   <app-admin-routing class="w-100"></app-admin-routing>
 
   <div class="d-flex justify-content-between w-100 p-1">
     <mat-form-field class="filter-users-form-field">
       <mat-label>Filter Users</mat-label>
-      <input matInput type="text" [(ngModel)]="sortSettings.activeFilterQuery" (input)="onFilterQueryChange($event.target.value)">
-      <button *ngIf="sortSettings.activeFilterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="sortSettings.activeFilterQuery"
+        (input)="onFilterQueryChange($event.target.value)"
+      />
+      <button
+        *ngIf="sortSettings.activeFilterQuery"
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="onFilterQueryChange('')"
+      >
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
 
     <div>
-      <button mat-button [matMenuTriggerFor]="menu">Sort By: {{ getSortPropertyText() }}</button>
-      <button mat-button (click)="reverseDisplayedUsersSortOrder()">
+      <button
+        mat-button
+        [matMenuTriggerFor]="menu"
+      >
+        Sort By: {{ getSortPropertyText() }}
+      </button>
+      <button
+        mat-button
+        (click)="reverseDisplayedUsersSortOrder()"
+      >
         <mat-icon *ngIf="!isSortDescending()">arrow_drop_up</mat-icon>
         <mat-icon *ngIf="isSortDescending()">arrow_drop_down</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="sortByDateLastActive()">Date Last Active</button>
-        <button mat-menu-item (click)="sortByName()">Name</button>
-        <button mat-menu-item (click)="sortByEmail()">Email</button>
-        <button mat-menu-item (click)="sortByDateRegistered()">Date Registered</button>
+        <button
+          mat-menu-item
+          (click)="sortByDateLastActive()"
+        >
+          Date Last Active
+        </button>
+        <button
+          mat-menu-item
+          (click)="sortByName()"
+        >
+          Name
+        </button>
+        <button
+          mat-menu-item
+          (click)="sortByEmail()"
+        >
+          Email
+        </button>
+        <button
+          mat-menu-item
+          (click)="sortByDateRegistered()"
+        >
+          Date Registered
+        </button>
       </mat-menu>
     </div>
   </div>
 
-  <mat-paginator class="admin-users-paginator" [length]="sortSettings.totalItems" [pageSize]="sortSettings.itemsPerPage" (page)="onUpdateUserRange($event)">
+  <mat-paginator
+    class="admin-users-paginator"
+    [length]="sortSettings.totalItems"
+    [pageSize]="sortSettings.itemsPerPage"
+    (page)="onUpdateUserRange($event)"
+  >
   </mat-paginator>
 
   <div class="d-flex justify-content-center w-100">
     <mat-spinner *ngIf="!shouldDisplayUserCards()"></mat-spinner>
   </div>
 
-  <div class="row justify-content-center admin-user-card-container mb-3" *ngIf="shouldDisplayUserCards()">
-    <div class="m-2 col-lg-5" *ngFor="let cardUser of displayedUsers">
-      <app-user-edit [userOnCard]="cardUser" [isAdminMode]="true" (cancelEditClickedEvent)="updateUser(cardUser)">
+  <div
+    class="row justify-content-center admin-user-card-container mb-3"
+    *ngIf="shouldDisplayUserCards()"
+  >
+    <div
+      class="m-2 col-lg-5"
+      *ngFor="let cardUser of displayedUsers"
+    >
+      <app-user-edit
+        [userOnCard]="cardUser"
+        [isAdminMode]="true"
+        (cancelEditClickedEvent)="updateUser(cardUser)"
+      >
       </app-user-edit>
     </div>
   </div>
-
 </div>

@@ -1,107 +1,222 @@
 <div class="d-flex photos-component-container">
   <form (ngSubmit)="searchPhotos(searchTerm)">
     <mat-form-field>
-      <input matInput [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search">
+      <input
+        matInput
+        [(ngModel)]="searchTerm"
+        name="searchTerm"
+        placeholder="Search"
+      />
     </mat-form-field>
   </form>
-  <mat-icon class="clear-search-icon" *ngIf="searchTerm !== ''" (click)="clearSearchTerm()">clear</mat-icon>
+  <mat-icon
+    class="clear-search-icon"
+    *ngIf="searchTerm !== ''"
+    (click)="clearSearchTerm()"
+    >clear</mat-icon
+  >
   <span class="spacer"></span>
   <div class="justify-content-end">
     <div class="d-md-none mt-3">
-      <button mat-raised-button [matMenuTriggerFor]="menu">Sort</button>
+      <button
+        mat-raised-button
+        [matMenuTriggerFor]="menu"
+      >
+        Sort
+      </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="sortPhotosBy(sortRandomly)">Random</button>
-        <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken)">Date Taken</button>
-        <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded)">Recently Added</button>
+        <button
+          mat-menu-item
+          (click)="sortPhotosBy(sortRandomly)"
+        >
+          Random
+        </button>
+        <button
+          mat-menu-item
+          (click)="sortPhotosBy(sortByYearTaken)"
+        >
+          Date Taken
+        </button>
+        <button
+          mat-menu-item
+          (click)="sortPhotosBy(sortByDateAdded)"
+        >
+          Recently Added
+        </button>
       </mat-menu>
     </div>
     <div class="d-none d-md-block">
       <p class="photos-sort-select-container">
         <span class="photos-sort-select-label">Sort</span>
-        <mat-button-toggle-group name="photoSort" [value]="sortType" aria-label="Sort">
-          <mat-button-toggle (click)="sortPhotosBy(sortRandomly)" value="random">Random</mat-button-toggle>
-          <mat-button-toggle (click)="sortPhotosBy(sortByYearTaken)" value="taken">Year Taken</mat-button-toggle>
-          <mat-button-toggle (click)="sortPhotosBy(sortByDateAdded)" value="added">Recently Added</mat-button-toggle>
+        <mat-button-toggle-group
+          name="photoSort"
+          [value]="sortType"
+          aria-label="Sort"
+        >
+          <mat-button-toggle
+            (click)="sortPhotosBy(sortRandomly)"
+            value="random"
+            >Random</mat-button-toggle
+          >
+          <mat-button-toggle
+            (click)="sortPhotosBy(sortByYearTaken)"
+            value="taken"
+            >Year Taken</mat-button-toggle
+          >
+          <mat-button-toggle
+            (click)="sortPhotosBy(sortByDateAdded)"
+            value="added"
+            >Recently Added</mat-button-toggle
+          >
         </mat-button-toggle-group>
       </p>
     </div>
   </div>
 </div>
-<div class="photo-upload-input-container d-flex flex-row justify-content-end"
-  *ngIf="user && user.roles && user.roles.admin">
+<div
+  class="photo-upload-input-container d-flex flex-row justify-content-end"
+  *ngIf="user && user.roles && user.roles.admin"
+>
   <div class="d-flex flex-column">
-    <app-file-input [matIcon]="'file_upload'" [inputMessage]="'Upload Photos'" [shouldAllowMultipleFiles]="true"
-      [shouldShowClearButton]="false" [shouldAllowMultipleFiles]="false" (inputFileChangeEvent)="uploadPhotos($event)">
+    <app-file-input
+      [matIcon]="'file_upload'"
+      [inputMessage]="'Upload Photos'"
+      [shouldAllowMultipleFiles]="true"
+      [shouldShowClearButton]="false"
+      [shouldAllowMultipleFiles]="false"
+      (inputFileChangeEvent)="uploadPhotos($event)"
+    >
     </app-file-input>
-    <app-photo-upload-progress *ngFor="let upload of photoUploads" [upload]="upload"
-      (completeUploadEvent)="completePhotoUpload(upload)"></app-photo-upload-progress>
+    <app-photo-upload-progress
+      *ngFor="let upload of photoUploads"
+      [upload]="upload"
+      (completeUploadEvent)="completePhotoUpload(upload)"
+    ></app-photo-upload-progress>
   </div>
 </div>
-<div class="d-flex justify-content-center align-items-center mt-5" *ngIf="showSpinner">
+<div
+  class="d-flex justify-content-center align-items-center mt-5"
+  *ngIf="showSpinner"
+>
   <mat-spinner></mat-spinner>
 </div>
 <div id="lightgallery">
   <div [hidden]="showSpinner">
-    <mat-card class="photo-card col-xs-10 col-sm-8 col-md-6" *ngFor="let photo of loadedPhotos">
+    <mat-card
+      class="photo-card col-xs-10 col-sm-8 col-md-6"
+      *ngFor="let photo of loadedPhotos"
+    >
       <!-- <a href="{{ photo.url }}" class="light-link"> -->
-        <img class="photo-image" mat-card-image src="{{ photo.url }}" alt="{{ photo.info }}">
+      <img
+        class="photo-image"
+        mat-card-image
+        src="{{ photo.url }}"
+        alt="{{ photo.info }}"
+      />
       <!-- </a> -->
       <mat-card-content *ngIf="!photo.isEditable">
         <div class="photo-by">
-          <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br></span>
+          <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br /></span>
         </div>
         <div class="mt-1">
-          <span *ngIf="photo.info">{{ photo.info }}<br></span>
-          <span *ngIf="photo.location">{{ photo.location }}<br></span>
-          <span *ngIf="photo.year"><i><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year }}<br></i></span>
+          <span *ngIf="photo.info">{{ photo.info }}<br /></span>
+          <span *ngIf="photo.location">{{ photo.location }}<br /></span>
+          <span *ngIf="photo.year"
+            ><i
+              ><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year
+              }}<br /></i
+          ></span>
         </div>
       </mat-card-content>
-      <mat-card-footer class="photos-controls-container d-flex justify-content-end">
-        <button mat-button (click)="downloadPhoto(photo)" *ngIf="!photo.isEditable">
+      <mat-card-footer
+        class="photos-controls-container d-flex justify-content-end"
+      >
+        <button
+          mat-button
+          (click)="downloadPhoto(photo)"
+          *ngIf="!photo.isEditable"
+        >
           <mat-icon>cloud_download</mat-icon>
         </button>
-        <button mat-button *ngIf="user.roles && user.roles.admin && !photo.isEditable"
-          (click)="photo.isEditable = true">
+        <button
+          mat-button
+          *ngIf="user.roles && user.roles.admin && !photo.isEditable"
+          (click)="photo.isEditable = true"
+        >
           <mat-icon>edit</mat-icon>
         </button>
       </mat-card-footer>
-      <mat-card-footer *ngIf="user.roles && user.roles.admin && photo.isEditable"
-        class="contact-edit-footer d-flex justify-content-end">
+      <mat-card-footer
+        *ngIf="user.roles && user.roles.admin && photo.isEditable"
+        class="contact-edit-footer d-flex justify-content-end"
+      >
         <div class="input-group mb-1">
           <form>
             <div class="form-row">
               <div class="photo-info-input-container form-group col-11">
-                <input type="text" class="form-control photo-info-input" name="photoInfo" [(ngModel)]="photo.info"
-                  placeholder="Info">
+                <input
+                  type="text"
+                  class="form-control photo-info-input"
+                  name="photoInfo"
+                  [(ngModel)]="photo.info"
+                  placeholder="Info"
+                />
               </div>
               <div class="form-row ml-3 photo-edit-inputs-container">
                 <div class="form-group col-4">
-                  <select class="form-control" name="photoYear" [(ngModel)]="photo.year">
+                  <select
+                    class="form-control"
+                    name="photoYear"
+                    [(ngModel)]="photo.year"
+                  >
                     <option *ngFor="let year of years">{{ year }}</option>
                   </select>
                 </div>
                 <div class="form-group col-2 d-flex align-items-end">
-                  <mat-checkbox name="photo-year-circa" [(ngModel)]="photo.isYearCirca"><i>c.</i></mat-checkbox>
+                  <mat-checkbox
+                    name="photo-year-circa"
+                    [(ngModel)]="photo.isYearCirca"
+                    ><i>c.</i></mat-checkbox
+                  >
                 </div>
                 <div class="form-group col-6">
-                  <input type="text" class="form-control" name="photo-location" [(ngModel)]="photo.location"
-                    placeholder="Location">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="photo-location"
+                    [(ngModel)]="photo.location"
+                    placeholder="Location"
+                  />
                 </div>
-                <br>
+                <br />
                 <div class="form-group col-6">
-                  <input type="text" class="form-control" name="photo-by" [(ngModel)]="photo.takenBy"
-                    placeholder="Photo By">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="photo-by"
+                    [(ngModel)]="photo.takenBy"
+                    placeholder="Photo By"
+                  />
                 </div>
               </div>
             </div>
             <div class="input-group mb-1 justify-content-end">
-              <button mat-button (click)="deletePhoto(photo)">
+              <button
+                mat-button
+                (click)="deletePhoto(photo)"
+              >
                 <mat-icon>delete</mat-icon>
               </button>
-              <button mat-button (click)="photo.isEditable = false">
+              <button
+                mat-button
+                (click)="photo.isEditable = false"
+              >
                 <mat-icon>cancel</mat-icon>
               </button>
-              <button mat-button (click)="updatePhoto(photo)">
+              <button
+                mat-button
+                (click)="updatePhoto(photo)"
+              >
                 <mat-icon>save</mat-icon>
               </button>
             </div>
@@ -110,7 +225,13 @@
       </mat-card-footer>
     </mat-card>
     <div class="d-flex justify-content-center m-5">
-      <button mat-raised-button color="primary" (click)="loadMorePhotos(10)">Load More</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="loadMorePhotos(10)"
+      >
+        Load More
+      </button>
     </div>
   </div>
 </div>

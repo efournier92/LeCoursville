@@ -1,15 +1,37 @@
 <body class="app-container">
-  <mat-toolbar class="d-inline-flex justify-content-between" color="primary">
-    <img src="./assets/img/logo/L.png" class="toolbar-icon" routerLink="/" alt="L" height="80%">
+  <mat-toolbar
+    class="d-inline-flex justify-content-between"
+    color="primary"
+  >
+    <img
+      src="./assets/img/logo/L.png"
+      class="toolbar-icon"
+      routerLink="/"
+      alt="L"
+      height="80%"
+    />
     <div class="icons-menu d-inline-flex">
-      <div class="d-none d-lg-block" *ngIf="user?.id">
+      <div
+        class="d-none d-lg-block"
+        *ngIf="user?.id"
+      >
         <app-navbar-links [isMenuList]="false"></app-navbar-links>
       </div>
-      <div class="d-block d-lg-none" *ngIf="user?.id">
-        <button mat-icon-button class="menu-icon-container" [matMenuTriggerFor]="menu">
+      <div
+        class="d-block d-lg-none"
+        *ngIf="user?.id"
+      >
+        <button
+          mat-icon-button
+          class="menu-icon-container"
+          [matMenuTriggerFor]="menu"
+        >
           <mat-icon>more_vert</mat-icon>
         </button>
-        <mat-menu #menu="matMenu" class="toolbar-routes-menu">
+        <mat-menu
+          #menu="matMenu"
+          class="toolbar-routes-menu"
+        >
           <app-navbar-links [isMenuList]="true"></app-navbar-links>
         </mat-menu>
       </div>

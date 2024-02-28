@@ -2,8 +2,12 @@
   <app-admin-routing class="w-100"></app-admin-routing>
   <div class="admin-header">Calendar Events</div>
   <div class="d-flex justify-content-end w-100">
-    <button mat-raised-button (click)="onAddEvent()">
-      <mat-icon>add</mat-icon> New Event
+    <button
+      mat-raised-button
+      (click)="onAddEvent()"
+    >
+      <mat-icon>add</mat-icon>
+      New Event
     </button>
   </div>
 
@@ -11,8 +15,19 @@
     <div class="d-flex flex-column justify-content-left">
       <mat-form-field class="filter-users-form-field">
         <mat-label>Filter Events</mat-label>
-        <input matInput type="text" [(ngModel)]="sortSettings.activeFilterQuery" (input)="onFilterQueryChange($event.target.value)">
-        <button *ngIf="sortSettings.activeFilterQuery" matSuffix mat-icon-button aria-label="Clear" (click)="onFilterQueryChange('')">
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="sortSettings.activeFilterQuery"
+          (input)="onFilterQueryChange($event.target.value)"
+        />
+        <button
+          *ngIf="sortSettings.activeFilterQuery"
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="onFilterQueryChange('')"
+        >
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
@@ -22,50 +37,90 @@
           (change)="toggleDisplay($event, displayToggle.id)"
           [(ngModel)]="sortSettings.displayToggleStates[displayToggle.id]"
           class="display-toggle-checkbox"
-          color="warn">
+          color="warn"
+        >
           {{ displayToggle.name }}
         </mat-checkbox>
       </div>
     </div>
     <div class="d-flex flex-column justify-content-left w-100">
       <mat-paginator
-          class="admin-calendar-paginator w-100"
-          [length]="sortSettings.totalItems"
-          [pageSize]="sortSettings.itemsPerPage"
-          (page)="onUpdatePage($event)">
+        class="admin-calendar-paginator w-100"
+        [length]="sortSettings.totalItems"
+        [pageSize]="sortSettings.itemsPerPage"
+        (page)="onUpdatePage($event)"
+      >
       </mat-paginator>
     </div>
   </div>
 
   <div class="w-100 row">
-    <mat-card class="admin-calendar-event-card col-md-6 col-lg-4 col-xl-3" *ngFor="let event of displayedEvents">
+    <mat-card
+      class="admin-calendar-event-card col-md-6 col-lg-4 col-xl-3"
+      *ngFor="let event of displayedEvents"
+    >
       <mat-form-field class="admin-upload-input">
-        <input matInput placeholder="Title" [(ngModel)]="event.title">
+        <input
+          matInput
+          placeholder="Title"
+          [(ngModel)]="event.title"
+        />
       </mat-form-field>
       <mat-form-field class="admin-upload-input">
-        <mat-select placeholder="Type" [(ngModel)]="event.type">
-          <mat-option *ngFor="let type of eventTypes" [value]="type">
+        <mat-select
+          placeholder="Type"
+          [(ngModel)]="event.type"
+        >
+          <mat-option
+            *ngFor="let type of eventTypes"
+            [value]="type"
+          >
             {{ type | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field class="admin-upload-input">
-        <input matInput [matDatepicker]="picker" [(ngModel)]="event.date" placeholder="Date">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker touchUi #picker></mat-datepicker>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          [(ngModel)]="event.date"
+          placeholder="Date"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker
+          touchUi
+          #picker
+        ></mat-datepicker>
       </mat-form-field>
       <mat-checkbox [(ngModel)]="event.isLiving">Living</mat-checkbox>
-      <div class="admin-action-buttons-container row d-flex justify-content-between">
-        <button mat-button class="admin-form-action-button admin-form-action-button-upload col-12"
-                           *ngIf="!event.id" (click)="onCreateEvent(event)">
+      <div
+        class="admin-action-buttons-container row d-flex justify-content-between"
+      >
+        <button
+          mat-button
+          class="admin-form-action-button admin-form-action-button-upload col-12"
+          *ngIf="!event.id"
+          (click)="onCreateEvent(event)"
+        >
           <span>Create</span>
         </button>
-        <button mat-button class="admin-form-action-button admin-form-action-button-upload col-5"
-                           *ngIf="event.id" (click)="onSaveEvent(event)">
+        <button
+          mat-button
+          class="admin-form-action-button admin-form-action-button-upload col-5"
+          *ngIf="event.id"
+          (click)="onSaveEvent(event)"
+        >
           <span>Save</span>
         </button>
-        <button class="admin-form-action-button admin-form-action-button-delete col-5" *ngIf="event.id" mat-button
-                (click)="onDeleteEvent(event)">
+        <button
+          class="admin-form-action-button admin-form-action-button-delete col-5"
+          *ngIf="event.id"
+          mat-button
+          (click)="onDeleteEvent(event)"
+        >
           <span>Delete</span>
         </button>
       </div>

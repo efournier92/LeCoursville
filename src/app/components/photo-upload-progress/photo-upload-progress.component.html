@@ -1,8 +1,22 @@
-<mat-card class="upload-progress-card" color="primary" [ngClass]="{'upload-card-success': uploadFinished}">
-  <progress max="100" class="photo-upload-progress" [value]="(uploadProgress | async)"></progress>
-  <div class="upload-success-container" *ngIf="photo && photo.url">
+<mat-card
+  class="upload-progress-card"
+  color="primary"
+  [ngClass]="{ 'upload-card-success': uploadFinished }"
+>
+  <progress
+    max="100"
+    class="photo-upload-progress"
+    [value]="uploadProgress | async"
+  ></progress>
+  <div
+    class="upload-success-container"
+    *ngIf="photo && photo.url"
+  >
     Uploaded to
-    <a class="photo-upload-link" [href]="photo.url">
+    <a
+      class="photo-upload-link"
+      [href]="photo.url"
+    >
       {{ photo.path }}
     </a>
   </div>

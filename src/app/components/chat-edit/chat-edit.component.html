@@ -1,55 +1,114 @@
-<div class="chat-edit-component" *ngIf="user">
-  <div class="d-flex justify-content-center" *ngIf="isSaving">
+<div
+  class="chat-edit-component"
+  *ngIf="user"
+>
+  <div
+    class="d-flex justify-content-center"
+    *ngIf="isSaving"
+  >
     <mat-spinner></mat-spinner>
   </div>
-  <div class="row mb-4 chat-card-content-container" *ngIf="!isSaving"
-    [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }">
+  <div
+    class="row mb-4 chat-card-content-container"
+    *ngIf="!isSaving"
+    [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
+  >
     <div class="col-2 col-md-1 chat-tools-container">
       <div class="d-flex justify-content-center flex-column mt-2">
-        <div class="mb-3" *ngIf="message.isSaved"
-          [ngStyle]="{ color: highlights.trash === true  ? '#FF9800' : '#F44336' }">
+        <div
+          class="mb-3"
+          *ngIf="message.isSaved"
+          [ngStyle]="{
+            color: highlights.trash === true ? '#FF9800' : '#F44336'
+          }"
+        >
           <div *ngIf="!message.isDeleted">
-            <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('trash', true)"
-              (mouseleave)="highlightElement('trash', false)" (click)="deleteMessage()">
+            <div
+              class="d-flex flex-row justify-content-center"
+              (mouseover)="highlightElement('trash', true)"
+              (mouseleave)="highlightElement('trash', false)"
+              (click)="deleteMessage()"
+            >
               <span class="fa fa-trash fa-2x"></span>
             </div>
-            <span class="calendar-icon-label d-flex justify-content-center">Delete</span>
+            <span class="calendar-icon-label d-flex justify-content-center"
+              >Delete</span
+            >
           </div>
           <div *ngIf="message.isDeleted">
-            <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('trash', true)"
-              (mouseleave)="highlightElement('trash', false)" (click)="restoreMessage()">
+            <div
+              class="d-flex flex-row justify-content-center"
+              (mouseover)="highlightElement('trash', true)"
+              (mouseleave)="highlightElement('trash', false)"
+              (click)="restoreMessage()"
+            >
               <span class="fa fa-undo fa-2x"></span>
             </div>
-            <span class="calendar-icon-label d-flex justify-content-center">Restore</span>
+            <span class="calendar-icon-label d-flex justify-content-center"
+              >Restore</span
+            >
           </div>
         </div>
-        <div class="mb-3 chat-edit-button-cancel"
-          [ngStyle]="{ color: highlights.cancel === true  ? '#FF9800' : '#F44336' }">
-          <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('cancel', true)"
-            (mouseleave)="highlightElement('cancel', false)" (click)="cancelEdit()">
+        <div
+          class="mb-3 chat-edit-button-cancel"
+          [ngStyle]="{
+            color: highlights.cancel === true ? '#FF9800' : '#F44336'
+          }"
+        >
+          <div
+            class="d-flex flex-row justify-content-center"
+            (mouseover)="highlightElement('cancel', true)"
+            (mouseleave)="highlightElement('cancel', false)"
+            (click)="cancelEdit()"
+          >
             <span class="fa fa-ban fa-2x"></span>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center">Cancel</span>
+          <span class="calendar-icon-label d-flex justify-content-center"
+            >Cancel</span
+          >
         </div>
-        <div class="mb-3 chat-edit-button-send"
-          [ngStyle]="{ color: highlights.send === true  ? '#FF9800' : '#F44336' }">
-          <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('send', true)"
-            (mouseleave)="highlightElement('send', false)" (click)="saveMessage(message)">
+        <div
+          class="mb-3 chat-edit-button-send"
+          [ngStyle]="{
+            color: highlights.send === true ? '#FF9800' : '#F44336'
+          }"
+        >
+          <div
+            class="d-flex flex-row justify-content-center"
+            (mouseover)="highlightElement('send', true)"
+            (mouseleave)="highlightElement('send', false)"
+            (click)="saveMessage(message)"
+          >
             <span class="fa fa-share-square fa-2x"></span>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center">Send</span>
+          <span class="calendar-icon-label d-flex justify-content-center"
+            >Send</span
+          >
         </div>
-        <div class="mb-3 chat-edit-button-sticky" *ngIf="shouldShowStickyButton"
-          [ngStyle]="{ color: highlights.sticky === true  ? '#FF9800' : '#F44336' }">
-          <div class="d-flex flex-row justify-content-center" (mouseover)="highlightElement('sticky', true)"
-            (mouseleave)="highlightElement('sticky', false)">
+        <div
+          class="mb-3 chat-edit-button-sticky"
+          *ngIf="shouldShowStickyButton"
+          [ngStyle]="{
+            color: highlights.sticky === true ? '#FF9800' : '#F44336'
+          }"
+        >
+          <div
+            class="d-flex flex-row justify-content-center"
+            (mouseover)="highlightElement('sticky', true)"
+            (mouseleave)="highlightElement('sticky', false)"
+          >
             <mat-checkbox [(ngModel)]="message.isSticky"></mat-checkbox>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center">Sticky</span>
+          <span class="calendar-icon-label d-flex justify-content-center"
+            >Sticky</span
+          >
         </div>
       </div>
     </div>
-    <mat-divider class="chat-divider-vertical" [vertical]="true"></mat-divider>
+    <mat-divider
+      class="chat-divider-vertical"
+      [vertical]="true"
+    ></mat-divider>
     <div class="chat-edit-message-form-container col-9">
       <mat-card-content>
         <mat-card-title>
@@ -57,31 +116,64 @@
             {{ message.authorName }}
           </mat-card-subtitle>
           <mat-card-subtitle class="chat-message-timestamp">
-            {{ message.dateSent | date:'short' }}
+            {{ message.dateSent | date : 'short' }}
           </mat-card-subtitle>
         </mat-card-title>
-        <div class="title-input-container" *ngIf="!message.isReply">
+        <div
+          class="title-input-container"
+          *ngIf="!message.isReply"
+        >
           <mat-form-field class="w-100">
-            <input matInput class="chat-edit-input-title" placeholder="Title" [(ngModel)]="message.title">
+            <input
+              matInput
+              class="chat-edit-input-title"
+              placeholder="Title"
+              [(ngModel)]="message.title"
+            />
           </mat-form-field>
         </div>
         <mat-form-field class="w-100">
-          <textarea matInput class="chat-edit-input-body" placeholder="Message" cdkTextareaAutosize
-            #autosize="cdkTextareaAutosize" #input [(ngModel)]="message.body"></textarea>
+          <textarea
+            matInput
+            class="chat-edit-input-body"
+            placeholder="Message"
+            cdkTextareaAutosize
+            #autosize="cdkTextareaAutosize"
+            #input
+            [(ngModel)]="message.body"
+          ></textarea>
         </mat-form-field>
-        <div class="d-flex align-items-end" *ngIf="!message.isReply">
-          <app-file-input [matIcon]="'attach_file'" [inputMessage]="'Attach Photo'" [shouldShowLabel]="true"
-            [shouldShowClearButton]="true" [shouldAllowMultipleFiles]="false"
-            (inputFileChangeEvent)="inputFileChangeEvent($event)">
+        <div
+          class="d-flex align-items-end"
+          *ngIf="!message.isReply"
+        >
+          <app-file-input
+            [matIcon]="'attach_file'"
+            [inputMessage]="'Attach Photo'"
+            [shouldShowLabel]="true"
+            [shouldShowClearButton]="true"
+            [shouldAllowMultipleFiles]="false"
+            (inputFileChangeEvent)="inputFileChangeEvent($event)"
+          >
           </app-file-input>
         </div>
       </mat-card-content>
     </div>
   </div>
   <mat-card-content *ngFor="let reply of message.replies">
-    <app-chat-view *ngIf="!reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
+    <app-chat-view
+      *ngIf="!reply.isEditable"
+      [message]="reply"
+      [parent]="message"
+      (updateParentEvent)="updateParent()"
+    >
     </app-chat-view>
-    <app-chat-edit *ngIf="reply.isEditable" [message]="reply" [parent]="message" (updateParentEvent)="updateParent()">
+    <app-chat-edit
+      *ngIf="reply.isEditable"
+      [message]="reply"
+      [parent]="message"
+      (updateParentEvent)="updateParent()"
+    >
     </app-chat-edit>
   </mat-card-content>
 </div>
