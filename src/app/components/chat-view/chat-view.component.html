@@ -3,7 +3,7 @@
   [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
 >
   <div class="col-2 col-md-1 chat-tools-container">
-    <div class="mb-3">
+    <div class="mb-3 message-button">
       <div class="d-flex justify-content-center mt-2">
         <span
           class="fa-stack"
@@ -47,7 +47,7 @@
       >
     </div>
     <div
-      class="mb-3"
+      class="mb-3 message-button"
       [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
     >
       <div
@@ -63,6 +63,7 @@
       >
     </div>
     <div
+      class="message-button"
       *ngIf="
         message.authorId === user.id || (user && user.roles && user.roles.admin)
       "

@@ -78,7 +78,7 @@ export abstract class SortSettings {
   }
 
   filterItemsByParams(items: any[]): any[] {
-    if (!Object.keys(this.activeFilterParams).length || !items.length) { return items; }
+    if (!this.hasActiveFilterParams() || !items.length) { return items; }
 
     const relevantProperties = Object.keys(this.activeFilterParams);
 

@@ -16,7 +16,7 @@
     <div class="col-2 col-md-1 chat-tools-container">
       <div class="d-flex justify-content-center flex-column mt-2">
         <div
-          class="mb-3"
+          class="mb-3 message-button"
           *ngIf="message.isSaved"
           [ngStyle]="{
             color: highlights.trash === true ? '#FF9800' : '#F44336'
@@ -50,7 +50,7 @@
           </div>
         </div>
         <div
-          class="mb-3 chat-edit-button-cancel"
+          class="mb-3 message-button chat-edit-button-cancel"
           [ngStyle]="{
             color: highlights.cancel === true ? '#FF9800' : '#F44336'
           }"
@@ -68,7 +68,7 @@
           >
         </div>
         <div
-          class="mb-3 chat-edit-button-send"
+          class="mb-3 message-button chat-edit-button-send"
           [ngStyle]="{
             color: highlights.send === true ? '#FF9800' : '#F44336'
           }"
