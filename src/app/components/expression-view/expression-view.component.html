@@ -2,7 +2,7 @@
   class="row chat-card-content-container"
   [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
 >
-  <div class="col-2 col-md-1 chat-tools-container">
+  <div class="col-3 col-sm-2 col-lg-1 chat-tools-container">
     <div
       class="mb-3 message-button"
       [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
@@ -43,7 +43,7 @@
     class="chat-divider-vertical"
     [vertical]="true"
   ></mat-divider>
-  <div class="chat-view-message-container col-9">
+  <div class="chat-view-message-container col-8">
     <mat-card-content
       class="chat-view-message-deleted-container col-9"
       *ngIf="message.isDeleted"
