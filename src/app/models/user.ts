@@ -18,8 +18,15 @@ export class User {
     this.id = existingUser?.id || authUser?.uid;
     this.name = existingUser?.name || authUser?.displayName;
     this.email = existingUser?.email || authUser?.email;
-    this.dateRegistered = existingUser?.dateRegistered || authUser?.metadata?.creationTime;
+    // this.dateRegistered = existingUser?.dateRegistered || authUser?.metadata?.creationTime || new Date();
+    // this.dateLastActive = authUser?.metadata.lastSignInTime || new Date();
+    this.dateRegistered =
+      existingUser?.dateRegistered || authUser?.metadata?.creationTime;
     this.dateLastActive = authUser?.metadata.lastSignInTime;
-    this.roles = existingUser?.roles || { user: true, admin: false, super: false };
+    this.roles = existingUser?.roles || {
+      user: true,
+      admin: false,
+      super: false,
+    };
   }
 }

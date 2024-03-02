@@ -1,21 +1,27 @@
-import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
-import { CdkTextareaAutosize } from '@angular/cdk/text-field';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Message } from 'src/app/models/message';
-import { AuthService } from 'src/app/services/auth.service';
-import { MessageService } from 'src/app/services/message.service';
-import { User } from 'src/app/models/user';
-import { HighlightService } from 'src/app/services/highlight.service';
-import { Highlight } from 'src/app/models/highlight';
-import { PhotosService } from 'src/app/services/photos.service';
-import { ConfirmPromptService } from 'src/app/services/confirm-prompt.service';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { MessageConstants } from 'src/app/constants/message-constants';
+import {
+  Component,
+  OnInit,
+  Input,
+  ViewChild,
+  Output,
+  EventEmitter,
+} from "@angular/core";
+import { CdkTextareaAutosize } from "@angular/cdk/text-field";
+import { AngularFireDatabase } from "@angular/fire/compat/database";
+import { Message } from "src/app/models/message";
+import { AuthService } from "src/app/services/auth.service";
+import { MessageService } from "src/app/services/message.service";
+import { User } from "src/app/models/user";
+import { HighlightService } from "src/app/services/highlight.service";
+import { Highlight } from "src/app/models/highlight";
+import { PhotosService } from "src/app/services/photos.service";
+import { PromptModalService } from "src/app/services/prompt-modal.service";
+import { AnalyticsService } from "src/app/services/analytics.service";
 
 @Component({
-  selector: 'app-message-edit',
-  templateUrl: './message-edit.component.html',
-  styleUrls: ['./message-edit.component.scss']
+  selector: "app-message-edit",
+  templateUrl: "./message-edit.component.html",
+  styleUrls: ["./message-edit.component.scss"],
 })
 export abstract class MessageEditComponent implements OnInit {
   @Input() message: Message;
@@ -24,7 +30,7 @@ export abstract class MessageEditComponent implements OnInit {
   @Output() updateParentEvent: EventEmitter<object> = new EventEmitter();
   @Output() cancelEditEvent: EventEmitter<object> = new EventEmitter();
 
-  @ViewChild('autosize')
+  @ViewChild("autosize")
   user: User;
   highlights: Highlight = new Highlight();
   autosize: CdkTextareaAutosize;
@@ -39,9 +45,9 @@ export abstract class MessageEditComponent implements OnInit {
     private photoService: PhotosService,
     private highlightService: HighlightService,
     private db: AngularFireDatabase,
-    private confirmPrompt: ConfirmPromptService,
+    private promptModal: PromptModalService,
     private analyticsService: AnalyticsService,
-  ) { }
+  ) {}
 
   // LIFECYCLE HOOKS
 
@@ -52,13 +58,10 @@ export abstract class MessageEditComponent implements OnInit {
   // SUBSCRIPTIONS
 
   private subscribeToUserObservable() {
-    this.authService.userObservable.subscribe(
-      (user: User) => {
-        this.user = user
-        if (this.user?.roles?.super)
-          this.shouldShowStickyButton = true
-      }
-    );
+    this.authService.userObservable.subscribe((user: User) => {
+      this.user = user;
+      if (this.user?.roles?.super) this.shouldShowStickyButton = true;
+    });
   }
 
   // PUBLIC METHODS
@@ -66,35 +69,35 @@ export abstract class MessageEditComponent implements OnInit {
   // TODO: Abstract large methods to smaller service methods
 
   saveMessage(newMessage: Message): void {
-    const dialogRef = this.confirmPrompt.openDialog(
-      'Are You Sure?',
-      'Do you want to post this message to LeCoursville?',
+    const dialogRef = this.promptModal.openDialog(
+      "Are You Sure?",
+      "Do you want to post this message to LeCoursville?",
     );
-    dialogRef.afterClosed().subscribe(
-      (confirmedAction: boolean) => {
-        if (confirmedAction) {
-          if (this.photoUpload && !this.message.isReply) {
-            this.saveMessageWithPhoto(newMessage);
-            return;
+    dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
+      if (confirmedAction) {
+        if (this.photoUpload && !this.message.isReply) {
+          this.saveMessageWithPhoto(newMessage);
+          return;
+        }
+        newMessage = this.markMessageSaved(newMessage);
+        newMessage.id = newMessage.id || this.db.createPushId();
+        if (newMessage.isReply) {
+          if (this.parent) {
+            this.updateParent();
           }
-          newMessage = this.markMessageSaved(newMessage);
-          newMessage.id = newMessage.id || this.db.createPushId();
-          if (newMessage.isReply) {
-            if (this.parent) {
-              this.updateParent();
-            }
-          } else if (!newMessage.id) {
-            this.messageService.create(newMessage);
-          } else {
-            this.messageService.updateMessage(newMessage);
-          }
+        } else if (!newMessage.id) {
+          this.messageService.create(newMessage);
+        } else {
+          this.messageService.updateMessage(newMessage);
         }
       }
-    );
+    });
 
-    this.analyticsService.logEvent('edit_message_save', {
-      id: newMessage?.id, title: newMessage?.title,
-      isReply: newMessage?.isReply, parent: this.parent,
+    this.analyticsService.logEvent("edit_message_save", {
+      id: newMessage?.id,
+      title: newMessage?.title,
+      isReply: newMessage?.isReply,
+      parent: this.parent,
       userId: this.user?.id,
       messageType: this.messageType,
     });
@@ -111,72 +114,76 @@ export abstract class MessageEditComponent implements OnInit {
       }
     }
 
-    this.analyticsService.logEvent('edit_message_edit_cancel', {
+    this.analyticsService.logEvent("edit_message_edit_cancel", {
       id: this.message?.id,
-      title: this.message?.title, parent: this.parent,
+      title: this.message?.title,
+      parent: this.parent,
       userId: this.user?.id,
     });
   }
 
   deleteMessage(): void {
-    const dialogRef = this.confirmPrompt.openDialog(
-      'Are You Sure?',
-      'Do you want to remove this message from LeCoursville?',
+    const dialogRef = this.promptModal.openDialog(
+      "Are You Sure?",
+      "Do you want to remove this message from LeCoursville?",
     );
-    dialogRef.afterClosed().subscribe(
-      (confirmedAction: boolean) => {
-        if (confirmedAction) {
-          if (this.message.replies && this.message.replies.length !== 0) {
-            this.message.isDeleted = true;
-          } else if (this.message.isReply) {
-            let i = 0;
-            for (const reply of this.parent.replies) {
-              if (reply.id === this.message.id) {
-                this.parent.replies.splice(i, 1);
-                this.updateParent();
-              }
-              i += 1;
+    dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
+      if (confirmedAction) {
+        if (this.message.replies && this.message.replies.length !== 0) {
+          this.message.isDeleted = true;
+        } else if (this.message.isReply) {
+          let i = 0;
+          for (const reply of this.parent.replies) {
+            if (reply.id === this.message.id) {
+              this.parent.replies.splice(i, 1);
+              this.updateParent();
             }
-          } else {
-            this.messageService.deleteMessage(this.message);
+            i += 1;
           }
-          this.message.isEditable = false;
+        } else {
+          this.messageService.deleteMessage(this.message);
         }
+        this.message.isEditable = false;
       }
-    );
+    });
 
-    this.analyticsService.logEvent('edit_message_delete', {
+    this.analyticsService.logEvent("edit_message_delete", {
       id: this.message?.id,
-      title: this.message?.title, parent: this.parent,
+      title: this.message?.title,
+      parent: this.parent,
       userId: this.user?.id,
       messageType: this.messageType,
     });
   }
 
   restoreMessage(): void {
-    const dialogRef = this.confirmPrompt.openDialog(
-      'Are You Sure?',
-      'Do you want to restore this message to LeCoursville?',
+    const dialogRef = this.promptModal.openDialog(
+      "Are You Sure?",
+      "Do you want to restore this message to LeCoursville?",
     );
 
-    dialogRef.afterClosed().subscribe(
-      (confirmedAction: boolean) => {
-        if (confirmedAction) {
-          this.message.isDeleted = false;
-          this.message.isEditable = false;
-        }
+    dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
+      if (confirmedAction) {
+        this.message.isDeleted = false;
+        this.message.isEditable = false;
       }
-    );
+    });
 
-    this.analyticsService.logEvent('edit_message_restore', {
-      id: this.message?.id, title: this.message?.title,
-      parent: this.parent, userId: this.user?.id,
+    this.analyticsService.logEvent("edit_message_restore", {
+      id: this.message?.id,
+      title: this.message?.title,
+      parent: this.parent,
+      userId: this.user?.id,
       messageType: this.messageType,
     });
   }
 
   highlightElement(element: string, value: boolean): void {
-    this.highlights = this.highlightService.highlightElement(this.highlights, element, value);
+    this.highlights = this.highlightService.highlightElement(
+      this.highlights,
+      element,
+      value,
+    );
   }
 
   inputFileChangeEvent(files: any): void {
@@ -199,15 +206,15 @@ export abstract class MessageEditComponent implements OnInit {
     this.isSaving = true;
     const photoUpload = this.photoService.uploadPhoto(this.photoUpload, true);
     const uploadFileType = this.photoUpload.type;
-    photoUpload.onUrlAvailable.subscribe(
-      (url: string) => {
-        if (url === '') { return; }
-        message.attachmentUrl = url;
-        message.attachmentType = uploadFileType;
-        message = this.markMessageSaved(message);
-        this.messageService.create(message);
-        this.isSaving = false;
+    photoUpload.onUrlAvailable.subscribe((url: string) => {
+      if (url === "") {
+        return;
       }
-    );
+      message.attachmentUrl = url;
+      message.attachmentType = uploadFileType;
+      message = this.markMessageSaved(message);
+      this.messageService.create(message);
+      this.isSaving = false;
+    });
   }
 }

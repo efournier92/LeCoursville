@@ -1,1 +1,17 @@
 @import "src/app/components/message-view/message-view.component.scss";
+@import "src/app/components/expressions/expressions.component.scss";
+
+.expression-title {
+  font-style: italic;
+  margin-bottom: 0;
+}
+
+.expression-author {
+  margin-top: 0.15em;
+  margin-left: 0.5em;
+  font-size: 0.9em;
+}
+
+.expression-attribution {
+  margin-left: 0.5em;
+}

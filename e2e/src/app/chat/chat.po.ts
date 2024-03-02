@@ -1,4 +1,4 @@
-import { browser, by, element, ElementArrayFinder } from "protractor";
+import { browser, by, element } from "protractor";
 
 export class AppChat {
   navigateTo(): Promise<unknown> {
@@ -7,19 +7,19 @@ export class AppChat {
 
   getTitleText(): Promise<string> {
     return element(
-      by.css("app-root .content span")
+      by.css("app-root .content span"),
     ).getText() as Promise<string>;
   }
 
   getToolbarMaterialColor(): Promise<string> {
     return element(by.css(".mat-toolbar")).getAttribute(
-      "ng-reflect-color"
+      "ng-reflect-color",
     ) as Promise<string>;
   }
 
   getToolbarIconSrc(): Promise<string> {
     return element(by.css(".mat-toolbar img")).getAttribute(
-      "src"
+      "src",
     ) as Promise<string>;
   }
 
@@ -44,13 +44,13 @@ export class AppChat {
 
   doesToolbarIncludeRoutesInline(): Promise<boolean> {
     return element(
-      by.className("toolbar-routes-buttons-inline")
+      by.className("toolbar-routes-buttons-inline"),
     ).isPresent() as Promise<boolean>;
   }
 
   doesToolbarIncludeRoutesMenu(): Promise<boolean> {
     return element(
-      by.css("toolbar-routes-menu")
+      by.css("toolbar-routes-menu"),
     ).isPresent() as Promise<boolean>;
   }
 
@@ -61,7 +61,7 @@ export class AppChat {
     await browser.sleep(1000);
     await this.inputText(
       "firebase-ui .firebaseui-id-password",
-      "bashLec#Electric0"
+      "bashLec#Electric0",
     );
     await this.clickButton("firebase-ui button");
 
@@ -71,31 +71,31 @@ export class AppChat {
 
   isChatComponentPresent(): Promise<boolean> {
     return element(
-      by.className("chat-component")
+      by.className("chat-component"),
     ).isPresent() as Promise<boolean>;
   }
 
   isCreateMessageButtonPresent(): Promise<boolean> {
     return element(
-      by.css(".chat-component .create-message-button")
+      by.css(".chat-component .create-message-button"),
     ).isPresent() as Promise<boolean>;
   }
 
   clickNewMessageButton(): Promise<void> {
     return element(
-      by.css(".chat-component .create-message-button")
+      by.css(".chat-component .create-message-button"),
     ).click() as Promise<void>;
   }
 
   isNewMessageTitleInputPresent(): Promise<boolean> {
     return element(
-      by.css(".chat-edit-component")
+      by.css(".chat-edit-component"),
     ).isPresent() as Promise<boolean>;
   }
 
   isNewMessageTitleMessage(): Promise<boolean> {
     return element(
-      by.css(".chat-edit-component")
+      by.css(".chat-edit-component"),
     ).isPresent() as Promise<boolean>;
   }
 
@@ -104,25 +104,25 @@ export class AppChat {
 
   inputToNewMessageTitleInput(): Promise<void> {
     return element(by.css(".chat-edit-input-title")).sendKeys(
-      this.newMessageTitleContent
+      this.newMessageTitleContent,
     ) as Promise<void>;
   }
 
   inputToNewMessageBodyInput(): Promise<void> {
     return element(by.css(".message-edit-input-body")).sendKeys(
-      this.newMessageBodyContent
+      this.newMessageBodyContent,
     ) as Promise<void>;
   }
 
   getNewMessageTitleContent(): Promise<string> {
     return element(by.css(".chat-edit-input-title")).getAttribute(
-      "ng-reflect-model"
+      "ng-reflect-model",
     ) as Promise<string>;
   }
 
   getNewMessageBodyContent(): Promise<string> {
     return element(by.css(".message-edit-input-body")).getAttribute(
-      "ng-reflect-model"
+      "ng-reflect-model",
     ) as Promise<string>;
   }
 
@@ -142,7 +142,7 @@ export class AppChat {
 
   clickConfirmButton(): Promise<void> {
     return element(
-      by.css(".confirm-prompt-confirm-button")
+      by.css(".prompt-modal-confirm-button"),
     ).click() as Promise<void>;
   }
 }
