@@ -86,7 +86,9 @@
     class="chat-divider-vertical"
     [vertical]="true"
   ></mat-divider>
-  <div class="chat-view-message-container col-9">
+  <div
+    class="chat-view-message-container chat-view-message-container col-7 col-sm-8 col-lg-10"
+  >
     <mat-card-content
       class="chat-view-message-deleted-container col-9"
       *ngIf="message.isDeleted"
@@ -109,7 +111,7 @@
           {{ message.authorName }}
         </mat-card-subtitle>
         <mat-card-subtitle class="chat-message-timestamp">
-          {{ message.dateSent | date : 'short' }}
+          {{ message.dateSent | date : "short" }}
         </mat-card-subtitle>
       </mat-card-title>
       <div
