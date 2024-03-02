@@ -1,8 +1,8 @@
 <div
-  class="row mb-4 chat-card-content-container"
+  class="row mb-4 message-card-content-container"
   [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
 >
-  <div class="col-2 col-md-1 chat-tools-container">
+  <div class="col-2 col-md-1 message-tools-container">
     <div class="mb-3 message-button">
       <div class="d-flex justify-content-center mt-2">
         <span
@@ -41,7 +41,7 @@
         </span>
       </div>
       <span
-        class="calendar-icon-label d-flex justify-content-center"
+        class="message-button-label d-flex justify-content-center"
         [ngStyle]="{ color: highlights.like === true ? '#FF9800' : '#F44336' }"
         >Like</span
       >
@@ -58,7 +58,7 @@
       >
         <span class="fa fa-reply-all fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center"
+      <span class="message-button-label d-flex justify-content-center"
         >Reply</span
       >
     </div>
@@ -77,20 +77,20 @@
       >
         <span class="fa fa-edit fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center"
+      <span class="message-button-label d-flex justify-content-center"
         >Edit</span
       >
     </div>
   </div>
   <mat-divider
-    class="chat-divider-vertical"
+    class="message-controls-divider-vertical"
     [vertical]="true"
   ></mat-divider>
   <div
-    class="chat-view-message-container chat-view-message-container col-7 col-sm-8 col-lg-10"
+    class="message-view-container message-view-container col-7 col-sm-8 col-lg-10"
   >
     <mat-card-content
-      class="chat-view-message-deleted-container col-9"
+      class="message-view-deleted-container col-9"
       *ngIf="message.isDeleted"
     >
       <mat-card-title>
@@ -102,7 +102,7 @@
     <mat-card-content *ngIf="!message.isDeleted">
       <mat-card-title>
         <div
-          class="chat-message-title"
+          class="message-title"
           *ngIf="!message.isReply"
         >
           {{ message.title }}
@@ -110,12 +110,12 @@
         <mat-card-subtitle class="chat-message-author-name">
           {{ message.authorName }}
         </mat-card-subtitle>
-        <mat-card-subtitle class="chat-message-timestamp">
+        <mat-card-subtitle class="message-timestamp">
           {{ message.dateSent | date : "short" }}
         </mat-card-subtitle>
       </mat-card-title>
       <div
-        class="chat-message-body"
+        class="message-body"
         [innerHTML]="message.body"
       >
         <!-- {{ message.body }} -->
@@ -130,7 +130,7 @@
       <a
         mat-button
         [href]="message.attachmentUrl"
-        class="view-attachment-button"
+        class="message-view-attachment-button"
         target="_blank"
         *ngIf="getAttachmentType(message) === 'document'"
         >View Attachment</a
@@ -138,7 +138,7 @@
       <a
         mat-button
         [href]="message.attachmentUrl"
-        class="view-attachment-button"
+        class="message-view-attachment-button"
         download
         *ngIf="getAttachmentType(message) === 'other'"
         >Download Attachment</a

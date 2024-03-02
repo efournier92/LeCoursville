@@ -1,0 +1,23 @@
+@import "src/app/components/message/message.component.scss";
+@import "src/app/components/photos/photos.component.scss";
+
+.message-title-input-container {
+  line-height: 1;
+}
+
+.message-edit-input-body {
+  overflow: hidden;
+  min-height: 9em;
+}
+
+.message-edit-message-form-container {
+  margin-left: 8px;
+}
+
+.message-photo-upload-cancel-icon {
+  cursor: pointer;
+}
+
+.message-photo-upload-row-element {
+  margin-left: 8px;
+}

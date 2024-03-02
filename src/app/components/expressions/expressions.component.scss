@@ -1,30 +1,4 @@
-.card-container {
-  width: 60%;
-}
-
-.byline {
-  font-style: italic;
-}
-
-.expression-content {
-  margin-left: 16px;
-}
-
-.expressions-header-container {
-  margin-bottom: 2em;
-}
-
-.expressions-header-text {
-  font-style: italic;
-  color: #616161;
-  font-size: 1.2em;
-}
-
-.expressions-header-attribution {
-  color: #616161;
-  width: 100%;
-  margin-left: 8px;
-}
+@import "src/app/components/message/message.component.scss";
 
 .expression-attribution {
   margin-top: -0.8em;

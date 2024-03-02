@@ -1,8 +1,8 @@
 <div
-  class="row chat-card-content-container"
+  class="row message-card-content-container"
   [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
 >
-  <div class="col-3 col-sm-2 col-lg-1 chat-tools-container">
+  <div class="col-3 col-sm-2 col-lg-1 message-tools-container">
     <div
       class="mb-3 message-button"
       [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
@@ -15,7 +15,7 @@
       >
         <span class="fa fa-reply-all fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center"
+      <span class="message-button-label d-flex justify-content-center"
         >Comment</span
       >
     </div>
@@ -34,18 +34,18 @@
       >
         <span class="fa fa-edit fa-2x"></span>
       </div>
-      <span class="calendar-icon-label d-flex justify-content-center"
+      <span class="message-button-label d-flex justify-content-center"
         >Edit</span
       >
     </div>
   </div>
   <mat-divider
-    class="chat-divider-vertical"
+    class="message-controls-divider-vertical"
     [vertical]="true"
   ></mat-divider>
-  <div class="chat-view-message-container col-7 col-sm-8 col-lg-10">
+  <div class="message-view-container col-7 col-sm-8 col-lg-10">
     <mat-card-content
-      class="chat-view-message-deleted-container col-9"
+      class="message-view-deleted-container col-9"
       *ngIf="message.isDeleted"
     >
       <mat-card-title>
@@ -81,7 +81,7 @@
       <a
         mat-button
         [href]="message.attachmentUrl"
-        class="view-attachment-button"
+        class="message-view-attachment-button"
         target="_blank"
         *ngIf="getAttachmentType(message) === 'document'"
       >
@@ -90,7 +90,7 @@
       <a
         mae-button
         [href]="message.attachmentUrl"
-        class="view-attachment-button"
+        class="message-view-attachment-button"
         download
         *ngIf="getAttachmentType(message) === 'other'"
       >

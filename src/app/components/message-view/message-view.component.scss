@@ -1,0 +1,23 @@
+@import "src/app/components/message/message.component.scss";
+
+.message-view-container {
+  margin-left: 6px;
+}
+
+.message-body {
+  white-space: pre-line;
+}
+
+.massage-attachment-image {
+  width: 80%;
+  margin-left: 0px;
+}
+
+.message-view-attachment-button {
+  background: #81c784;
+  color: white;
+}
+
+.message-view-deleted-container {
+  margin-left: 10px;
+}

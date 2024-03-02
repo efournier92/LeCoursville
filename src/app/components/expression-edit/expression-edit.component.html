@@ -9,11 +9,11 @@
     <mat-spinner></mat-spinner>
   </div>
   <div
-    class="row mb-4 chat-card-content-container"
+    class="row mb-4 message-card-content-container"
     *ngIf="!isSaving"
     [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
   >
-    <div class="col-2 col-md-1 chat-tools-container">
+    <div class="col-2 col-md-1 message-tools-container">
       <div class="d-flex justify-content-center flex-column mt-2">
         <div
           class="mb-3 message-button"
@@ -31,7 +31,7 @@
             >
               <span class="fa fa-trash fa-2x"></span>
             </div>
-            <span class="calendar-icon-label d-flex justify-content-center"
+            <span class="message-button-label d-flex justify-content-center"
               >Delete</span
             >
           </div>
@@ -44,7 +44,7 @@
             >
               <span class="fa fa-undo fa-2x"></span>
             </div>
-            <span class="calendar-icon-label d-flex justify-content-center"
+            <span class="message-button-label d-flex justify-content-center"
               >Restore</span
             >
           </div>
@@ -63,7 +63,7 @@
           >
             <span class="fa fa-ban fa-2x"></span>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center"
+          <span class="message-button-label d-flex justify-content-center"
             >Cancel</span
           >
         </div>
@@ -81,7 +81,7 @@
           >
             <span class="fa fa-floppy-o fa-2x"></span>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center"
+          <span class="message-button-label d-flex justify-content-center"
             >Save</span
           >
         </div>
@@ -99,20 +99,20 @@
           >
             <mat-checkbox [(ngModel)]="message.isSticky"></mat-checkbox>
           </div>
-          <span class="calendar-icon-label d-flex justify-content-center"
+          <span class="message-button-label d-flex justify-content-center"
             >Sticky</span
           >
         </div>
       </div>
     </div>
     <mat-divider
-      class="chat-divider-vertical"
+      class="message-controls-divider-vertical"
       [vertical]="true"
     ></mat-divider>
-    <div class="chat-edit-message-form-container col-9">
+    <div class="message-edit-message-form-container col-9">
       <mat-card-content>
         <div
-          class="title-input-container"
+          class="message-title-input-container"
           *ngIf="!message.isReply"
         >
           <mat-form-field class="w-100">
@@ -151,7 +151,7 @@
         <mat-form-field class="w-100">
           <textarea
             matInput
-            class="chat-edit-input-body"
+            class="message-edit-input-body"
             placeholder="Description"
             cdkTextareaAutosize
             #autosize="cdkTextareaAutosize"

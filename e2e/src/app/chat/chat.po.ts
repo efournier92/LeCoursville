@@ -1,4 +1,4 @@
-import { browser, by, element, ElementArrayFinder } from 'protractor';
+import { browser, by, element, ElementArrayFinder } from "protractor";
 
 export class AppChat {
   navigateTo(): Promise<unknown> {
@@ -6,15 +6,21 @@ export class AppChat {
   }
 
   getTitleText(): Promise<string> {
-    return element(by.css('app-root .content span')).getText() as Promise<string>;
+    return element(
+      by.css("app-root .content span")
+    ).getText() as Promise<string>;
   }
 
   getToolbarMaterialColor(): Promise<string> {
-    return element(by.css('.mat-toolbar')).getAttribute('ng-reflect-color') as Promise<string>;
+    return element(by.css(".mat-toolbar")).getAttribute(
+      "ng-reflect-color"
+    ) as Promise<string>;
   }
 
   getToolbarIconSrc(): Promise<string> {
-    return element(by.css('.mat-toolbar img')).getAttribute('src') as Promise<string>;
+    return element(by.css(".mat-toolbar img")).getAttribute(
+      "src"
+    ) as Promise<string>;
   }
 
   inputText(css: string, input: string): Promise<void> {
@@ -26,7 +32,7 @@ export class AppChat {
   }
 
   getCurrentUrl(): Promise<string> {
-    return browser.getCurrentUrl() as Promise<string>
+    return browser.getCurrentUrl() as Promise<string>;
   }
 
   async doesToolbarIncludeAnyRoutes(): Promise<boolean> {
@@ -37,19 +43,26 @@ export class AppChat {
   }
 
   doesToolbarIncludeRoutesInline(): Promise<boolean> {
-    return element(by.className('toolbar-routes-buttons-inline')).isPresent() as Promise<boolean>;
+    return element(
+      by.className("toolbar-routes-buttons-inline")
+    ).isPresent() as Promise<boolean>;
   }
 
   doesToolbarIncludeRoutesMenu(): Promise<boolean> {
-    return element(by.css('toolbar-routes-menu')).isPresent() as Promise<boolean>;
+    return element(
+      by.css("toolbar-routes-menu")
+    ).isPresent() as Promise<boolean>;
   }
 
   async login() {
     this.navigateTo();
     await this.inputText("firebase-ui input", "efournier92@gmail.com");
     await this.clickButton("firebase-ui button");
-    await browser.sleep(1000)
-    await this.inputText("firebase-ui .firebaseui-id-password", "bashLec#Electric0");
+    await browser.sleep(1000);
+    await this.inputText(
+      "firebase-ui .firebaseui-id-password",
+      "bashLec#Electric0"
+    );
     await this.clickButton("firebase-ui button");
 
     // const currentUrl = await this.getCurrentUrl();
@@ -57,57 +70,79 @@ export class AppChat {
   }
 
   isChatComponentPresent(): Promise<boolean> {
-    return element(by.className('chat-component')).isPresent() as Promise<boolean>;
+    return element(
+      by.className("chat-component")
+    ).isPresent() as Promise<boolean>;
   }
 
   isCreateMessageButtonPresent(): Promise<boolean> {
-    return element(by.css('.chat-component .create-message-button')).isPresent() as Promise<boolean>;
+    return element(
+      by.css(".chat-component .create-message-button")
+    ).isPresent() as Promise<boolean>;
   }
 
   clickNewMessageButton(): Promise<void> {
-    return element(by.css('.chat-component .create-message-button')).click() as Promise<void>;
+    return element(
+      by.css(".chat-component .create-message-button")
+    ).click() as Promise<void>;
   }
 
   isNewMessageTitleInputPresent(): Promise<boolean> {
-    return element(by.css('.chat-edit-component')).isPresent() as Promise<boolean>;
+    return element(
+      by.css(".chat-edit-component")
+    ).isPresent() as Promise<boolean>;
   }
 
   isNewMessageTitleMessage(): Promise<boolean> {
-    return element(by.css('.chat-edit-component')).isPresent() as Promise<boolean>;
+    return element(
+      by.css(".chat-edit-component")
+    ).isPresent() as Promise<boolean>;
   }
 
   newMessageTitleContent: string = "Test Title";
   newMessageBodyContent: string = "Test Body";
 
   inputToNewMessageTitleInput(): Promise<void> {
-    return element(by.css('.chat-edit-input-title')).sendKeys(this.newMessageTitleContent) as Promise<void>;
+    return element(by.css(".chat-edit-input-title")).sendKeys(
+      this.newMessageTitleContent
+    ) as Promise<void>;
   }
 
   inputToNewMessageBodyInput(): Promise<void> {
-    return element(by.css('.chat-edit-input-body')).sendKeys(this.newMessageBodyContent) as Promise<void>;
+    return element(by.css(".message-edit-input-body")).sendKeys(
+      this.newMessageBodyContent
+    ) as Promise<void>;
   }
 
   getNewMessageTitleContent(): Promise<string> {
-    return element(by.css('.chat-edit-input-title')).getAttribute('ng-reflect-model') as Promise<string>;
+    return element(by.css(".chat-edit-input-title")).getAttribute(
+      "ng-reflect-model"
+    ) as Promise<string>;
   }
 
   getNewMessageBodyContent(): Promise<string> {
-    return element(by.css('.chat-edit-input-body')).getAttribute('ng-reflect-model') as Promise<string>;
+    return element(by.css(".message-edit-input-body")).getAttribute(
+      "ng-reflect-model"
+    ) as Promise<string>;
   }
 
   async isNewMessageContentPresent(): Promise<boolean> {
     const newMessageTitle = await this.getNewMessageTitleContent();
     const newMessageBody = await this.getNewMessageBodyContent();
-    
-    return newMessageTitle == this.newMessageTitleContent && newMessageBody == this.newMessageBodyContent;
+
+    return (
+      newMessageTitle == this.newMessageTitleContent &&
+      newMessageBody == this.newMessageBodyContent
+    );
   }
 
   clickSaveButton(): Promise<void> {
-    return element(by.css('.chat-edit-button-send')).click() as Promise<void>;
+    return element(by.css(".chat-edit-button-send")).click() as Promise<void>;
   }
 
   clickConfirmButton(): Promise<void> {
-    return element(by.css('.confirm-prompt-confirm-button')).click() as Promise<void>;
+    return element(
+      by.css(".confirm-prompt-confirm-button")
+    ).click() as Promise<void>;
   }
-
 }
