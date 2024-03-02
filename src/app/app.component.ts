@@ -1,17 +1,8 @@
 import { Component, OnInit } from "@angular/core";
-import { MatDialogRef } from "@angular/material/dialog";
 import { AuthService } from "src/app/services/auth.service";
-import { AnalyticsService } from "./services/analytics.service";
 import { VersionService } from "./services/version.service";
-import { PromptModalService } from "./services/prompt-modal.service";
-import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
+import { ErrorsService } from "src/app/errors.service";
 import { User } from "src/app/models/user";
-
-declare global {
-  interface Window {
-    version: any;
-  }
-}
 
 @Component({
   selector: "app-root",
@@ -23,9 +14,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private analyticsService: AnalyticsService,
     private versionService: VersionService,
-    private promptModal: PromptModalService,
+    private errorsService: ErrorsService,
   ) {}
 
   // SUBSCRIPTIONS
@@ -38,64 +28,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.subscribeToUserObservable();
-    this.writeVersionToWindow();
-    this.listenForErrors();
-    this.detectErrorState();
+    this.versionService.writeVersionToWindow();
+    this.errorsService.listenForErrors(this.user);
+    this.errorsService.checkForNoInputsOnLogin(this.user);
   }
 
   // HELPERS
-
-  private writeVersionToWindow() {
-    window.version = this.versionService.getAppVersion();
-  }
-
-  private detectErrorState() {
-    setTimeout(() => {
-      const navbarLinks = window.document.getElementById(
-        "lecoursville-navbar-links",
-      );
-
-      const authContainer = window.document.getElementById(
-        "firebaseui-auth-container",
-      );
-
-      if (!navbarLinks && !authContainer.children.length) {
-        this.analyticsService.logEvent("ErrorState", {
-          message: "TODO",
-        });
-
-        const dialogRef = this.openErrorDialog();
-        dialogRef.afterClosed().subscribe((signOutConfirmed: boolean) => {
-          if (signOutConfirmed) {
-            this.authService.signOut();
-          }
-        });
-      }
-    }, 5000);
-  }
-
-  openErrorDialog(): MatDialogRef<PromptModalComponent, any> {
-    return this.promptModal.openDialog(
-      "Sorry, we encountered an error. We need to sign you out.",
-      "If this keeps happening, please contact Eric at efournier92@gmail.com.",
-      [
-        {
-          label: "Sign Out",
-          color: "warn",
-          isConfirmAction: true,
-        },
-      ],
-    );
-  }
-
-  private listenForErrors() {
-    window.addEventListener("error", (err: ErrorEvent) => {
-      this.analyticsService.logEvent("Error", {
-        message: err?.message,
-        value: err?.lineno,
-        userAgent: window?.navigator?.userAgent,
-        userId: this.user?.id,
-      });
-    });
-  }
 }
