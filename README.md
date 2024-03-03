@@ -12,7 +12,7 @@
 - [Test](#test)
 - [Contribute](#contribute)
 - [Licence](#license)
-- [Version History](#version-history)
+- [Major Version History](#major-version-history)
 - [Features To Do](#features-to-do)
 
 ## Overview
@@ -165,7 +165,7 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 
 - `firebase deploy`
 
-## Version History
+## Major Version History
 
 ### `24.3.2`
 
