@@ -6,18 +6,18 @@
     <div class="mb-3 message-button">
       <div class="d-flex justify-content-center mt-2">
         <span
-          class="fa-stack"
           (click)="likeMessage()"
           (mouseover)="highlightElement('like', true)"
           (mouseleave)="highlightElement('like', false)"
         >
           <span
             [matMenuTriggerFor]="menu"
-            class="fa fa-heart-o fa-2x"
             [ngStyle]="{
               color: highlights.like === true ? '#FF9800' : '#F44336'
             }"
-          ></span>
+          >
+            <mat-icon>favorite_outline</mat-icon>
+          </span>
           <mat-menu #menu="matMenu">
             <div *ngFor="let liker of likers">
               <button
@@ -30,7 +30,7 @@
             </div>
           </mat-menu>
           <strong
-            class="fa-stack-1x unselectable message-likes-container"
+            class="unselectable message-likes-container"
             *ngIf="getLikes() !== 0"
             [ngStyle]="{
               color: highlights.like === true ? '#FF9800' : '#F44336'
@@ -56,7 +56,7 @@
         (mouseleave)="highlightElement('reply', false)"
         (click)="replyMessage()"
       >
-        <span class="fa fa-reply-all fa-2x"></span>
+        <mat-icon>reply_all</mat-icon>
       </div>
       <span class="message-button-label d-flex justify-content-center"
         >Reply</span
@@ -75,7 +75,7 @@
         (mouseleave)="highlightElement('edit', false)"
         (click)="editMessage()"
       >
-        <span class="fa fa-pencil fa-2x"></span>
+        <mat-icon>edit</mat-icon>
       </div>
       <span class="message-button-label d-flex justify-content-center"
         >Edit</span

@@ -29,7 +29,7 @@
               (mouseleave)="highlightElement('trash', false)"
               (click)="deleteMessage()"
             >
-              <span class="fa fa-trash fa-2x"></span>
+              <mat-icon>delete</mat-icon>
             </div>
             <span class="message-button-label d-flex justify-content-center"
               >Delete</span
@@ -42,7 +42,7 @@
               (mouseleave)="highlightElement('trash', false)"
               (click)="restoreMessage()"
             >
-              <span class="fa fa-undo fa-2x"></span>
+              <mat-icon>undo</mat-icon>
             </div>
             <span class="message-button-label d-flex justify-content-center"
               >Restore</span
@@ -61,7 +61,7 @@
             (mouseleave)="highlightElement('cancel', false)"
             (click)="cancelEdit()"
           >
-            <span class="fa fa-ban fa-2x"></span>
+            <mat-icon>cancel</mat-icon>
           </div>
           <span class="message-button-label d-flex justify-content-center"
             >Cancel</span
@@ -79,7 +79,7 @@
             (mouseleave)="highlightElement('send', false)"
             (click)="saveMessage(message)"
           >
-            <span class="fa fa-share-square fa-2x"></span>
+            <mat-icon>send</mat-icon>
           </div>
           <span class="message-button-label d-flex justify-content-center"
             >Send</span
