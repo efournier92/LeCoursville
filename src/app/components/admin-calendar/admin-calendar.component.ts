@@ -3,7 +3,7 @@ import { CalendarEvent } from 'angular-calendar';
 import { CalendarConstants } from 'src/app/constants/calendar-constants';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarService } from 'src/app/services/calendar.service';
-import { PageEvent } from '@angular/material/paginator';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { SortSettingsForCalendar } from 'src/app/models/sort-settings-for-calendar';
 
 @Component({

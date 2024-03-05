@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { MatDialogRef } from "@angular/material/dialog";
+import { MatLegacyDialogRef as MatDialogRef } from "@angular/material/legacy-dialog";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { AnalyticsService } from "./services/analytics.service";
 import { PromptModalService } from "./services/prompt-modal.service";

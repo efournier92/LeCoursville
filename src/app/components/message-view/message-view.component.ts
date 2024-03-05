@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { AuthService } from 'src/app/services/auth.service';
 import { Message, Like } from 'src/app/models/message';
 import { User } from 'src/app/models/user';
