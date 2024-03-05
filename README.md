@@ -167,13 +167,15 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 
 ## Major Version History
 
-### `24.3.2`
+### `24.3.3`
 
+- Upgrade to `Angular 17`.
 - Add `ExpressionsComponent` with associated functionality.
 - Abstract `MessageComponent` from `ChatComponent` for inheritance from `ExpressionsComponent`.
+- Resolve no-inputs bug after 1st auth flow.
+- Add `noindex` tag to block search crawlers.
 - Add `Not Living` toggle to calendar.
 - Improve `SortSettings` implementation and consume from `AdminCalendarComponent`, `AdminUsersComponent` and `ExpressionsComponent`.
-- Resolve no-inputs bug after 1st auth flow.
 
 ### `22.5.25`
 
