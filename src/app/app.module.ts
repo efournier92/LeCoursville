@@ -16,7 +16,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { CalendarModule, DateAdapter } from "angular-calendar";
 import { ClipboardModule } from "@angular/cdk/clipboard";
 import { FileSaverModule } from "ngx-filesaver";
-import { FilterPipeModule } from "ngx-filter-pipe";
+//import { FilterPipeModule } from "ngx-filter-pipe";
 import { FirebaseUIModule } from "firebaseui-angular";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -24,7 +24,7 @@ import { HttpClientModule } from "@angular/common/http";
 import { InfiniteScrollModule } from "ngx-infinite-scroll";
 import { LightgalleryModule } from "lightgallery/angular";
 import { MaterialModule } from "src/app/modules/material.module";
-import { NgxAudioPlayerModule } from "ngx-audio-player";
+//import { NgxAudioPlayerModule } from "ngx-audio-player";
 import { NgxExtendedPdfViewerModule } from "ngx-extended-pdf-viewer";
 import { VgBufferingModule } from "@videogular/ngx-videogular/buffering";
 import { VgControlsModule } from "@videogular/ngx-videogular/controls";
@@ -54,7 +54,7 @@ import { MediaListComponent } from "src/app/components/media-list/media-list.com
 import { PhotoAlbumComponent } from "./components/photo-album/photo-album.component";
 import { PhotoUploadProgressComponent } from "src/app/components/photo-upload-progress/photo-upload-progress.component";
 import { PhotosComponent } from "src/app/components/photos/photos.component";
-import { AudioPlayerComponent } from "src/app/components/audio-player/audio-player.component";
+// import { AudioPlayerComponent } from "src/app/components/audio-player/audio-player.component";
 import { MediaTypesCheckboxesComponent } from "src/app/components/media-types-checkboxes/media-types-checkboxes.component";
 import { MediaSearchInputComponent } from "src/app/components/media-search-input/media-search-input.component";
 import { VideoPlayerDriveIframeComponent } from "src/app/components/video-player-drive-iframe/video-player-drive-iframe.component";
@@ -97,7 +97,7 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     PhotoAlbumComponent,
     PhotoUploadProgressComponent,
     PhotosComponent,
-    AudioPlayerComponent,
+    // AudioPlayerComponent,
     MediaTypesCheckboxesComponent,
     MediaSearchInputComponent,
     VideoPlayerDriveIframeComponent,
@@ -131,7 +131,7 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     }),
     ClipboardModule,
     FileSaverModule,
-    FilterPipeModule,
+    // FilterPipeModule,
     FirebaseUIModule.forRoot(AuthConfig),
     FontAwesomeModule,
     FormsModule,
@@ -139,7 +139,7 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     InfiniteScrollModule,
     LightgalleryModule,
     MaterialModule,
-    NgxAudioPlayerModule,
+    // NgxAudioPlayerModule,
     NgxExtendedPdfViewerModule,
     ReactiveFormsModule,
     VgBufferingModule,
@@ -149,7 +149,7 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
   ],
   providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }],
   bootstrap: [AppComponent],
-  entryComponents: [CalendarPrinterComponent, PromptModalComponent],
+  // entryComponents: [CalendarPrinterComponent, PromptModalComponent],
   exports: [ContactEditComponent],
 })
 export class AppModule {}
