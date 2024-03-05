@@ -3,7 +3,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { AdminService } from 'src/app/services/admin.service';
 import { User } from 'src/app/models/user';
 import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-admin-users',

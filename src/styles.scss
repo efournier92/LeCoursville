@@ -54,6 +54,7 @@ body {
   height: 100%;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version.*/
 .mat-list-item-content {
   padding: 0 !important;
 }
@@ -144,7 +145,7 @@ app-calendar-cell {
 }
 
 .ngx-audio-player {
-  .mat-cell {
+  .mat-mdc-cell {
     cursor: pointer;
   }
   .mat-expansion-panel-header {
@@ -153,10 +154,10 @@ app-calendar-cell {
   table thead {
     display: none;
   }
-  .mat-paginator-page-size-label {
+  .mat-mdc-paginator-page-size-label {
     display: none;
   }
-  .mat-paginator-page-size-value {
+  .mat-mdc-paginator-page-size-value {
     display: none;
   }
 }

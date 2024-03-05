@@ -4,7 +4,7 @@ import {
   AngularFireDatabase,
   AngularFireObject,
 } from "@angular/fire/compat/database";
-import { MatLegacyDialogRef as MatDialogRef } from "@angular/material/legacy-dialog";
+import { MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Observable } from "rxjs";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
