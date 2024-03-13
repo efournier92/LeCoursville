@@ -45,11 +45,11 @@
   width: 4em;
 }
 
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 
-a[type="download"] {
+a[type='download'] {
   display: none;
 }
 
@@ -58,12 +58,12 @@ a[type="download"] {
 }
 
 .calendar-arrow-button-container {
-  cursor: pointer;
   width: 2em;
   height: 2em;
 }
 
 .calendar-arrow-button {
+  cursor: pointer;
   font-size: 5em;
   width: 100%;
   height: 100%;
