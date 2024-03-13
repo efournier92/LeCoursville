@@ -1,15 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { CalendarEvent } from 'angular-calendar';
-import { CalendarConstants } from 'src/app/constants/calendar-constants';
-import { RecurringEvent } from 'src/app/interfaces/recurring-event';
-import { CalendarService } from 'src/app/services/calendar.service';
-import { PageEvent } from '@angular/material/paginator';
-import { SortSettingsForCalendar } from 'src/app/models/sort-settings-for-calendar';
+import { Component, OnInit } from "@angular/core";
+import { CalendarConstants } from "src/app/constants/calendar-constants";
+import { RecurringEvent } from "src/app/interfaces/recurring-event";
+import { CalendarService } from "src/app/services/calendar.service";
+import { PageEvent } from "@angular/material/paginator";
+import { SortSettingsForCalendar } from "src/app/models/sort-settings-for-calendar";
 
 @Component({
-  selector: 'app-admin-calendar',
-  templateUrl: './admin-calendar.component.html',
-  styleUrls: ['./admin-calendar.component.scss']
+  selector: "app-admin-calendar",
+  templateUrl: "./admin-calendar.component.html",
+  styleUrls: ["./admin-calendar.component.scss"],
 })
 export class AdminCalendarComponent implements OnInit {
   allEvents: RecurringEvent[];
@@ -17,9 +16,7 @@ export class AdminCalendarComponent implements OnInit {
   sortSettings: SortSettingsForCalendar;
   eventTypes = CalendarConstants.EventTypes;
 
-  constructor(
-    private calendarService: CalendarService,
-  ) { }
+  constructor(private calendarService: CalendarService) {}
 
   // LIFECYCLE EVENTS
 
@@ -28,8 +25,10 @@ export class AdminCalendarComponent implements OnInit {
     this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
         this.allEvents = events;
-        this.displayedEvents = this.sortSettings.getItemsToDisplay(this.allEvents);
-      }
+        this.displayedEvents = this.sortSettings.getItemsToDisplay(
+          this.allEvents,
+        );
+      },
     );
   }
 
@@ -37,7 +36,7 @@ export class AdminCalendarComponent implements OnInit {
 
   onAddEvent(): void {
     const event = new RecurringEvent();
-    this.allEvents.unshift(event);
+    this.displayedEvents.unshift(event);
   }
 
   onCreateEvent(event: RecurringEvent): void {
@@ -64,11 +63,13 @@ export class AdminCalendarComponent implements OnInit {
   }
 
   toggleDisplay(event, toggleId): void {
-    let toggle = this.sortSettings.displayToggles.find(toggle => toggle.id === toggleId);
+    let toggle = this.sortSettings.displayToggles.find(
+      (toggle) => toggle.id === toggleId,
+    );
 
     toggle.isToggled = event.checked;
 
-    this.sortSettings.displayToggleStates[toggle.id] = toggle.isToggled
+    this.sortSettings.displayToggleStates[toggle.id] = toggle.isToggled;
 
     this.displayedEvents = this.sortSettings.getItemsToDisplay(this.allEvents);
   }

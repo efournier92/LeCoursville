@@ -1,30 +1,45 @@
 import { Injectable } from '@angular/core';
-import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFireStorageReference, AngularFireStorage, AngularFireUploadTask } from '@angular/fire/compat/storage';
+import {
+  AngularFireList,
+  AngularFireDatabase,
+} from '@angular/fire/compat/database';
 import { BehaviorSubject } from 'rxjs';
-import { finalize } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
+import { PromptModalService } from 'src/app/services/prompt-modal.service';
 
 export const Months: string[] = [
-  'January', 'February', 'March', 'April', 'May', 'June', 'July',
-  'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CalendarService {
-
+  photoUpload: boolean;
+  message: any;
+  parent: any;
+  messageService: any;
   constructor(
     private db: AngularFireDatabase,
-    private storage: AngularFireStorage,
+    private promptModal: PromptModalService,
   ) {
-    this.getCalendarEvents().valueChanges().subscribe(
-      (calendarEvents: RecurringEvent[]) => {
+    this.getCalendarEvents()
+      .valueChanges()
+      .subscribe((calendarEvents: RecurringEvent[]) => {
         this.updateCalendarEventsEvent(calendarEvents);
-      }
-    );
+      });
     // this.getCalendars().valueChanges().subscribe(
     //   (calendars: Calendar[]) => {
     //     this.updateCalendarsEvent(calendars);
@@ -69,7 +84,24 @@ export class CalendarService {
   }
 
   deleteCalendarEvent(event: RecurringEvent): void {
-    this.calendarEvents.remove(event.id);
+    const dialogRef = this.promptModal.openDialog(
+      'Are You Sure?',
+      'Do you really want to remove this calendar event?',
+    );
+    dialogRef.afterClosed().subscribe((didUserConfirm: boolean) => {
+      if (didUserConfirm) {
+        this.calendarEvents.remove(event.id);
+      }
+    });
+  }
+  saveMessageWithPhoto(newMessage: any) {
+    throw new Error('Method not implemented.');
+  }
+  markMessageSaved(newMessage: any): any {
+    throw new Error('Method not implemented.');
+  }
+  updateParent() {
+    throw new Error('Method not implemented.');
   }
 
   getViewYears(): number[] {
@@ -84,7 +116,13 @@ export class CalendarService {
   }
 
   // TODO: Take array with birthays, anniversaries, notLiving
-  updateEvents(events: RecurringEvent[], year: number, birthdays: boolean, anniversaries: boolean, notLiving: boolean): RecurringEvent[] {
+  updateEvents(
+    events: RecurringEvent[],
+    year: number,
+    birthdays: boolean,
+    anniversaries: boolean,
+    notLiving: boolean,
+  ): RecurringEvent[] {
     let output = [];
     for (const event of events) {
       if (event.type === 'birth' && birthdays === false) {
@@ -110,7 +148,10 @@ export class CalendarService {
     return events.sort(this.compareMessagesByTimestamp);
   }
 
-  private compareMessagesByTimestamp(a: RecurringEvent, b: RecurringEvent): number {
+  private compareMessagesByTimestamp(
+    a: RecurringEvent,
+    b: RecurringEvent,
+  ): number {
     return new Date(a.date).getTime() - new Date(b.date).getTime();
   }
 }

@@ -54,9 +54,9 @@
     </div>
   </div>
 
-  <div class="w-100 row">
+  <div class="w-100 d-flex justify-content-around row">
     <mat-card
-      class="admin-calendar-event-card mat-elevation-z6 col-md-6 col-lg-4 col-xl-3"
+      class="admin-calendar-event-card mat-elevation-z6 col-md-6 col-lg-4 col-xl-3 m-3"
       *ngFor="let event of displayedEvents"
     >
       <mat-form-field class="admin-upload-input">
@@ -97,28 +97,31 @@
       </mat-form-field>
       <mat-checkbox [(ngModel)]="event.isLiving">Living</mat-checkbox>
       <div
-        class="admin-action-buttons-container row d-flex justify-content-between"
+        class="admin-action-buttons-container row d-flex justify-content-between m-0 mt-2"
       >
         <button
-          mat-button
-          class="admin-form-action-button admin-form-action-button-upload col-12"
+          mat-raised-button
+          class="admin-form-action-button admin-form-action-button-upload col m-2"
+          color="accent"
           *ngIf="!event.id"
           (click)="onCreateEvent(event)"
         >
           <span>Create</span>
         </button>
         <button
-          mat-button
-          class="admin-form-action-button admin-form-action-button-upload col-5"
+          mat-raised-button
+          class="admin-form-action-button admin-form-action-button-upload col m-2"
+          color="primary"
           *ngIf="event.id"
           (click)="onSaveEvent(event)"
         >
           <span>Save</span>
         </button>
         <button
-          class="admin-form-action-button admin-form-action-button-delete col-5"
+          mat-raised-button
+          class="admin-form-action-button admin-form-action-button-delete col m-2"
+          color="warn"
           *ngIf="event.id"
-          mat-button
           (click)="onDeleteEvent(event)"
         >
           <span>Delete</span>

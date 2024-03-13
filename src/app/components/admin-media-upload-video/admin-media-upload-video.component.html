@@ -1,5 +1,8 @@
-<div *ngIf="user?.roles?.admin">
-  <div class="admin-media-upload-form-container">
+<div
+  class="w-100 d-flex flex-column align-items-center"
+  *ngIf="user?.roles?.admin"
+>
+  <mat-card class="w-100 mat-elevation-z6">
     <form class="admin-media-upload-upload-form">
       <mat-form-field class="admin-upload-input">
         <mat-label>Title</mat-label>
@@ -73,7 +76,7 @@
         Clear
       </button>
     </form>
-  </div>
+  </mat-card>
 
   <div class="admin-media-list-container">
     <app-media-list

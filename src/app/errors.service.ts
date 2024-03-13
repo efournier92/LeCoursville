@@ -1,30 +1,30 @@
-import { Injectable } from "@angular/core";
-import { MatDialogRef } from "@angular/material/dialog";
-import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
-import { AnalyticsService } from "./services/analytics.service";
-import { PromptModalService } from "./services/prompt-modal.service";
-import { AuthService } from "./services/auth.service";
-import { User } from "src/app/models/user";
+import { Injectable } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+import { PromptModalComponent } from 'src/app/components/prompt-modal/prompt-modal.component';
+import { AnalyticsService } from './services/analytics.service';
+import { PromptModalService } from './services/prompt-modal.service';
+import { AuthService } from './services/auth.service';
+import { User } from 'src/app/models/user';
 
 abstract class ErrorsConstants {
   static readonly SELECTORS: any = {
-    NAVBAR_LINKS: "lecoursville-navbar-links",
-    AUTH_CONTAINER: "firebaseui-auth-container",
+    NAVBAR_LINKS: 'lecoursville-navbar-links',
+    AUTH_CONTAINER: 'firebaseui-auth-container',
   };
   static readonly EVENTS: any = {
-    NO_INPUTS_ON_LOGIN_ERROR: "NoInputsOnLoginError",
-    GENERIC_ERROR: "Error",
+    NO_INPUTS_ON_LOGIN_ERROR: 'NoInputsOnLoginError',
+    GENERIC_ERROR: 'Error',
   };
   static readonly EVENT_LISTENERS: any = {
-    GENERIC_ERROR: "error",
+    GENERIC_ERROR: 'error',
   };
   static readonly TIMING: any = {
-    MS_BEFORE_ERROR_DETECTION: 5000,
+    MS_BEFORE_ERROR_DETECTION: 12000,
   };
 }
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class ErrorsService {
   constructor(
@@ -80,12 +80,12 @@ export class ErrorsService {
 
   private openErrorDialog(): MatDialogRef<PromptModalComponent, any> {
     return this.promptModal.openDialog(
-      "Sorry, we encountered an error. We need to sign you out.",
-      "If this keeps happening, please contact Eric at efournier92@gmail.com.",
+      'Sorry, we encountered an error. We need to sign you out.',
+      'If this keeps happening, please contact Eric at efournier92@gmail.com.',
       [
         {
-          label: "Sign Out",
-          color: "warn",
+          label: 'Sign Out',
+          color: 'warn',
           isConfirmAction: true,
         },
       ],

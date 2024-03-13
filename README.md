@@ -51,12 +51,12 @@ I come from a very large family on my mother's side: the LeCours family. She had
 ```typescript
 export const secrets = {
   firebaseConfig: {
-    apiKey: "API_KEY",
-    authDomain: "AUTH_DOMAIN",
-    databaseURL: "DATABASE_URL",
-    projectId: "PROJECT_ID",
-    storageBucket: "STORAGE_BUCKET",
-    messagingSenderId: "MESSAGE_SENDER_ID",
+    apiKey: 'API_KEY',
+    authDomain: 'AUTH_DOMAIN',
+    databaseURL: 'DATABASE_URL',
+    projectId: 'PROJECT_ID',
+    storageBucket: 'STORAGE_BUCKET',
+    messagingSenderId: 'MESSAGE_SENDER_ID',
   },
 };
 ```
@@ -166,6 +166,18 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - `firebase deploy`
 
 ## Major Version History
+
+### `24.3.14`
+
+- Resolve add-calendar-event bug.
+  - Add default values to `RecurringEvent` constructor
+  - Add card to `displayedEvents` on add form AdminCalendarComponent.
+- Add confirmation dialog on delete of calendar event.
+- Adjust `mat-card` margins across the project.
+- Adjust card styling in `AdminCalendarComponent`.
+- Enhance styling across `AdminMedia` components
+- Add dialog to better explain `getShareableLink` functionality.
+- Standardize Admin button styling between `UserEdit` and `CalendarEdit` components.
 
 ### `24.3.3`
 

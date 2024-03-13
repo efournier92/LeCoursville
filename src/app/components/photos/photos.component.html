@@ -103,7 +103,7 @@
 <div id="lightgallery">
   <div [hidden]="showSpinner">
     <mat-card
-      class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6"
+      class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6 mt-3 mb-3"
       *ngFor="let photo of loadedPhotos"
     >
       <!-- <a href="{{ photo.url }}" class="light-link"> -->
@@ -129,7 +129,7 @@
         </div>
       </mat-card-content>
       <mat-card-footer
-        class="photos-controls-container d-flex justify-content-end"
+        class="photos-controls-container d-flex justify-content-end mb-1"
       >
         <button
           mat-button

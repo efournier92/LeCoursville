@@ -36,7 +36,7 @@
 
     <div
       *ngIf="isSuperUser()"
-      class="d-flex justify-content-around"
+      class="d-flex justify-content-around mt-3"
     >
       <mat-checkbox
         name="user-roles-user"
@@ -59,26 +59,32 @@
     </div>
   </form>
 
-  <mat-card-footer class="d-flex justify-content-around user-card-footer">
+  <mat-card-footer class="d-flex row d-flex justify-content-between m-0 mt-4">
     <button
-      mat-button
-      *ngIf="userSignedIn?.roles?.super"
-      (click)="onDeleteUser(userOnCard)"
-    >
-      Delete
-    </button>
-    <button
-      mat-button
+      mat-raised-button
+      class="admin-form-action-button admin-form-action-button-upload col m-2"
+      color="accent"
       *ngIf="!isAdminMode"
       (click)="onCancelEdit()"
     >
-      Cancel
+      <span>Cancel</span>
     </button>
     <button
-      mat-button
+      mat-raised-button
+      class="admin-form-action-button admin-form-action-button-upload col m-2"
+      color="primary"
       (click)="onSaveUser(userOnCard)"
     >
-      Save
+      <span>Save</span>
+    </button>
+    <button
+      mat-raised-button
+      class="admin-form-action-button admin-form-action-button-delete col m-2"
+      color="warn"
+      *ngIf="userSignedIn?.roles?.super"
+      (click)="onDeleteUser(userOnCard)"
+    >
+      <span>Delete</span>
     </button>
   </mat-card-footer>
 </mat-card>
