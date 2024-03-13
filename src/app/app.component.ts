@@ -1,13 +1,13 @@
-import { Component, OnInit } from "@angular/core";
-import { AuthService } from "src/app/services/auth.service";
-import { VersionService } from "./services/version.service";
-import { ErrorsService } from "src/app/errors.service";
-import { User } from "src/app/models/user";
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/services/auth.service';
+import { VersionService } from './services/version.service';
+import { ErrorsService } from 'src/app/errors.service';
+import { User } from 'src/app/models/user';
 
 @Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.scss"],
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   user: User;
