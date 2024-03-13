@@ -178,6 +178,7 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - Enhance styling across `AdminMedia` components
 - Add dialog to better explain `getShareableLink` functionality.
 - Standardize Admin button styling between `UserEdit` and `CalendarEdit` components.
+- Add pointer cursor to calendar-arrow-button.
 
 ### `24.3.3`
 
