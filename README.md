@@ -287,3 +287,4 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - [x] Chat message cancel deletes existing message
 - [x] Chat should be sorted newest first
 - [x] All typescript declarations
+
