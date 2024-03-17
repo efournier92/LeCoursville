@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RoutingService {
-
-  constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-  ) { }
+  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
 
   NavigateToRoute(route: string) {
     this.router.navigate([route]);
+  }
+
+  NavigateToPromotedRoute() {
+    const promotedRoute = environment.promotedRoute || '/';
+    this.NavigateToRoute(promotedRoute);
   }
 
   NavigateToSignIn() {
@@ -29,6 +31,10 @@ export class RoutingService {
 
   NavigateToVideo() {
     this.NavigateToRoute('/media/video');
+  }
+
+  NavigateToExpressions() {
+    this.NavigateToRoute('/expressions');
   }
 
   NavigateToAdmin() {
@@ -56,7 +62,7 @@ export class RoutingService {
   }
 
   getQueryParams() {
-    this.activatedRoute.queryParams.subscribe(params => {
+    this.activatedRoute.queryParams.subscribe((params) => {
       return this.getMediaIdFromQueryParams(params);
     });
   }
@@ -75,21 +81,17 @@ export class RoutingService {
   updateQueryParams(selectedId: string) {
     const queryParams: Params = { id: selectedId };
 
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.activatedRoute,
-        queryParams
-        // queryParamsHandling: 'merge', // remove to replace all query params by provided
-      });
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams,
+      // queryParamsHandling: 'merge', // remove to replace all query params by provided
+    });
   }
 
   clearQueryParams() {
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.activatedRoute,
-        queryParams: null,
-      });
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: null,
+    });
   }
 }

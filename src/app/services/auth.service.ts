@@ -102,6 +102,8 @@ export class AuthService {
       }
 
       this.updateUser(existingUser);
+
+      this.routingService.NavigateToPromotedRoute();
     });
   }
 

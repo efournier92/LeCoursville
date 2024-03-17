@@ -42,22 +42,26 @@ I come from a very large family on my mother's side: the LeCours family. She had
 
 ## Configuration
 
-### /src/environments/secrets.ts
+### /src/environments/environment.ts
 
-1. Create `secrets.ts` in `/src/environments/`
-2. Copy the following object into `secrets.ts`
-3. Populate values with details from your Firebase account
+1. Create `enviroment.ts` in `/src/environments/`.
+   a. For Production, create `enviroment.prod.ts` in `/src/environments/`.
+2. Copy the following object into `environment.ts`.
+3. Populate values with details from your Firebase account.
 
 ```typescript
 export const secrets = {
+  production: IS_PRODUCTION,
   firebaseConfig: {
-    apiKey: "API_KEY",
-    authDomain: "AUTH_DOMAIN",
-    databaseURL: "DATABASE_URL",
-    projectId: "PROJECT_ID",
-    storageBucket: "STORAGE_BUCKET",
-    messagingSenderId: "MESSAGE_SENDER_ID",
+    apiKey: 'API_KEY',
+    authDomain: 'AUTH_DOMAIN',
+    databaseURL: 'DATABASE_URL',
+    projectId: 'PROJECT_ID',
+    storageBucket: 'STORAGE_BUCKET',
+    messagingSenderId: 'MESSAGE_SENDER_ID',
   },
+  googleApiKey: 'API_KEY',
+  promotedRoute: 'PROMOTED_ROUTE',
 };
 ```
 
@@ -174,6 +178,14 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
   - Ensure Sort-By and arrow buttons remain on the same line in ExpressionsComponent.
   - Add `shouldResort` boolean to `getItemsToDisplay` in `SortSettingsForExpressions`.
   - Remove superfluous methods from ExpressionComponent.
+- Prevent re-randomzation on filtration from `ExpressionsComponent`.
+- Clear query params from `onShowAll` in `ExpressionsComponent`.
+- Change `ArrayServiceshuffle.shuffle()` algorithm to avoid top-of-array bias.
+- Add Promoted-Route nagivation.
+  - Add `isSignedIn` method to `AppComponent`.
+  - Add `NavigateToPromotedRoute` to RoutingService.
+  - Navigate to promoted route from `AppComponent` when the user is already signed in.
+  - Navigate to promoted route from `AppComponent` after successful user registration.
 
 ### `24.3.14`
 

@@ -3,6 +3,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from './services/version.service';
 import { ErrorsService } from 'src/app/errors.service';
 import { User } from 'src/app/models/user';
+import { RoutingService } from './services/routing.service';
 
 @Component({
   selector: 'app-root',
@@ -16,14 +17,18 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private versionService: VersionService,
     private errorsService: ErrorsService,
+    private routingService: RoutingService,
   ) {}
 
   // SUBSCRIPTIONS
 
   private subscribeToUserObservable(): void {
-    this.authService.userObservable.subscribe(
-      (user: User) => (this.user = user),
-    );
+    this.authService.userObservable.subscribe((user: User) => {
+      this.user = user;
+      if (this.isSignedIn(this.user)) {
+        this.routingService.NavigateToPromotedRoute();
+      }
+    });
   }
 
   ngOnInit() {
@@ -34,4 +39,8 @@ export class AppComponent implements OnInit {
   }
 
   // HELPERS
+
+  private isSignedIn(user: User) {
+    return user.id && user.roles.user;
+  }
 }
