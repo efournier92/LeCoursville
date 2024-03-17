@@ -181,11 +181,13 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - Prevent re-randomzation on filtration from `ExpressionsComponent`.
 - Clear query params from `onShowAll` in `ExpressionsComponent`.
 - Change `ArrayServiceshuffle.shuffle()` algorithm to avoid top-of-array bias.
-- Add Promoted-Route nagivation.
+- Add Promoted-Route navigation.
   - Add `isSignedIn` method to `AppComponent`.
   - Add `NavigateToPromotedRoute` to RoutingService.
   - Navigate to promoted route from `AppComponent` when the user is already signed in.
   - Navigate to promoted route from `AppComponent` after successful user registration.
+  - Prevent unintentional navigation to promoted route.
+- Fix button styling in `AdminMediaUpload` forms
 
 ### `24.3.14`
 
