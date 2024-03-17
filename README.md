@@ -51,12 +51,12 @@ I come from a very large family on my mother's side: the LeCours family. She had
 ```typescript
 export const secrets = {
   firebaseConfig: {
-    apiKey: 'API_KEY',
-    authDomain: 'AUTH_DOMAIN',
-    databaseURL: 'DATABASE_URL',
-    projectId: 'PROJECT_ID',
-    storageBucket: 'STORAGE_BUCKET',
-    messagingSenderId: 'MESSAGE_SENDER_ID',
+    apiKey: "API_KEY",
+    authDomain: "AUTH_DOMAIN",
+    databaseURL: "DATABASE_URL",
+    projectId: "PROJECT_ID",
+    storageBucket: "STORAGE_BUCKET",
+    messagingSenderId: "MESSAGE_SENDER_ID",
   },
 };
 ```
@@ -166,6 +166,14 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - `firebase deploy`
 
 ## Major Version History
+
+### `24.3.17`
+
+- Minor bug fixes to ExpressionsComponent
+  - Prevent Random mode from being resorted on filtration in Expressions component.
+  - Ensure Sort-By and arrow buttons remain on the same line in ExpressionsComponent.
+  - Add `shouldResort` boolean to `getItemsToDisplay` in `SortSettingsForExpressions`.
+  - Remove superfluous methods from ExpressionComponent.
 
 ### `24.3.14`
 
@@ -287,4 +295,3 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - [x] Chat message cancel deletes existing message
 - [x] Chat should be sorted newest first
 - [x] All typescript declarations
-
