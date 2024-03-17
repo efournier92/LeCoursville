@@ -53,7 +53,8 @@
         >Should Hide from Lists?</mat-checkbox
       >
       <button
-        mat-button
+        mat-raised-button
+        color="primary"
         class="admin-form-action-button admin-form-action-button-upload w-100"
         (click)="onUploadSelectedMedia()"
       >
@@ -61,19 +62,22 @@
         <span *ngIf="video.id">Update</span>
       </button>
       <button
+        mat-raised-button
+        color="accent"
+        class="admin-form-action-button admin-form-action-button-cancel w-100"
+        (click)="onCancelSelectedMedia(video)"
+      >
+        Clear
+      </button>
+      <button
+        mat-raised-button
+        color="warn"
         class="admin-form-action-button admin-form-action-button-delete w-100"
         *ngIf="video.id"
         mat-button
         (click)="onDeleteSelectedMedia(video)"
       >
         Delete
-      </button>
-      <button
-        mat-button
-        class="admin-form-action-button admin-form-action-button-cancel w-100"
-        (click)="onCancelSelectedMedia(video)"
-      >
-        Clear
       </button>
     </form>
   </mat-card>
