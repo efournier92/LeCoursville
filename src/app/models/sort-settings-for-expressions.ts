@@ -1,4 +1,4 @@
-import { SortSettings, SortProperty } from 'src/app/models/sort-settings';
+import { SortSettings, SortProperty } from "src/app/models/sort-settings";
 
 export class SortSettingsForExpressions extends SortSettings {
   sortableProperties: SortProperty[] = [
@@ -13,18 +13,20 @@ export class SortSettingsForExpressions extends SortSettings {
   constructor() {
     super();
 
-    this.itemsPerPage = 10
-    this.activeSortProperty = this.getSortPropertyByKey(this.availableSortProperties.random.key);
+    this.itemsPerPage = 10;
+    this.activeSortProperty = this.getSortPropertyByKey(
+      this.availableSortProperties.random.key,
+    );
   }
 
-  getItemsToDisplay(items: any[]): any[] {
+  getItemsToDisplay(items: any[], shouldResort = true): any[] {
     if (!items?.length) {
       return items;
     }
 
     items = this.filterItemsByParams(items);
     items = this.filterItems(items);
-    items = this.sortItems(items);
+    if (shouldResort) items = this.sortItems(items);
 
     return items;
   }
