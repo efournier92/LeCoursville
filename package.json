@@ -1,6 +1,6 @@
 {
   "name": "lecoursville",
-  "version": "24.3.3",
+  "version": "24.3.17",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
