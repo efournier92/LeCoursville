@@ -8,6 +8,10 @@ import { environment } from 'src/environments/environment';
 export class RoutingService {
   constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
 
+  IsRootRoute() {
+    return this.router.url === '/';
+  }
+
   NavigateToRoute(route: string) {
     this.router.navigate([route]);
   }

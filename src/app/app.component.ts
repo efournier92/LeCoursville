@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe((user: User) => {
       this.user = user;
-      if (this.isSignedIn(this.user)) {
+      if (this.shouldNavigateToPromotedRoute()) {
         this.routingService.NavigateToPromotedRoute();
       }
     });
@@ -40,7 +40,11 @@ export class AppComponent implements OnInit {
 
   // HELPERS
 
-  private isSignedIn(user: User) {
+  private shouldNavigateToPromotedRoute(): boolean {
+    return this.isSignedIn(this.user) && this.routingService.IsRootRoute();
+  }
+
+  private isSignedIn(user: User): boolean {
     return user.id && user.roles.user;
   }
 }
