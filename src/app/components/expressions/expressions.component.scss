@@ -1,1 +1,18 @@
-@import "src/app/components/message/message.component.scss";
+@import 'src/app/components/message/message.component.scss';
+
+.expressions-header-container {
+  margin: 0 2em;
+}
+
+.expressions-header {
+  color: #616161;
+  font-size: 1.1em;
+  font-style: italic;
+}
+
+.expressions-attribution {
+  color: #616161;
+  font-size: 0.9em;
+  margin-left: 2.5em;
+  margin-top: 0.25em;
+}
