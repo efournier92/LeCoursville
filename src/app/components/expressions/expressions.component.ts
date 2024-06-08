@@ -12,8 +12,8 @@ import { SortProperty } from 'src/app/models/sort-settings';
   styleUrls: ['./expressions.component.scss'],
 })
 export class ExpressionsComponent extends MessageComponent implements OnInit {
-  headerText: string = ExpressionConstants.HeaderText;
-  headerAttribution: string = ExpressionConstants.HeaderAttribution;
+  headerQuoteText: string = ExpressionConstants.HeaderQuoteText;
+  headerAttributionText: string = ExpressionConstants.HeaderAttributionText;
   isLoading: boolean = true;
   messageType: string = MessageConstants.Types.Expression;
   sortSettings: SortSettingsForExpressions = new SortSettingsForExpressions();
