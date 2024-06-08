@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
-import { AdminService } from 'src/app/services/admin.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
@@ -11,7 +10,7 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
 @Component({
   selector: 'app-media-list',
   templateUrl: './media-list.component.html',
-  styleUrls: ['./media-list.component.scss']
+  styleUrls: ['./media-list.component.scss'],
 })
 export class MediaListComponent implements OnInit {
   @Input() mediaTypesToShow: string[];
@@ -31,8 +30,7 @@ export class MediaListComponent implements OnInit {
     private mediaService: MediaService,
     private mediaIconsService: MediaIconsService,
     private analyticsService: AnalyticsService,
-    private adminService: AdminService,
-  ) { }
+  ) {}
 
   // LIFECYCLE HOOKS
 
@@ -42,28 +40,31 @@ export class MediaListComponent implements OnInit {
     this.initializeList();
     this.searchQuery = '';
     this.sortTypes = ['Date Added', 'Date Recorded'];
-    this.selectedSortType = this.sortTypes[0];
+    this.selectedSortType = this.sortTypes[1];
   }
 
   // SUBSCRIPTIONS
 
   private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => (this.user = user),
     );
   }
 
   private subscribeToMediaObservable(): void {
-    this.mediaService.mediaObservable.subscribe(
-      (mediaList) => {
-        this.allMedia = mediaList;
-        this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
-        this.filteredMedia = this.sortMedia(this.filteredMedia);
-        function randomDate(start, end) {
-            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-        }
+    this.mediaService.mediaObservable.subscribe((mediaList) => {
+      this.allMedia = mediaList;
+      this.filteredMedia = this.filterMediaByType(
+        this.mediaTypesToShow,
+        this.allMedia,
+      );
+      this.filteredMedia = this.sortMedia(this.filteredMedia);
+      function randomDate(start, end) {
+        return new Date(
+          start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+        );
       }
-    );
+    });
   }
 
   // PUBLIC METHODS
@@ -83,25 +84,38 @@ export class MediaListComponent implements OnInit {
   onMediaSelect(media: UploadableMedia): void {
     this.mediaClickEvent.emit(media);
     this.analyticsService.logEvent('media_list_select', {
-      id: media?.id, title: media?.title, userId: this.user?.id,
+      id: media?.id,
+      title: media?.title,
+      userId: this.user?.id,
     });
   }
 
   onSelectMediaType(selectedTypes: string[]): void {
-    this.filteredMedia = this.mediaService.filterByTypes(selectedTypes, this.allMedia);
+    this.filteredMedia = this.mediaService.filterByTypes(
+      selectedTypes,
+      this.allMedia,
+    );
     this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_select_type', {
-      type: selectedTypes.toString(), userId: this.user?.id,
+      type: selectedTypes.toString(),
+      userId: this.user?.id,
     });
   }
 
   onSearchInputChange(event: any): void {
     const query = this.searchQuery;
-    this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
-    this.filteredMedia = this.mediaService.filterByQuery(query, this.filteredMedia);
+    this.filteredMedia = this.filterMediaByType(
+      this.mediaTypesToShow,
+      this.allMedia,
+    );
+    this.filteredMedia = this.mediaService.filterByQuery(
+      query,
+      this.filteredMedia,
+    );
     this.filteredMedia = this.sortMedia(this.filteredMedia);
     this.analyticsService.logEvent('media_list_search', {
-      query, userId: this.user?.id,
+      query,
+      userId: this.user?.id,
     });
   }
 
@@ -118,7 +132,10 @@ export class MediaListComponent implements OnInit {
     }
 
     if (this.mediaTypesToShow) {
-      this.filteredMedia = this.filterMediaByType(this.mediaTypesToShow, this.allMedia);
+      this.filteredMedia = this.filterMediaByType(
+        this.mediaTypesToShow,
+        this.allMedia,
+      );
       this.filteredMedia = this.sortMedia(this.filteredMedia);
     }
   }
@@ -128,11 +145,14 @@ export class MediaListComponent implements OnInit {
       MediaConstants.VIDEO.id,
       MediaConstants.AUDIO_ALBUM.id,
       MediaConstants.PHOTO_ALBUM.id,
-      MediaConstants.DOC.id
+      MediaConstants.DOC.id,
     ];
   }
 
-  private filterMediaByType(mediaTypesToShow: string[], mediaToFilter: UploadableMedia[]) {
+  private filterMediaByType(
+    mediaTypesToShow: string[],
+    mediaToFilter: UploadableMedia[],
+  ) {
     return this.mediaService.filterByTypes(mediaTypesToShow, mediaToFilter);
   }
 
@@ -148,7 +168,7 @@ export class MediaListComponent implements OnInit {
   private bumpStickies(mediaList: UploadableMedia[]): UploadableMedia[] {
     mediaList.forEach((media, index) => {
       if (media.isSticky) {
-        const stickyItem = mediaList.splice(index, 1) [0];
+        const stickyItem = mediaList.splice(index, 1)[0];
         mediaList.splice(0, 0, stickyItem);
       }
     });
@@ -156,14 +176,28 @@ export class MediaListComponent implements OnInit {
     return mediaList;
   }
 
-  private compareMediaByDateUpdated(a: UploadableMedia, b: UploadableMedia): number {
+  private getOldestDateString(): Date {
+    return new Date(0);
+  }
+
+  private compareMediaByDateUpdated(
+    a: UploadableMedia,
+    b: UploadableMedia,
+  ): number {
+    // If updated date is not known, treat it as old
+    if (!a.dateUpdated) a.dateUpdated = this.getOldestDateString();
+    if (!b.dateUpdated) b.dateUpdated = this.getOldestDateString();
+
     const aDate = this.getTimeFromDateString(a.dateUpdated);
     const bDate = this.getTimeFromDateString(b.dateUpdated);
 
     return bDate - aDate;
   }
 
-  private compareMediaByTimestamp(a: UploadableMedia, b: UploadableMedia): number {
+  private compareMediaByTimestamp(
+    a: UploadableMedia,
+    b: UploadableMedia,
+  ): number {
     return a.date.localeCompare(b.date);
   }
 

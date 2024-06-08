@@ -7,7 +7,6 @@ export class AudioAlbum implements UploadableMedia {
   artist: string;
   date: string;
   folderName: string;
-  fileName: string;
   isSticky: boolean;
   isHidden: boolean;
   listing: any[];
@@ -15,6 +14,7 @@ export class AudioAlbum implements UploadableMedia {
   type: string;
   format: string;
   dateUpdated: Date;
+  fileName: string = '';
 
   constructor(
     id?: string,

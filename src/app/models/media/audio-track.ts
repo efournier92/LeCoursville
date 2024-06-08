@@ -6,22 +6,17 @@ export class AudioTrack implements UploadableMedia {
   title: string;
   artist: string;
   date: string;
-  folderName: string;
-  fileName: string;
-  isSticky: boolean;
-  isHidden: boolean;
-  listing: any[];
-  urls: { icon: string; download: string; };
+  urls: { icon: string; download: string };
   type: string;
   format: string;
-  dateUpdated: Date;
+  fileName: string = '';
+  folderName: string = '';
+  dateUpdated: Date = new Date();
+  isSticky: boolean = false;
+  isHidden: boolean = false;
+  listing: any[] = [];
 
-  constructor(
-    id?: string,
-    title?: string,
-    artist?: string,
-    date?: string,
-  ) {
+  constructor(id?: string, title?: string, artist?: string, date?: string) {
     this.id = id;
     this.title = title;
     this.artist = artist;
@@ -30,5 +25,4 @@ export class AudioTrack implements UploadableMedia {
     this.type = MediaConstants.AUDIO_TRACK.id;
     this.format = MediaConstants.AUDIO_TRACK.format;
   }
-
 }

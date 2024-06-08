@@ -4,19 +4,18 @@ import { UploadableMedia } from 'src/app/models/media/media';
 export class Video implements UploadableMedia {
   id: string;
   title: string;
-  artist: string;
   date: string;
-  folderName: string;
   fileName: string;
-  isSticky: boolean;
-  isHidden: boolean;
-  listing: any[];
-  urls: { download: string; icon: string; };
+  urls: { download: string; icon: string };
   type: string;
   format: string;
   dateUpdated: Date;
-
   duration: string;
+  isSticky: boolean = false;
+  isHidden: boolean = false;
+  artist: string = '';
+  folderName: string = '';
+  listing: any[] = [];
 
   constructor(
     id: string = '',
