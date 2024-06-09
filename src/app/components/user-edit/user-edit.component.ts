@@ -2,11 +2,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { User } from 'src/app/models/user';
 import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { PromptModalService } from 'src/app/services/prompt-modal.service';
 
 @Component({
   selector: 'app-user-edit',
   templateUrl: './user-edit.component.html',
-  styleUrls: ['./user-edit.component.scss']
+  styleUrls: ['./user-edit.component.scss'],
 })
 export class UserEditComponent implements OnInit {
   @Input() userOnCard: User;
@@ -19,7 +20,8 @@ export class UserEditComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private adminService: AdminService,
-  ) { }
+    private promptModal: PromptModalService,
+  ) {}
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
@@ -29,7 +31,7 @@ export class UserEditComponent implements OnInit {
 
   private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe(
-      (user: User) => this.userSignedIn = user
+      (user: User) => (this.userSignedIn = user),
     );
   }
 
@@ -65,7 +67,15 @@ export class UserEditComponent implements OnInit {
   // HELPER METHODS
 
   private deleteUser(user: User): void {
-    this.adminService.deleteUser(user);
+    const dialogRef = this.promptModal.openDialog(
+      'Are You Sure?',
+      'Do you really want to delete this user?',
+    );
+    dialogRef.afterClosed().subscribe((didUserConfirm: boolean) => {
+      if (didUserConfirm) {
+        this.adminService.deleteUser(user);
+      }
+    });
   }
 
   private emitCancelEditEvent(): void {

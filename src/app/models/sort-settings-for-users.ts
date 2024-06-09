@@ -1,4 +1,4 @@
-import { SortSettings, SortProperty } from 'src/app/models/sort-settings';
+import { SortSettings } from 'src/app/models/sort-settings';
 
 export class SortSettingsForUsers extends SortSettings {
   sortableProperties = [
@@ -10,12 +10,12 @@ export class SortSettingsForUsers extends SortSettings {
   ];
 
   constructor() {
-    const itemsPerPage = 10;
-
     super();
 
-    this.itemsPerPage = 10
-    this.activeSortProperty = this.getSortPropertyByKey(this.availableSortProperties.dateLastActive.key);
+    this.itemsPerPage = 24;
+    this.activeSortProperty = this.getSortPropertyByKey(
+      this.availableSortProperties.dateLastActive.key,
+    );
   }
 
   getItemsToDisplay(itemsToSort: any[]): any[] {
