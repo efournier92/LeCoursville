@@ -1,7 +1,7 @@
 import { AuthConfig } from "src/app/auth.config";
 import { environment } from "src/environments/environment";
 import { LocationStrategy, PathLocationStrategy } from "@angular/common";
-import { NgModule } from "@angular/core";
+import { NO_ERRORS_SCHEMA, NgModule } from "@angular/core";
 import { adapterFactory } from "angular-calendar/date-adapters/date-fns";
 
 // Imports
@@ -116,6 +116,7 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     ExpressionViewComponent,
     ExpressionEditComponent,
   ],
+  schemas: [NO_ERRORS_SCHEMA],
   imports: [
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAnalyticsModule,
