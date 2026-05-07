@@ -57,6 +57,10 @@ export class RoutingService {
     this.NavigateToRoute('/admin/calendar');
   }
 
+  NavigateToAdminFeatures() {
+    this.NavigateToRoute('/admin/features');
+  }
+
   NavigateToRouteWithoutLocationChange(route: string) {
     this.router.navigateByUrl(route, { skipLocationChange: true });
   }

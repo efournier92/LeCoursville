@@ -10,10 +10,13 @@ import { AuthGuardService } from 'src/app/services/auth-guard.service';
 import { AdminCalendarComponent } from './components/admin-calendar/admin-calendar.component';
 import { AdminMediaComponent } from './components/admin-media/admin-media.component';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
+import { AdminFeaturesComponent } from './components/admin-features/admin-features.component';
+import { FeatureDisabledComponent } from './components/feature-disabled/feature-disabled.component';
 import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
 import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.component';
 import { MediaVideoComponent } from './components/media-video/media-video.component';
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
+import { FeatureFlagGuard } from './services/feature-flag-guard.service';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 
 const routes: Routes =
@@ -25,27 +28,32 @@ const routes: Routes =
     {
       path: 'contacts',
       component: ContactsComponent,
-      canActivate: [AuthGuardService],
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'contacts' },
     },
     {
       path: 'calendar',
       component: CalendarComponent,
-      canActivate: [AuthGuardService],
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'calendar' },
     },
     {
       path: 'chat',
       component: ChatComponent,
-      canActivate: [AuthGuardService],
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'chat' },
     },
     {
       path: 'expressions',
       component: ExpressionsComponent,
-      canActivate: [AuthGuardService],
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'expressions' },
     },
     {
       path: 'photos',
       component: PhotosComponent,
-      canActivate: [AuthGuardService],
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'photos' },
     },
     // MEDIA
     {
@@ -55,10 +63,14 @@ const routes: Routes =
     {
       path: 'media/audio',
       component: MediaAudioComponent,
+      canActivate: [FeatureFlagGuard],
+      data: { featureId: 'music' },
     },
     {
       path: 'media/video',
       component: MediaVideoComponent,
+      canActivate: [FeatureFlagGuard],
+      data: { featureId: 'videos' },
     },
     // ADMIN
     {
@@ -80,6 +92,15 @@ const routes: Routes =
       path: 'admin/users',
       component: AdminUsersComponent,
       canActivate: [AuthAdminGuardService],
+    },
+    {
+      path: 'admin/features',
+      component: AdminFeaturesComponent,
+      canActivate: [AuthAdminGuardService],
+    },
+    {
+      path: 'feature-disabled',
+      component: FeatureDisabledComponent,
     },
     {
       path: '**',
