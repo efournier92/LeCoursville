@@ -69,6 +69,8 @@ import { MediaAudioComponent } from "src/app/components/media-audio/media-audio.
 import { MediaVideoComponent } from "./components/media-video/media-video.component";
 import { AdminMediaUploadVideoComponent } from "./components/admin-media-upload-video/admin-media-upload-video.component";
 import { NavbarLinksComponent } from "./components/navbar-links/navbar-links.component";
+import { AdminFeaturesComponent } from "./components/admin-features/admin-features.component";
+import { FeatureDisabledComponent } from "./components/feature-disabled/feature-disabled.component";
 import { ExpressionsComponent } from "./components/expressions/expressions.component";
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
@@ -106,6 +108,8 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     AdminMediaUploadAudioAlbumComponent,
     AdminCalendarComponent,
     AdminRoutingComponent,
+    AdminFeaturesComponent,
+    FeatureDisabledComponent,
     UserViewComponent,
     UserEditComponent,
     MediaAudioComponent,
