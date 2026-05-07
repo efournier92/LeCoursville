@@ -1,0 +1,24 @@
+<div class="admin-features-container">
+  <mat-card class="features-card">
+    <mat-card-header>
+      <mat-card-title>Feature Flags</mat-card-title>
+      <mat-card-subtitle>Toggle visibility of navigation menu items</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="feature-list">
+        <div class="feature-row" *ngFor="let feature of featureDefs">
+          <mat-checkbox
+            [checked]="isEnabled(feature.id)"
+            (change)="onToggle(feature.id, $event.checked)"
+            color="primary">
+          </mat-checkbox>
+          <span class="feature-label">{{ feature.label }}</span>
+          <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
+            {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
+          </span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
