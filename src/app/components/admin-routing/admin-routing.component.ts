@@ -30,4 +30,8 @@ export class AdminRoutingComponent implements OnInit {
     this.routingService.NavigateToAdminCalendar();
   }
 
+  onClickFeaturesRoute() {
+    this.routingService.NavigateToAdminFeatures();
+  }
+
 }

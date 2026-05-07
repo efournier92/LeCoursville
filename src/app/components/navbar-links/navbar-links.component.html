@@ -5,7 +5,7 @@
 >
   <button
     mat-button
-    *ngFor="let button of buttons"
+    *ngFor="let button of filteredButtons"
     [routerLink]="button.link"
   >
     <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
@@ -19,7 +19,7 @@
 >
   <button
     mat-menu-item
-    *ngFor="let button of buttons"
+    *ngFor="let button of filteredButtons"
     [routerLink]="button.link"
   >
     <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>

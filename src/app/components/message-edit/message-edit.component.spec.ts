@@ -2,17 +2,21 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MessageEditComponent } from './message-edit.component';
 
+class StubMessageEditComponent extends MessageEditComponent {
+  ngOnInit(): void {}
+}
+
 describe('MessageEditComponent', () => {
-  let component: MessageEditComponent;
-  let fixture: ComponentFixture<MessageEditComponent>;
+  let component: StubMessageEditComponent;
+  let fixture: ComponentFixture<StubMessageEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MessageEditComponent ]
+      declarations: [ StubMessageEditComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MessageEditComponent);
+    fixture = TestBed.createComponent(StubMessageEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

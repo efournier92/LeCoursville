@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpressionsEditComponent } from './expressions-edit.component';
+import { ExpressionEditComponent } from './expression-edit.component';
 
-describe('ExpressionsEditComponent', () => {
-  let component: ExpressionsEditComponent;
-  let fixture: ComponentFixture<ExpressionsEditComponent>;
+describe('ExpressionEditComponent', () => {
+  let component: ExpressionEditComponent;
+  let fixture: ComponentFixture<ExpressionEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ExpressionsEditComponent ]
+      declarations: [ ExpressionEditComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ExpressionsEditComponent);
+    fixture = TestBed.createComponent(ExpressionEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

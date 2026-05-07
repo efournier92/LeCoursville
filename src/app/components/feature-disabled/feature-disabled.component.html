@@ -1,0 +1,25 @@
+<div class="feature-disabled-container">
+  <mat-card class="disabled-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="disabled-icon">block</mat-icon>
+      <mat-card-title>Feature Disabled</mat-card-title>
+      <mat-card-subtitle>{{ featureName }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p class="message">
+        The <strong>{{ featureName }}</strong> feature is currently disabled.
+      </p>
+      <p class="hint">
+        Contact an administrator if you need access to this feature.
+      </p>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="goHome()">
+        <mat-icon>home</mat-icon>
+        Go Home
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
