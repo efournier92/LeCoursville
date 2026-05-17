@@ -6,7 +6,6 @@ import { Clan } from 'src/app/models/clan';
 import { Address } from 'src/app/models/address';
 import { PeopleService } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
-import { AddressesService } from 'src/app/services/addresses.service';
 
 export interface ContactCard {
   person: Person;
@@ -26,8 +25,7 @@ export class ContactsFromPeopleService {
 
   constructor(
     private peopleService: PeopleService,
-    private clanService: ClanService,
-    private addressesService: AddressesService
+    private clanService: ClanService
   ) {
     this.loadContacts();
   }
