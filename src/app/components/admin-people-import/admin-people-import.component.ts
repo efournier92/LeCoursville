@@ -2,9 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
-import { AnniversariesService } from 'src/app/services/anniversaries.service';
 import { Clan } from 'src/app/models/clan';
-import { Anniversary } from 'src/app/models/anniversary';
 import { Person, PersonDate, Email, Phone } from 'src/app/models/person';
 import { Address } from 'src/app/models/address';
 import { of } from 'rxjs';
@@ -36,22 +34,15 @@ export class AdminPeopleImportComponent implements OnInit {
   previewPageSize = 20;
   previewPageIndex = 0;
   previewPageSizeOptions = [20, 50, 100];
-  private anniversariesByPersonIdMap: Map<string, string> = new Map();
-  private anniversariesByIdMap: Map<string, Anniversary> = new Map();
 
   constructor(
     private peopleService: PeopleService,
-    private clanService: ClanService,
-    private anniversariesService: AnniversariesService
+    private clanService: ClanService
   ) {}
 
   ngOnInit(): void {
     this.clanService.clans$.subscribe(clans => {
       this.clansByNameMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
-    });
-    this.anniversariesService.anniversaries$.subscribe(anniversaries => {
-      this.anniversariesByPersonIdMap = new Map(anniversaries.map(a => [a.spouse1Id, a.id]));
-      this.anniversariesByIdMap = new Map(anniversaries.map(a => [a.id, a]));
     });
   }
 
@@ -95,7 +86,6 @@ export class AdminPeopleImportComponent implements OnInit {
 
     if (this.parsedPeople.length > 0) {
       this.resolveSpouses();
-      this.resolveAnniversaries();
       this.computeParentIds();
       this.importPreview = {
         total: this.parsedPeople.length,
@@ -179,7 +169,7 @@ export class AdminPeopleImportComponent implements OnInit {
       clanId: this.resolveClanId(values, headerMap, colorHex),
       birthday: birthdayResult.date || { year: 0, month: 1, day: 1 },
       spouseId: null,
-      anniversaryId: null,
+      anniversaryDate: anniversaryResult.date,
       emails: this.parseEmails(values, headerMap),
       phones: this.parsePhones(values, headerMap),
       addresses: this.parseAddresses(values, headerMap),
@@ -353,22 +343,11 @@ export class AdminPeopleImportComponent implements OnInit {
         if (!spouse.person.spouseId) {
           spouse.person.spouseId = id;
         }
-      }
-    }
-  }
-
-  private resolveAnniversaries(): void {
-    for (const parsed of this.parsedPeople) {
-      if (parsed.person.spouseId) {
-        const spousePersonId = parsed.person.spouseId;
-        const anniversaryId = this.anniversariesByPersonIdMap.get(spousePersonId);
-        if (anniversaryId) {
-          parsed.person.anniversaryId = anniversaryId;
-          // Also set on spouse if they have no anniversaryId yet
-          const spouseParsed = this.parsedPeople.find(p => p.person.id === spousePersonId);
-          if (spouseParsed && !spouseParsed.person.anniversaryId) {
-            spouseParsed.person.anniversaryId = anniversaryId;
-          }
+        // Share anniversaryDate between spouses
+        if (parsed.person.anniversaryDate && !spouse.person.anniversaryDate) {
+          spouse.person.anniversaryDate = parsed.person.anniversaryDate;
+        } else if (spouse.person.anniversaryDate && !parsed.person.anniversaryDate) {
+          parsed.person.anniversaryDate = spouse.person.anniversaryDate;
         }
       }
     }
@@ -470,12 +449,9 @@ export class AdminPeopleImportComponent implements OnInit {
     return `${birthday.month}/${birthday.day}/${birthday.year}`;
   }
 
-  formatAnniversary(anniversaryId: string | null): string {
-    if (!anniversaryId) return '-';
-    const anniversary = this.anniversariesByIdMap.get(anniversaryId);
-    if (!anniversary) return '-';
-    const d = anniversary.date;
-    return `${d.month}/${d.day}/${d.year}`;
+  formatAnniversary(anniversaryDate: PersonDate | null): string {
+    if (!anniversaryDate) return '-';
+    return `${anniversaryDate.month}/${anniversaryDate.day}/${anniversaryDate.year}`;
   }
 
   onPreviewPage(event: PageEvent): void {
