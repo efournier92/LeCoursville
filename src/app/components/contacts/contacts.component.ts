@@ -1,109 +1,168 @@
-import { Component, OnInit } from "@angular/core";
-import { FilterPipe } from "ngx-filter-pipe";
-import { Contact } from "src/app/models/contact";
-import { AppSettings } from "src/environments/app-settings";
-import { AuthService } from "src/app/services/auth.service";
-import { ContactsService } from "src/app/services/contacts.service";
-import { User } from "src/app/models/user";
-import { PromptModalService } from "src/app/services/prompt-modal.service";
-import { ContactsPrinterService } from "src/app/services/contacts-printer.service";
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Router, ActivatedRoute } from "@angular/router";
+import { Subscription } from 'rxjs';
+import { ContactCard } from "src/app/services/contacts-from-people.service";
+import { ContactsFromPeopleService } from "src/app/services/contacts-from-people.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
+import { ClanService } from "src/app/services/clan.service";
+import { Clan } from "src/app/models/clan";
 
 @Component({
   selector: "app-contacts",
   templateUrl: "./contacts.component.html",
   styleUrls: ["./contacts.component.scss"],
 })
-export class ContactsComponent implements OnInit {
-  user: User;
-  contacts: Contact[] = [];
+export class ContactsComponent implements OnInit, OnDestroy {
+  contacts: ContactCard[] = [];
   searchTerm = "";
-  filteredContacts: Contact[] = [];
-  family = "";
-  families: string[] = AppSettings.families;
+  selectedClan = '';
+  clans: Clan[] = [];
+  selectedPersonId: string | null = null;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
-    private contactsService: ContactsService,
-    private contactsPrinterService: ContactsPrinterService,
-    private filter: FilterPipe,
-    private authService: AuthService,
-    private promptModal: PromptModalService,
+    private contactsFromPeopleService: ContactsFromPeopleService,
+    private clanService: ClanService,
     private analyticsService: AnalyticsService,
+    public router: Router,
+    private route: ActivatedRoute,
   ) {}
 
-  // LIFECYCLE HOOKS
-
   ngOnInit(): void {
-    this.subscribeToUserObservable();
-    this.subscribeToContactsObservable();
+    this.subscriptions.push(
+      this.clanService.clans$.subscribe(clans => {
+        this.clans = clans.sort((a, b) => (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name));
+      })
+    );
+
+    this.subscriptions.push(
+      this.contactsFromPeopleService.contacts$.subscribe(cards => {
+        this.applyFilters(cards);
+      })
+    );
+
+    this.route.queryParamMap.subscribe(queryParams => {
+      this.searchTerm = queryParams.get('filter') || '';
+      this.selectedClan = queryParams.get('clan') || '';
+      this.selectedPersonId = queryParams.get('selected') || null;
+      // Re-trigger filter after query params update
+      this.contactsFromPeopleService.contacts$.subscribe(cards => {
+        this.applyFilters(cards);
+      }).add(() => {});
+    });
+
     this.analyticsService.logEvent("component_load_contacts", {});
   }
 
-  // SUBSCRIPTIONS
-
-  private subscribeToUserObservable() {
-    this.authService.userObservable.subscribe(
-      (user: User) => (this.user = user),
-    );
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private subscribeToContactsObservable() {
-    this.contactsService.userContacts.subscribe((contacts) => {
-      this.contacts = contacts;
-      this.filteredContacts = contacts.sort((a, b) =>
-        a.name > b.name ? 1 : -1,
-      );
+  openPersonDetail(personId: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selected: personId },
+      queryParamsHandling: 'merge'
+    });
+    this.selectedPersonId = personId;
+  }
+
+  closeModal(): void {
+    this.selectedPersonId = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selected: null },
+      queryParamsHandling: 'merge'
     });
   }
 
-  // PUBLIC METHODS
+  onFilterChange(query: string): void {
+    this.searchTerm = query;
+    this.updateQueryParams();
+    this.applyFiltersFromParams();
+  }
 
-  filterContacts(event: any): void {
-    this.filteredContacts = this.filter.transform(this.contacts, {
-      name: event?.target?.value,
+  clearFilter(): void {
+    this.searchTerm = '';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { filter: null },
+      queryParamsHandling: 'merge'
     });
-    this.analyticsService.logEvent("contacts_filter", {
-      value: event?.target?.value,
-      userId: this.user?.id,
+    this.applyFiltersFromParams();
+  }
+
+  onClanChange(): void {
+    this.updateQueryParams();
+    this.applyFiltersFromParams();
+  }
+
+  private applyFiltersFromParams(): void {
+    this.contactsFromPeopleService.contacts$.subscribe(cards => {
+      this.applyFilters(cards);
+    }).add(() => {});
+  }
+
+  clearClanFilter(): void {
+    this.selectedClan = '';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {}
     });
   }
 
-  downloadPdf(): void {
-    this.contactsPrinterService.downloadPdf(this.filteredContacts);
-    this.analyticsService.logEvent("contacts_pdf_download", {
-      userId: this.user.id,
+  private applyFilters(cards: ContactCard[]): void {
+    let filtered = cards;
+
+    if (this.selectedClan) {
+      filtered = filtered.filter(card => {
+        const clanName = card.clan?.name?.toLowerCase() || '';
+        return clanName === this.selectedClan.toLowerCase();
+      });
+    }
+
+    if (this.searchTerm.trim()) {
+      const query = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(card => {
+        const personName = this.getPersonName(card).toLowerCase();
+        const spouseName = card.spouse ? this.getSpouseName(card).toLowerCase() : '';
+        return personName.includes(query) || spouseName.includes(query);
+      });
+    }
+
+    this.contacts = filtered;
+  }
+
+  private updateQueryParams(): void {
+    const queryParams: any = {};
+    if (this.searchTerm) {
+      queryParams['filter'] = this.searchTerm;
+    }
+    if (this.selectedClan) {
+      queryParams['clan'] = this.selectedClan;
+    }
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge'
     });
   }
 
-  printPdf(): void {
-    this.contactsPrinterService.printPdf(this.filteredContacts);
-    this.analyticsService.logEvent("contacts_pdf_print", {
-      userId: this.user.id,
-    });
+  getPersonName(card: ContactCard): string {
+    const first = card.person.name.firstPreferred || card.person.name.firstGiven || '';
+    const last = card.person.name.last || '';
+    return `${first} ${last}`.trim();
   }
 
-  switchFamily(family: string): void {
-    this.filteredContacts = this.filter.transform(this.contacts, { family });
-    this.analyticsService.logEvent("contacts_switch_family", {
-      userId: this.user.id,
-    });
+  getSpouseName(card: ContactCard): string {
+    if (!card.spouse) return '';
+    const first = card.spouse.name.firstPreferred || card.spouse.name.firstGiven || '';
+    const last = card.spouse.name.last || '';
+    return `${first} ${last}`.trim();
   }
 
-  displayAllFamilies(): void {
-    this.filteredContacts = this.contacts;
-  }
-
-  newContact(): void {
-    this.displayAllFamilies();
-
-    const contact: Contact = new Contact();
-    contact.isEditable = true;
-    this.contacts.unshift(contact);
-
-    this.analyticsService.logEvent("contacts_new_create", {
-      value: contact?.id,
-      name: contact?.name,
-      userId: this.user?.id,
-    });
+  getClans(): Clan[] {
+    return this.clans;
   }
 }
