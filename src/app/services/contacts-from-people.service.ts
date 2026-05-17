@@ -124,11 +124,13 @@ export class ContactsFromPeopleService {
     });
 
     // Merge emails (deduplicate by address) - include deceased spouse's emails
-    const emailMap = new Map<string, { address: string; label: string | null; owner: string | null }>();
+    const emailMap = new Map<string, { address: string; label: string | null; owner: string | null; count: number }>();
     const personOwnerName = this.getPersonFirstName(person);
     (person.emails || []).forEach(e => {
       if (!emailMap.has(e.address)) {
-        emailMap.set(e.address, { address: e.address, label: e.label, owner: personOwnerName });
+        emailMap.set(e.address, { address: e.address, label: e.label, owner: personOwnerName, count: 1 });
+      } else {
+        emailMap.get(e.address)!.count++;
       }
     });
     // Merge spouse emails (from living spouse or deceased spouse contact info)
@@ -136,7 +138,10 @@ export class ContactsFromPeopleService {
       const spouseOwnerName = this.getPersonFirstName(spouse);
       (spouse.emails || []).forEach(e => {
         if (!emailMap.has(e.address)) {
-          emailMap.set(e.address, { address: e.address, label: e.label, owner: spouseOwnerName });
+          emailMap.set(e.address, { address: e.address, label: e.label, owner: spouseOwnerName, count: 1 });
+        } else {
+          emailMap.get(e.address)!.count++;
+          emailMap.get(e.address)!.owner = null; // shared between spouses, clear owner
         }
       });
     } else {
@@ -144,24 +149,32 @@ export class ContactsFromPeopleService {
       const deceasedName = spouseContactInfo.emails.length > 0 ? 'Deceased' : null;
       spouseContactInfo.emails.forEach(e => {
         if (!emailMap.has(e.address)) {
-          emailMap.set(e.address, { address: e.address, label: e.label, owner: deceasedName });
+          emailMap.set(e.address, { address: e.address, label: e.label, owner: deceasedName, count: 1 });
+        } else {
+          emailMap.get(e.address)!.count++;
+          emailMap.get(e.address)!.owner = null;
         }
       });
     }
-    const emails = Array.from(emailMap.values());
+    const emails = Array.from(emailMap.values()).map(({ count, ...rest }) => rest);
 
     // Merge phones (deduplicate by number) - include deceased spouse's phones
-    const phoneMap = new Map<string, { label: string; number: string; owner: string | null }>();
+    const phoneMap = new Map<string, { label: string; number: string; owner: string | null; count: number }>();
     (person.phones || []).forEach(p => {
       if (!phoneMap.has(p.number)) {
-        phoneMap.set(p.number, { label: p.label, number: p.number, owner: personOwnerName });
+        phoneMap.set(p.number, { label: p.label, number: p.number, owner: personOwnerName, count: 1 });
+      } else {
+        phoneMap.get(p.number)!.count++;
       }
     });
     if (spouse) {
       const spouseOwnerName = this.getPersonFirstName(spouse);
       (spouse.phones || []).forEach(p => {
         if (!phoneMap.has(p.number)) {
-          phoneMap.set(p.number, { label: p.label, number: p.number, owner: spouseOwnerName });
+          phoneMap.set(p.number, { label: p.label, number: p.number, owner: spouseOwnerName, count: 1 });
+        } else {
+          phoneMap.get(p.number)!.count++;
+          phoneMap.get(p.number)!.owner = null;
         }
       });
     } else {
@@ -169,11 +182,14 @@ export class ContactsFromPeopleService {
       const deceasedName = spouseContactInfo.phones.length > 0 ? 'Deceased' : null;
       spouseContactInfo.phones.forEach(p => {
         if (!phoneMap.has(p.number)) {
-          phoneMap.set(p.number, { label: p.label, number: p.number, owner: deceasedName });
+          phoneMap.set(p.number, { label: p.label, number: p.number, owner: deceasedName, count: 1 });
+        } else {
+          phoneMap.get(p.number)!.count++;
+          phoneMap.get(p.number)!.owner = null;
         }
       });
     }
-    const phones = Array.from(phoneMap.values());
+    const phones = Array.from(phoneMap.values()).map(({ count, ...rest }) => rest);
 
     return { person, spouse, clan, addresses, emails, phones };
   }
