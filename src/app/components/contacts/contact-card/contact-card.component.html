@@ -1,0 +1,15 @@
+<div class="contact-card" *ngIf="contactCard" [style.border-left-color]="getClanColor()">
+  <div class="card-header">
+    <h3 class="person-name">
+      <span class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span><span *ngIf="contactCard.spouse"> & <span class="clickable-name" (click)="onSpouseNameClick()">{{ getSpouseFullName() }}</span></span>
+    </h3>
+  </div>
+
+  <div class="card-content">
+    <app-contact-info
+      [addresses]="contactCard.addresses"
+      [phones]="contactCard.phones"
+      [emails]="contactCard.emails"
+    ></app-contact-info>
+  </div>
+</div>

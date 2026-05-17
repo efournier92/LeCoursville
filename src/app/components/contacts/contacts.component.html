@@ -1,74 +1,53 @@
-<div class="d-flex justify-content-around">
-  <mat-form-field class="search-field col-xs-4 mt-1 ml-3">
-    <input
-      matInput
-      type="text"
-      (keyup)="filterContacts($event)"
-      placeholder="Search"
-    />
-  </mat-form-field>
-  <button
-    mat-button
-    class="filter-family-expand-button mt-3"
-    [matMenuTriggerFor]="byFamilyMenu"
-  >
-    By Family <mat-icon>keyboard_arrow_down</mat-icon>
-  </button>
-  <mat-menu #byFamilyMenu="matMenu">
-    <button
-      mat-menu-item
-      (click)="displayAllFamilies()"
-    >
-      All
-    </button>
-    <button
-      mat-menu-item
-      *ngFor="let family of families"
-      (click)="switchFamily(family)"
-    >
-      {{ family }}
-    </button>
-  </mat-menu>
-  <div class="col-xs-6 mt-3">
-    <button
-      mat-button
-      (click)="printPdf()"
-    >
-      <mat-icon>print</mat-icon>
-    </button>
-    <button
-      mat-button
-      (click)="downloadPdf()"
-    >
-      <mat-icon>get_app</mat-icon>
-    </button>
+<div class="contacts-container">
+  <div class="w-100 filter-row">
+    <mat-form-field class="filter-people-form-field">
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onFilterChange(searchTerm)"
+      />
+      <button
+        *ngIf="searchTerm"
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="clearFilter()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field class="family-filter-form-field">
+      <mat-label>Clan</mat-label>
+      <mat-select [(value)]="selectedClan" (selectionChange)="onClanChange()" panelClass="clan-select-panel">
+        <mat-option *ngFor="let clan of getClans()" [value]="clan.name">{{ clan.name }}</mat-option>
+      </mat-select>
+      <button *ngIf="selectedClan" matSuffix mat-icon-button aria-label="Clear" (click)="clearClanFilter(); $event.stopPropagation()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <div class="contacts-grid">
+    <app-contact-card
+      *ngFor="let card of contacts"
+      [contactCard]="card"
+      (personClick)="openPersonDetail($event)"
+      (spouseClick)="openPersonDetail($event)">
+    </app-contact-card>
+  </div>
+
+  <div class="empty-state" *ngIf="contacts.length === 0">
+    <p *ngIf="searchTerm">No contacts match your search.</p>
+    <p *ngIf="!searchTerm">No contacts found.</p>
   </div>
 </div>
-<div
-  class="contact-add-button-container d-flex justify-content-end"
-  *ngIf="user && user.roles && user.roles.admin"
->
-  <button
-    mat-button
-    (click)="newContact()"
-  >
-    <mat-icon>add</mat-icon> New Contact
-  </button>
-</div>
-<div class="contact-card-container d-flex justify-content-center row">
-  <div
-    *ngFor="let contact of filteredContacts"
-    class="col-lg-5 col-xs-11 col-xl-4 mt-3 mb-3"
-  >
-    <app-contact-view
-      *ngIf="!contact.isEditable"
-      [contact]="contact"
-    >
-    </app-contact-view>
-    <app-contact-edit
-      *ngIf="contact.isEditable"
-      [contact]="contact"
-    >
-    </app-contact-edit>
-  </div>
-</div>
+
+<app-person-detail-modal
+  *ngIf="selectedPersonId"
+  [personId]="selectedPersonId"
+  (closeModal)="closeModal()"
+  (openPerson)="openPersonDetail($event)">
+</app-person-detail-modal>

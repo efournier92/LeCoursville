@@ -1,0 +1,114 @@
+.contact-card {
+  border-left: 4px solid #cccccc;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.card-header {
+  margin-bottom: 12px;
+}
+
+.person-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.clickable-name {
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.spouse-name {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.card-content {
+  padding-top: 8px;
+}
+
+.contact-section {
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    padding: 2px 0;
+  }
+}
+
+.contact-link {
+  color: #0066cc;
+  text-decoration: none;
+
+  &:hover {
+    color: #004499;
+    text-decoration: underline;
+  }
+}
+
+.phone-number {
+  @extend .contact-link;
+}
+
+.email-value {
+  @extend .contact-link;
+}
+
+.phone-number {
+  @extend .contact-link;
+}
+
+.email-value {
+  @extend .contact-link;
+}
+
+.address-value {
+  white-space: pre-line;
+  color: #333;
+}
+
+.email-label,
+.phone-label,
+.address-label {
+  color: #888;
+}
+
+.owner-label {
+  color: #aaa;
+  font-style: italic;
+}
+
+.owner-prefix {
+  color: #888;
+}

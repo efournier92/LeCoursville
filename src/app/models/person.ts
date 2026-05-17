@@ -33,7 +33,7 @@ export interface Person {
   anniversaryId: string | null;
   emails: Email[];
   phones: Phone[];
-  addressId: string | null;
+  addresses: Address[];
   directDescendent: boolean;
   generationNumber: number;
   parentIds: string[];

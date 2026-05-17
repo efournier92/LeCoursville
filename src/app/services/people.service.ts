@@ -88,7 +88,7 @@ export class PeopleService {
 
   getPeopleByAddress(addressId: string): Observable<Person[]> {
     return this.people$.pipe(
-      map(people => people.filter(p => p.addressId === addressId))
+      map(people => people.filter(p => (p.addresses || []).some(a => a.id === addressId)))
     );
   }
 

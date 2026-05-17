@@ -1,24 +1,51 @@
-.spacer {
-  flex: 1 1 auto;
+.contacts-container {
+  padding: 16px;
 }
 
-.search-field {
+.filter-row {
+  display: flex;
+  gap: 16px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.filter-people-form-field {
+  flex: 1;
+  min-width: 140px;
+}
+
+.family-filter-form-field {
+  flex: 1;
+  min-width: 140px;
+}
+
+.clan-select-panel {
+  max-height: 300px !important;
+}
+
+.contacts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: stretch;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+::ng-deep .contacts-grid .contact-card {
   height: 100%;
-  width: 25%;
 }
 
-.mat-button {
-  min-width: 55px;
-}
-
-.contact-card-container {
-  margin: 0;
-}
-
-.filter-family-expand-button {
-  height: 40px;
-}
-
-.contact-add-button-container {
-  margin-right: 7%;
+.empty-state {
+  text-align: center;
+  color: #666;
+  padding: 40px;
 }

@@ -45,9 +45,11 @@ import { ChatComponent } from "src/app/components/chat/chat.component";
 import { ChatEditComponent } from "src/app/components/chat-edit/chat-edit.component";
 import { ChatViewComponent } from "src/app/components/chat-view/chat-view.component";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
+import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
 import { ContactEditComponent } from "src/app/components/contacts/contact-edit/contact-edit.component";
 import { ContactViewComponent } from "src/app/components/contacts/contact-view/contact-view.component";
 import { ContactsComponent } from "src/app/components/contacts/contacts.component";
+import { ContactInfoComponent } from "src/app/components/contact-info/contact-info.component";
 import { FileInputComponent } from "src/app/components/file-input/file-input.component";
 import { MediaExplorerComponent } from "src/app/components/media-explorer/media-explorer.component";
 import { MediaListComponent } from "src/app/components/media-list/media-list.component";
@@ -95,9 +97,11 @@ import { AdminClansComponent } from "./components/admin-clans/admin-clans.compon
     ChatEditComponent,
     ChatViewComponent,
     PromptModalComponent,
+    ContactCardComponent,
     ContactEditComponent,
     ContactViewComponent,
     ContactsComponent,
+    ContactInfoComponent,
     FileInputComponent,
     MediaExplorerComponent,
     MediaListComponent,

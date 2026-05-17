@@ -182,7 +182,7 @@ export class AdminPeopleImportComponent implements OnInit {
       anniversaryId: null,
       emails: this.parseEmails(values, headerMap),
       phones: this.parsePhones(values, headerMap),
-      addressId: null,
+      addresses: this.parseAddresses(values, headerMap),
       directDescendent: this.getValue(values, headerMap, 'Direct_Descendent?') === 'TRUE',
       generationNumber: generationNumResult.value,
       parentIds: [],
@@ -302,6 +302,27 @@ export class AdminPeopleImportComponent implements OnInit {
       phones.push({ label: 'Cell', number: cellPhone });
     }
     return phones;
+  }
+
+  private parseAddresses(values: string[], headerMap: Record<string, number>): Address[] {
+    const addresses: Address[] = [];
+    const street = this.getValue(values, headerMap, 'Address_Street');
+    const city = this.getNullable(values, headerMap, 'Address_City');
+    const state = this.getNullable(values, headerMap, 'Address_State');
+    const zip = this.getNullable(values, headerMap, 'Address_Zip');
+    const full = this.getNullable(values, headerMap, 'Address_Full');
+
+    if (street || full) {
+      addresses.push({
+        street: street || null,
+        city: city,
+        state: state,
+        zip: zip,
+        full: full,
+        label: 'Home'
+      });
+    }
+    return addresses;
   }
 
   private resolveSpouses(): void {
@@ -465,5 +486,25 @@ export class AdminPeopleImportComponent implements OnInit {
   getPagedParsedPeople(): ParsedPerson[] {
     const start = this.previewPageIndex * this.previewPageSize;
     return this.parsedPeople.slice(start, start + this.previewPageSize);
+  }
+
+  getAddressStreet(person: Person): string {
+    const addr = (person.addresses || [])[0];
+    return addr?.street || '-';
+  }
+
+  getAddressCity(person: Person): string {
+    const addr = (person.addresses || [])[0];
+    return addr?.city || '-';
+  }
+
+  getAddressState(person: Person): string {
+    const addr = (person.addresses || [])[0];
+    return addr?.state || '-';
+  }
+
+  getAddressZip(person: Person): string {
+    const addr = (person.addresses || [])[0];
+    return addr?.zip || '-';
   }
 }
