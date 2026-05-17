@@ -86,11 +86,7 @@
             ></app-person-tree>
           </div>
 
-          <div class="lineage-text" *ngIf="person.lineage && lineageTree.length === 0">
-            {{ person.lineage }}
-          </div>
-
-          <div class="lineage-empty" *ngIf="lineageTree.length === 0 && !person.lineage">
+          <div class="lineage-empty" *ngIf="lineageTree.length === 0">
             No lineage data available
           </div>
         </mat-card-content>
