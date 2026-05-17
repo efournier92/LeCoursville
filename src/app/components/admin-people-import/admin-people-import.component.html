@@ -93,6 +93,10 @@
                   <th>Gen</th>
                   <th>Living</th>
                   <th>Direct</th>
+                  <th>Street</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Zip</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,6 +113,10 @@
                   <td class="center">{{ parsed.person.generationNumber }}</td>
                   <td class="center">{{ parsed.person.isLiving ? 'Y' : 'N' }}</td>
                   <td class="center">{{ parsed.person.directDescendent ? 'Y' : 'N' }}</td>
+                  <td>{{ getAddressStreet(parsed.person) }}</td>
+                  <td>{{ getAddressCity(parsed.person) }}</td>
+                  <td>{{ getAddressState(parsed.person) }}</td>
+                  <td>{{ getAddressZip(parsed.person) }}</td>
                 </tr>
               </tbody>
             </table>
