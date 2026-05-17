@@ -37,6 +37,7 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   private subscriptions: Subscription[] = [];
   private anniversariesByIdMap: Map<string, Anniversary> = new Map();
   private allPeople: Person[] = [];
+  private pendingLineageBuild: boolean = false;
 
   constructor(
     private peopleService: PeopleService,
@@ -57,6 +58,10 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     });
     this.peopleService.people$.subscribe(people => {
       this.allPeople = people;
+      if (this.pendingLineageBuild) {
+        this.pendingLineageBuild = false;
+        this.tryBuildLineage();
+      }
     });
     this.loadData();
   }
@@ -105,12 +110,15 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
 
   private tryBuildLineage(): void {
     if (this.person && this.allPeople.length > 0) {
+      this.pendingLineageBuild = false;
       // For spouse records (-S), show lineage based on the regular person
       const lineagePerson = this.isSpouseRecord() ? this.getRegularPerson(this.person) : this.person;
       if (lineagePerson) {
         const visibleIds = this.getVisibleLineageIds(lineagePerson);
         this.lineageTree = this.buildLineageTreeFromIds(visibleIds, lineagePerson.id);
       }
+    } else if (this.person && this.allPeople.length === 0) {
+      this.pendingLineageBuild = true;
     }
   }
 
