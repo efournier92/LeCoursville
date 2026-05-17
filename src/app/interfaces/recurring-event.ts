@@ -8,11 +8,12 @@ export class RecurringEvent implements CalendarEvent {
   date: Date = new Date();
   type: string = '';
   personId: string | null = null;
+  personId2: string | null = null;
   isLiving = true;
 
   // Implemented from CalendarEvent
   start: Date = new Date();
-  end?: Date = new Date();
+  end?: Date;
   color?: EventColor = {
     primary: '',
     secondary: '',

@@ -1,13 +1,9 @@
 import { Injectable } from '@angular/core';
-import {
-  AngularFireList,
-  AngularFireDatabase,
-} from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Calendar } from 'src/app/models/calendar';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
-import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { PeopleService } from 'src/app/services/people.service';
+import { Person } from 'src/app/models/person';
 
 export const Months: string[] = [
   'January',
@@ -28,72 +24,66 @@ export const Months: string[] = [
   providedIn: 'root',
 })
 export class CalendarService {
-  photoUpload: boolean;
-  message: any;
-  parent: any;
-  messageService: any;
-  constructor(
-    private db: AngularFireDatabase,
-    private promptModal: PromptModalService,
-  ) {
-    this.getCalendarEvents()
-      .valueChanges()
-      .subscribe((calendarEvents: RecurringEvent[]) => {
-        this.updateCalendarEventsEvent(calendarEvents);
-      });
-    // this.getCalendars().valueChanges().subscribe(
-    //   (calendars: Calendar[]) => {
-    //     this.updateCalendarsEvent(calendars);
-    //   }
-    // );
-  }
-  calendarEvents: AngularFireList<RecurringEvent>;
-  calendars: AngularFireList<Calendar>;
-
   private calendarEventsSource = new BehaviorSubject([]);
   calendarEventsObservable = this.calendarEventsSource.asObservable();
 
-  private calendarsSource = new BehaviorSubject([]);
-  calendarsObservable = this.calendarsSource.asObservable();
-
-  getYearsSince(eventYear: number, selectedYear: number) {
-    return +selectedYear - +eventYear;
-  }
-
-  formatYearsSinceString(years: number, totalCharacters: number = 3) {
-    const charactersInYears = years.toString().length;
-    const chractersToAdd = totalCharacters - charactersInYears;
-    return ' '.repeat(chractersToAdd) + years;
-  }
-
-  updateCalendarEventsEvent(calendarEvents: RecurringEvent[]) {
-    this.calendarEventsSource.next(calendarEvents);
-  }
-
-  getCalendarEvents(): AngularFireList<object> {
-    this.calendarEvents = this.db.list('calendarEvents');
-    return this.calendarEvents;
-  }
-
-  createCalendarEvent(event: RecurringEvent): void {
-    event.id = this.db.createPushId();
-    this.calendarEvents.update(event.id, event);
-  }
-
-  updateCalendarEvent(event: RecurringEvent): void {
-    this.calendarEvents.update(event.id, event);
-  }
-
-  deleteCalendarEvent(event: RecurringEvent): void {
-    const dialogRef = this.promptModal.openDialog(
-      'Are You Sure?',
-      'Do you really want to remove this calendar event?',
-    );
-    dialogRef.afterClosed().subscribe((didUserConfirm: boolean) => {
-      if (didUserConfirm) {
-        this.calendarEvents.remove(event.id);
+  constructor(
+    private peopleService: PeopleService
+  ) {
+    this.peopleService.people$.subscribe(
+      (people: Person[]) => {
+        this.deriveEventsFromPeople(people);
       }
-    });
+    );
+  }
+
+  private deriveEventsFromPeople(people: Person[]): void {
+    const events: RecurringEvent[] = [];
+
+    for (const person of people) {
+      // Skip spouse records (-S) to avoid duplicates
+      if (person.id.endsWith('-S')) continue;
+
+      // Birthday event
+      if (person.birthday && person.birthday.year > 0) {
+        const event = new RecurringEvent();
+        event.id = `birth-${person.id}`;
+        event.type = 'birth';
+        event.personId = person.id;
+        event.title = this.getPersonFullName(person);
+        event.date = new Date(person.birthday.year, person.birthday.month - 1, person.birthday.day);
+        event.start = new Date(event.date);
+        event.isLiving = person.isLiving;
+        events.push(event);
+      }
+
+      // Anniversary event
+      if (person.anniversaryDate) {
+        const spouse = people.find(p => p.id === person.spouseId);
+        const title = spouse
+          ? `${this.getPersonFullName(person)} & ${this.getPersonFullName(spouse)}`
+          : this.getPersonFullName(person);
+
+        const event = new RecurringEvent();
+        event.id = `anniv-${person.id}`;
+        event.type = 'anniversary';
+        event.personId = person.id;
+        event.personId2 = spouse?.id || null;
+        event.title = title;
+        event.date = new Date(person.anniversaryDate.year, person.anniversaryDate.month - 1, person.anniversaryDate.day);
+        event.start = new Date(event.date);
+        event.isLiving = person.isLiving;
+        events.push(event);
+      }
+    }
+
+    this.calendarEventsSource.next(events);
+  }
+
+  private getPersonFullName(person: Person): string {
+    const first = person.name.firstPreferred || person.name.firstGiven || '';
+    const last = person.name.last || '';
+    return `${first} ${last}`.trim();
   }
 
   getEventsByPerson(personId: string): Observable<RecurringEvent[]> {
@@ -102,16 +92,6 @@ export class CalendarService {
         events.filter((event: RecurringEvent) => event.personId === personId)
       )
     );
-  }
-
-  saveMessageWithPhoto(newMessage: any) {
-    throw new Error('Method not implemented.');
-  }
-  markMessageSaved(newMessage: any): any {
-    throw new Error('Method not implemented.');
-  }
-  updateParent() {
-    throw new Error('Method not implemented.');
   }
 
   getViewYears(): number[] {
@@ -125,7 +105,6 @@ export class CalendarService {
     return years;
   }
 
-  // TODO: Take array with birthays, anniversaries, notLiving
   updateEvents(
     events: RecurringEvent[],
     year: number,
@@ -135,33 +114,31 @@ export class CalendarService {
   ): RecurringEvent[] {
     let output = [];
     for (const event of events) {
-      if (event.type === 'birth' && birthdays === false) {
-        continue;
-      }
-      if (event.type === 'anniversary' && anniversaries === false) {
-        continue;
-      }
-      if (!event.isLiving && notLiving === false) {
-        continue;
-      }
+      if (event.type === 'birth' && !birthdays) continue;
+      if (event.type === 'anniversary' && !anniversaries) continue;
+      if (!event.isLiving && !notLiving) continue;
+
+      const eventClone = new RecurringEvent();
+      eventClone.id = event.id;
+      eventClone.title = event.title;
+      eventClone.type = event.type;
+      eventClone.personId = event.personId;
+      eventClone.personId2 = event.personId2;
+      eventClone.isLiving = event.isLiving;
       const date = new Date(event.date);
       date.setFullYear(year);
-      event.start = date;
-      event.date = new Date(event.date);
-      output.push(event);
+      eventClone.start = new Date(date);
+      eventClone.date = new Date(event.date);
+      output.push(eventClone);
     }
-    output = this.sortEvents(output);
-    return output;
+    return output.sort(this.compareByDate);
   }
 
-  private sortEvents(events: RecurringEvent[]): RecurringEvent[] {
-    return events.sort(this.compareMessagesByTimestamp);
+  getYearsSince(eventYear: number, currentYear: number): number {
+    return currentYear - eventYear;
   }
 
-  private compareMessagesByTimestamp(
-    a: RecurringEvent,
-    b: RecurringEvent,
-  ): number {
+  private compareByDate(a: RecurringEvent, b: RecurringEvent): number {
     return new Date(a.date).getTime() - new Date(b.date).getTime();
   }
 }

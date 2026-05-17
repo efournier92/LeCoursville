@@ -3,12 +3,10 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Person } from 'src/app/models/person';
 import { Clan } from 'src/app/models/clan';
-import { Anniversary } from 'src/app/models/anniversary';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PeopleService } from 'src/app/services/people.service';
 import { CalendarService } from 'src/app/services/calendar.service';
 import { ClanService } from 'src/app/services/clan.service';
-import { AnniversariesService } from 'src/app/services/anniversaries.service';
 
 @Component({
   selector: 'app-person-detail-modal',
@@ -35,7 +33,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   private clansByIdMap: Map<string, Clan> = new Map();
   private clansByNameMap: Map<string, Clan> = new Map();
   private subscriptions: Subscription[] = [];
-  private anniversariesByIdMap: Map<string, Anniversary> = new Map();
   private allPeople: Person[] = [];
   private pendingLineageBuild: boolean = false;
 
@@ -43,7 +40,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     private peopleService: PeopleService,
     private calendarService: CalendarService,
     private clanService: ClanService,
-    private anniversariesService: AnniversariesService,
     private router: Router
   ) {}
 
@@ -53,9 +49,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
       this.clansByIdMap = new Map(clans.map(c => [c.id, c]));
       this.clansByNameMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
     });
-    this.anniversariesService.anniversaries$.subscribe(anniversaries => {
-      this.anniversariesByIdMap = new Map(anniversaries.map(a => [a.id, a]));
-    });
     this.peopleService.people$.subscribe(people => {
       this.allPeople = people;
       if (this.pendingLineageBuild) {
@@ -63,7 +56,9 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
         this.tryBuildLineage();
       }
     });
-    this.loadData();
+    if (this.personId) {
+      this.loadData();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -399,14 +394,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     const first = this.spousePerson.name.firstPreferred || '';
     const last = this.spousePerson.name.last || '';
     return `${first} ${last}`.trim();
-  }
-
-  getSpouseAnniversaryDisplay(): string {
-    if (!this.person?.anniversaryId) return '';
-    const anniversary = this.anniversariesByIdMap.get(this.person.anniversaryId);
-    if (!anniversary) return '';
-    const d = anniversary.date;
-    return `${d.month}/${d.day}/${d.year}`;
   }
 
   getPersonDisplayName(person: Person): string {

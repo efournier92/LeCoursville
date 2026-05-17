@@ -30,7 +30,7 @@ export interface Person {
   clanId: string | null;
   birthday: PersonDate;
   spouseId: string | null;
-  anniversaryId: string | null;
+  anniversaryDate: PersonDate | null;
   emails: Email[];
   phones: Phone[];
   addresses: Address[];

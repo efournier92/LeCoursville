@@ -26,6 +26,13 @@ export class PeopleService {
     );
   }
 
+  wipeAllPeopleAndCalendarEvents(): Promise<void> {
+    return Promise.all([
+      this.db.object('people').remove(),
+      this.db.object('calendarEvents').remove()
+    ]).then(() => {});
+  }
+
   getPeople(): AngularFireList<Person> {
     return this.db.list('people');
   }
@@ -78,12 +85,6 @@ export class PeopleService {
         observer.error(error);
       });
     });
-  }
-
-  getPeopleByAnniversary(anniversaryId: string): Observable<Person[]> {
-    return this.people$.pipe(
-      map(people => people.filter(p => p.anniversaryId === anniversaryId))
-    );
   }
 
   getPeopleByAddress(addressId: string): Observable<Person[]> {

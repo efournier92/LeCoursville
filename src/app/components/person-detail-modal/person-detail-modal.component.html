@@ -14,15 +14,14 @@
     <div class="modal-body">
       <mat-card class="detail-section">
         <mat-card-content>
-          <div class="detail-row" *ngIf="person.birthday">
-            <span class="label">Birthday</span>
-            <span class="value">{{ formatDate(person.birthday) }}</span>
-            <span class="age" *ngIf="calculateAge()">({{ calculateAge() }})</span>
-          </div>
-
           <div class="detail-row" *ngIf="getClanForPerson(person.clanId)">
             <span class="label">Clan</span>
             <a class="value link" (click)="navigateToClan(getClanForPerson(person.clanId)?.name)">{{ getClanForPerson(person.clanId)?.name }}</a>
+          </div>
+
+          <div class="detail-row" *ngIf="person.generationNumber !== null">
+            <span class="label">Generation</span>
+            <span class="value">{{ person.generationNumber }}</span>
           </div>
 
           <div class="detail-row">
@@ -30,9 +29,10 @@
             <span class="value mono">{{ person.id }}</span>
           </div>
 
-          <div class="detail-row" *ngIf="person.generationNumber !== null">
-            <span class="label">Generation</span>
-            <span class="value">{{ person.generationNumber }}</span>
+          <div class="detail-row" *ngIf="person.birthday">
+            <span class="label">Birthday</span>
+            <span class="value">{{ formatDate(person.birthday) }}</span>
+            <span class="age" *ngIf="calculateAge()">({{ calculateAge() }})</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -44,9 +44,9 @@
             <span class="label">Name</span>
             <span class="value link" (click)="onSpouseClick()">{{ getSpouseName() }}</span>
           </div>
-          <div class="detail-row" *ngIf="getSpouseAnniversaryDisplay()">
+          <div class="detail-row" *ngIf="person.anniversaryDate">
             <span class="label">Anniversary</span>
-            <span class="value">{{ getSpouseAnniversaryDisplay() }}</span>
+            <span class="value">{{ formatDate(person.anniversaryDate) }}</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -82,18 +82,6 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="detail-section" *ngIf="personEvents.length > 0">
-        <mat-card-content>
-          <h3>Events</h3>
-          <div class="event-row" *ngFor="let event of personEvents">
-            <span class="event-title">{{ event.title }}</span>
-            <span class="event-type badge" [class.birth]="event.type === 'birth'" [class.anniversary]="event.type === 'anniversary'">
-              {{ event.type }}
-            </span>
-            <span class="event-date">{{ event.date | date:'MMM d' }}</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
     </div>
   </div>
 </div>
