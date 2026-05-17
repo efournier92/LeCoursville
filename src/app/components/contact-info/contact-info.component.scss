@@ -1,0 +1,105 @@
+.contact-section {
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.contact-info {
+  &.compact {
+    .section-label {
+      display: inline;
+      margin-right: 8px;
+    }
+
+    .contact-list {
+      display: inline;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: inline;
+
+        &:not(:last-child)::after {
+          content: '|';
+          margin: 0 8px;
+          color: #ccc;
+        }
+      }
+    }
+
+    .contact-section {
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.section-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    padding: 2px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .phone-owner,
+  .phone-label,
+  .email-owner,
+  .email-label {
+    color: #999;
+    font-size: 0.9em;
+    vertical-align: middle;
+  }
+}
+
+.address-value {
+  white-space: pre-line;
+  color: #333;
+}
+
+.phone-label,
+.email-label,
+.phone-owner,
+.email-owner {
+  color: #999;
+  font-size: 0.9em;
+  vertical-align: middle;
+}
+
+.phone-number {
+  color: #0066cc;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #004499;
+    text-decoration: underline;
+  }
+}
+
+.email-value {
+  color: #0066cc;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #004499;
+    text-decoration: underline;
+  }
+}
+
+.email-label {
+  color: #888;
+}

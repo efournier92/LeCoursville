@@ -1,0 +1,32 @@
+<div class="contact-info" [class.compact]="compact">
+  <div class="contact-section" *ngIf="hasAddresses()">
+    <span class="section-label">Address</span>
+    <ul class="contact-list">
+      <li *ngFor="let address of getUniqueAddresses()">
+        <span class="address-value">{{ formatAddress(address) }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="contact-section" *ngIf="hasPhones()">
+    <span class="section-label">Phone</span>
+    <ul class="contact-list">
+      <li *ngFor="let phone of phones">
+        <span class="phone-owner" *ngIf="hasMultipleUniqueOwners(phones) && phone.owner">{{ phone.owner }}<span *ngIf="phone.label"> ({{ phone.label }})</span>: </span>
+        <span class="phone-label" *ngIf="phones.length > 1 && !hasMultipleUniqueOwners(phones) && phone.label">{{ phone.label }}: </span>
+        <a class="phone-number" href="tel:{{ phone.number }}">{{ phone.number }}</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="contact-section" *ngIf="hasEmails()">
+    <span class="section-label">Email</span>
+    <ul class="contact-list">
+      <li *ngFor="let email of emails">
+        <span class="email-owner" *ngIf="hasMultipleOwners(emails) && email.owner">{{ email.owner }}<span *ngIf="email.label"> ({{ email.label }})</span>: </span>
+        <span class="email-label" *ngIf="emails.length > 1 && !hasMultipleOwners(emails) && email.label">{{ email.label }}: </span>
+        <a class="email-value" href="mailto:{{ email.address }}">{{ email.address }}</a>
+      </li>
+    </ul>
+  </div>
+</div>
