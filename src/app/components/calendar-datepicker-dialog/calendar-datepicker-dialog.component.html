@@ -1,0 +1,17 @@
+<div class="datepicker-dialog">
+  <div class="datepicker-header">
+    <h2>Go to Month</h2>
+  </div>
+  <div class="datepicker-body">
+    <mat-form-field appearance="outline" class="datepicker-field">
+      <mat-label>Select month</mat-label>
+      <input matInput [matDatepicker]="monthPicker" [value]="pickerDate" (click)="monthPicker.open()" readonly>
+      <mat-datepicker-toggle matSuffix [for]="monthPicker"></mat-datepicker-toggle>
+      <mat-datepicker #monthPicker startView="year" (monthSelected)="onMonthSelected($event, monthPicker)"></mat-datepicker>
+    </mat-form-field>
+  </div>
+  <div class="datepicker-actions">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="confirm()">Go</button>
+  </div>
+</div>

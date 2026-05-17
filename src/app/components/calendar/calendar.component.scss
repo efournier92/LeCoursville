@@ -1,74 +1,314 @@
 .calendar-component-container {
-  background-color: #fff;
+  background-color: #fafafa;
+  padding: 1rem 1.5rem 2rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
 }
 
-.calendar-top-tools-container {
-  margin: 0 1em;
+.calendar-toolbar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin: 0 0 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.calendar-checkbox-container {
-  padding-top: 4px;
+.calendar-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.calendar-toolbar-filters {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  justify-content: space-between;
 }
 
 .calendar-checkbox {
-  margin-left: 12px;
-  font-size: 0.8em;
+  font-size: 0.9rem;
   font-weight: 500;
+  color: #555;
+  margin: 0;
 }
 
-.calendar-date-tools-container {
-  margin: 0 2em;
+.calendar-print-button {
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #4a5568;
+  width: auto;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
 }
 
-.upload-calendar-year-select {
-  width: 5em;
+.calendar-print-button:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+  border-color: #cbd5e0;
 }
 
-.calendar-print-button-container {
-  margin-right: 10px;
+.calendar-print-button:active {
+  background: #cbd5e0;
+  transform: scale(0.98);
 }
 
-.mat-button {
-  min-width: 55px;
+.calendar-nav-row {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 10px;
+  position: relative;
+  z-index: 101;
 }
 
-.mat-button-wrapper {
-  height: 100%;
-  padding: 0px;
+.calendar-nav-inner {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 28px;
+  padding: 4px 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.month-select-container {
-  width: 7em;
-}
-
-.year-select-container {
-  width: 4em;
-}
-
-input[type='file'] {
-  display: none;
-}
-
-a[type='download'] {
-  display: none;
-}
-
-.calendar-print-button-icon {
-  margin-right: 4px;
-}
-
-.calendar-arrow-button-container {
-  width: 2em;
-  height: 2em;
-}
-
-.calendar-arrow-button {
+.calendar-nav-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 5em;
-  width: 100%;
-  height: 100%;
+  transition: background-color 0.15s ease;
+  color: #4a5568;
+  flex-shrink: 0;
+}
+
+.calendar-nav-btn:hover {
+  background-color: rgba(49, 130, 206, 0.1);
+  color: #3182ce;
+}
+
+.calendar-nav-icon {
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+.calendar-month-year-pill {
+  padding: 2px 20px;
+  cursor: pointer;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  transition: background-color 0.15s ease;
+}
+
+.calendar-pill-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.calendar-month-year-pill:hover {
+  background-color: rgba(49, 130, 206, 0.06);
+}
+
+.calendar-month-label {
+  font-size: 0.8em;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.calendar-year-label {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: #3182ce;
+  line-height: 1.2;
+}
+
+.calendar-datepicker-dropdown {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  margin: 0 0 10px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.calendar-datepicker-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  min-width: 280px;
+}
+
+.calendar-datepicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.calendar-datepicker-year {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #1a202c;
+  min-width: 60px;
+  text-align: center;
+}
+
+.calendar-datepicker-nav {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  color: #718096;
+}
+
+.calendar-datepicker-nav:hover {
+  background-color: rgba(49, 130, 206, 0.1);
+  color: #3182ce;
+}
+
+.calendar-datepicker-nav-icon {
+  font-size: 1.25em;
+}
+
+.calendar-datepicker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.calendar-datepicker-cell {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #4a5568;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calendar-datepicker-cell:hover {
+  background-color: rgba(49, 130, 206, 0.08);
+  color: #3182ce;
+}
+
+.calendar-datepicker-cell.is-selected {
+  background-color: #3182ce;
+  color: #fff;
 }
 
 .calendar-view-component {
   margin: auto;
+  width: 100%;
+}
+
+.calendar-toolbar-last-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .calendar-component-container {
+    padding: 0.5rem 0 2rem;
+  }
+
+  .calendar-toolbar {
+    border-radius: 0;
+    padding: 12px 16px;
+    margin: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .calendar-toolbar-filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .calendar-checkbox {
+    font-size: 1rem;
+  }
+
+  .calendar-toolbar-filters .calendar-checkbox:first-child,
+  .calendar-toolbar-filters .calendar-checkbox:nth-child(2),
+  .calendar-toolbar-filters .calendar-checkbox:nth-child(3),
+  .calendar-toolbar-filters .calendar-print-button {
+    margin-right: 0;
+  }
+
+  .calendar-toolbar-last-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .calendar-toolbar-last-row .calendar-checkbox {
+    width: auto;
+    margin: 0;
+  }
+
+  .calendar-toolbar-last-row .calendar-print-button {
+    width: auto;
+  }
+
+  .calendar-view-component {
+    margin: 0;
+    width: 100vw;
+  }
+
+  .calendar-datepicker-panel {
+    min-width: 260px;
+    padding: 10px 12px;
+  }
+
+  .calendar-datepicker-grid {
+    gap: 3px;
+  }
+
+  .calendar-datepicker-cell {
+    padding: 8px 4px;
+    font-size: 0.8em;
+  }
 }

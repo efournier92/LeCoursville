@@ -1,103 +1,52 @@
-<div
-  class="calendar-component-container"
-  *ngIf="user?.name"
->
-  <div class="d-flex justify-content-between mt-2 calendar-top-tools-container">
-    <div class="col-xs-8 calendar-checkbox-container">
-      <mat-checkbox
-        class="calendar-checkbox"
-        color="warn"
-        [(ngModel)]="showBirthdays"
-        (change)="toggleBirthdays($event)"
-      >
-        Birthdays
-      </mat-checkbox>
-      <mat-checkbox
-        class="calendar-checkbox"
-        color="warn"
-        [(ngModel)]="showAnniversaries"
-        (change)="toggleAnniversaries($event)"
-      >
-        Anniversaries
-      </mat-checkbox>
-      <mat-checkbox
-        class="calendar-checkbox"
-        color="warn"
-        [(ngModel)]="showNotLiving"
-        (change)="toggleNotLiving($event)"
-      >
-        Include Not Living
-      </mat-checkbox>
-    </div>
-    <div class="d-flex justify-content-center calendar-print-button-container">
-      <button
-        mat-button
-        (click)="printPdf()"
-      >
-        <mat-icon class="calendar-print-button-icon">print</mat-icon> Print
-      </button>
-    </div>
-  </div>
-
-  <div
-    class="d-flex mt-1 justify-content-between calendar-date-tools-container"
-  >
-    <div>
-      <mat-form-field class="month-select-container">
-        <mat-select
-          placeholder="Month"
-          [(value)]="viewMonth"
-          (selectionChange)="changeViewMonth($event)"
-        >
-          <div *ngFor="let month of months">
-            <mat-option [value]="month">
-              {{ month }}
-            </mat-option>
-          </div>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field class="year-select-container ml-2">
-        <mat-select
-          placeholder="Year"
-          [value]="selectedYear"
-          (selectionChange)="changeSelectedYear($event)"
-        >
-          <div *ngFor="let year of years">
-            <mat-option [value]="year">
-              {{ year }}
-            </mat-option>
-          </div>
-        </mat-select>
-      </mat-form-field>
-    </div>
-  </div>
-
-  <div class="w-100 d-flex justify-content-center">
-    <div class="d-flex w-75 justify-content-around">
-      <div
-        mwlCalendarPreviousView
-        (click)="changeView(viewDate)"
-        [view]="view"
-        [(viewDate)]="viewDate"
-      >
-        <mat-icon class="calendar-arrow-button">keyboard_arrow_left</mat-icon>
-      </div>
-      <div
-        mwlCalendarNextView
-        (click)="changeView(viewDate)"
-        [view]="view"
-        [(viewDate)]="viewDate"
-      >
-        <mat-icon class="calendar-arrow-button">keyboard_arrow_right</mat-icon>
+<div class="calendar-component-container" *ngIf="user?.name">
+  <div class="calendar-toolbar">
+    <div class="calendar-toolbar-row calendar-toolbar-filters">
+      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
+      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
+      <div class="calendar-toolbar-last-row">
+        <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Include Not Living</mat-checkbox>
+        <button mat-button (click)="printPdf()" class="calendar-print-button">Print</button>
       </div>
     </div>
   </div>
 
-  <app-calendar-view
-    class="calendar-view-component"
-    [viewDate]="viewDate"
-    [selectedYear]="selectedYear"
-    [events]="events"
-  >
-  </app-calendar-view>
+  <div class="calendar-nav-row">
+    <div class="d-flex align-items-center calendar-nav-inner">
+      <div mwlCalendarPreviousView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
+        <mat-icon class="calendar-nav-icon">keyboard_arrow_left</mat-icon>
+      </div>
+      <div class="calendar-month-year-pill" (click)="datePickerOpen = !datePickerOpen">
+        <div class="calendar-pill-label">
+          <span class="calendar-month-label">{{ viewMonth }}</span>
+          <span class="calendar-year-label">{{ selectedYear }}</span>
+        </div>
+      </div>
+      <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
+        <mat-icon class="calendar-nav-icon">keyboard_arrow_right</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="datePickerOpen" class="calendar-datepicker-dropdown">
+    <div class="calendar-datepicker-panel">
+      <div class="calendar-datepicker-header">
+        <div class="calendar-datepicker-nav" (click)="navigateYear(-1)">
+          <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_left</mat-icon>
+        </div>
+        <span class="calendar-datepicker-year">{{ pickerYear }}</span>
+        <div class="calendar-datepicker-nav" (click)="navigateYear(1)">
+          <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_right</mat-icon>
+        </div>
+      </div>
+      <div class="calendar-datepicker-grid">
+        <div *ngFor="let month of months; let i = index" class="calendar-datepicker-cell" [ngClass]="{'is-selected': isCurrentPickerMonth(i)}" (click)="selectPickerMonth(i)">
+          {{ month.substring(0, 3) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
+
+  <app-person-detail-modal *ngIf="selectedPersonId" [personId]="selectedPersonId" (closeModal)="closeModal()" (openPerson)="openPersonModal($event)"></app-person-detail-modal>
 </div>

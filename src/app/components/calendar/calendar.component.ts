@@ -1,15 +1,18 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CalendarService, Months } from 'src/app/services/calendar.service';
-import { Calendar } from 'src/app/models/calendar';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
+import { CalendarDatepickerDialogComponent } from 'src/app/components/calendar-datepicker-dialog/calendar-datepicker-dialog.component';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
+import { PersonDetailModalComponent } from 'src/app/components/person-detail-modal/person-detail-modal.component';
 
 @Component({
   selector: 'app-calendar',
@@ -32,13 +35,18 @@ export class CalendarComponent implements OnInit {
   showBirthdays = true;
   showAnniversaries = true;
   showNotLiving = false;
-  allCalendars: Calendar[];
+  selectedPersonId: string | null = null;
+  datePickerOpen = false;
+  pickerDate: Date;
+  pickerYear: number;
 
   constructor(
     public authService: AuthService,
     public dialog: MatDialog,
     public printerPrompt: MatDialog,
     public http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
     private calendarService: CalendarService,
     private analyticsService: AnalyticsService,
   ) { }
@@ -52,7 +60,10 @@ export class CalendarComponent implements OnInit {
 
     this.subscribeToCalendarEventsObservable();
 
-    this.subscribeToCalendarsObservable();
+    this.subscribeToQueryParams();
+
+    this.pickerDate = new Date(this.selectedYear, this.months.indexOf(this.viewMonth), 1);
+    this.pickerYear = this.selectedYear;
 
     this.analyticsService.logEvent('component_load_calendar',
       { viewDate: this?.viewDate.toString() });
@@ -75,15 +86,53 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  private subscribeToCalendarsObservable(): void {
-    this.calendarService.calendarsObservable.subscribe(
-      (calendars: Calendar[]) => {
-        this.allCalendars = calendars;
-      }
-    );
+  private subscribeToQueryParams(): void {
+    this.route.queryParamMap.subscribe(queryParams => {
+      const selected = queryParams.get('selected');
+      this.selectedPersonId = selected || null;
+    });
   }
 
   // PUBLIC METHODS
+
+  openPersonModal(personId: string | null): void {
+    if (!personId) return;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selected: personId },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  closeModal(): void {
+    this.selectedPersonId = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selected: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  onDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
+    if (event.value) {
+      this.pickerDate = event.value;
+    }
+  }
+
+  isCurrentPickerMonth(index: number): boolean {
+    return this.months[index] === this.viewMonth && this.pickerYear === this.selectedYear;
+  }
+
+  selectPickerMonth(monthIndex: number): void {
+    this.viewMonth = this.months[monthIndex];
+    this.viewDate = new Date(this.pickerYear, monthIndex, 1);
+    this.datePickerOpen = false;
+    this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+  }
+
+  navigateYear(direction: number): void {
+    this.pickerYear += direction;
+  }
 
   toggleBirthdays(event: any): void {
     const showBirthdays = event.checked;

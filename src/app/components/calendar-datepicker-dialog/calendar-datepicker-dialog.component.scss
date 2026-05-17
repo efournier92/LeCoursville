@@ -1,0 +1,29 @@
+.datepicker-dialog {
+  padding: 16px 8px 8px;
+}
+
+.datepicker-header {
+  padding: 0 16px 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.datepicker-body {
+  padding: 0 8px;
+}
+
+.datepicker-field {
+  width: 100%;
+}
+
+.datepicker-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 8px 4px;
+  gap: 4px;
+}

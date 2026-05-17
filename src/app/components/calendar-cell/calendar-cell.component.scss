@@ -1,44 +1,114 @@
 .calendar-cell-container {
-  margin-left: 0.25em;
-  font-size: 1em;
+  font-size: 1.05em;
   font-weight: 500;
+  margin-bottom: 3px;
+  margin-left: 1px;
 }
 
 .calendar-cell-event-container {
-  margin-bottom: 0.3em;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 3px;
+  background: #fafbfc;
+  border-radius: 6px;
+  padding: 6px 8px;
+  border-left: 4px solid;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.calendar-years-since-container {
-  line-height: 1em;
+.border-birth {
+  border-left-color: #3182ce;
 }
 
-.calendar-years-since {
-  width:1.6em;
-  text-align: right;
-  margin-right: 0.5em
-}
-
-.calendar-event-title-container {
-  line-height: 1em;
+.border-anniv {
+  border-left-color: #e53e3e;
 }
 
 .birthday-color {
-  color: #0d47a1;
+  color: #3182ce;
 }
 
 .anniversary-color {
-  color: #b71c1c;
+  color: #e53e3e;
 }
 
-.day-cell-container {
-  margin-top: 0.55em;
+.calendar-years-since-container {
+  line-height: 1.2em;
+  min-width: 1.6em;
+  text-align: right;
+  margin-right: 8px;
 }
 
-.event-title-container {
-  line-height: 1em;
-  margin-right: 0.2em;
+.calendar-years-since {
+  font-size: 0.95em;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.calendar-event-title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2em;
+}
+
+.is-anniversary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.event-title-link,
+.event-title-spouse-link {
+  color: #2d3748;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1em;
+  transition: color 0.15s ease;
+  display: block;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-align: left;
+  line-height: 1.1;
+  width: 100%;
+}
+
+.event-title-link:hover,
+.event-title-spouse-link:hover {
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.event-ampersand-row {
+  display: block;
+  color: #a0aec0;
+  user-select: none;
+  font-size: 0.75em;
+  line-height: 1;
+  padding: 0;
+  text-align: left;
+}
+
+.anniv-first-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+}
+
+.event-ampersand-inline {
+  color: #a0aec0;
+  user-select: none;
+  font-size: 0.85em;
+  font-weight: 400;
+  flex-shrink: 0;
 }
 
 .event-not-living {
-  opacity: 0.7;
+  opacity: 0.55;
 }
