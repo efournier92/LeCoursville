@@ -1,0 +1,37 @@
+<div class="contact-card" *ngIf="contactCard" [style.border-left-color]="getClanColor()">
+  <div class="card-header">
+    <h3 class="person-name">
+      <span class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span><span *ngIf="contactCard.spouse"> & <span class="clickable-name" (click)="onSpouseNameClick()">{{ getSpouseFullName() }}</span></span>
+    </h3>
+  </div>
+
+  <div class="card-content">
+    <div class="contact-section" *ngIf="hasAddresses()">
+      <span class="section-label">Address</span>
+      <ul class="contact-list">
+        <li *ngFor="let address of getUniqueAddresses()">
+          <span class="address-value">{{ formatAddress(address) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="contact-section" *ngIf="hasPhones()">
+      <span class="section-label">Phone</span>
+      <ul class="contact-list">
+        <li *ngFor="let phone of contactCard.phones">
+          <span *ngIf="phone.owner && hasConflictingLabels(phone, 'phone')" class="owner-prefix">{{ phone.owner }}<span *ngIf="phone.label">'s </span><span *ngIf="!phone.label">: </span></span><span class="phone-label">{{ phone.label }}: </span><span class="phone-number">{{ phone.number }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="contact-section" *ngIf="hasEmails()">
+      <span class="section-label">Email</span>
+      <ul class="contact-list">
+        <li *ngFor="let email of contactCard.emails">
+          <span *ngIf="email.owner && hasConflictingLabels(email, 'email')" class="owner-prefix">{{ email.owner }}<span *ngIf="email.label">'s </span><span *ngIf="!email.label">: </span></span><span class="email-value">{{ email.address }}</span>
+          <span class="email-label" *ngIf="email.label"> ({{ email.label }})</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
