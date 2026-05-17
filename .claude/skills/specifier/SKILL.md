@@ -34,6 +34,8 @@ If the conversation is not already in plan mode when the skill is invoked, enter
 
 Expect to be given a preliminary markdown document (the agent design spec draft) as an argument at invocation. If no file path is provided, ask the user where the spec document is located.
 
+**Output naming and location**: After the question rounds, when writing the spec file, place it in the `design_specs/` directory at the repo root with a descriptive name that reflects the feature. Examples: `people-feature-ads.md`, `calendar-linking-ads.md`, `contacts-migration-ads.md`. If the user provided a generic path like `ADS.md` or `spec.md`, move and rename the file to follow this convention before writing.
+
 ---
 
 ## Project Structure
@@ -212,6 +214,30 @@ These are the questions experienced reviewers ask. Run through them mentally bef
 - **Don't defer test-relevant details.** If something is ambiguous for testing (error handling, edge cases, state transitions), ask about it now. Don't leave it as "TBD during implementation."
 - **Don't slip back to "specification"** as a term when talking to agents. "Agent Design Spec" signals they're reading instructions for their own execution, not generic documentation.
 - **Don't run shell commands that mutate state.** No `ng`, no `firebase deploy`, no `git commit`, no `npm install`. Read-only only.
+
+---
+
+## Angular/Firebase Project Context
+
+This codebase is an **Angular 15 SPA with Firebase Realtime Database** (not Rails). Apply these conventions when writing ADS sections:
+
+**Testing stack**: Jasmine + Karma (karma.conf.js), not RSpec. Tests live as `*.spec.ts` alongside the file they test.
+
+**Firebase mocking**: No global test utilities exist in this codebase. One example exists in `src/app/services/feature-flags.service.spec.ts` using `jasmine.createSpyObj`. When writing ADS test specs, specify that the test writer should build a shared `src/test-utils/firebase-mocks.ts` file with factory functions `createFakeAngularFireList()`, `createFakeAngularFireObject()`, and `createFakeAngularFireDatabase()` — one for all Firebase service specs.
+
+**BehaviorSubject pattern**: Services use `BehaviorSubject` + `Observable` for reactive state. Tests should verify BehaviorSubject emission after service method calls. Do not assume the existing tests cover this — most service specs in this codebase only verify `toBeTruthy()`.
+
+**CSV parsing**: No CSV library exists in the codebase. Admin file upload components use `FileReader` (see `AdminMediaComponent` lines 39-51). ADS test specs for CSV import should use the `papaparse` library and test the parsing/transformation logic as unit tests, not component integration tests.
+
+**Firebase query patterns**:
+- `db.list('path').valueChanges()` returns `Observable<T[]>`
+- `db.object('path').valueChanges()` returns `Observable<T | null>`
+- Push IDs generated via `db.createPushId()`
+- No user isolation on global collections (contacts, calendarEvents, people)
+
+**Component testing**: Most component specs use `ComponentFixture` with `TestBed.configureTestingModule`. Async components use `waitForAsync`. Modal overlays are tested by checking route parameter changes. The codebase uses `@angular/router/testing` for routing mocks.
+
+**When writing ADS Test Plan sections**: Focus on test cases that cover Firebase interaction, BehaviorSubject state, and the most complex transformation logic. Use the existing test patterns (not invented ones). Reference specific spec file paths.
 
 ---
 

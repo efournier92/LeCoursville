@@ -1,4 +1,4 @@
-import { Component, OnInit, Version } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
@@ -17,14 +17,10 @@ export class AdminComponent implements OnInit {
     private versionService: VersionService,
   ) { }
 
-  // LIFECYCLE EVENTS
-
   ngOnInit(): void {
     this.subscribeToUserObservable();
     this.setVersion();
   }
-
-  // SUBSCRIPTIONS
 
   private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe(

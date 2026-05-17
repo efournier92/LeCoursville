@@ -1,24 +1,24 @@
-<div class="admin-routing-component-container">
-  <mat-button-toggle-group class="admin-routing-toggle-group w-100 m-0 row">
-    <mat-button-toggle
-      class="admin-routing-button col"
-      (click)="onClickUsersRoute()"
-      >Users</mat-button-toggle
-    >
-    <mat-button-toggle
-      class="admin-routing-button col"
-      (click)="onClickCalendarRoute()"
-      >Calendar</mat-button-toggle
-    >
-    <mat-button-toggle
-      class="admin-routing-button col"
-      (click)="onClickMediaRoute()"
-      >Media</mat-button-toggle
-    >
-    <mat-button-toggle
-      class="admin-routing-button col"
-      (click)="onClickFeaturesRoute()"
-      >Features</mat-button-toggle
-    >
-  </mat-button-toggle-group>
+<div class="admin-tool-header">
+  <div class="tool-nav">
+    <button mat-button (click)="onClickClansRoute()" [class.active-link]="isActive('/admin/clans')">
+      <mat-icon>groups</mat-icon>
+      <span>Clans</span>
+    </button>
+    <button mat-button (click)="onClickPeopleImportRoute()" [class.active-link]="isActive('/admin/people')">
+      <mat-icon>person_add</mat-icon>
+      <span>People</span>
+    </button>
+    <button mat-button (click)="onClickCalendarRoute()" [class.active-link]="isActive('/admin/calendar')">
+      <mat-icon>calendar_month</mat-icon>
+      <span>Calendar</span>
+    </button>
+    <button mat-button (click)="onClickMediaRoute()" [class.active-link]="isActive('/admin/media')">
+      <mat-icon>perm_media</mat-icon>
+      <span>Media</span>
+    </button>
+    <button mat-button (click)="onClickFeaturesRoute()" [class.active-link]="isActive('/admin/features')">
+      <mat-icon>toggle_on</mat-icon>
+      <span>Features</span>
+    </button>
+  </div>
 </div>

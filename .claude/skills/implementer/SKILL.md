@@ -19,6 +19,8 @@ Transform an Agent Design Spec (ADS) into working code that passes the spec's te
 
 Path to an ADS document, given at invocation. If missing, ask.
 
+**Naming and location**: ADS files must have a descriptive name reflecting the feature they cover and must be placed in the `design_specs/` directory at the repo root. Good examples: `people-feature-ads.md`, `calendar-linking-ads.md`, `contacts-migration-ads.md`. Bad examples: `ADS.md`, `spec.md`, `design.md`. When you receive an ADS path, verify it follows this convention. If it does not, rename and/or move it before reading.
+
 ---
 
 ## Project Structure

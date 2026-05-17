@@ -1,0 +1,28 @@
+<ng-template #nodeTemplate let-nodes="nodes" let-level="level">
+  <ng-container *ngFor="let node of nodes">
+    <div class="tree-row">
+      <span class="person-info">
+        <span class="person-name clickable" [class.selected]="selectedPersonId === node.person.id" (click)="onNodeClick(node)">
+          {{ getPersonName(node) }}
+        </span>
+
+        <span class="spouse-separator" *ngIf="getSpouseName(node)"> &amp; </span>
+        <span class="person-name clickable"
+          [class.selected]="selectedPersonId === node.spouse?.id"
+          *ngIf="getSpouseName(node)"
+          (click)="onSpouseClick(node)">
+          {{ getSpouseName(node) }}
+        </span>
+      </span>
+    </div>
+
+    <div class="children-container" *ngIf="hasChildren(node) && getNodeChildren(node)?.length">
+      <div class="generation-bar" [style.background-color]="clanColorHex || '#e0e0e0'"></div>
+      <div class="children-items">
+        <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: nodes, level: 0 }"></ng-template>

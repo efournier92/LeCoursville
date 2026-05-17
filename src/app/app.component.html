@@ -6,8 +6,8 @@
     <img
       src="./assets/img/logo/L.png"
       class="toolbar-icon"
-      routerLink="/"
-      alt="L"
+      [routerLink]="isAdminOrSuper() ? '/admin' : '/'"
+      [alt]="isAdminOrSuper() ? 'Admin' : 'L'"
       height="80%"
     />
     <div class="icons-menu d-inline-flex">

@@ -1,0 +1,106 @@
+<div class="people-container d-flex flex-column align-items-center m-3">
+  <div class="w-100 filter-row">
+    <mat-form-field class="filter-people-form-field">
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="filterQuery"
+        (input)="onFilterChange(filterQuery)"
+      />
+      <button
+        *ngIf="filterQuery"
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="onFilterChange('')"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field class="family-filter-form-field">
+      <mat-label>Clan</mat-label>
+      <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
+        <mat-option *ngFor="let clan of getFamilies()" [value]="clan.name">{{ clan.name }}</mat-option>
+      </mat-select>
+      <button *ngIf="selectedFamily" matSuffix mat-icon-button aria-label="Clear" (click)="clearFamilyFilter(); $event.stopPropagation()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <div class="w-100" *ngIf="familyGroups.length === 0">
+    <mat-card class="empty-state-card">
+      <mat-card-content>
+        <p *ngIf="filterQuery">No people match your search.</p>
+        <p *ngIf="!filterQuery">No people found.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="w-100" *ngFor="let group of familyGroups">
+    <div class="family-group">
+      <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
+        <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
+      </div>
+      <mat-card class="people-tree-card">
+        <div class="first-generation-row" *ngIf="group.firstGeneration.length > 0">
+          <ng-container *ngFor="let node of group.firstGeneration">
+            <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
+              {{ getPersonName(node) }}
+            </span>
+            <span class="spouse-separator" *ngIf="getSpouseName(node)"> &amp; </span>
+            <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" *ngIf="getSpouseName(node)" (click)="openPersonDetail(getSpouseId(node))">
+              {{ getSpouseName(node) }}
+            </span>
+          </ng-container>
+        </div>
+        <div class="tree-rows" *ngIf="group.roots?.length">
+          <div class="generation-bar" [style.background-color]="getFamilyColorForClanTransparent(group.clan)"></div>
+          <div class="children-items">
+            <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
+<ng-template #nodeTemplate let-nodes="nodes" let-level="level">
+  <ng-container *ngFor="let node of nodes">
+    <div class="tree-row">
+      <span class="person-info">
+        <span class="person-name clickable" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
+          {{ getPersonName(node) }}
+        </span>
+
+        <span class="spouse-separator" *ngIf="getSpouseName(node)"> &amp; </span>
+        <span class="person-name clickable"
+          [class.deceased]="isSpouseDeceased(node)"
+          *ngIf="getSpouseName(node)"
+          (click)="openPersonDetail(getSpouseId(node))">
+          {{ getSpouseName(node) }}
+        </span>
+      </span>
+    </div>
+
+    <ng-container *ngIf="hasChildren(node) === true">
+      <ng-container *ngIf="getNodeChildren(node) !== null">
+        <div class="children-container">
+          <div class="generation-bar" [style.background-color]="getColorHex(node)"></div>
+          <div class="children-items">
+            <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<app-person-detail-modal
+  *ngIf="selectedPersonId"
+  [personId]="selectedPersonId"
+  (closeModal)="closeModal()"
+  (openPerson)="openPersonDetail($event)"
+></app-person-detail-modal>

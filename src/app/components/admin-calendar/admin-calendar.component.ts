@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { CalendarConstants } from "src/app/constants/calendar-constants";
 import { RecurringEvent } from "src/app/interfaces/recurring-event";
 import { CalendarService } from "src/app/services/calendar.service";
+import { PeopleService } from "src/app/services/people.service";
 import { PageEvent } from "@angular/material/paginator";
 import { SortSettingsForCalendar } from "src/app/models/sort-settings-for-calendar";
 
@@ -16,7 +17,10 @@ export class AdminCalendarComponent implements OnInit {
   sortSettings: SortSettingsForCalendar;
   eventTypes = CalendarConstants.EventTypes;
 
-  constructor(private calendarService: CalendarService) {}
+  constructor(
+    private calendarService: CalendarService,
+    public peopleService: PeopleService
+  ) {}
 
   // LIFECYCLE EVENTS
 

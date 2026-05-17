@@ -1,0 +1,169 @@
+<div class="admin-people-import-container">
+
+  <h1 class="page-title">People Import</h1>
+
+  <mat-card class="import-card">
+    <mat-card-content>
+      <div class="upload-area" (click)="fileInput.click()">
+        <mat-icon>upload_file</mat-icon>
+        <span class="upload-text">Click to select CSV file</span>
+        <span class="upload-hint">or drag and drop</span>
+      </div>
+      <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" hidden />
+      <div class="file-info" *ngIf="selectedFileName">
+        <mat-icon>description</mat-icon>
+        <span>{{ selectedFileName }}</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="validation-section" *ngIf="validationErrors.length > 0">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <div class="validation-header">
+          <mat-icon>error_outline</mat-icon>
+          <h3>Errors</h3>
+          <span class="count-badge error">{{ validationErrors.length }}</span>
+        </div>
+        <ul class="validation-list">
+          <li *ngFor="let error of validationErrors">{{ error }}</li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="validation-section" *ngIf="validationWarnings.length > 0">
+    <mat-card class="warning-card">
+      <mat-card-content>
+        <div class="validation-header">
+          <mat-icon>warning_amber</mat-icon>
+          <h3>Warnings</h3>
+          <span class="count-badge warning">{{ validationWarnings.length }}</span>
+        </div>
+        <ul class="validation-list">
+          <li *ngFor="let warning of validationWarnings">{{ warning }}</li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="preview-section" *ngIf="importPreview">
+    <mat-card class="preview-card">
+      <mat-card-header>
+        <mat-card-title>Import Preview</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="preview-stats">
+          <div class="stat">
+            <span class="stat-value">{{ importPreview.total }}</span>
+            <span class="stat-label">Total Records</span>
+          </div>
+          <div class="stat created">
+            <span class="stat-value">{{ importPreview.created }}</span>
+            <span class="stat-label">To Create</span>
+          </div>
+          <div class="stat updated" *ngIf="importPreview.updated > 0">
+            <span class="stat-value">{{ importPreview.updated }}</span>
+            <span class="stat-label">To Update</span>
+          </div>
+          <div class="stat inactive" *ngIf="importPreview.inactive > 0">
+            <span class="stat-value">{{ importPreview.inactive }}</span>
+            <span class="stat-label">To Mark Inactive</span>
+          </div>
+        </div>
+
+        <div class="parsed-preview">
+          <div class="preview-header">
+            <h4>Parsed People</h4>
+            <span class="count-badge">{{ parsedPeople.length }} records</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th class="col-id">ID</th>
+                  <th>First Given</th>
+                  <th>First Preferred</th>
+                  <th>Maiden</th>
+                  <th>Last</th>
+                  <th>Suffix</th>
+                  <th>Birthday</th>
+                  <th>Anniversary</th>
+                  <th>Spouse</th>
+                  <th>Gen</th>
+                  <th>Living</th>
+                  <th>Direct</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let parsed of getPagedParsedPeople()">
+                  <td class="mono id-cell">{{ parsed.person.id }}</td>
+                  <td>{{ parsed.person.name.firstGiven || '-' }}</td>
+                  <td>{{ parsed.person.name.firstPreferred || '-' }}</td>
+                  <td>{{ parsed.person.name.maiden || '-' }}</td>
+                  <td class="bold">{{ parsed.person.name.last || '-' }}</td>
+                  <td>{{ parsed.person.name.suffix || '-' }}</td>
+                  <td class="mono small">{{ formatBirthday(parsed.person.birthday) }}</td>
+                  <td class="mono small">{{ formatAnniversary(parsed.person.anniversaryId) }}</td>
+                  <td class="mono small">{{ parsed.person.spouseId || '-' }}</td>
+                  <td class="center">{{ parsed.person.generationNumber }}</td>
+                  <td class="center">{{ parsed.person.isLiving ? 'Y' : 'N' }}</td>
+                  <td class="center">{{ parsed.person.directDescendent ? 'Y' : 'N' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <mat-paginator
+              class="preview-paginator"
+              [length]="parsedPeople.length"
+              [pageSize]="previewPageSize"
+              [pageSizeOptions]="previewPageSizeOptions"
+              [pageIndex]="previewPageIndex"
+              (page)="onPreviewPage($event)"
+            ></mat-paginator>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button mat-button (click)="parsedPeople = []; importPreview = null" [disabled]="isImporting">
+            <mat-icon>close</mat-icon>
+            Cancel
+          </button>
+          <button mat-raised-button color="primary" (click)="confirmImport()" [disabled]="isImporting">
+            <mat-icon>check</mat-icon>
+            {{ isImporting ? 'Importing...' : 'Confirm Import' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="result-section" *ngIf="importResult">
+    <mat-card class="result-card success">
+      <mat-card-content>
+        <div class="result-header">
+          <mat-icon>check_circle</mat-icon>
+          <h3>Import Complete</h3>
+        </div>
+        <div class="result-stats">
+          <div class="stat created">
+            <span class="stat-value">{{ importResult.created }}</span>
+            <span class="stat-label">Created</span>
+          </div>
+          <div class="stat updated" *ngIf="importResult.updated > 0">
+            <span class="stat-value">{{ importResult.updated }}</span>
+            <span class="stat-label">Updated</span>
+          </div>
+          <div class="stat inactive" *ngIf="importResult.inactive > 0">
+            <span class="stat-value">{{ importResult.inactive }}</span>
+            <span class="stat-label">Inactive</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="last-import" *ngIf="lastImportTimestamp">
+    <mat-icon>schedule</mat-icon>
+    <span>Last import: {{ lastImportTimestamp }}</span>
+  </div>
+</div>

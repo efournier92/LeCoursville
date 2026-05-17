@@ -1,0 +1,98 @@
+// Shared tree styles for family tree rendering
+// Used by people.component and person-detail-modal
+
+$tree-indent: 20px;
+$tree-bar-width: 2px;
+$tree-bar-margin: 12px;
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 0 8px 0;
+
+  .person-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+.person-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: #212121;
+  white-space: nowrap;
+
+  &.clickable {
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &.deceased {
+    color: #999;
+  }
+
+  &.selected {
+    font-weight: 700;
+    color: #000;
+  }
+}
+
+.spouse-separator {
+  font-size: 13px;
+  color: #999;
+  margin: 0 2px;
+}
+
+.children-container {
+  display: flex;
+  align-items: flex-start;
+  padding-left: 25px;
+  position: relative;
+}
+
+.generation-bar {
+  width: $tree-bar-width;
+  min-height: 32px;
+  margin-right: $tree-bar-margin;
+  border-radius: 1px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.children-items {
+  flex: 1;
+}
+
+// Tree styling (no extra lines - keeps consistent with people page)
+.tree-with-lines {
+  .generation-bar {
+    display: none;
+  }
+}
+
+.first-generation-row {
+  padding: 8px 16px;
+
+  .first-gen-person {
+    font-size: 14px;
+    font-weight: 500;
+    color: #212121;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &.deceased {
+      color: #999;
+    }
+  }
+}
+
+.person-tree-wrapper {
+  padding: 8px 0;
+}

@@ -74,6 +74,11 @@ import { FeatureDisabledComponent } from "./components/feature-disabled/feature-
 import { ExpressionsComponent } from "./components/expressions/expressions.component";
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
+import { PeopleComponent } from "./components/people/people.component";
+import { PersonDetailModalComponent } from "./components/person-detail-modal/person-detail-modal.component";
+import { PersonTreeComponent } from "./components/shared/person-tree/person-tree.component";
+import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
+import { AdminClansComponent } from "./components/admin-clans/admin-clans.component";
 
 @NgModule({
   declarations: [
@@ -119,6 +124,11 @@ import { ExpressionEditComponent } from "./components/expression-edit/expression
     ExpressionsComponent,
     ExpressionViewComponent,
     ExpressionEditComponent,
+    PeopleComponent,
+    PersonDetailModalComponent,
+    PersonTreeComponent,
+    AdminPeopleImportComponent,
+    AdminClansComponent,
   ],
   schemas: [NO_ERRORS_SCHEMA],
   imports: [

@@ -61,6 +61,14 @@ export class RoutingService {
     this.NavigateToRoute('/admin/features');
   }
 
+  NavigateToAdminClans() {
+    this.NavigateToRoute('/admin/clans');
+  }
+
+  NavigateToAdminPeopleImport() {
+    this.NavigateToRoute('/admin/people');
+  }
+
   NavigateToRouteWithoutLocationChange(route: string) {
     this.router.navigateByUrl(route, { skipLocationChange: true });
   }

@@ -47,4 +47,14 @@ export class AppComponent implements OnInit {
   private isSignedIn(user: User): boolean {
     return user.id && user.roles.user;
   }
+
+  isAdminOrSuper(): boolean {
+    return this.user?.roles?.admin || this.user?.roles?.super;
+  }
+
+  onLogoClick(): void {
+    if (this.isAdminOrSuper()) {
+      this.routingService.NavigateToAdmin();
+    }
+  }
 }

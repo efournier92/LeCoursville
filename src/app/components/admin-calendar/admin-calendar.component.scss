@@ -1,17 +1,221 @@
 @import 'src/app/styles/admin-forms';
 
-.admin-calendar-event-card {
-  margin-top: 1em;
-}
+.admin-calendar-page {
+  max-width: 1400px;
+  margin: 0 auto;
 
-.admin-calendar-event-field {
-  width: 100%;
-}
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
 
-.admin-action-buttons-container {
-  width: 100%;
-}
+    .header-left {
+      h1 {
+        margin: 0 0 4px 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
 
-.display-toggle-checkbox {
-  margin-right: 1em;
+      .subtitle {
+        margin: 0;
+        font-size: 14px;
+        color: #888;
+      }
+    }
+
+    .header-right {
+      button {
+        mat-icon {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+
+    .search-field {
+      width: 280px;
+
+      ::ng-deep .mat-mdc-form-field-flex {
+        height: 40px;
+      }
+    }
+
+    .display-toggles {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+
+      .toggle-chip {
+        font-size: 13px;
+        margin: 0;
+      }
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .transparent-paginator {
+      background: transparent;
+      box-shadow: none;
+
+      ::ng-deep .mat-mdc-paginator-container {
+        padding: 0;
+      }
+    }
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+
+    .event-card {
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      transition: box-shadow 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+
+      .event-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        .event-title-field {
+          flex: 1;
+
+          ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+          }
+        }
+
+        .event-type-badge {
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          background: #f1f8f1;
+          color: #1b5e20;
+
+          &.type-birth {
+            background: #e8f5e9;
+            color: #2e7d32;
+          }
+
+          &.type-anniversary {
+            background: #fff3e0;
+            color: #e65100;
+          }
+        }
+      }
+
+      .event-body {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+
+        .event-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          mat-icon {
+            color: #888;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+          }
+
+          .date-field,
+          .person-field {
+            flex: 1;
+
+            ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+              display: none;
+            }
+          }
+        }
+
+        .living-row {
+          .living-checkbox {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .event-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+
+        .action-btn {
+          min-width: 80px;
+
+          mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+          }
+
+          &.delete {
+            min-width: 44px;
+            padding: 0 8px;
+          }
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #ccc;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      font-size: 14px;
+    }
+
+    button mat-icon {
+      margin-right: 4px;
+    }
+  }
 }

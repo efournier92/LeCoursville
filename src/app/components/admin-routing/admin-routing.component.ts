@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
@@ -6,17 +7,16 @@ import { RoutingService } from 'src/app/services/routing.service';
   templateUrl: './admin-routing.component.html',
   styleUrls: ['./admin-routing.component.scss']
 })
-export class AdminRoutingComponent implements OnInit {
+export class AdminRoutingComponent {
 
   constructor(
-    private routingService: RoutingService
+    private routingService: RoutingService,
+    private router: Router
   ) { }
 
-  // LIFECYCLE HOOKS
-
-  ngOnInit(): void { }
-
-  // PUBLIC METHODS
+  isActive(path: string): boolean {
+    return this.router.url === path;
+  }
 
   onClickUsersRoute() {
     this.routingService.NavigateToAdminUsers();
@@ -34,4 +34,11 @@ export class AdminRoutingComponent implements OnInit {
     this.routingService.NavigateToAdminFeatures();
   }
 
+  onClickClansRoute() {
+    this.routingService.NavigateToAdminClans();
+  }
+
+  onClickPeopleImportRoute() {
+    this.routingService.NavigateToAdminPeopleImport();
+  }
 }

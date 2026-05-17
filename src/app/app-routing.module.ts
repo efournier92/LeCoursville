@@ -18,6 +18,9 @@ import { MediaVideoComponent } from './components/media-video/media-video.compon
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
 import { FeatureFlagGuard } from './services/feature-flag-guard.service';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
+import { PeopleComponent } from './components/people/people.component';
+import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
+import { AdminClansComponent } from './components/admin-clans/admin-clans.component';
 
 const routes: Routes =
   [
@@ -55,6 +58,18 @@ const routes: Routes =
       canActivate: [AuthGuardService, FeatureFlagGuard],
       data: { featureId: 'photos' },
     },
+    // PEOPLE
+    {
+      path: 'people',
+      component: PeopleComponent,
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'people' },
+    },
+    {
+      path: 'contacts/:id',
+      component: ContactsComponent,
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+    },
     // MEDIA
     {
       path: 'media/explorer',
@@ -77,26 +92,37 @@ const routes: Routes =
       path: 'admin',
       component: AdminComponent,
       canActivate: [AuthAdminGuardService],
-    },
-    {
-      path: 'admin/calendar',
-      component: AdminCalendarComponent,
-      canActivate: [AuthAdminGuardService],
-    },
-    {
-      path: 'admin/media',
-      component: AdminMediaComponent,
-      canActivate: [AuthAdminGuardService],
-    },
-    {
-      path: 'admin/users',
-      component: AdminUsersComponent,
-      canActivate: [AuthAdminGuardService],
-    },
-    {
-      path: 'admin/features',
-      component: AdminFeaturesComponent,
-      canActivate: [AuthAdminGuardService],
+      children: [
+        {
+          path: 'calendar',
+          component: AdminCalendarComponent,
+        },
+        {
+          path: 'media',
+          component: AdminMediaComponent,
+        },
+        {
+          path: 'users',
+          component: AdminUsersComponent,
+        },
+        {
+          path: 'features',
+          component: AdminFeaturesComponent,
+        },
+        {
+          path: 'people',
+          component: AdminPeopleImportComponent,
+        },
+        {
+          path: 'clans',
+          component: AdminClansComponent,
+        },
+        {
+          path: '',
+          redirectTo: 'users',
+          pathMatch: 'full'
+        },
+      ]
     },
     {
       path: 'feature-disabled',

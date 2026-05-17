@@ -1,0 +1,49 @@
+.admin-tool-header {
+  padding: 0 0 24px 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+
+  .tool-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #f5f6fa;
+      color: #555;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #888;
+      }
+
+      span {
+        flex: 1;
+      }
+
+      &:hover {
+        background: #e8f5e9;
+        color: #1b5e20;
+      }
+
+      &.active-link {
+        background: #1b5e20;
+        color: #fff;
+
+        mat-icon {
+          color: #a5d6a7;
+        }
+      }
+    }
+  }
+}

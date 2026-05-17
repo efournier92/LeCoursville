@@ -1,5 +1,59 @@
-<div class="admin-component-container d-flex flex-column align-items-center">
-  <div class="admin-header">Admin Utilities</div>
-  <app-admin-routing class="w-75"></app-admin-routing>
-  <div class="version-container"><b>Version:</b> {{ version }}</div>
+<div class="admin-layout">
+  <nav class="admin-sidebar">
+    <div class="sidebar-header">
+      <a routerLink="/admin" class="logo-link">
+        <h1>Admin</h1>
+      </a>
+    </div>
+    <ul class="sidebar-nav">
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <a routerLink="/admin">
+          <mat-icon>home</mat-icon>
+          <span>Overview</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/users">
+          <mat-icon>people</mat-icon>
+          <span>Users</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/clans">
+          <mat-icon>groups</mat-icon>
+          <span>Clans</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/people">
+          <mat-icon>person_add</mat-icon>
+          <span>People</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/calendar">
+          <mat-icon>calendar_month</mat-icon>
+          <span>Calendar</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/media">
+          <mat-icon>perm_media</mat-icon>
+          <span>Media</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/admin/features">
+          <mat-icon>toggle_on</mat-icon>
+          <span>Features</span>
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <span class="version">v{{ version }}</span>
+    </div>
+  </nav>
+  <main class="admin-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

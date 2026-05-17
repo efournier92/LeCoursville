@@ -7,6 +7,7 @@ export class RecurringEvent implements CalendarEvent {
   title: string = '';
   date: Date = new Date();
   type: string = '';
+  personId: string | null = null;
   isLiving = true;
 
   // Implemented from CalendarEvent

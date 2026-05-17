@@ -3,7 +3,8 @@ import {
   AngularFireList,
   AngularFireDatabase,
 } from '@angular/fire/compat/database';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PromptModalService } from 'src/app/services/prompt-modal.service';
@@ -94,6 +95,15 @@ export class CalendarService {
       }
     });
   }
+
+  getEventsByPerson(personId: string): Observable<RecurringEvent[]> {
+    return this.calendarEventsSource.pipe(
+      map((events: RecurringEvent[]) =>
+        events.filter((event: RecurringEvent) => event.personId === personId)
+      )
+    );
+  }
+
   saveMessageWithPhoto(newMessage: any) {
     throw new Error('Method not implemented.');
   }

@@ -6,6 +6,7 @@ export interface FeatureConfig {
 }
 
 export const FEATURES: FeatureConfig[] = [
+  { id: 'people', label: 'People', route: '/people', icon: 'people' },
   { id: 'expressions', label: 'Expressions', route: '/expressions', icon: 'format_quote' },
   { id: 'music', label: 'Music', route: '/media/audio', icon: 'library_music' },
   { id: 'videos', label: 'Videos', route: '/media/video', icon: 'local_movies' },
