@@ -1,0 +1,186 @@
+.admin-calendars-container {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.calendars-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  mat-card-header {
+    padding: 16px 24px 0;
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+
+      mat-card-title {
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      mat-card-subtitle {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 16px 24px 24px;
+  }
+}
+
+// Calendars List
+.calendars-list {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+
+  .calendar-header-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    .col-year {
+      width: 80px;
+    }
+
+    .col-url {
+      flex: 1;
+    }
+
+    .col-actions {
+      width: 100px;
+      text-align: right;
+    }
+  }
+
+  .calendar-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #fafafa;
+    }
+
+    .calendar-year {
+      width: 80px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .calendar-url {
+      flex: 1;
+      font-size: 13px;
+      color: #666;
+      font-family: monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .calendar-actions {
+      width: 100px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+
+      button {
+        opacity: 0.6;
+        transition: opacity 0.15s;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  color: #999;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Form Section
+.form-section {
+  margin-top: 24px;
+
+  .form-card {
+    border-radius: 8px;
+    background: #fafafa;
+
+    mat-card-content {
+      padding: 24px;
+
+      h3 {
+        margin: 0 0 20px;
+        font-size: 18px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .form-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #f44336;
+    font-size: 13px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+}
