@@ -11,12 +11,18 @@ import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
 export class AdminFeaturesComponent implements OnInit {
   flagsMap: Record<string, FeatureFlag | null> = {};
   featureDefs: FeatureConfig[] = FEATURES;
+  promotedRoute: string = '';
+  featureOptions = FEATURES;
 
   constructor(private featureFlagsService: FeatureFlagsService) { }
 
   ngOnInit(): void {
     this.featureFlagsService.getAllFeatureFlags().subscribe(flagsMap => {
       this.flagsMap = flagsMap;
+    });
+
+    this.featureFlagsService.getPromotedRoute().subscribe((data: any) => {
+      this.promotedRoute = data?.route || '';
     });
   }
 
@@ -27,5 +33,9 @@ export class AdminFeaturesComponent implements OnInit {
 
   onToggle(featureId: string, enabled: boolean): void {
     this.featureFlagsService.setFeatureFlag(featureId, enabled);
+  }
+
+  onPromotedRouteChange(route: string): void {
+    this.featureFlagsService.setPromotedRoute(route);
   }
 }

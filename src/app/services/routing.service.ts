@@ -1,12 +1,32 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoutingService {
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  private promotedRouteSubject = new BehaviorSubject<string | null>(null);
+
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private featureFlagsService: FeatureFlagsService
+  ) {
+    this.loadPromotedRoute();
+  }
+
+  private loadPromotedRoute(): void {
+    this.featureFlagsService.getPromotedRoute().subscribe((data: any) => {
+      if (data && data.route) {
+        this.promotedRouteSubject.next(data.route);
+      } else {
+        this.promotedRouteSubject.next(environment.promotedRoute || '/');
+      }
+    });
+  }
 
   IsRootRoute() {
     return this.router.url === '/';
@@ -17,8 +37,8 @@ export class RoutingService {
   }
 
   NavigateToPromotedRoute() {
-    const promotedRoute = environment.promotedRoute || '/';
-    this.NavigateToRoute(promotedRoute);
+    const route = this.promotedRouteSubject.getValue() || environment.promotedRoute || '/';
+    this.NavigateToRoute(route);
   }
 
   NavigateToSignIn() {

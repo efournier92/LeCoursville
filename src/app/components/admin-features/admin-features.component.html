@@ -1,4 +1,23 @@
 <div class="admin-features-container">
+  <mat-card class="promoted-route-card">
+    <mat-card-header>
+      <mat-card-title>Promoted Route</mat-card-title>
+      <mat-card-subtitle>The page users see by default after signing in</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-form-field class="w-100">
+        <mat-label>Default Landing Page</mat-label>
+        <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
+          <mat-option value="">-- Select --</mat-option>
+          <mat-option *ngFor="let feature of featureOptions" [value]="feature.route">
+            {{ feature.label }} ({{ feature.route }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+
   <mat-card class="features-card">
     <mat-card-header>
       <mat-card-title>Feature Flags</mat-card-title>
