@@ -1,181 +1,54 @@
-<div
-  class="chat-edit-component"
-  *ngIf="user"
->
-  <div
-    class="d-flex justify-content-center"
-    *ngIf="isSaving"
-  >
-    <mat-spinner></mat-spinner>
-  </div>
-  <div
-    class="row mb-4 message-card-content-container"
-    *ngIf="!isSaving"
-    [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
-  >
-    <div class="col-2 col-md-1 message-tools-container">
-      <div class="d-flex justify-content-center flex-column mt-2">
-        <div
-          class="mb-3 message-button"
-          *ngIf="message.isSaved"
-          [ngStyle]="{
-            color: highlights.trash === true ? '#FF9800' : '#F44336'
-          }"
-        >
-          <div *ngIf="!message.isDeleted">
-            <div
-              class="d-flex flex-row justify-content-center"
-              (mouseover)="highlightElement('trash', true)"
-              (mouseleave)="highlightElement('trash', false)"
-              (click)="deleteMessage()"
-            >
-              <span class="fa fa-trash fa-2x"></span>
-            </div>
-            <span class="message-button-label d-flex justify-content-center"
-              >Delete</span
-            >
-          </div>
-          <div *ngIf="message.isDeleted">
-            <div
-              class="d-flex flex-row justify-content-center"
-              (mouseover)="highlightElement('trash', true)"
-              (mouseleave)="highlightElement('trash', false)"
-              (click)="restoreMessage()"
-            >
-              <span class="fa fa-undo fa-2x"></span>
-            </div>
-            <span class="message-button-label d-flex justify-content-center"
-              >Restore</span
-            >
-          </div>
-        </div>
-        <div
-          class="mb-3 message-button chat-edit-button-cancel"
-          [ngStyle]="{
-            color: highlights.cancel === true ? '#FF9800' : '#F44336'
-          }"
-        >
-          <div
-            class="d-flex flex-row justify-content-center"
-            (mouseover)="highlightElement('cancel', true)"
-            (mouseleave)="highlightElement('cancel', false)"
-            (click)="cancelEdit()"
-          >
-            <span class="fa fa-ban fa-2x"></span>
-          </div>
-          <span class="message-button-label d-flex justify-content-center"
-            >Cancel</span
-          >
-        </div>
-        <div
-          class="mb-3 message-button chat-edit-button-send"
-          [ngStyle]="{
-            color: highlights.send === true ? '#FF9800' : '#F44336'
-          }"
-        >
-          <div
-            class="d-flex flex-row justify-content-center"
-            (mouseover)="highlightElement('send', true)"
-            (mouseleave)="highlightElement('send', false)"
-            (click)="saveMessage(message)"
-          >
-            <span class="fa fa-check fa-2x"></span>
-          </div>
-          <span class="message-button-label d-flex justify-content-center"
-            >Save</span
-          >
-        </div>
-        <div
-          class="mb-3 chat-edit-button-sticky"
-          *ngIf="shouldShowStickyButton"
-          [ngStyle]="{
-            color: highlights.sticky === true ? '#FF9800' : '#F44336'
-          }"
-        >
-          <div
-            class="d-flex flex-row justify-content-center"
-            (mouseover)="highlightElement('sticky', true)"
-            (mouseleave)="highlightElement('sticky', false)"
-          >
-            <mat-checkbox [(ngModel)]="message.isSticky"></mat-checkbox>
-          </div>
-          <span class="message-button-label d-flex justify-content-center"
-            >Sticky</span
-          >
-        </div>
-      </div>
+<div class="expression-edit" *ngIf="user && !isSaving">
+  <div class="expression-edit-form">
+    <div class="form-row">
+      <mat-form-field>
+        <mat-label>Expression</mat-label>
+        <input
+          matInput
+          [(ngModel)]="message.title"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Attribution</mat-label>
+        <input
+          matInput
+          [(ngModel)]="message.attribution"
+        />
+      </mat-form-field>
     </div>
-    <mat-divider
-      class="message-controls-divider-vertical"
-      [vertical]="true"
-    ></mat-divider>
-    <div class="message-edit-message-form-container col-9">
-      <mat-card-content>
-        <div
-          class="message-title-input-container"
-          *ngIf="!message.isReply"
-        >
-          <mat-form-field class="w-100">
-            <input
-              matInput
-              class="chat-edit-input-title"
-              placeholder="Expression"
-              [(ngModel)]="message.title"
-            />
-          </mat-form-field>
-          <mat-form-field class="w-100">
-            <input
-              matInput
-              class="chat-edit-input-author"
-              placeholder="Attribution"
-              [(ngModel)]="message.attribution"
-            />
-          </mat-form-field>
-          <mat-form-field class="w-100">
-            <input
-              matInput
-              class="chat-edit-input-author"
-              placeholder="Author"
-              [(ngModel)]="message.authorName"
-            />
-          </mat-form-field>
-          <mat-form-field class="w-100">
-            <input
-              matInput
-              class="chat-edit-input-author"
-              placeholder="Year Written"
-              [(ngModel)]="message.yearWritten"
-            />
-          </mat-form-field>
-        </div>
-        <mat-form-field class="w-100">
-          <textarea
-            matInput
-            class="message-edit-input-body"
-            placeholder="Description"
-            cdkTextareaAutosize
-            #autosize="cdkTextareaAutosize"
-            #input
-            [(ngModel)]="message.body"
-          ></textarea>
-        </mat-form-field>
-      </mat-card-content>
+    <div class="form-row">
+      <mat-form-field>
+        <mat-label>Author</mat-label>
+        <input
+          matInput
+          [(ngModel)]="message.authorName"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Year Written</mat-label>
+        <input
+          matInput
+          [(ngModel)]="message.yearWritten"
+        />
+      </mat-form-field>
+    </div>
+    <mat-form-field class="w-100">
+      <mat-label>Description</mat-label>
+      <textarea
+        matInput
+        cdkTextareaAutosize
+        #autosize="cdkTextareaAutosize"
+        [(ngModel)]="message.body"
+      ></textarea>
+    </mat-form-field>
+
+    <div class="form-actions">
+      <button mat-button (click)="cancelEdit()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="saveMessage(message)">Save</button>
     </div>
   </div>
-  <mat-card-content *ngFor="let reply of message.replies">
-    <app-chat-view
-      *ngIf="!reply.isEditable"
-      [message]="reply"
-      [parent]="message"
-      (updateParentEvent)="updateParent()"
-    >
-    </app-chat-view>
-    <app-chat-edit
-      *ngIf="reply.isEditable"
-      [message]="reply"
-      [parent]="message"
-      (updateParentEvent)="updateParent()"
-    >
-    </app-chat-edit>
-  </mat-card-content>
+</div>
+
+<div class="expression-edit-saving" *ngIf="isSaving">
+  <mat-spinner></mat-spinner>
 </div>

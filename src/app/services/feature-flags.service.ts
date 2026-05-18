@@ -55,4 +55,15 @@ export class FeatureFlagsService {
       return flag === null || flag === undefined || flag.enabled === true;
     });
   }
+
+  getPromotedRoute(): Observable<string | null> {
+    return this.db.object('promotedRoute').valueChanges() as Observable<string | null>;
+  }
+
+  setPromotedRoute(route: string): Promise<void> {
+    return this.db.object('promotedRoute').set({
+      route,
+      updatedAt: Date.now(),
+    });
+  }
 }

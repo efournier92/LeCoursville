@@ -61,7 +61,7 @@ export class CalendarService {
       if (person.anniversaryDate) {
         const spouse = people.find(p => p.id === person.spouseId);
         const title = spouse
-          ? `${this.getPersonFullName(person)} & ${this.getPersonFullName(spouse)}`
+          ? this.getAnniversaryTitle(person, spouse)
           : this.getPersonFullName(person);
 
         const event = new RecurringEvent();
@@ -84,6 +84,21 @@ export class CalendarService {
     const first = person.name.firstPreferred || person.name.firstGiven || '';
     const last = person.name.last || '';
     return `${first} ${last}`.trim();
+  }
+
+  private getPersonFirstName(person: Person): string {
+    return person.name.firstPreferred || person.name.firstGiven || '';
+  }
+
+  private getAnniversaryTitle(person: Person, spouse: Person): string {
+    const personName = this.getPersonFullName(person);
+    if (!spouse) return personName;
+
+    const sameLastName = person.name.last === spouse.name.last && person.name.last;
+    if (sameLastName) {
+      return `${this.getPersonFirstName(person)} & ${this.getPersonFirstName(spouse)} ${sameLastName}`;
+    }
+    return `${personName} & ${this.getPersonFullName(spouse)}`;
   }
 
   getEventsByPerson(personId: string): Observable<RecurringEvent[]> {

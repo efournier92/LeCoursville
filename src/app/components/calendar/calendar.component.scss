@@ -4,6 +4,7 @@
   min-height: 100vh;
   box-sizing: border-box;
   position: relative;
+  overflow-x: hidden;
 }
 
 .calendar-toolbar {
@@ -239,6 +240,7 @@
 .calendar-view-component {
   margin: auto;
   width: 100%;
+  overflow-x: auto;
 }
 
 @media (max-width: 600px) {

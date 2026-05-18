@@ -4,6 +4,28 @@
   margin: 0 auto;
 }
 
+.promoted-route-card {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  mat-card-subtitle {
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  .w-100 {
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
 .features-card {
   mat-card-header {
     margin-bottom: 16px;

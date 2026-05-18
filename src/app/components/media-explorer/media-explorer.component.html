@@ -5,28 +5,26 @@
       *ngIf="selectedMedia?.id"
     >
       <div
-        class="media-explorer-actions-container row justify-content-center row"
+        class="media-explorer-actions-container"
       >
         <button
-          mat-button
-          class="m-1 media-explorer-action-button col-5"
+          mat-stroked-button
+          class="media-explorer-action-button"
           *ngIf="shouldShowDownloadButton()"
           matTooltip="Downloads the selected media to a file"
           (click)="downloadSelectedMedia()"
         >
-          <mat-icon class="media-explorer-action-button-icon"
-            >download</mat-icon
-          >
+          <mat-icon>download</mat-icon>
           <span>Download</span>
         </button>
         <button
-          mat-button
-          class="m-1 media-explorer-action-button col-5"
+          mat-stroked-button
+          class="media-explorer-action-button"
           *ngIf="shouldShowShareableLinkButton()"
           matTooltip="Copies a shareable link to your clipboard"
           (click)="onGetShareableLink()"
         >
-          <mat-icon class="media-explorer-action-button-icon">share</mat-icon>
+          <mat-icon>share</mat-icon>
           <span>Share</span>
         </button>
       </div>
