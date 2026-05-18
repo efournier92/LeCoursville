@@ -6,11 +6,49 @@
   padding: 0;
 }
 
+.media-explorer-player-container {
+  padding: 16px;
+}
+
 .media-explorer-actions-container {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.media-explorer-action-button {
+  border-radius: 8px;
+  background: transparent;
+  color: #4a5568;
+  min-width: 120px;
+  height: 36px;
+  border: 1px solid #d0d5dc;
+
+  &:hover {
+    background: #f7f9fc;
+    border-color: #b8c0cc;
+    color: #2d3748;
+  }
+
+  &:active {
+    background: #e8ecf0;
+    transform: scale(0.98);
+  }
+
+  .mat-icon {
+    margin-right: 0.4em;
+    vertical-align: middle;
+  }
 }
 
 .media-explorer-action-button-icon {
   margin-right: 0.5em;
+  font-size: 1.1em;
+}
+
+.media-list-container {
+  border-left: 1px solid #eee;
+  padding-left: 0;
 }
