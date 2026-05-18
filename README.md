@@ -65,15 +65,13 @@ export const secrets = {
 };
 ```
 
-## Build
-
-### Local
+## Serve
 
 - `ng serve`
 
-### Production
+## Build
 
-- `ng build --configuration=production`
+- `ng build --configuration={ENVIRONMENT}`
 
 ## Test
 
@@ -81,20 +79,24 @@ export const secrets = {
 
 ## Deploy
 
-### Select an Environment
+### 1. Build For Production
+
+- `ng build --configuration=production`
+
+### 2. Select an Environment
 
 - `firebase use --add`
   - Select:
     - `lecoursville` for Production
     - `lecoursville-dev` for Test
 
-##### Deploy to the Selected Environment
+### 3. Deploy to the Selected Environment
 
 - `firebase deploy`
 
 ## Contribute
 
-If you have feature suggestions, please contact me here or at efournier92@gmail.com. If you'd like to submit a pull request, please feel free and I'll merge it at my earliest convenience!
+If you have feature suggestions, please contact me here or at efournier92@gmail.com. If you'd like to submit a pull request, please feel free and I'll merge it at my earliest convenience.
 
 ## License
 
@@ -170,6 +172,16 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - `firebase deploy`
 
 ## Major Version History
+
+### `26.5.17`
+
+- Add `People` feature.
+  - Populate `People` via Admin CSV upload.
+  - Consume from:
+    - `Contacts`.
+    - `Calendar`.
+- Light UI polish work on other user-facing pages.
+- Minor bug fixes.
 
 ### `24.3.17`
 
