@@ -1,6 +1,5 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
@@ -9,7 +8,6 @@ import { CalendarService, Months } from 'src/app/services/calendar.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
-import { CalendarDatepickerDialogComponent } from 'src/app/components/calendar-datepicker-dialog/calendar-datepicker-dialog.component';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PersonDetailModalComponent } from 'src/app/components/person-detail-modal/person-detail-modal.component';
@@ -90,6 +88,24 @@ export class CalendarComponent implements OnInit {
     this.route.queryParamMap.subscribe(queryParams => {
       const selected = queryParams.get('selected');
       this.selectedPersonId = selected || null;
+
+      const monthParam = queryParams.get('month');
+      const yearParam = queryParams.get('year');
+
+      if (monthParam && /^\d{1,2}$/.test(monthParam)) {
+        const monthIndex = parseInt(monthParam) - 1;
+        if (monthIndex >= 0 && monthIndex < 12) {
+          this.viewMonth = this.months[monthIndex];
+        }
+      }
+      if (yearParam && /^\d{4}$/.test(yearParam)) {
+        this.selectedYear = parseInt(yearParam);
+      }
+
+      if (monthParam || yearParam) {
+        this.viewDate = new Date(this.selectedYear, this.months.indexOf(this.viewMonth), 1);
+        this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+      }
     });
   }
 
@@ -113,12 +129,6 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  onDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
-    if (event.value) {
-      this.pickerDate = event.value;
-    }
-  }
-
   isCurrentPickerMonth(index: number): boolean {
     return this.months[index] === this.viewMonth && this.pickerYear === this.selectedYear;
   }
@@ -126,8 +136,10 @@ export class CalendarComponent implements OnInit {
   selectPickerMonth(monthIndex: number): void {
     this.viewMonth = this.months[monthIndex];
     this.viewDate = new Date(this.pickerYear, monthIndex, 1);
+    this.selectedYear = this.pickerYear;
     this.datePickerOpen = false;
     this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+    this.updateQueryParams();
   }
 
   navigateYear(direction: number): void {
@@ -158,32 +170,14 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  changeViewMonth(event: any): void {
-    const monthName = event.value;
-    this.viewDate = new Date(monthName + '1,' + this.selectedYear);
-    this.analyticsService.logEvent('calendar_change_view_month', {
-      value: event?.value, date: this.viewDate.toString(),
-      userId: this.user?.id,
-    });
-  }
-
-  changeSelectedYear(event: any): void {
-    this.selectedYear = event.value;
-    this.viewDate = new Date(this.viewMonth + '1,' + this.selectedYear);
-    this.events = this.calendarService.updateEvents(this.events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
-    this.analyticsService.logEvent('calendar_change_selected_year', {
-      value: event?.value, date: this.viewDate.toString(),
-      userId: this.user?.id,
-    });
-  }
-
   changeView(date: Date): void {
     this.viewMonth = this.months[date.getMonth()];
     const selectedYear = date.getFullYear();
     if (selectedYear !== this.selectedYear) {
       this.selectedYear = selectedYear;
-      this.events = this.calendarService.updateEvents(this.events, selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+      this.events = this.calendarService.updateEvents(this.allEvents, selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
     }
+    this.updateQueryParams();
     this.analyticsService.logEvent('calendar_change_selected_year', {
       newDate: date.toString(),
       isTrue: `Birthdays: ${this.showBirthdays}; Anniversaries: ${this.showAnniversaries}`,
@@ -202,6 +196,15 @@ export class CalendarComponent implements OnInit {
     });
   }
 
+  private updateQueryParams(): void {
+    const monthNum = this.months.indexOf(this.viewMonth) + 1;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { month: monthNum, year: this.selectedYear },
+      queryParamsHandling: 'merge'
+    });
+  }
+
   // HELPERS
 
   private initializeDates(): void {
@@ -209,6 +212,7 @@ export class CalendarComponent implements OnInit {
 
     const now = new Date();
     this.selectedYear = now.getFullYear();
+    this.viewDate = new Date();
 
     const monthIndex: number = now.getMonth();
     this.viewMonth = this.months[monthIndex];

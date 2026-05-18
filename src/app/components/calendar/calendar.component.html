@@ -1,12 +1,12 @@
 <div class="calendar-component-container" *ngIf="user?.name">
   <div class="calendar-toolbar">
-    <div class="calendar-toolbar-row calendar-toolbar-filters">
-      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
-      <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
-      <div class="calendar-toolbar-last-row">
+    <div class="calendar-toolbar-row">
+      <div class="calendar-toolbar-filters">
+        <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
+        <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
         <mat-checkbox class="calendar-checkbox" color="warn" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Include Not Living</mat-checkbox>
-        <button mat-button (click)="printPdf()" class="calendar-print-button">Print</button>
       </div>
+      <button mat-button (click)="printPdf()" class="calendar-print-button">Print</button>
     </div>
   </div>
 

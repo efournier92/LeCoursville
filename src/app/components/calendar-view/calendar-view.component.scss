@@ -37,11 +37,16 @@
 
 .calendar-scroll-container {
   width: 100%;
-  overflow-x: scroll;
+  overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   display: block;
-  scrollbar-width: always;
+}
+
+@media (min-width: 1024px) {
+  .calendar-scroll-container {
+    overflow-x: hidden;
+  }
 }
 
 .calendar-scroll-container::-webkit-scrollbar {

@@ -18,12 +18,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  justify-content: space-between;
 }
 
 .calendar-toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  row-gap: 8px;
-  justify-content: space-between;
 }
 
 .calendar-checkbox {
@@ -239,12 +241,6 @@
   width: 100%;
 }
 
-.calendar-toolbar-last-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 @media (max-width: 600px) {
   .calendar-component-container {
     padding: 0.5rem 0 2rem;
@@ -258,39 +254,27 @@
     border-bottom: 1px solid #e2e8f0;
   }
 
-  .calendar-toolbar-filters {
+  .calendar-toolbar-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
 
+  .calendar-toolbar-filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
   .calendar-checkbox {
     font-size: 1rem;
-  }
-
-  .calendar-toolbar-filters .calendar-checkbox:first-child,
-  .calendar-toolbar-filters .calendar-checkbox:nth-child(2),
-  .calendar-toolbar-filters .calendar-checkbox:nth-child(3),
-  .calendar-toolbar-filters .calendar-print-button {
-    margin-right: 0;
-  }
-
-  .calendar-toolbar-last-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 12px;
-    margin-top: 4px;
-  }
-
-  .calendar-toolbar-last-row .calendar-checkbox {
-    width: auto;
     margin: 0;
   }
 
-  .calendar-toolbar-last-row .calendar-print-button {
-    width: auto;
+  .calendar-print-button {
+    width: 100%;
+    margin-top: 4px;
   }
 
   .calendar-view-component {

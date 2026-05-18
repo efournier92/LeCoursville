@@ -29,11 +29,16 @@ export class CalendarPrinterComponent implements OnInit {
 
   private loadAvailableYears(): void {
     this.loading = true;
+    const thisYear = new Date().getFullYear();
+    const maxYears = [thisYear, thisYear + 1, thisYear + 2];
+
     this.db.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
-      this.availableYears = calendars
-        .map(c => parseInt(c.year))
-        .filter(y => !isNaN(y))
-        .sort((a, b) => a - b);
+      const configuredYears = new Set(
+        calendars.map(c => parseInt(c.year)).filter(y => !isNaN(y))
+      );
+
+      this.availableYears = maxYears.filter(y => configuredYears.has(y));
+
       if (this.availableYears.length > 0 && !this.selectedYear) {
         this.selectedYear = this.availableYears[0];
         this.loadCalendarUrl();
