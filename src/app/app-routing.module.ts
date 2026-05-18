@@ -7,7 +7,6 @@ import { CalendarComponent } from 'src/app/components/calendar/calendar.componen
 import { PhotosComponent } from 'src/app/components/photos/photos.component';
 import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
-import { AdminCalendarComponent } from './components/admin-calendar/admin-calendar.component';
 import { AdminMediaComponent } from './components/admin-media/admin-media.component';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 import { AdminFeaturesComponent } from './components/admin-features/admin-features.component';
@@ -21,6 +20,7 @@ import { ExpressionsComponent } from './components/expressions/expressions.compo
 import { PeopleComponent } from './components/people/people.component';
 import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
 import { AdminClansComponent } from './components/admin-clans/admin-clans.component';
+import { AdminCalendarsComponent } from './components/admin-calendars/admin-calendars.component';
 
 const routes: Routes =
   [
@@ -94,10 +94,6 @@ const routes: Routes =
       canActivate: [AuthAdminGuardService],
       children: [
         {
-          path: 'calendar',
-          component: AdminCalendarComponent,
-        },
-        {
           path: 'media',
           component: AdminMediaComponent,
         },
@@ -116,6 +112,10 @@ const routes: Routes =
         {
           path: 'clans',
           component: AdminClansComponent,
+        },
+        {
+          path: 'calendars',
+          component: AdminCalendarsComponent,
         },
         {
           path: '',

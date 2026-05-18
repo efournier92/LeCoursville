@@ -39,6 +39,7 @@ import { AppComponent } from "src/app/app.component";
 import { AuthComponent } from "src/app/components/auth/auth.component";
 import { CalendarCellComponent } from "src/app/components/calendar-cell/calendar-cell.component";
 import { CalendarComponent } from "src/app/components/calendar/calendar.component";
+import { CalendarDatepickerDialogComponent } from "src/app/components/calendar-datepicker-dialog/calendar-datepicker-dialog.component";
 import { CalendarPrinterComponent } from "src/app/components/calendar-printer/calendar-printer.component";
 import { CalendarViewComponent } from "src/app/components/calendar-view/calendar-view.component";
 import { ChatComponent } from "src/app/components/chat/chat.component";
@@ -63,7 +64,6 @@ import { VideoPlayerDriveIframeComponent } from "src/app/components/video-player
 import { VideoPlayerVideogularComponent } from "src/app/components/video-player-videogular/video-player-videogular.component";
 import { DocViewerNgxExtendedComponent } from "src/app/components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component";
 import { AdminMediaUploadAudioAlbumComponent } from "src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component";
-import { AdminCalendarComponent } from "src/app/components/admin-calendar/admin-calendar.component";
 import { AdminRoutingComponent } from "./components/admin-routing/admin-routing.component";
 import { UserViewComponent } from "./components/user-view/user-view.component";
 import { UserEditComponent } from "./components/user-edit/user-edit.component";
@@ -81,6 +81,7 @@ import { PersonDetailModalComponent } from "./components/person-detail-modal/per
 import { PersonTreeComponent } from "./components/shared/person-tree/person-tree.component";
 import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
 import { AdminClansComponent } from "./components/admin-clans/admin-clans.component";
+import { AdminCalendarsComponent } from "./components/admin-calendars/admin-calendars.component";
 
 @NgModule({
   declarations: [
@@ -91,6 +92,7 @@ import { AdminClansComponent } from "./components/admin-clans/admin-clans.compon
     AuthComponent,
     CalendarCellComponent,
     CalendarComponent,
+    CalendarDatepickerDialogComponent,
     CalendarPrinterComponent,
     CalendarViewComponent,
     ChatComponent,
@@ -115,7 +117,6 @@ import { AdminClansComponent } from "./components/admin-clans/admin-clans.compon
     VideoPlayerVideogularComponent,
     DocViewerNgxExtendedComponent,
     AdminMediaUploadAudioAlbumComponent,
-    AdminCalendarComponent,
     AdminRoutingComponent,
     AdminFeaturesComponent,
     FeatureDisabledComponent,
@@ -133,6 +134,7 @@ import { AdminClansComponent } from "./components/admin-clans/admin-clans.compon
     PersonTreeComponent,
     AdminPeopleImportComponent,
     AdminClansComponent,
+    AdminCalendarsComponent,
   ],
   schemas: [NO_ERRORS_SCHEMA],
   imports: [
@@ -168,7 +170,7 @@ import { AdminClansComponent } from "./components/admin-clans/admin-clans.compon
   ],
   providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }],
   bootstrap: [AppComponent],
-  entryComponents: [CalendarPrinterComponent, PromptModalComponent],
+  entryComponents: [CalendarDatepickerDialogComponent, CalendarPrinterComponent, PromptModalComponent],
   exports: [ContactEditComponent],
 })
 export class AppModule {}

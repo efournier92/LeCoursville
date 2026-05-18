@@ -4,13 +4,13 @@
       <mat-icon>groups</mat-icon>
       <span>Clans</span>
     </button>
+    <button mat-button (click)="onClickCalendarsRoute()" [class.active-link]="isActive('/admin/calendars')">
+      <mat-icon>calendar_today</mat-icon>
+      <span>Calendars</span>
+    </button>
     <button mat-button (click)="onClickPeopleImportRoute()" [class.active-link]="isActive('/admin/people')">
       <mat-icon>person_add</mat-icon>
       <span>People</span>
-    </button>
-    <button mat-button (click)="onClickCalendarRoute()" [class.active-link]="isActive('/admin/calendar')">
-      <mat-icon>calendar_month</mat-icon>
-      <span>Calendar</span>
     </button>
     <button mat-button (click)="onClickMediaRoute()" [class.active-link]="isActive('/admin/media')">
       <mat-icon>perm_media</mat-icon>

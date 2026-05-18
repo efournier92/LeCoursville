@@ -26,16 +26,16 @@ export class AdminRoutingComponent {
     this.routingService.NavigateToAdminMedia();
   }
 
-  onClickCalendarRoute() {
-    this.routingService.NavigateToAdminCalendar();
-  }
-
   onClickFeaturesRoute() {
     this.routingService.NavigateToAdminFeatures();
   }
 
   onClickClansRoute() {
     this.routingService.NavigateToAdminClans();
+  }
+
+  onClickCalendarsRoute() {
+    this.router.navigate(['/admin/calendars']);
   }
 
   onClickPeopleImportRoute() {

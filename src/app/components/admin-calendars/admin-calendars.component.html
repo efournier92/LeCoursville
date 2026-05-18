@@ -1,0 +1,76 @@
+<div class="admin-calendars-container">
+  <mat-card class="calendars-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>Calendars</mat-card-title>
+          <mat-card-subtitle>Link a Firebase Storage PDF to a calendar year</mat-card-subtitle>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" (click)="onAdd()" *ngIf="!isAdding && !editingCalendar">
+            <mat-icon>add</mat-icon>
+            Add Calendar
+          </button>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="calendars-list" *ngIf="calendars.length > 0">
+        <div class="calendar-header-row">
+          <span class="col-year">Year</span>
+          <span class="col-url">URL</span>
+          <span class="col-actions">Actions</span>
+        </div>
+        <div class="calendar-row" *ngFor="let calendar of calendars">
+          <span class="calendar-year">{{ calendar.year }}</span>
+          <span class="calendar-url">{{ calendar.url }}</span>
+          <div class="calendar-actions">
+            <button mat-icon-button color="primary" (click)="onEdit(calendar)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="onDelete(calendar)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="calendars.length === 0 && !isAdding">
+        <mat-icon>calendar_today</mat-icon>
+        <p>No calendars found. Add your first calendar PDF mapping.</p>
+      </div>
+
+      <div class="form-section" *ngIf="isAdding || editingCalendar">
+        <mat-card class="form-card">
+          <mat-card-content>
+            <h3>{{ editingCalendar ? 'Edit Calendar' : 'Add New Calendar' }}</h3>
+            <form (ngSubmit)="onSave()">
+              <mat-form-field class="full-width">
+                <mat-label>Year (e.g. 2026)</mat-label>
+                <input matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Firebase Storage URL</mat-label>
+                <input matInput [(ngModel)]="formData.url" name="url" required />
+              </mat-form-field>
+
+              <div class="form-error" *ngIf="formError">
+                <mat-icon>error_outline</mat-icon>
+                {{ formError }}
+              </div>
+
+              <div class="form-actions">
+                <button mat-button type="button" (click)="onCancel()">Cancel</button>
+                <button mat-raised-button color="primary" type="submit">
+                  {{ editingCalendar ? 'Update' : 'Add' }}
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

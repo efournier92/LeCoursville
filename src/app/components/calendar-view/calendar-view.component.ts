@@ -5,7 +5,6 @@ import { CalendarView } from 'angular-calendar';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { DOCUMENT } from '@angular/common';
-import scrollIntoView from 'scroll-into-view-if-needed';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
@@ -19,6 +18,8 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   @Input() events: RecurringEvent[];
 
   @Output() refreshView: EventEmitter<Event> = new EventEmitter();
+  @Output() personClick: EventEmitter<string> = new EventEmitter();
+  @Output() spouseClick: EventEmitter<string> = new EventEmitter();
 
   user: User;
   view: string = CalendarView.Month;
@@ -41,7 +42,6 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // this.ensureTodaysDateIsInView();
   }
 
   // SUBSCRIPTIONS
@@ -59,16 +59,4 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   }
 
   // HELPER METHODS
-
-  private ensureTodaysDateIsInView(): void {
-    const node = this.document.querySelector('.cal-cell.cal-day-cell.cal-today');
-
-    if (node) {
-      scrollIntoView(node, {
-        scrollMode: 'if-needed',
-        block: 'nearest',
-        inline: 'center',
-      });
-    }
-  }
 }
