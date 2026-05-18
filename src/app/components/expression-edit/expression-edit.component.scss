@@ -1,1 +1,33 @@
-@import "src/app/components/message-edit/message-edit.component.scss";
+.expression-edit {
+  padding: 20px 24px;
+}
+
+.expression-edit-form {
+  max-width: 600px;
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  mat-form-field {
+    margin-bottom: 8px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.expression-edit-saving {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}

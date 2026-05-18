@@ -73,10 +73,12 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
   }
 
   setSortProperty(activeSortProperty: SortProperty) {
-    if (this.sortSettings.activeSortProperty === activeSortProperty)
+    const isSameProperty = this.sortSettings.activeSortProperty === activeSortProperty;
+    if (isSameProperty) {
       this.sortSettings.reverseSortDirection();
-
-    this.sortSettings.activeSortProperty = activeSortProperty;
+    } else {
+      this.sortSettings.activeSortProperty = activeSortProperty;
+    }
 
     const shouldResort =
       this.sortSettings.activeSortProperty !==
@@ -101,5 +103,13 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
     this.routingService.clearQueryParams();
     this.sortSettings.activeFilterParams = {};
     this.displayedItems = this.sortSettings.getItemsToDisplay(this.allItems);
+  }
+
+  cancelEdit(expression: Expression) {
+    expression.isEditable = false;
+    this.displayedItems = this.sortSettings.getItemsToDisplay(
+      this.allItems,
+      false,
+    );
   }
 }
