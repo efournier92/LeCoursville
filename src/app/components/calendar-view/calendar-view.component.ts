@@ -24,6 +24,8 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   user: User;
   view: string = CalendarView.Month;
   activeDay: Date = new Date();
+  expandedDays: { [key: string]: boolean } = {};
+  maxEventsPerCell = 4;
 
   constructor(
     public dialog: MatDialog,
@@ -56,6 +58,16 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   isEventInActiveMonth(event: RecurringEvent): boolean {
     return event.date.getMonth() === this.viewDate.getMonth();
+  }
+
+  toggleDayExpanded(day: any): void {
+    const key = day.date.toISOString();
+    this.expandedDays[key] = !this.expandedDays[key];
+  }
+
+  getHiddenEventCount(day: any): number {
+    const activeEvents = day.events.filter(e => this.isEventInActiveMonth(e));
+    return Math.max(0, activeEvents.length - this.maxEventsPerCell);
   }
 
   // HELPER METHODS

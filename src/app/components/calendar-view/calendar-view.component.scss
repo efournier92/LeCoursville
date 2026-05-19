@@ -4,6 +4,37 @@
   overflow: hidden;
 }
 
+.cal-cell-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cal-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cal-events-overflow,
+.cal-events-collapse {
+  font-size: 0.75em;
+  color: #3182ce;
+  cursor: pointer;
+  padding: 2px 4px;
+  text-align: center;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(49, 130, 206, 0.1);
+  }
+}
+
+.cal-events-collapse {
+  margin-top: 2px;
+}
+
 .calendar-date {
   max-width: 10in;
   margin: auto;

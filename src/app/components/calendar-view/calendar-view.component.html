@@ -4,24 +4,40 @@
     let-day="day"
     let-locale="locale"
   >
-    <div>
+    <div class="cal-cell-content">
       <div class="cal-cell-top">
         <span class="cal-day-number">{{
           day.date | calendarDate : 'monthViewDayNumber' : locale
         }}</span>
       </div>
-      <small
-        class="mb-1"
-        *ngFor="let event of day.events"
-      >
-        <app-calendar-cell
-          *ngIf="isEventInActiveMonth(event)"
-          [event]="event"
-          [selectedYear]="selectedYear"
-          (personClick)="personClick.emit($event)"
-          (spouseClick)="spouseClick.emit($event)"
-        ></app-calendar-cell>
-      </small>
+      <div class="cal-events-container" [class.expanded]="expandedDays[day.date.toISOString()]">
+        <small
+          class="mb-1"
+          *ngFor="let event of day.events; let i = index"
+        >
+          <app-calendar-cell
+            *ngIf="isEventInActiveMonth(event) && (expandedDays[day.date.toISOString()] || i < maxEventsPerCell)"
+            [event]="event"
+            [selectedYear]="selectedYear"
+            (personClick)="personClick.emit($event)"
+            (spouseClick)="spouseClick.emit($event)"
+          ></app-calendar-cell>
+        </small>
+        <div
+          class="cal-events-overflow"
+          *ngIf="getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]"
+          (click)="toggleDayExpanded(day)"
+        >
+          +{{ getHiddenEventCount(day) }} more
+        </div>
+        <div
+          class="cal-events-collapse"
+          *ngIf="expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0"
+          (click)="toggleDayExpanded(day)"
+        >
+          Show less
+        </div>
+      </div>
     </div>
   </ng-template>
   <div class="calendar-scroll-container">
