@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ContactCard } from 'src/app/services/contacts-from-people.service';
+import { NameUtilsService } from 'src/app/services/name-utils.service';
 
 @Component({
   selector: 'app-contact-card',
@@ -15,6 +16,8 @@ export class ContactCardComponent implements OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
+  constructor(private nameUtils: NameUtilsService) {}
+
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
@@ -28,9 +31,26 @@ export class ContactCardComponent implements OnDestroy {
 
   getSpouseFullName(): string {
     if (!this.contactCard?.spouse) return '';
-    const first = this.contactCard.spouse.name.firstPreferred || this.contactCard.spouse.name.firstGiven || '';
-    const last = this.contactCard.spouse.name.last || '';
-    return `${first} ${last}`.trim();
+    const names = this.nameUtils.formatCoupleNames(this.contactCard.person.name, this.contactCard.spouse?.name || null);
+    return names.second;
+  }
+
+  getCoupleFirstNames(): { first: string; second: string } | null {
+    if (!this.contactCard?.person) return null;
+    const first1 = this.contactCard.person.name.firstPreferred || this.contactCard.person.name.firstGiven || '';
+    const last1 = this.contactCard.person.name.last || '';
+    if (!this.contactCard.spouse) return null;
+    const first2 = this.contactCard.spouse.name.firstPreferred || this.contactCard.spouse.name.firstGiven || '';
+    const last2 = this.contactCard.spouse.name.last || '';
+    const sameLastName = last1 && last1 === last2;
+    return { first: first1, second: sameLastName ? first2 : '' };
+  }
+
+  hasSameLastName(): boolean {
+    if (!this.contactCard?.person || !this.contactCard?.spouse) return false;
+    const last1 = this.contactCard.person.name.last || '';
+    const last2 = this.contactCard.spouse.name.last || '';
+    return last1 !== '' && last1 === last2;
   }
 
   getPersonId(): string {

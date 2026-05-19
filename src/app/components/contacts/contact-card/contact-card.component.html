@@ -1,7 +1,7 @@
 <div class="contact-card" *ngIf="contactCard" [style.border-left-color]="getClanColor()">
   <div class="card-header">
     <h3 class="person-name">
-      <span class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span><span *ngIf="contactCard.spouse"> & <span class="clickable-name" (click)="onSpouseNameClick()">{{ getSpouseFullName() }}</span></span>
+      <span class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span><span *ngIf="hasSameLastName()" class="couple-ampersand"> & </span><span *ngIf="hasSameLastName()" class="clickable-name" (click)="onSpouseNameClick()">{{ getCoupleFirstNames()?.second }}</span>
     </h3>
   </div>
 
