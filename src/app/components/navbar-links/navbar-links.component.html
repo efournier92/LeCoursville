@@ -7,9 +7,11 @@
     mat-button
     *ngFor="let button of filteredButtons"
     [routerLink]="button.link"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{exact: button.link === '/'}"
   >
     <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
-    <span>{{ button.title }}</span>
+    <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
   </button>
 </div>
 
@@ -21,8 +23,10 @@
     mat-menu-item
     *ngFor="let button of filteredButtons"
     [routerLink]="button.link"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{exact: button.link === '/'}"
   >
     <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
-    <span>{{ button.title }}</span>
+    <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
   </button>
 </div>

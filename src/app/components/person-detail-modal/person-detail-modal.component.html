@@ -15,7 +15,7 @@
       <mat-card class="detail-section">
         <mat-card-content>
           <div class="detail-row" *ngIf="getClanForPerson(person.clanId)">
-            <span class="label">Clan</span>
+            <span class="label">Family</span>
             <a class="value link" (click)="navigateToClan(getClanForPerson(person.clanId)?.name)">{{ getClanForPerson(person.clanId)?.name }}</a>
           </div>
 
@@ -62,7 +62,7 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="detail-section lineage-section" *ngIf="person">
+      <mat-card class="detail-section lineage-section" *ngIf="person && lineageTree.length > 0">
         <mat-card-content>
           <h3>Lineage</h3>
 

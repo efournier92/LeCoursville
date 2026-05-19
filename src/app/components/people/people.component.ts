@@ -441,7 +441,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   getClanDisplayName(clan: string, roots: PersonNode[]): string {
-    return clan + "'s";
+    return clan + "'s Family";
   }
 
   getNodeIndent(node: PersonNode): number {
@@ -459,6 +459,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
   getPersonName(node: PersonNode): string {
     const first = node.person.name.firstPreferred || '';
     const last = node.person.name.last || '';
+    if (node.spouse && last && last === node.spouse.name.last) {
+      return first;
+    }
     return `${first} ${last}`.trim();
   }
 

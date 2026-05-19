@@ -1,4 +1,4 @@
-<div class="people-container d-flex flex-column align-items-center m-3">
+<div class="people-container d-flex flex-column align-items-start m-3">
   <div class="w-100 filter-row">
     <mat-form-field class="filter-people-form-field">
       <mat-label>Filter</mat-label>
@@ -20,7 +20,7 @@
     </mat-form-field>
 
     <mat-form-field class="family-filter-form-field">
-      <mat-label>Clan</mat-label>
+      <mat-label>By Family</mat-label>
       <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
         <mat-option *ngFor="let clan of getFamilies()" [value]="clan.name">{{ clan.name }}</mat-option>
       </mat-select>
@@ -30,13 +30,174 @@
     </mat-form-field>
   </div>
 
-  <div class="w-100" *ngIf="familyGroups.length === 0">
-    <mat-card class="empty-state-card">
-      <mat-card-content>
-        <p *ngIf="filterQuery">No people match your search.</p>
-        <p *ngIf="!filterQuery">No people found.</p>
-      </mat-card-content>
-    </mat-card>
+  <div class="w-100 skeleton-state" *ngIf="familyGroups.length === 0">
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child nested">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child nested">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child nested">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child nested">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child nested">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="skeleton-family">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-tree">
+        <div class="skeleton-row">
+          <div class="skeleton-bar short"></div>
+          <div class="skeleton-bar long"></div>
+        </div>
+        <div class="skeleton-children">
+          <div class="skeleton-child">
+            <div class="skeleton-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="w-100" *ngFor="let group of familyGroups">
@@ -44,7 +205,7 @@
       <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
         <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
       </div>
-      <mat-card class="people-tree-card">
+      <div class="people-tree">
         <div class="first-generation-row" *ngIf="group.firstGeneration.length > 0">
           <ng-container *ngFor="let node of group.firstGeneration">
             <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
@@ -62,7 +223,7 @@
             <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
           </div>
         </div>
-      </mat-card>
+      </div>
     </div>
   </div>
 </div>

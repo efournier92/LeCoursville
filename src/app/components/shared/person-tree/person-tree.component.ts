@@ -29,6 +29,9 @@ export class PersonTreeComponent {
   getPersonName(node: PersonNode): string {
     const first = node.person.name.firstPreferred || node.person.name.firstGiven || '';
     const last = node.person.name.last || '';
+    if (node.spouse && last && last === node.spouse.name.last) {
+      return first;
+    }
     return `${first} ${last}`.trim();
   }
 

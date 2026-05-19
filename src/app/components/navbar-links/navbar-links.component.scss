@@ -1,3 +1,13 @@
 .navbar-link-icon {
     margin-right: 6px;
 }
+
+button span {
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+button.active .first-char {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

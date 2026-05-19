@@ -224,9 +224,6 @@ export class AdminPeopleImportComponent implements OnInit {
 
   private parseDate(value: string, rowNum: number, isBirthday: boolean = false): { date: PersonDate | null; warning: string | null } {
     if (!value) {
-      if (isBirthday) {
-        return { date: { year: 0, month: 1, day: 1 }, warning: null };
-      }
       return { date: null, warning: null };
     }
     const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -241,7 +238,7 @@ export class AdminPeopleImportComponent implements OnInit {
       };
     }
     if (isBirthday) {
-      return { date: { year: 0, month: 1, day: 1 }, warning: `Invalid Birthday format '${value}', expected YYYY-MM-DD` };
+      return { date: null, warning: `Invalid Birthday format '${value}', expected YYYY-MM-DD` };
     }
     return { date: null, warning: `Invalid Anniversary format '${value}', expected YYYY-MM-DD` };
   }
