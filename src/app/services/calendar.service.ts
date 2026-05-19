@@ -41,10 +41,7 @@ export class CalendarService {
     const events: RecurringEvent[] = [];
 
     for (const person of people) {
-      // Skip spouse records (-S) to avoid duplicates
-      if (person.id.endsWith('-S')) continue;
-
-      // Birthday event
+      // Birthday event - process for all including spouses
       if (person.birthday && person.birthday.year > 0) {
         const event = new RecurringEvent();
         event.id = `birth-${person.id}`;
@@ -57,8 +54,8 @@ export class CalendarService {
         events.push(event);
       }
 
-      // Anniversary event
-      if (person.anniversaryDate) {
+      // Anniversary event - only for primary records (not -S), use spouse info for title
+      if (!person.id.endsWith('-S') && person.anniversaryDate) {
         const spouse = people.find(p => p.id === person.spouseId);
         const title = spouse
           ? this.getAnniversaryTitle(person, spouse)

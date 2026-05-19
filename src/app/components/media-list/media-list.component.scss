@@ -7,9 +7,14 @@
   gap: 8px;
 }
 
+.media-list {
+  margin-left: 10px;
+}
+
 .media-list-filters-container {
   margin-bottom: 16px;
   padding: 0 4px;
+  margin-left: 10px;
 }
 
 .media-list-filters-input {
@@ -43,6 +48,7 @@
   width: 100%;
   background: #fff;
   transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+  margin-left: 10px;
 
   &:hover {
     border-color: #c8d0d8;

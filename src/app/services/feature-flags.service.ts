@@ -21,7 +21,6 @@ export class FeatureFlagsService {
     this.flagsLoaded = true;
 
     this.db.object(this.FEATURES_PATH).valueChanges().subscribe((flags: Record<string, FeatureFlag> | null) => {
-      console.log('Loaded feature flags:', flags);
       this.flagsSubject.next(flags || {});
     }, (error) => {
       console.error('Error loading feature flags:', error);
