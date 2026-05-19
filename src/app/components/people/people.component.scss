@@ -73,7 +73,7 @@
 
 .children-container {
   display: flex;
-  padding-left: 30px;
+  padding-left: 25px;
 
   > .generation-bar {
     align-self: stretch;
@@ -126,6 +126,15 @@
   color: #333;
   padding-left: 12px;
   border-left: 8px solid transparent;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.member-count {
+  font-size: 0.65em;
+  font-weight: 300;
+  color: #888;
 }
 
 .first-generation-row {

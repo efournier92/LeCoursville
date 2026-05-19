@@ -19,6 +19,8 @@ interface FamilyGroup {
   displayName: string;
   firstGeneration: PersonNode[];
   roots: PersonNode[];
+  memberCount: number;
+  livingMemberCount: number;
 }
 
 interface TableRow {
@@ -50,6 +52,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   private peopleMap: Map<string, Person> = new Map();
   private clansMap: Map<string, Clan> = new Map();
   private clansByIdMap: Map<string, Clan> = new Map();
+  skeletonIterations = [1,2,3,4,5,6,7,8,9,10];
 
   constructor(
     private peopleService: PeopleService,
@@ -309,7 +312,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
         clan: clan.name,
         displayName: this.getClanDisplayName(clan.name, firstGenFiltered),
         firstGeneration: firstGenFiltered,
-        roots: rootsFiltered
+        roots: rootsFiltered,
+        memberCount: clanPeople.length,
+        livingMemberCount: clanPeople.filter(p => p.isLiving !== false).length
       });
     }
 
@@ -339,7 +344,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
         clan: clan.name,
         displayName: this.getClanDisplayName(clan.name, firstGeneration),
         firstGeneration,
-        roots
+        roots,
+        memberCount: clanPeople.length,
+        livingMemberCount: allClanPeople.filter(p => p.isLiving !== false).length
       });
     }
 

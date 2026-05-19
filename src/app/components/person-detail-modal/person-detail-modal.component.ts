@@ -106,7 +106,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   private tryBuildLineage(): void {
     if (this.person && this.allPeople.length > 0) {
       this.pendingLineageBuild = false;
-      // For spouse records (-S), show lineage based on the regular person
       const lineagePerson = this.isSpouseRecord() ? this.getRegularPerson(this.person) : this.person;
       if (lineagePerson) {
         const visibleIds = this.getVisibleLineageIds(lineagePerson);
@@ -131,16 +130,13 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     const visibleIds = new Set<string>();
     visibleIds.add(person.id);
 
-    // Add spouse
     if (person.spouseId) {
       visibleIds.add(person.spouseId);
     }
 
-    // Walk up ancestors
     const ancestors = this.getAncestorIds(person);
     ancestors.forEach(id => visibleIds.add(id));
 
-    // Walk down descendants
     const descendants = this.getDescendantIds(person);
     descendants.forEach(id => visibleIds.add(id));
 
@@ -191,32 +187,24 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   }
 
   private buildLineageTreeFromIds(visibleIds: Set<string>, selectedPersonId: string): any[] {
-    // For spouse records, we show the regular person in the tree line but the spouse is bold
     const isSpouseViewer = this.isSpouseRecord();
     const regularPerson = isSpouseViewer ? this.getRegularPerson(this.person!) : null;
 
-    // Person for tree building - use regular person so they appear in the line
     const personForTree = isSpouseViewer ? (regularPerson || this.person) : (this.allPeople.find(p => p.id === selectedPersonId) || this.person);
     if (!personForTree) return [];
 
-    // Build node: for spouse viewer, person is regular and spouse is spouse person
     const personNode = this.buildNodeForPerson(personForTree);
     if (isSpouseViewer && regularPerson) {
-      // Swap: show regular person as person, spouse person as their spouse
       const spousePerson = this.person;
       personNode.person = regularPerson;
       personNode.spouse = spousePerson;
-      // Attach descendants from regular person
       this.attachDescendantsFromPerson(personNode, regularPerson, visibleIds);
     } else {
       this.attachDescendants(personNode, visibleIds);
     }
 
-    // Attach ancestors above - chain is [immediate parent, ..., oldest ancestor]
-    // We need oldest at top, so iterate backwards
     const ancestorChain = this.getAncestorChain(this.allPeople.find(p => p.id === selectedPersonId) || this.person);
     if (ancestorChain.length > 0) {
-      // Start with oldest ancestor (last in array) as the root
       const oldestAncestor = ancestorChain[ancestorChain.length - 1];
       const oldestSpouseId = oldestAncestor.id.startsWith('0-') && !oldestAncestor.id.endsWith('-S')
         ? '0-S'
@@ -224,7 +212,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
       const oldestSpouse = this.allPeople.find(p => p.id === oldestSpouseId) || null;
       const rootNode = { person: oldestAncestor, spouse: oldestSpouse, children: [] };
 
-      // Build downward: chain from oldest to immediate parent
       let parentNode = rootNode;
       for (let i = ancestorChain.length - 2; i >= 0; i--) {
         const anc = ancestorChain[i];
@@ -237,7 +224,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
         parentNode = childNode;
       }
 
-      // Attach person (with descendants if not spouse viewer) as child of immediate parent
       parentNode.children = [personNode];
 
       return [rootNode];
@@ -264,7 +250,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   }
 
   private buildNodeForPerson(person: Person): any {
-    // Gen 0 IDs like '0-0' have spouse '0-S' (not '0-0-S')
     const spouseId = person.id.endsWith('-S')
       ? person.id.replace('-S', '')
       : (person.id.startsWith('0-') && !person.id.endsWith('-S') ? '0-S' : person.id + '-S');
@@ -404,6 +389,12 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
 
   getPersonGeneration(person: Person): number {
     return person.generationNumber || 0;
+  }
+
+  navigateToCalendar(date: { year: number; month: number; day: number } | null): void {
+    if (date) {
+      this.router.navigate(['/calendar'], { queryParams: { month: date.month } });
+    }
   }
 
   onLineagePersonClick(personId: string): void {

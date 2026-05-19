@@ -31,7 +31,7 @@
   </div>
 
   <div class="w-100 skeleton-state" *ngIf="familyGroups.length === 0">
-    <div class="skeleton-family">
+    <div class="skeleton-family" *ngFor="let i of skeletonIterations">
       <div class="skeleton-header"></div>
       <div class="skeleton-tree">
         <div class="skeleton-row">
@@ -46,153 +46,6 @@
             <div class="skeleton-bar"></div>
           </div>
           <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="skeleton-family">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
-        </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
             <div class="skeleton-bar"></div>
           </div>
         </div>
@@ -204,6 +57,7 @@
     <div class="family-group">
       <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
         <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
+        <span class="member-count" *ngIf="group.livingMemberCount > 0">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Living Member' : 'Living Members' }}</span>
       </div>
       <div class="people-tree">
         <div class="first-generation-row" *ngIf="group.firstGeneration.length > 0">

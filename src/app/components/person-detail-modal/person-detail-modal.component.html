@@ -31,7 +31,7 @@
 
           <div class="detail-row" *ngIf="person.birthday">
             <span class="label">Birthday</span>
-            <span class="value">{{ formatDate(person.birthday) }}</span>
+            <span class="value link" (click)="navigateToCalendar(person.birthday)">{{ formatDate(person.birthday) }}</span>
             <span class="age" *ngIf="calculateAge()">({{ calculateAge() }})</span>
           </div>
         </mat-card-content>
@@ -46,7 +46,7 @@
           </div>
           <div class="detail-row" *ngIf="person.anniversaryDate">
             <span class="label">Anniversary</span>
-            <span class="value">{{ formatDate(person.anniversaryDate) }}</span>
+            <span class="value link" (click)="navigateToCalendar(person.anniversaryDate)">{{ formatDate(person.anniversaryDate) }}</span>
           </div>
         </mat-card-content>
       </mat-card>
