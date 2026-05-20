@@ -177,8 +177,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     if (this.filterQuery.trim()) {
       const query = this.filterQuery.toLowerCase();
       filtered = filtered.filter(p =>
-        p.name.firstGiven && p.name.firstGiven.toLowerCase().includes(query) ||
-        (p.name.firstPreferred && p.name.firstPreferred.toLowerCase().includes(query))
+        Object.values(p.name).some(val => val && val.toLowerCase().includes(query))
       );
     }
     if (this.selectedFamily) {
@@ -212,15 +211,13 @@ export class PeopleComponent implements OnInit, OnDestroy {
     for (const p of this.allPeople) {
       if (p.id.endsWith('-S')) {
         // When spouse name matches, add the regular person ID instead
-        if (p.name.firstGiven && p.name.firstGiven.toLowerCase().includes(query) ||
-            (p.name.firstPreferred && p.name.firstPreferred.toLowerCase().includes(query))) {
+        if (Object.values(p.name).some(val => val && val.toLowerCase().includes(query))) {
           const regularId = p.id.replace('-S', '');
           matched.add(regularId);
         }
         continue;
       }
-      if (p.name.firstGiven && p.name.firstGiven.toLowerCase().includes(query) ||
-          (p.name.firstPreferred && p.name.firstPreferred.toLowerCase().includes(query))) {
+      if (Object.values(p.name).some(val => val && val.toLowerCase().includes(query))) {
         matched.add(p.id);
       }
     }

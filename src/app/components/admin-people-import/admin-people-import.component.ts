@@ -196,7 +196,7 @@ export class AdminPeopleImportComponent implements OnInit {
   }
 
   private resolveClanId(values: string[], headerMap: Record<string, number>, colorHex: string | null): string | null {
-    const clanName = this.getValue(values, headerMap, 'Clan').trim();
+    const clanName = this.getValue(values, headerMap, 'Family').trim();
     const clanIdFromCsv = this.getNullable(values, headerMap, 'ID');
     if (!clanName) return null;
 

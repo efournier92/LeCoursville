@@ -81,7 +81,7 @@ export const secrets = {
 
 ### 1. Build For Production
 
-- `ng build --configuration=production`
+- `npx ng build --configuration=production`
 
 ### 2. Select an Environment
 
