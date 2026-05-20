@@ -1,5 +1,5 @@
-<div class="people-container d-flex flex-column align-items-start m-3">
-  <div class="w-100 filter-row">
+<div class="people-container">
+  <app-page-toolbar>
     <mat-form-field class="filter-people-form-field">
       <mat-label>Filter</mat-label>
       <input
@@ -28,9 +28,9 @@
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
-  </div>
+  </app-page-toolbar>
 
-  <div class="w-100 skeleton-state" *ngIf="familyGroups.length === 0">
+  <div class="w-100 skeleton-state" *ngIf="familyGroups.length === 0 && !filterQuery.trim()">
     <div class="skeleton-family" *ngFor="let i of skeletonIterations">
       <div class="skeleton-header"></div>
       <div class="skeleton-tree">
@@ -53,11 +53,16 @@
     </div>
   </div>
 
+  <app-no-results-message
+    *ngIf="familyGroups.length === 0 && filterQuery.trim()"
+    [searchTerm]="filterQuery"
+  ></app-no-results-message>
+
   <div class="w-100" *ngFor="let group of familyGroups">
     <div class="family-group">
       <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
         <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
-        <span class="member-count" *ngIf="group.livingMemberCount > 0">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Living Member' : 'Living Members' }}</span>
+        <span class="member-count" *ngIf="group.livingMemberCount > 0">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
       </div>
       <div class="people-tree">
         <div class="first-generation-row" *ngIf="group.firstGeneration.length > 0">

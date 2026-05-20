@@ -1,7 +1,7 @@
 .expressions-component {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 12px;
 }
 
 .expressions-header-container {
@@ -130,6 +130,9 @@
 .expressions-list {
   display: flex;
   flex-direction: column;
+  padding: 16px 4px 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .expression-card-wrapper {

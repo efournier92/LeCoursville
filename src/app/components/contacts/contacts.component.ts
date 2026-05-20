@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
 import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { ContactCard } from "src/app/services/contacts-from-people.service";
 import { ContactsFromPeopleService } from "src/app/services/contacts-from-people.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
@@ -18,6 +19,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   selectedClan = '';
   clans: Clan[] = [];
   selectedPersonId: string | null = null;
+  skeletonIterations = [1, 2, 3, 4, 5, 6];
 
   private subscriptions: Subscription[] = [];
 
@@ -27,6 +29,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     private analyticsService: AnalyticsService,
     public router: Router,
     private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -108,7 +111,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.selectedClan = '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {}
+      queryParams: { clan: null },
+      queryParamsHandling: 'merge'
     });
   }
 

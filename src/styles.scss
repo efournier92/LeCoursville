@@ -44,6 +44,8 @@ body {
   @include angular-material-theme($light-theme);
   margin: 0;
   height: 100%;
+  --color-app-bg: #f5f6fa;
+  color: #32383f;
 }
 
 .mat-list-item-content {

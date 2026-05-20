@@ -29,7 +29,7 @@
             <span class="value mono">{{ person.id }}</span>
           </div>
 
-          <div class="detail-row" *ngIf="person.birthday">
+          <div class="detail-row" *ngIf="person.birthday && person.birthday.year !== 0">
             <span class="label">Birthday</span>
             <span class="value link" (click)="navigateToCalendar(person.birthday)">{{ formatDate(person.birthday) }}</span>
             <span class="age" *ngIf="calculateAge()">({{ calculateAge() }})</span>

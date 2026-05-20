@@ -33,6 +33,8 @@ export class PhotosComponent implements OnInit {
   photoGallery: Element;
   photoUploads: PhotoUpload[] = [];
   sortType = "random";
+  skeletonIterations = [1, 2, 3];
+  selectedPersonId: string;
 
   private loadedPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject(
     [],
@@ -181,7 +183,10 @@ export class PhotosComponent implements OnInit {
     });
   }
 
-  sortPhotosBy(sortFunction: any): void {
+  sortPhotosBy(sortFunction: any, sortType?: string): void {
+    if (sortType) {
+      this.sortType = sortType;
+    }
     this.showSpinner = true;
     this.loadablePhotos = this.allPhotos.sort(sortFunction);
     this.loadedPhotos = [];
@@ -247,6 +252,22 @@ export class PhotosComponent implements OnInit {
     this.analyticsService.logEvent("photos_query_clear", {
       userId: this.user?.id,
     });
+  }
+
+  onSearchTermChange(value: string): void {
+    if (value.trim()) {
+      this.searchPhotos(value);
+    } else {
+      this.clearSearchTerm();
+    }
+  }
+
+  openPersonDetail(personId: string): void {
+    this.selectedPersonId = personId;
+  }
+
+  closeModal(): void {
+    this.selectedPersonId = null;
   }
 
   // HELPER METHODS

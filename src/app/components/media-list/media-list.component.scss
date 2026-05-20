@@ -11,29 +11,6 @@
   margin-left: 10px;
 }
 
-.media-list-filters-container {
-  margin-bottom: 16px;
-  padding: 0 4px;
-  margin-left: 10px;
-}
-
-.media-list-filters-input {
-  width: 100%;
-
-  .mat-mdc-form-field-flex {
-    height: 40px;
-  }
-
-  .mdc-text-field--outlined {
-    --mdc-outlined-text-field-container-shape: 8px;
-  }
-
-  mat-icon.mat-icon {
-    color: #9e9e9e;
-    font-size: 1em;
-  }
-}
-
 .media-types-checkboxes-container {
   margin-bottom: 1em;
 }
@@ -44,6 +21,7 @@
   padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid #e2e8ec;
+  border-left: 4px solid #2d5a27;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   width: 100%;
   background: #fff;
@@ -51,8 +29,9 @@
   margin-left: 10px;
 
   &:hover {
-    border-color: #c8d0d8;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border-color: #4a8f42;
+    background-color: #f4f9f4;
+    box-shadow: 0 3px 12px rgba(45, 90, 39, 0.18);
     transform: translateY(-1px);
   }
 
@@ -147,6 +126,73 @@
   display: inline;
 }
 
-.media-list-filters-input {
-  padding-right: 12px;
+.media-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.media-skeleton-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8ec;
+  border-left: 4px solid #e2e8ec;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  background: #fafafa;
+  margin-left: 10px;
+}
+
+.skeleton-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-details {
+  margin-left: 14px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+
+  &.title {
+    width: 60%;
+    height: 14px;
+  }
+
+  &.artist {
+    width: 40%;
+    height: 12px;
+  }
+
+  &.location {
+    width: 30%;
+    height: 11px;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

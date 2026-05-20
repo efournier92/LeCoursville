@@ -1,10 +1,10 @@
 <div class="media-list-container row">
-  <form class="media-list-filters-container">
+  <app-page-toolbar>
     <mat-form-field
       class="media-list-filters-input"
       appearance="standard"
     >
-      <mat-label><mat-icon>search</mat-icon> Search</mat-label>
+      <mat-label>Filter</mat-label>
       <input
         matInput
         name="media-list-filters-input-search-query"
@@ -12,16 +12,26 @@
         [(ngModel)]="searchQuery"
       />
     </mat-form-field>
+  </app-page-toolbar>
 
-    <!-- <mat-form-field class="media-list-filters-input" appearance="standard">
-            <mat-label>Sort By</mat-label>
-            <mat-select (selectionChange)="onSortBySelectionChange($event)">
-                <mat-option *ngFor="let type of sortTypes" [value]="type">
-                    {{ type }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field> -->
-  </form>
+  <div
+    class="media-skeleton-list"
+    *ngIf="isLoading"
+  >
+    <div
+      class="media-skeleton-item"
+      *ngFor="let i of skeletonIterations"
+    >
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-details">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line artist"></div>
+        <div class="skeleton-line location"></div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
   <div
     class="row d-flex flex-column"
     *ngFor="let media of filteredMedia"
@@ -55,4 +65,10 @@
       </div>
     </button>
   </div>
+</ng-container>
+
+  <app-no-results-message
+    *ngIf="!isLoading && filteredMedia.length === 0 && searchQuery.trim()"
+    [searchTerm]="searchQuery"
+  ></app-no-results-message>
 </div>

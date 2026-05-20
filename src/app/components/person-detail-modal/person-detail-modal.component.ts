@@ -106,7 +106,10 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   private tryBuildLineage(): void {
     if (this.person && this.allPeople.length > 0) {
       this.pendingLineageBuild = false;
-      const lineagePerson = this.isSpouseRecord() ? this.getRegularPerson(this.person) : this.person;
+      let lineagePerson = this.person;
+      if (this.isSpouseRecord()) {
+        lineagePerson = this.getRegularPerson(this.person) || this.allPeople.find(p => p.id === this.person!.spouseId) || this.person;
+      }
       if (lineagePerson) {
         const visibleIds = this.getVisibleLineageIds(lineagePerson);
         this.lineageTree = this.buildLineageTreeFromIds(visibleIds, lineagePerson.id);
@@ -188,22 +191,44 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
 
   private buildLineageTreeFromIds(visibleIds: Set<string>, selectedPersonId: string): any[] {
     const isSpouseViewer = this.isSpouseRecord();
-    const regularPerson = isSpouseViewer ? this.getRegularPerson(this.person!) : null;
 
-    const personForTree = isSpouseViewer ? (regularPerson || this.person) : (this.allPeople.find(p => p.id === selectedPersonId) || this.person);
-    if (!personForTree) return [];
-
-    const personNode = this.buildNodeForPerson(personForTree);
-    if (isSpouseViewer && regularPerson) {
-      const spousePerson = this.person;
-      personNode.person = regularPerson;
-      personNode.spouse = spousePerson;
-      this.attachDescendantsFromPerson(personNode, regularPerson, visibleIds);
-    } else {
-      this.attachDescendants(personNode, visibleIds);
+    // For spouse viewers: first try standard ID lookup, then fall back to spouse's ID
+    // (the fallback is needed for 0-S case where getRegularPerson('0-S') → '0' has no match,
+    // but this.person.spouseId → '0-0' does)
+    let regularPerson: Person | null = null;
+    if (isSpouseViewer) {
+      regularPerson = this.getRegularPerson(this.person!) || this.allPeople.find(p => p.id === this.person!.spouseId) || null;
     }
 
-    const ancestorChain = this.getAncestorChain(this.allPeople.find(p => p.id === selectedPersonId) || this.person);
+    const personForTree = isSpouseViewer ? (regularPerson || this.person) : (this.allPeople.find(p => p.id === selectedPersonId) || this.person);
+    if (!personForTree) {
+      return [];
+    }
+
+    // Build the root node and determine what ID to attach descendants from
+    let personNode = this.buildNodeForPerson(personForTree);
+    let descendantSourceId = personForTree.id;
+
+    if (isSpouseViewer && regularPerson) {
+      // Normal case: swap node so regular person is primary, spouse is the spouse field
+      personNode.person = regularPerson;
+      personNode.spouse = this.person;
+      descendantSourceId = regularPerson.id;
+    } else if (isSpouseViewer) {
+      // 0-S edge case: regularPerson lookup failed, find the regular person via spouseId
+      // and build the tree rooted there. The spouse record (0-S) becomes the spouse in the node.
+      const regularPersonFromSpouse = this.allPeople.find(p => p.id === this.person!.spouseId) || null;
+      if (regularPersonFromSpouse) {
+        personNode.person = regularPersonFromSpouse;
+        personNode.spouse = this.person;
+        descendantSourceId = regularPersonFromSpouse.id;
+      }
+    }
+
+    this.attachDescendantsFromPerson(personNode, descendantSourceId, visibleIds);
+
+    // Build ancestor chain and wrap in hierarchy if this person has parents
+    const ancestorChain = this.getAncestorChain(personForTree);
     if (ancestorChain.length > 0) {
       const oldestAncestor = ancestorChain[ancestorChain.length - 1];
       const oldestSpouseId = oldestAncestor.id.startsWith('0-') && !oldestAncestor.id.endsWith('-S')
@@ -225,7 +250,6 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
       }
 
       parentNode.children = [personNode];
-
       return [rootNode];
     }
 
@@ -237,7 +261,7 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     let current: Person | null = person;
     const visited = new Set<string>();
 
-    while (current && current.generationNumber > 0 && current.parentIds && current.parentIds.length > 0) {
+    while (current && current.generationNumber >= 0 && current.parentIds && current.parentIds.length > 0) {
       const parentId = current.parentIds[0];
       if (visited.has(parentId)) break;
       visited.add(parentId);
@@ -273,11 +297,12 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     }
   }
 
-  private attachDescendantsFromPerson(node: any, sourcePerson: Person, visibleIds: Set<string>): void {
+  private attachDescendantsFromPerson(node: any, sourcePersonOrId: Person | string, visibleIds: Set<string>): void {
     const children: Person[] = [];
+    const sourceId = typeof sourcePersonOrId === 'string' ? sourcePersonOrId : sourcePersonOrId.id;
     for (const p of this.allPeople) {
       if (p.id.endsWith('-S')) continue;
-      if (p.parentIds && p.parentIds.includes(sourcePerson.id) && visibleIds.has(p.id)) {
+      if (p.parentIds && p.parentIds.includes(sourceId) && visibleIds.has(p.id)) {
         children.push(p);
       }
     }

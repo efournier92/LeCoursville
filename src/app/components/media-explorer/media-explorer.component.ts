@@ -18,7 +18,7 @@ import { PromptModalService } from 'src/app/services/prompt-modal.service';
 })
 export class MediaExplorerComponent implements OnInit {
   @Input() mediaTypesToShow: string;
-
+  
   user: User;
   // allMedia: UploadableMedia[] = [];
   loadedMedia: UploadableMedia[];

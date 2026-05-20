@@ -1,0 +1,15 @@
+.no-results-message {
+  text-align: left;
+  padding: 48px 32px;
+  color: #666;
+  font-size: 1.1em;
+
+  &.centered {
+    text-align: center;
+  }
+
+  p {
+    margin: 0;
+    font-style: italic;
+  }
+}

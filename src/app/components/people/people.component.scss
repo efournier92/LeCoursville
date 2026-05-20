@@ -1,28 +1,15 @@
 .people-container {
   width: 100%;
-  max-width: calc(100% - 24px);
-  margin: 0;
+  background: var(--color-app-bg);
+  padding: 12px;
 }
 
-.filter-row {
-  display: flex;
-  gap: 16px;
-  padding: 0 4px;
-  flex-wrap: wrap;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 900px;
-  margin: 0;
-}
-
-.filter-people-form-field {
-  flex: 1;
-  min-width: 140px;
-}
-
+.filter-people-form-field,
 .family-filter-form-field {
-  flex: 1;
-  min-width: 140px;
+  flex: 0 0 auto;
+  width: 160px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .people-tree {
@@ -87,7 +74,7 @@
 }
 
 .person-info {
-  padding: 0.75em 0;
+  padding: 0.6em 0;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -96,23 +83,26 @@
 
 .person-name {
   font-size: 1rem;
-  font-weight: 450;
-  color: #333;
-  letter-spacing: 0.01em;
+  font-weight: 500;
+  color: #32383f;
+  letter-spacing: 0.015em;
+  line-height: 1.4;
 
   &.clickable:hover {
     text-decoration: underline;
   }
 
   &.deceased {
-    color: #aaa;
+    color: #959595;
+    font-style: italic;
   }
 }
 
 .spouse-separator {
-  color: #bbb;
+  color: #c0c0c0;
   margin: 0 6px;
   flex-shrink: 0;
+  font-weight: 300;
 }
 
 .family-group {
@@ -123,7 +113,6 @@
   font-size: 1.2em;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #333;
   padding-left: 12px;
   border-left: 8px solid transparent;
   display: flex;
@@ -135,6 +124,7 @@
   font-size: 0.65em;
   font-weight: 300;
   color: #888;
+  font-style: italic;
 }
 
 .first-generation-row {
@@ -143,27 +133,28 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 12px 16px 8px 0;
-  font-size: 1rem;
-  color: #333;
+  color: #32383f;
 
   .first-gen-person {
     font-size: 1rem;
-    font-weight: 450;
+    font-weight: 500;
+    letter-spacing: 0.01em;
     cursor: pointer;
     transition: color 0.15s;
 
     &:hover {
-      color: #1976d2;
+      color: #2d5a27;
       text-decoration: underline;
     }
 
     &.deceased {
-      color: #aaa;
+      color: #959595;
+      font-style: italic;
     }
   }
 
   .spouse-separator {
-    color: #bbb;
+    color: #c0c0c0;
     margin: 0 4px;
   }
 }
@@ -185,8 +176,20 @@
   border-radius: 4px;
 }
 
+.filter-no-results {
+  text-align: center;
+  padding: 48px 32px;
+  color: #666;
+  font-size: 1.1em;
+
+  p {
+    margin: 0;
+    font-style: italic;
+  }
+}
+
 .skeleton-state {
-  background: #fafafa;
+  background: var(--color-app-bg);
   border-radius: 4px;
   padding: 16px;
   max-width: 900px;
@@ -201,8 +204,8 @@
 }
 
 .skeleton-header {
-  height: 24px;
-  width: 120px;
+  height: 16px;
+  width: 60px;
   background: #e0e0e0;
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
@@ -212,14 +215,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-left: 40px;
+  padding-left: 16px;
 }
 
 .skeleton-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 6px;
+  padding: 4px 0;
 }
 
 .skeleton-bar {
@@ -227,9 +230,10 @@
   background: #e0e0e0;
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
+  width: 16em;
 
-  &.short { width: 80px; }
-  &.long { width: 160px; }
+  &.short { width: 40px; }
+  &.long { width: 80px; }
 }
 
 .skeleton-children {

@@ -103,7 +103,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: {}
+        queryParams: { filter: null },
+        queryParamsHandling: 'merge'
       });
     }
     this.applyFilter();
@@ -119,7 +120,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: {}
+        queryParams: { clan: null },
+        queryParamsHandling: 'merge'
       });
     }
     this.applyFilter();
@@ -129,7 +131,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.selectedFamily = '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {}
+      queryParams: { clan: null },
+      queryParamsHandling: 'merge'
     });
   }
 

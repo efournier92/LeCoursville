@@ -1,5 +1,5 @@
 <div class="contacts-container">
-  <div class="w-100 filter-row">
+  <app-page-toolbar>
     <mat-form-field class="filter-people-form-field">
       <mat-label>Filter</mat-label>
       <input
@@ -20,7 +20,7 @@
     </mat-form-field>
 
     <mat-form-field class="family-filter-form-field">
-      <mat-label>Clan</mat-label>
+      <mat-label>By Family</mat-label>
       <mat-select [(value)]="selectedClan" (selectionChange)="onClanChange()" panelClass="clan-select-panel">
         <mat-option *ngFor="let clan of getClans()" [value]="clan.name">{{ clan.name }}</mat-option>
       </mat-select>
@@ -28,9 +28,37 @@
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
+  </app-page-toolbar>
+
+  <div class="contacts-skeleton-grid" *ngIf="contacts.length === 0 && !searchTerm && !selectedClan">
+    <div
+      class="contacts-skeleton-card"
+      *ngFor="let i of skeletonIterations"
+    >
+      <div class="skeleton-header">
+        <div class="skeleton-name-line"></div>
+      </div>
+      <div class="skeleton-content">
+        <div class="skeleton-section">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line"></div>
+        </div>
+        <div class="skeleton-section">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+        <div class="skeleton-section">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="contacts-grid">
+  <div class="contacts-grid" *ngIf="contacts.length > 0">
     <app-contact-card
       *ngFor="let card of contacts"
       [contactCard]="card"
@@ -39,10 +67,10 @@
     </app-contact-card>
   </div>
 
-  <div class="empty-state" *ngIf="contacts.length === 0">
-    <p *ngIf="searchTerm">No contacts match your search.</p>
-    <p *ngIf="!searchTerm">No contacts found.</p>
-  </div>
+  <app-no-results-message
+    *ngIf="contacts.length === 0 && (searchTerm || selectedClan) && searchTerm"
+    [searchTerm]="searchTerm"
+  ></app-no-results-message>
 </div>
 
 <app-person-detail-modal

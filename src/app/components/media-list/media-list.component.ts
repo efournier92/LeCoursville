@@ -24,6 +24,8 @@ export class MediaListComponent implements OnInit {
   searchQuery: string;
   sortTypes: string[];
   selectedSortType: string;
+  isLoading = true;
+  skeletonIterations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   constructor(
     private authService: AuthService,
@@ -59,6 +61,11 @@ export class MediaListComponent implements OnInit {
         this.allMedia,
       );
       this.filteredMedia = this.sortMedia(this.filteredMedia);
+      setTimeout(() => {
+        if (this.filteredMedia && this.filteredMedia.length > 0) {
+          this.isLoading = false;
+        }
+      });
       function randomDate(start, end) {
         return new Date(
           start.getTime() + Math.random() * (end.getTime() - start.getTime()),

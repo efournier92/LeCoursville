@@ -1,14 +1,7 @@
-<div class="expressions-component m-3">
-  <div class="expressions-header-container">
-    <div class="expressions-header">
-      {{ headerQuoteText }}
-    </div>
-    <div class="expressions-attribution">{{ headerAttributionText }}</div>
-  </div>
-
-  <div class="expressions-controls">
+<div class="expressions-component">
+  <app-page-toolbar>
     <mat-form-field class="search-field">
-      <mat-label><mat-icon>search</mat-icon> Search</mat-label>
+      <mat-label>Filter</mat-label>
       <input
         matInput
         type="text"
@@ -63,7 +56,7 @@
     >
       Show All
     </button>
-  </div>
+  </app-page-toolbar>
 
   <mat-menu #sortMenu="matMenu">
     <button
@@ -115,4 +108,9 @@
       </app-expression-edit>
     </div>
   </div>
+
+  <app-no-results-message
+    *ngIf="displayedItems.length === 0 && sortSettings.activeFilterQuery && !isLoading"
+    [searchTerm]="sortSettings.activeFilterQuery"
+  ></app-no-results-message>
 </div>

@@ -27,4 +27,29 @@ export class NameUtilsService {
 
     return { first: `${first1} ${last1}`.trim(), second: `${first2} ${last2}`.trim() };
   }
+
+  /**
+   * Returns couple display: "John & Mary Smith" when same last name,
+   * "John Smith & Mary Jones" when different last names,
+   * or just the person's full name when no spouse.
+   */
+  getCoupleNames(person: { name: { firstPreferred?: string | null; firstGiven?: string | null; last?: string | null } }, spouse: { name: { firstPreferred?: string | null; firstGiven?: string | null; last?: string | null } } | null): { first: string; second: string; sharedLastName?: string } | null {
+    if (!person?.name) return null;
+
+    const first1 = person.name.firstPreferred || person.name.firstGiven || '';
+    const last1 = person.name.last || '';
+
+    if (!spouse?.name) {
+      return { first: `${first1} ${last1}`.trim(), second: '' };
+    }
+
+    const first2 = spouse.name.firstPreferred || spouse.name.firstGiven || '';
+    const last2 = spouse.name.last || '';
+
+    if (last1 && last1 === last2) {
+      return { first: first1, second: first2, sharedLastName: last1 };
+    }
+
+    return { first: `${first1} ${last1}`.trim(), second: `${first2} ${last2}`.trim() };
+  }
 }

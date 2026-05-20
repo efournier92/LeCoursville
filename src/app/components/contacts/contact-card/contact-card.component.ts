@@ -29,12 +29,6 @@ export class ContactCardComponent implements OnDestroy {
     return `${first} ${last}`.trim();
   }
 
-  getSpouseFullName(): string {
-    if (!this.contactCard?.spouse) return '';
-    const names = this.nameUtils.formatCoupleNames(this.contactCard.person.name, this.contactCard.spouse?.name || null);
-    return names.second;
-  }
-
   getCoupleFirstNames(): { first: string; second: string } | null {
     if (!this.contactCard?.person) return null;
     const first1 = this.contactCard.person.name.firstPreferred || this.contactCard.person.name.firstGiven || '';
@@ -46,11 +40,23 @@ export class ContactCardComponent implements OnDestroy {
     return { first: first1, second: sameLastName ? first2 : '' };
   }
 
+  getSharedLastName(): string {
+    if (!this.contactCard?.person || !this.contactCard?.spouse) return '';
+    const last1 = this.contactCard.person.name.last || '';
+    const last2 = this.contactCard.spouse.name.last || '';
+    return (last1 && last1 === last2) ? last1 : '';
+  }
+
   hasSameLastName(): boolean {
     if (!this.contactCard?.person || !this.contactCard?.spouse) return false;
     const last1 = this.contactCard.person.name.last || '';
     const last2 = this.contactCard.spouse.name.last || '';
     return last1 !== '' && last1 === last2;
+  }
+
+  getCoupleNames(): { first: string; second: string } | null {
+    if (!this.contactCard?.person) return null;
+    return this.nameUtils.getCoupleNames(this.contactCard.person, this.contactCard.spouse);
   }
 
   getPersonId(): string {
@@ -114,7 +120,6 @@ export class ContactCardComponent implements OnDestroy {
     if (!this.contactCard) return false;
     const items = type === 'email' ? this.contactCard.emails : this.contactCard.phones;
     if (items.length <= 1) return false;
-    // If labels are all the same, no conflict - owner prefix not needed to distinguish
     const firstLabel = items[0]?.label || null;
     return !items.some(item => (item.label || null) !== firstLabel);
   }

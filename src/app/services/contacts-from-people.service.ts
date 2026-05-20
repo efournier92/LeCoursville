@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, combineLatest, Subject, ReplaySubject } from 'rxjs';
+import { map, takeUntil, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Person, Email, Phone } from 'src/app/models/person';
 import { Clan } from 'src/app/models/clan';
 import { Address } from 'src/app/models/address';
@@ -21,7 +21,9 @@ export interface ContactCard {
 })
 export class ContactsFromPeopleService {
   private contactsSource: BehaviorSubject<ContactCard[]> = new BehaviorSubject<ContactCard[]>([]);
+  private dataReadySource = new ReplaySubject<void>(1);
   contacts$: Observable<ContactCard[]> = this.contactsSource.asObservable();
+  dataReady$ = this.dataReadySource.asObservable();
 
   constructor(
     private peopleService: PeopleService,
@@ -38,6 +40,7 @@ export class ContactsFromPeopleService {
       map(([people, clans]) => this.buildContactCards(people, clans))
     ).subscribe(cards => {
       this.contactsSource.next(cards);
+      this.dataReadySource.next();
     });
   }
 
