@@ -94,7 +94,7 @@ export class PhotosService {
     const photo: Photo = new Photo();
     photo.id = this.db.createPushId();
     photo.dateAdded = new Date();
-    photo.uploadedBy = this.user.id;
+    photo.uploadedBy = this.user?.id || 'anonymous';
     photo.isMessageAttachment = isMessageAttachment;
     photo.extension = file.name.split('.').pop();
     photo.path = `${imageBucket}/${photo.id}.${photo.extension}`;
@@ -107,7 +107,7 @@ export class PhotosService {
           url => {
             const photosDb: AngularFireList<object> = this.db.list(imageBucket);
             photo.url = url;
-            // photosDb.update(photo.id, photo);
+            photosDb.update(photo.id, photo);
             photoUploadSource.next(url);
           }
         );

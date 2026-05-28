@@ -21,6 +21,8 @@ import { PeopleComponent } from './components/people/people.component';
 import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
 import { AdminClansComponent } from './components/admin-clans/admin-clans.component';
 import { AdminCalendarsComponent } from './components/admin-calendars/admin-calendars.component';
+import { PublicUploadComponent } from './components/public-upload/public-upload.component';
+import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
 
 const routes: Routes =
   [
@@ -118,6 +120,10 @@ const routes: Routes =
           component: AdminCalendarsComponent,
         },
         {
+          path: 'uploads',
+          component: AdminUserUploadsComponent,
+        },
+        {
           path: '',
           redirectTo: 'users',
           pathMatch: 'full'
@@ -127,6 +133,11 @@ const routes: Routes =
     {
       path: 'feature-disabled',
       component: FeatureDisabledComponent,
+    },
+    // PUBLIC UPLOAD
+    {
+      path: 'upload',
+      component: PublicUploadComponent,
     },
     {
       path: '**',

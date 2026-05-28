@@ -55,6 +55,8 @@ export class AppComponent implements OnInit {
   onLogoClick(): void {
     if (this.isAdminOrSuper()) {
       this.routingService.NavigateToAdmin();
+    } else {
+      this.routingService.NavigateToPromotedRoute();
     }
   }
 }

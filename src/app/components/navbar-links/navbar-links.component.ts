@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
-import { FEATURES, ACCOUNT_FEATURE, FeatureConfig } from 'src/app/config/feature-config';
+import { FEATURES, ACCOUNT_FEATURE, UPLOAD_FEATURE, FeatureConfig } from 'src/app/config/feature-config';
 
 export interface LinkableButton {
     title: string;
@@ -18,6 +18,7 @@ export class NavbarLinksComponent implements OnInit {
 
   buttons: LinkableButton[] = [
     ...FEATURES.map(f => ({ title: f.label, link: f.route, icon: f.icon })),
+    { title: UPLOAD_FEATURE.label, link: UPLOAD_FEATURE.route, icon: UPLOAD_FEATURE.icon },
     { title: ACCOUNT_FEATURE.label, link: ACCOUNT_FEATURE.route, icon: ACCOUNT_FEATURE.icon },
   ];
 

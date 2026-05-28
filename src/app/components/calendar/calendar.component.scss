@@ -38,15 +38,15 @@
 
   .mat-mdc-checkbox.mat-mdc-checkbox-checked {
     ::ng-deep .mdc-checkbox__background {
-      background-color: #2d5a27;
-      border-color: #2d5a27;
+      background-color: var(--color-brand-primary);
+      border-color: var(--color-brand-primary);
     }
   }
 }
 
 .calendar-print-button {
   border-radius: 8px;
-  background: #2d5a27;
+  background: var(--color-brand-primary);
   color: #fff;
   width: auto;
   height: 36px;
@@ -58,13 +58,13 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   transition: all 0.15s ease;
-  border: 1px solid #2d5a27;
+  border: 1px solid var(--color-brand-primary);
 }
 
 .calendar-print-button:hover {
-  background: #245020;
+  background: var(--color-brand-primary-dark);
   color: #fff;
-  border-color: #245020;
+  border-color: var(--color-brand-primary-dark);
 }
 
 .calendar-print-button:active {

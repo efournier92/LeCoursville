@@ -60,7 +60,7 @@
   }
 
   &.active {
-    background: #2d5a27;
+    background: var(--color-brand-primary);
     color: #fff;
   }
 }
@@ -130,7 +130,7 @@
       transform: scale(1.05);
 
       .mat-icon {
-        color: #2d5a27;
+        color: var(--color-brand-primary);
       }
     }
   }
@@ -239,7 +239,7 @@ input[type="file"] {
       transform: scale(1.05);
 
       .mat-icon {
-        color: #2d5a27;
+        color: var(--color-brand-primary);
       }
     }
   }

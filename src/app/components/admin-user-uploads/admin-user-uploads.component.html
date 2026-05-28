@@ -1,0 +1,100 @@
+<div class="admin-uploads-container">
+  <mat-card class="uploads-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div>
+          <mat-card-title>User Uploads</mat-card-title>
+          <mat-card-subtitle>Review and moderate guest submissions</mat-card-subtitle>
+        </div>
+        <div class="header-stats">
+          <span class="pending-badge" *ngIf="pendingCount > 0">
+            {{ pendingCount }} pending
+          </span>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="filter-bar">
+        <mat-button-toggle-group [(value)]="filterStatus">
+          <mat-button-toggle value="pending">
+            Pending
+          </mat-button-toggle>
+          <mat-button-toggle value="all">
+            All
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <div class="uploads-list" *ngIf="filteredUploads.length > 0">
+        <div class="upload-row" *ngFor="let upload of filteredUploads">
+          <div class="upload-thumbnail">
+            <img *ngIf="upload.fileType.startsWith('image/')" [src]="upload.url" alt="Preview" />
+            <video *ngIf="upload.fileType.startsWith('video/')" [src]="upload.url"></video>
+          </div>
+
+          <div class="upload-info">
+            <div class="upload-filename">{{ upload.fileName }}</div>
+            <div class="upload-meta">
+              <span class="meta-item">
+                <mat-icon>category</mat-icon>
+                {{ upload.fileType }}
+              </span>
+              <span class="meta-item">
+                <mat-icon>storage</mat-icon>
+                {{ formatFileSize(upload.fileSize) }}
+              </span>
+              <span class="meta-item" *ngIf="upload.suggestedEvent">
+                <mat-icon>event</mat-icon>
+                {{ upload.suggestedEvent }}
+              </span>
+              <span class="meta-item">
+                <mat-icon>schedule</mat-icon>
+                {{ upload.dateAdded | date:'short' }}
+              </span>
+            </div>
+            <div class="upload-status" [class]="upload.status">
+              <span class="status-dot"></span>
+              {{ getStatusLabel(upload) }}
+            </div>
+          </div>
+
+          <div class="upload-actions">
+            <button mat-icon-button (click)="onPreview(upload)" matTooltip="Preview">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" (click)="onApprove(upload)"
+                    [disabled]="isProcessing(upload.id) || upload.status !== 'pending'"
+                    matTooltip="Approve">
+              <mat-icon>check</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="onReject(upload)"
+                    [disabled]="isProcessing(upload.id)"
+                    matTooltip="Reject">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredUploads.length === 0">
+        <mat-icon>check_circle</mat-icon>
+        <p *ngIf="filterStatus === 'pending'">No pending uploads to review</p>
+        <p *ngIf="filterStatus === 'all'">No uploads found</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- Preview Dialog -->
+<ng-template #previewDialog>
+  <div class="preview-container" *ngIf="previewUpload">
+    <img *ngIf="previewUpload.fileType.startsWith('image/')" [src]="previewUpload.url" alt="Preview" />
+    <video *ngIf="previewUpload.fileType.startsWith('video/')" [src]="previewUpload.url" controls></video>
+    <div class="preview-info">
+      <h3>{{ previewUpload.fileName }}</h3>
+      <p *ngIf="previewUpload.suggestedEvent">Event: {{ previewUpload.suggestedEvent }}</p>
+      <p>Size: {{ formatFileSize(previewUpload.fileSize) }}</p>
+    </div>
+  </div>
+</ng-template>

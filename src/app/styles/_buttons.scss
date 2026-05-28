@@ -1,0 +1,22 @@
+@mixin btn-upload {
+  width: 100%;
+  padding: 16px;
+  margin-top: 16px;
+  background: var(--color-brand-success);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-brand-success-dark);
+  }
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+}

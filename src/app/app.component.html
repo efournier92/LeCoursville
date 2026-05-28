@@ -6,7 +6,7 @@
     <img
       src="./assets/img/logo/L.png"
       class="toolbar-icon"
-      [routerLink]="isAdminOrSuper() ? '/admin' : '/'"
+      (click)="onLogoClick()"
       [alt]="isAdminOrSuper() ? 'Admin' : 'L'"
       height="80%"
     />
