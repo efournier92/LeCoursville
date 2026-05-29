@@ -1,0 +1,139 @@
+<div class="admin-families-container">
+  <mat-card class="families-card">
+    <div class="card-header">
+      <div class="header-content">
+        <div>
+          <h2 class="card-title">Families</h2>
+          <p class="card-subtitle">Manage family names and colors</p>
+        </div>
+        <div class="header-actions add-family-btn">
+          <button mat-raised-button color="primary" (click)="onAdd()" *ngIf="!isAdding && !editingFamily && !isCsvPreview">
+            <mat-icon>add</mat-icon>
+            Add Family
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <mat-card-content>
+      <div class="csv-upload-section">
+        <div class="upload-area" (click)="csvInput.click()">
+          <mat-icon>upload_file</mat-icon>
+          <span>Upload CSV</span>
+        </div>
+        <input #csvInput type="file" accept=".csv" (change)="onCsvFileSelected($event)" hidden />
+        <span class="upload-hint" *ngIf="!selectedFileName">Supports Name, ID, Color_Hex columns</span>
+        <span class="upload-hint" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+      </div>
+
+      <div class="csv-preview" *ngIf="isCsvPreview">
+        <div class="section-header">
+          <h4>CSV Preview</h4>
+          <span class="csv-count">{{ csvPreview.length }}</span>
+        </div>
+        <div class="csv-errors" *ngIf="csvErrors.length > 0">
+          <div class="error-item" *ngFor="let error of csvErrors">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error }}</span>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Hex</th>
+                <th>Color</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let family of csvPreview">
+                <td class="bold">{{ family.name }}</td>
+                <td class="mono">{{ family.id }}</td>
+                <td class="mono">{{ family.hexColor }}</td>
+                <td><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="csv-actions">
+          <button mat-button (click)="onCsvCancel()">Cancel</button>
+          <button mat-raised-button color="primary" (click)="onCsvConfirm()" [disabled]="csvErrors.length > 0">
+            <mat-icon>check</mat-icon>
+            Import {{ csvPreview.length }} Family
+          </button>
+        </div>
+      </div>
+
+      <div class="families-list" *ngIf="families.length > 0 && !isCsvPreview">
+        <div class="family-header-row">
+          <span class="col-color">Color</span>
+          <span class="col-name">Name</span>
+          <span class="col-hex">Hex</span>
+          <span class="col-actions">Actions</span>
+        </div>
+        <div class="family-row" *ngFor="let family of families">
+          <div class="color-swatch" [style.background-color]="family.hexColor"></div>
+          <span class="family-name">{{ family.name }}</span>
+          <span class="family-hex">{{ family.hexColor }}</span>
+          <div class="family-actions">
+            <button mat-icon-button color="primary" (click)="onEdit(family)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="onDelete(family.id)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="families.length === 0 && !isCsvPreview">
+        <mat-icon>group_off</mat-icon>
+        <p>No families found. Add your first family or upload a CSV.</p>
+      </div>
+
+      <div class="form-section" *ngIf="isAdding || editingFamily">
+        <mat-card class="form-card">
+          <mat-card-content>
+            <h3>{{ editingFamily ? 'Edit Family' : 'Add New Family' }}</h3>
+            <form (ngSubmit)="onSave()">
+              <mat-form-field class="full-width">
+                <mat-label>ID</mat-label>
+                <input matInput [(ngModel)]="formData.id" name="id" />
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="formData.name" name="name" required />
+              </mat-form-field>
+
+              <div class="color-field">
+                <mat-form-field class="hex-input">
+                  <mat-label>Hex Color</mat-label>
+                  <input matInput [(ngModel)]="formData.hexColor" name="hexColor" required pattern="^#[0-9A-Fa-f]{6}$" />
+                </mat-form-field>
+                <div class="color-picker-wrapper">
+                  <input type="color" [(ngModel)]="formData.hexColor" name="hexColorPicker" class="color-picker" />
+                  <div class="color-preview-swatch" [style.background-color]="formData.hexColor"></div>
+                </div>
+              </div>
+
+              <div class="form-error" *ngIf="formError">
+                <mat-icon>error_outline</mat-icon>
+                {{ formError }}
+              </div>
+
+              <div class="form-actions">
+                <button mat-button type="button" (click)="onCancel()">Cancel</button>
+                <button mat-raised-button color="primary" type="submit">
+                  {{ editingFamily ? 'Update' : 'Add' }}
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
