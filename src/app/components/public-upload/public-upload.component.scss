@@ -42,6 +42,31 @@ h1 {
   margin: 0;
   color: #333;
   font-size: 16px;
+
+  &:last-child {
+    color: #999;
+    font-size: 14px;
+  }
+}
+
+.folder-upload-link {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.btn-folder-link {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-style: italic;
+
+  &:hover {
+    color: #666;
+  }
 }
 
 .drop-zone .hint {
@@ -254,14 +279,19 @@ h1 {
   .success-icon {
     width: 80px;
     height: 80px;
-    background: var(--color-brand-success-dark);
-    color: white;
-    font-size: 40px;
+    background: var(--color-brand-success);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px;
+
+    mat-icon {
+      font-size: 40px;
+      color: white;
+      width: 40px;
+      height: 40px;
+    }
   }
 
   h2 {

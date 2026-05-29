@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
+import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
   selector: 'app-admin',
@@ -15,6 +16,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private versionService: VersionService,
+    private routingService: RoutingService,
   ) { }
 
   ngOnInit(): void {
@@ -30,5 +32,24 @@ export class AdminComponent implements OnInit {
 
   private setVersion(): void {
     this.version = this.versionService.getAppVersion();
+  }
+
+  get isSidenavOpen() {
+    return this.routingService.sidenavOpen$;
+  }
+
+  toggleSidenav(): void {
+    this.routingService.toggleSidenav();
+  }
+
+  closeSidenav(): void {
+    this.routingService.closeSidenav();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.routingService.closeSidenav();
+    }
   }
 }

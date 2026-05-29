@@ -53,10 +53,14 @@ export class AppComponent implements OnInit {
   }
 
   onLogoClick(): void {
-    if (this.isAdminOrSuper()) {
-      this.routingService.NavigateToAdmin();
-    } else {
-      this.routingService.NavigateToPromotedRoute();
-    }
+    this.routingService.handleLogoNavigation(this.isAdminOrSuper());
+  }
+
+  onMenuClick(): void {
+    this.routingService.toggleSidenav();
+  }
+
+  shouldShowSidenavToggle(): boolean {
+    return this.isAdminOrSuper() && this.routingService.isOnAdminRoute();
   }
 }

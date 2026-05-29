@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Clan } from 'src/app/models/clan';
-import { ClanService } from 'src/app/services/clan.service';
+import { Family } from 'src/app/models/family';
+import { FamilyService } from 'src/app/services/family.service';
 
-interface ParsedClan {
+interface ParsedFamily {
   id: string;
   name: string;
   hexColor: string;
@@ -11,45 +11,45 @@ interface ParsedClan {
 }
 
 @Component({
-  selector: 'app-admin-clans',
-  templateUrl: './admin-clans.component.html',
-  styleUrls: ['./admin-clans.component.scss']
+  selector: 'app-admin-families',
+  templateUrl: './admin-families.component.html',
+  styleUrls: ['./admin-families.component.scss']
 })
-export class AdminClansComponent implements OnInit {
-  clans: Clan[] = [];
-  editingClan: Clan | null = null;
+export class AdminFamiliesComponent implements OnInit {
+  families: Family[] = [];
+  editingFamily: Family | null = null;
   isAdding = false;
   formData = { id: '', name: '', hexColor: '#000000' };
   formError = '';
-  csvPreview: ParsedClan[] = [];
+  csvPreview: ParsedFamily[] = [];
   csvErrors: string[] = [];
   isCsvPreview = false;
   selectedFileName: string | null = null;
 
-  constructor(private clanService: ClanService) {}
+  constructor(private familyService: FamilyService) {}
 
   ngOnInit(): void {
-    this.clanService.clans$.subscribe(clans => {
-      this.clans = clans;
+    this.familyService.families$.subscribe(families => {
+      this.families = families;
     });
   }
 
   onAdd(): void {
     this.isAdding = true;
-    this.editingClan = null;
+    this.editingFamily = null;
     this.formData = { id: '', name: '', hexColor: '#000000' };
     this.formError = '';
   }
 
-  onEdit(clan: Clan): void {
-    this.editingClan = clan;
+  onEdit(family: Family): void {
+    this.editingFamily = family;
     this.isAdding = false;
-    this.formData = { id: clan.sortOrder, name: clan.name, hexColor: clan.hexColor };
+    this.formData = { id: family.sortOrder, name: family.name, hexColor: family.hexColor };
     this.formError = '';
   }
 
   onDelete(id: string): void {
-    this.clanService.deleteClan(id);
+    this.familyService.deleteFamily(id);
   }
 
   onSave(): void {
@@ -70,19 +70,19 @@ export class AdminClansComponent implements OnInit {
     this.formError = '';
 
     if (this.isAdding) {
-      const clan: Clan = {
-        id: this.clanService.createPushId(),
+      const family: Family = {
+        id: this.familyService.createPushId(),
         name,
         hexColor,
         sortOrder,
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      this.clanService.saveClan(clan).then(() => {
+      this.familyService.saveFamily(family).then(() => {
         this.onCancel();
       });
-    } else if (this.editingClan) {
-      this.clanService.updateClan(this.editingClan.id, {
+    } else if (this.editingFamily) {
+      this.familyService.updateFamily(this.editingFamily.id, {
         name,
         hexColor,
         sortOrder,
@@ -95,7 +95,7 @@ export class AdminClansComponent implements OnInit {
 
   onCancel(): void {
     this.isAdding = false;
-    this.editingClan = null;
+    this.editingFamily = null;
     this.formData = { id: '', name: '', hexColor: '#000000' };
     this.formError = '';
   }
@@ -146,8 +146,8 @@ export class AdminClansComponent implements OnInit {
 
       const name = this.getValue(values, headerMap, 'Name').trim();
       const hexColor = this.getValue(values, headerMap, 'Color_Hex').trim();
-      const clanId = this.getValue(values, headerMap, 'ID').trim();
-      const sortOrder = clanId;
+      const familyId = this.getValue(values, headerMap, 'ID').trim();
+      const sortOrder = familyId;
       const errors: string[] = [];
 
       if (!name) {
@@ -162,7 +162,7 @@ export class AdminClansComponent implements OnInit {
         errors.push(`Row ${i + 1}: Color_Hex is required`);
       }
 
-      this.csvPreview.push({ id: clanId, name, hexColor: hexColor || '#808080', sortOrder, errors });
+      this.csvPreview.push({ id: familyId, name, hexColor: hexColor || '#808080', sortOrder, errors });
       if (errors.length > 0) {
         this.csvErrors.push(...errors);
       }
@@ -205,22 +205,21 @@ export class AdminClansComponent implements OnInit {
   }
 
   onCsvConfirm(): void {
-    const validClans = this.csvPreview.filter(c => c.errors.length === 0);
+    const validFamilies = this.csvPreview.filter(c => c.errors.length === 0);
 
-    for (const parsed of validClans) {
-      // Check if clan already exists (by name, case-insensitive)
-      const exists = this.clans.some(c => c.name.toLowerCase() === parsed.name.toLowerCase());
+    for (const parsed of validFamilies) {
+      const exists = this.families.some(f => f.name.toLowerCase() === parsed.name.toLowerCase());
       if (exists) continue;
 
-      const clan: Clan = {
-        id: parsed.id || this.clanService.createPushId(),
+      const family: Family = {
+        id: parsed.id || this.familyService.createPushId(),
         name: parsed.name,
         hexColor: parsed.hexColor,
         sortOrder: parsed.sortOrder,
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      this.clanService.saveClan(clan);
+      this.familyService.saveFamily(family);
     }
 
     this.csvPreview = [];

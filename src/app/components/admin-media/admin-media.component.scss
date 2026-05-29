@@ -24,6 +24,19 @@
   width: 100%;
 }
 
+:host {
+  display: block;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 .admin-media-upload-tab-group {
   overflow: hidden;
+}
+
+@media (max-width: 575.98px) {
+  .admin-media-component-container {
+    padding: 0 8px;
+    overflow-x: hidden;
+  }
 }

@@ -9,6 +9,8 @@ import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 })
 export class RoutingService {
   private promotedRouteSubject = new BehaviorSubject<string | null>(null);
+  private sidenavOpenSubject = new BehaviorSubject<boolean>(false);
+  sidenavOpen$ = this.sidenavOpenSubject.asObservable();
 
   constructor(
     private router: Router,
@@ -65,6 +67,32 @@ export class RoutingService {
     this.NavigateToRoute('/admin');
   }
 
+  isOnAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
+
+  handleLogoNavigation(isAdmin: boolean): void {
+    if (!isAdmin) {
+      this.NavigateToPromotedRoute();
+    } else if (this.isOnAdminRoute()) {
+      this.NavigateToPromotedRoute();
+    } else {
+      this.NavigateToAdmin();
+    }
+  }
+
+  toggleSidenav(): void {
+    this.sidenavOpenSubject.next(!this.sidenavOpenSubject.getValue());
+  }
+
+  closeSidenav(): void {
+    this.sidenavOpenSubject.next(false);
+  }
+
+  openSidenav(): void {
+    this.sidenavOpenSubject.next(true);
+  }
+
   NavigateToAdminUsers() {
     this.NavigateToRoute('/admin/users');
   }
@@ -82,7 +110,7 @@ export class RoutingService {
   }
 
   NavigateToAdminClans() {
-    this.NavigateToRoute('/admin/clans');
+    this.NavigateToRoute('/admin/families');
   }
 
   NavigateToAdminPeopleImport() {

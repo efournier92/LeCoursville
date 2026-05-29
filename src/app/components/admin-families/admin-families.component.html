@@ -1,19 +1,19 @@
-<div class="admin-clans-container">
-  <mat-card class="clans-card">
-    <mat-card-header>
+<div class="admin-families-container">
+  <mat-card class="families-card">
+    <div class="card-header">
       <div class="header-content">
         <div>
-          <mat-card-title>Clans</mat-card-title>
-          <mat-card-subtitle>Manage clan names and colors</mat-card-subtitle>
+          <h2 class="card-title">Families</h2>
+          <p class="card-subtitle">Manage family names and colors</p>
         </div>
-        <div class="header-actions">
-          <button mat-raised-button color="primary" (click)="onAdd()" *ngIf="!isAdding && !editingClan && !isCsvPreview">
+        <div class="header-actions add-family-btn">
+          <button mat-raised-button color="primary" (click)="onAdd()" *ngIf="!isAdding && !editingFamily && !isCsvPreview">
             <mat-icon>add</mat-icon>
-            Add Clan
+            Add Family
           </button>
         </div>
       </div>
-    </mat-card-header>
+    </div>
 
     <mat-card-content>
       <div class="csv-upload-section">
@@ -29,7 +29,7 @@
       <div class="csv-preview" *ngIf="isCsvPreview">
         <div class="section-header">
           <h4>CSV Preview</h4>
-          <span class="csv-count">{{ csvPreview.length }} clans</span>
+          <span class="csv-count">{{ csvPreview.length }}</span>
         </div>
         <div class="csv-errors" *ngIf="csvErrors.length > 0">
           <div class="error-item" *ngFor="let error of csvErrors">
@@ -48,11 +48,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let clan of csvPreview">
-                <td class="bold">{{ clan.name }}</td>
-                <td class="mono">{{ clan.id }}</td>
-                <td class="mono">{{ clan.hexColor }}</td>
-                <td><div class="color-swatch" [style.background-color]="clan.hexColor"></div></td>
+              <tr *ngFor="let family of csvPreview">
+                <td class="bold">{{ family.name }}</td>
+                <td class="mono">{{ family.id }}</td>
+                <td class="mono">{{ family.hexColor }}</td>
+                <td><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
               </tr>
             </tbody>
           </table>
@@ -61,42 +61,42 @@
           <button mat-button (click)="onCsvCancel()">Cancel</button>
           <button mat-raised-button color="primary" (click)="onCsvConfirm()" [disabled]="csvErrors.length > 0">
             <mat-icon>check</mat-icon>
-            Import {{ csvPreview.length }} Clans
+            Import {{ csvPreview.length }} Family
           </button>
         </div>
       </div>
 
-      <div class="clans-list" *ngIf="clans.length > 0 && !isCsvPreview">
-        <div class="clan-header-row">
+      <div class="families-list" *ngIf="families.length > 0 && !isCsvPreview">
+        <div class="family-header-row">
           <span class="col-color">Color</span>
           <span class="col-name">Name</span>
           <span class="col-hex">Hex</span>
           <span class="col-actions">Actions</span>
         </div>
-        <div class="clan-row" *ngFor="let clan of clans">
-          <div class="color-swatch" [style.background-color]="clan.hexColor"></div>
-          <span class="clan-name">{{ clan.name }}</span>
-          <span class="clan-hex">{{ clan.hexColor }}</span>
-          <div class="clan-actions">
-            <button mat-icon-button color="primary" (click)="onEdit(clan)" matTooltip="Edit">
+        <div class="family-row" *ngFor="let family of families">
+          <div class="color-swatch" [style.background-color]="family.hexColor"></div>
+          <span class="family-name">{{ family.name }}</span>
+          <span class="family-hex">{{ family.hexColor }}</span>
+          <div class="family-actions">
+            <button mat-icon-button color="primary" (click)="onEdit(family)" matTooltip="Edit">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="onDelete(clan.id)" matTooltip="Delete">
+            <button mat-icon-button color="warn" (click)="onDelete(family.id)" matTooltip="Delete">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="empty-state" *ngIf="clans.length === 0 && !isCsvPreview">
+      <div class="empty-state" *ngIf="families.length === 0 && !isCsvPreview">
         <mat-icon>group_off</mat-icon>
-        <p>No clans found. Add your first clan or upload a CSV.</p>
+        <p>No families found. Add your first family or upload a CSV.</p>
       </div>
 
-      <div class="form-section" *ngIf="isAdding || editingClan">
+      <div class="form-section" *ngIf="isAdding || editingFamily">
         <mat-card class="form-card">
           <mat-card-content>
-            <h3>{{ editingClan ? 'Edit Clan' : 'Add New Clan' }}</h3>
+            <h3>{{ editingFamily ? 'Edit Family' : 'Add New Family' }}</h3>
             <form (ngSubmit)="onSave()">
               <mat-form-field class="full-width">
                 <mat-label>ID</mat-label>
@@ -127,7 +127,7 @@
               <div class="form-actions">
                 <button mat-button type="button" (click)="onCancel()">Cancel</button>
                 <button mat-raised-button color="primary" type="submit">
-                  {{ editingClan ? 'Update' : 'Add' }}
+                  {{ editingFamily ? 'Update' : 'Add' }}
                 </button>
               </div>
             </form>

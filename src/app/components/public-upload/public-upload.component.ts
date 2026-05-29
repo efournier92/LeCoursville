@@ -30,6 +30,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   suggestedEvent = '';
   uploaderName = '';
   private userSub?: Subscription;
+  private eventFromUrl = '';
 
   constructor(
     private userUploadService: UserUploadService,
@@ -55,6 +56,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['event']) {
         this.suggestedEvent = params['event'];
+        this.eventFromUrl = params['event'];
       }
     });
   }
@@ -87,6 +89,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     this.readDataTransferItems(items, files).then(() => {
       if (files.length > 0) {
         this.addFilesAsList(files);
+        this.scrollToFileList();
       }
     });
   }
@@ -134,6 +137,24 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     if (input.files) {
       this.addFiles(input.files);
     }
+    input.value = '';
+    this.scrollToFileList();
+  }
+
+  scrollToFileList(): void {
+    setTimeout(() => {
+      const fileListEl = document.querySelector('.file-list');
+      fileListEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
+  openFilePicker(input: HTMLInputElement): void {
+    input.click();
+  }
+
+  openFolderPicker(input: HTMLInputElement, event: Event): void {
+    event.stopPropagation();
+    input.click();
   }
 
   onFolderSelect(event: Event): void {
@@ -147,6 +168,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     }
     this.addFilesAsList(files);
     input.value = '';
+    this.scrollToFileList();
   }
 
   addFiles(files: FileList): void {
@@ -175,7 +197,22 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
 
   clearAll(): void {
     this.uploadItems = [];
-    this.suggestedEvent = '';
+    this.suggestedEvent = this.eventFromUrl;
+    this.resetInputs();
+  }
+
+  reset(): void {
+    this.uploadItems = [];
+    this.isComplete = false;
+    this.suggestedEvent = this.eventFromUrl;
+    this.resetInputs();
+  }
+
+  private resetInputs(): void {
+    const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
+    const folderInput = document.querySelector('#folderInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+    if (folderInput) folderInput.value = '';
   }
 
   async startUpload(): Promise<void> {
@@ -230,12 +267,6 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
 
   private generateAnonymousId(): string {
     return 'anon_' + Math.random().toString(36).substring(2, 15);
-  }
-
-  reset(): void {
-    this.uploadItems = [];
-    this.isComplete = false;
-    this.suggestedEvent = '';
   }
 
   getStatusIcon(item: UploadItem): string {

@@ -1,5 +1,5 @@
 <div class="admin-layout">
-  <nav class="admin-sidebar">
+  <nav class="admin-sidebar" [class.admin-sidebar-open]="isSidenavOpen | async">
     <div class="sidebar-header">
       <a routerLink="/admin" class="logo-link">
         <h1>Admin</h1>
@@ -7,43 +7,43 @@
     </div>
     <ul class="sidebar-nav">
       <li routerLinkActive="active">
-        <a routerLink="/admin/users">
+        <a routerLink="/admin/users" (click)="closeSidenav()">
           <mat-icon>people</mat-icon>
           <span>Users</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/clans">
+        <a routerLink="/admin/families" (click)="closeSidenav()">
           <mat-icon>groups</mat-icon>
-          <span>Clans</span>
+          <span>Families</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/people">
+        <a routerLink="/admin/people" (click)="closeSidenav()">
           <mat-icon>person_add</mat-icon>
           <span>People</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/calendars">
+        <a routerLink="/admin/calendars" (click)="closeSidenav()">
           <mat-icon>calendar_month</mat-icon>
           <span>Calendars</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/media">
+        <a routerLink="/admin/media" (click)="closeSidenav()">
           <mat-icon>perm_media</mat-icon>
           <span>Media</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/uploads">
+        <a routerLink="/admin/uploads" (click)="closeSidenav()">
           <mat-icon>upload_file</mat-icon>
           <span>Uploads</span>
         </a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/admin/features">
+        <a routerLink="/admin/features" (click)="closeSidenav()">
           <mat-icon>toggle_on</mat-icon>
           <span>Features</span>
         </a>
@@ -53,6 +53,9 @@
       <span class="version">v{{ version }}</span>
     </div>
   </nav>
+
+  <div class="admin-sidebar-backdrop" *ngIf="isSidenavOpen | async" (click)="closeSidenav()"></div>
+
   <main class="admin-content">
     <router-outlet></router-outlet>
   </main>

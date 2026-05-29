@@ -1,1 +1,17 @@
 @import 'src/app/styles/admin-forms';
+
+.admin-media-upload-upload-form {
+  max-width: 100%;
+}
+
+@media (max-width: 575.98px) {
+  .admin-media-upload-upload-form {
+    padding: 0 8px;
+  }
+}
+
+:host {
+  display: block;
+  overflow-x: hidden;
+  max-width: 100%;
+}
