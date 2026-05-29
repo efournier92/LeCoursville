@@ -1,8 +1,8 @@
 <div class="admin-users-component-container m-3">
 
-  <div class="d-flex justify-content-between w-100 p-1">
+  <div class="d-flex justify-content-between w-100 p-1 admin-users-toolbar">
     <mat-form-field class="filter-users-form-field">
-      <mat-label>Filter Users</mat-label>
+      <mat-label>Filter</mat-label>
       <input
         matInput
         type="text"
@@ -20,7 +20,7 @@
       </button>
     </mat-form-field>
 
-    <div>
+    <div class="admin-users-sort-buttons">
       <button
         mat-button
         [matMenuTriggerFor]="menu"
@@ -34,33 +34,33 @@
         <mat-icon *ngIf="!isSortDescending()">arrow_drop_up</mat-icon>
         <mat-icon *ngIf="isSortDescending()">arrow_drop_down</mat-icon>
       </button>
-      <mat-menu #menu="matMenu">
-        <button
-          mat-menu-item
-          (click)="sortByDateLastActive()"
-        >
-          Date Last Active
-        </button>
-        <button
-          mat-menu-item
-          (click)="sortByName()"
-        >
-          Name
-        </button>
-        <button
-          mat-menu-item
-          (click)="sortByEmail()"
-        >
-          Email
-        </button>
-        <button
-          mat-menu-item
-          (click)="sortByDateRegistered()"
-        >
-          Date Registered
-        </button>
-      </mat-menu>
     </div>
+    <mat-menu #menu="matMenu">
+      <button
+        mat-menu-item
+        (click)="sortByDateLastActive()"
+      >
+        Date Last Active
+      </button>
+      <button
+        mat-menu-item
+        (click)="sortByName()"
+      >
+        Name
+      </button>
+      <button
+        mat-menu-item
+        (click)="sortByEmail()"
+      >
+        Email
+      </button>
+      <button
+        mat-menu-item
+        (click)="sortByDateRegistered()"
+      >
+        Date Registered
+      </button>
+    </mat-menu>
   </div>
 
   <mat-paginator
@@ -80,7 +80,7 @@
     *ngIf="shouldDisplayUserCards()"
   >
     <div
-      class="m-3 col-lg-5"
+      class="m-2 col-12 col-xl-5"
       *ngFor="let cardUser of displayedUsers"
     >
       <app-user-edit

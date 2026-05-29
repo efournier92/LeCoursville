@@ -1,10 +1,9 @@
 <div class="admin-calendars-container">
   <mat-card class="calendars-card">
-    <mat-card-header>
+    <div class="card-header">
       <div class="header-content">
-        <div>
-          <mat-card-title>Calendars</mat-card-title>
-          <mat-card-subtitle>Link a Firebase Storage PDF to a calendar year</mat-card-subtitle>
+        <div class="header-text">
+          <h2 class="card-title">Calendars</h2>
         </div>
         <div class="header-actions">
           <button mat-raised-button color="primary" (click)="onAdd()" *ngIf="!isAdding && !editingCalendar">
@@ -13,7 +12,7 @@
           </button>
         </div>
       </div>
-    </mat-card-header>
+    </div>
 
     <mat-card-content>
       <div class="calendars-list" *ngIf="calendars.length > 0">
