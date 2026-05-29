@@ -10,7 +10,7 @@
 
     <div class="event-input">
       <label for="eventName">Event Name</label>
-      <input id="eventName" type="text" [(ngModel)]="suggestedEvent" placeholder="e.g., Summer Picnic 2024" />
+      <input id="eventName" type="text" [(ngModel)]="suggestedEvent" (ngModelChange)="onEventNameChange($event)" placeholder="LeCoursville Reunion" />
     </div>
 
     <div class="drop-zone"
@@ -20,10 +20,13 @@
          (drop)="onDrop($event)"
          (click)="fileInput.click()">
       <input #fileInput type="file" multiple (change)="onFileSelect($event)" hidden>
-      <input #folderInput type="file" webkitdirectory (change)="onFolderSelect($event)" hidden>
       <div class="drop-icon"><mat-icon>perm_media</mat-icon></div>
-      <p>Click To Browse Or Drag & Drop Files Here</p>
-      <p class="hint"><a href="javascript:void(0)" (click)="folderInput.click()">Or choose a folder</a></p>
+      <p>Click To Select Files</p>
+      <p>Or Drag & Drop</p>
+    </div>
+    <div class="folder-upload-link">
+      <input #folderInput type="file" webkitDirectory (change)="onFolderSelect($event)" hidden>
+      <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">Or Upload An Entire Folder</button>
     </div>
 
     <div class="file-list" *ngIf="uploadItems.length > 0">
@@ -56,10 +59,10 @@
   </div>
 
   <div *ngIf="isComplete" class="complete-message">
-    <div class="success-icon">✓</div>
+    <div class="success-icon"><mat-icon>check</mat-icon></div>
     <h2>Thank You For Sharing!</h2>
     <p>{{ uploadItems.length }} File{{ uploadItems.length === 1 ? '' : 's' }} Uploaded</p>
-    <p class="hint">We'll Review & Add It To The Site Soon!</p>
+    <p class="hint">We'll Add It To The Site Soon!</p>
     <button class="btn-upload" (click)="reset()">Upload More</button>
   </div>
 </div>
