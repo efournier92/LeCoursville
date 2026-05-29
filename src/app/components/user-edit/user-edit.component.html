@@ -3,6 +3,7 @@
   *ngIf="userSignedIn?.id"
 >
   <form>
+    <div class="user-edit-id-top">{{ userOnCard.id }}</div>
     <mat-form-field class="user-edit-form-field w-100">
       <input
         matInput
@@ -21,22 +22,21 @@
     </mat-form-field>
 
     <div class="user-edit-display-container">
-      <div class="user-edit-display-properties">
-        <div class="user-edit-card-button-row-property">ID:</div>
-        <div class="user-edit-card-button-row-property">Registered:</div>
-        <div class="user-edit-card-button-row-property">Last Active:</div>
-      </div>
-
-      <div class="user-edit-display-values">
-        <div>{{ userOnCard.id }}</div>
-        <div>{{ userOnCard.dateRegistered | date }}</div>
-        <div>{{ userOnCard.dateLastActive | date }}</div>
+      <div class="user-edit-field-group">
+        <div class="user-edit-display-field">
+          <div class="user-edit-display-label">Last Active</div>
+          <div class="user-edit-display-value">{{ userOnCard.dateLastActive | date:'yyyy-MM-dd' }}</div>
+        </div>
+        <div class="user-edit-display-field user-edit-display-right">
+          <div class="user-edit-display-label">Registered</div>
+          <div class="user-edit-display-value">{{ userOnCard.dateRegistered | date:'yyyy-MM-dd' }}</div>
+        </div>
       </div>
     </div>
 
     <div
       *ngIf="isSuperUser()"
-      class="d-flex justify-content-around mt-3"
+      class="user-roles-container mt-3"
     >
       <mat-checkbox
         name="user-roles-user"
@@ -59,7 +59,7 @@
     </div>
   </form>
 
-  <mat-card-footer class="d-flex row d-flex justify-content-between m-0 mt-4">
+  <mat-card-footer class="user-card-footer-actions m-0 mt-4">
     <button
       mat-raised-button
       class="admin-form-action-button admin-form-action-button-upload col m-2"

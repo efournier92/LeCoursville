@@ -1,15 +1,91 @@
-.inline-nowrap {
-    display: inline-block;
-    white-space: nowrap;
+.user-edit-display-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  overflow: hidden;
 }
 
-.user-edit-display-properties {
-    @extend .inline-nowrap;
-    margin-right: 2em;
-    font-weight: bold;
+.user-edit-field-group {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: space-between;
 }
 
-.user-edit-display-values {
-    @extend .inline-nowrap;
-    position: absolute;
+.user-edit-display-field {
+  min-width: 0;
+}
+
+.user-edit-display-right {
+}
+
+.user-edit-display-label {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.user-edit-display-value {
+  color: rgba(0, 0, 0, 0.8);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-edit-id-subtitle {
+  width: 100%;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-edit-id-top {
+  text-align: left;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+.user-roles-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: flex-start;
+}
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.user-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-card-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.user-card-footer-actions .admin-form-action-button {
+  flex: 1;
+  min-width: 100px;
+  margin: 0 !important;
+}
+
+.user-card-footer-actions .admin-form-action-button:first-child {
+  margin-right: 8px !important;
 }
