@@ -82,7 +82,7 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
 import { PersonTreeComponent } from "./components/shared/person-tree/person-tree.component";
 import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
-import { AdminClansComponent } from "./components/admin-clans/admin-clans.component";
+import { AdminFamiliesComponent } from "./components/admin-families/admin-families.component";
 import { AdminCalendarsComponent } from "./components/admin-calendars/admin-calendars.component";
 
 @NgModule({
@@ -137,7 +137,7 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
     PageToolbarComponent,
     PersonTreeComponent,
     AdminPeopleImportComponent,
-    AdminClansComponent,
+    AdminFamiliesComponent,
     AdminCalendarsComponent,
   ],
   schemas: [NO_ERRORS_SCHEMA],

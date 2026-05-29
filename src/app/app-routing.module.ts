@@ -19,7 +19,7 @@ import { FeatureFlagGuard } from './services/feature-flag-guard.service';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { PeopleComponent } from './components/people/people.component';
 import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
-import { AdminClansComponent } from './components/admin-clans/admin-clans.component';
+import { AdminFamiliesComponent } from './components/admin-families/admin-families.component';
 import { AdminCalendarsComponent } from './components/admin-calendars/admin-calendars.component';
 import { PublicUploadComponent } from './components/public-upload/public-upload.component';
 import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
@@ -112,8 +112,8 @@ const routes: Routes =
           component: AdminPeopleImportComponent,
         },
         {
-          path: 'clans',
-          component: AdminClansComponent,
+          path: 'families',
+          component: AdminFamiliesComponent,
         },
         {
           path: 'calendars',

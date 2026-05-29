@@ -21,19 +21,29 @@
         class="d-block d-lg-none"
         *ngIf="user?.id"
       >
-        <button
-          mat-icon-button
-          class="menu-icon-container"
-          [matMenuTriggerFor]="menu"
-        >
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu
-          #menu="matMenu"
-          class="toolbar-routes-menu"
-        >
-          <app-navbar-links [isMenuList]="true"></app-navbar-links>
-        </mat-menu>
+        <ng-container *ngIf="shouldShowSidenavToggle(); else featureMenu">
+          <button
+            mat-icon-button
+            (click)="onMenuClick()"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+        </ng-container>
+        <ng-template #featureMenu>
+          <button
+            mat-icon-button
+            class="menu-icon-container"
+            [matMenuTriggerFor]="menu"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+          <mat-menu
+            #menu="matMenu"
+            class="toolbar-routes-menu"
+          >
+            <app-navbar-links [isMenuList]="true"></app-navbar-links>
+          </mat-menu>
+        </ng-template>
       </div>
     </div>
   </mat-toolbar>
