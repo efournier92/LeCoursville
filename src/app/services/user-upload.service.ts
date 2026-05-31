@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { UserUpload, UploaderInfo } from '../models/user-upload';
 import { PhotoAlbum } from '../models/media/photo-album';
+import { AnalyticsService } from './analytics.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class UserUploadService {
   constructor(
     private storage: AngularFireStorage,
     private db: AngularFireDatabase,
+    private analytics: AnalyticsService,
   ) {}
 
   getPendingUploads(): AngularFireList<UserUpload> {
@@ -94,6 +96,12 @@ export class UserUploadService {
             fileSize: file.size,
           };
           this.db.list(this.userUploadsRef).update(uploadId, upload);
+          this.analytics.logEvent('file_upload', {
+            file_type: file.type,
+            file_size: file.size,
+            suggested_event: suggestedEvent || 'none',
+            batch_id: batchId || 'single',
+          });
         });
       })
     ).subscribe();

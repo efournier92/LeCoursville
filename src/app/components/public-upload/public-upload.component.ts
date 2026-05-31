@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { UserUploadService } from '../../services/user-upload.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface UploadItem {
   file: File;
@@ -35,10 +36,12 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   constructor(
     private userUploadService: UserUploadService,
     private authService: AuthService,
+    private analyticsService: AnalyticsService,
     private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
+    this.analyticsService.logEvent('upload_page_view', {});
     // Check localStorage directly since user may not be set yet on first render
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (storedUser?.name) {
@@ -63,6 +66,9 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.userSub?.unsubscribe();
+    if (this.uploadItems.length > 0 && !this.isComplete) {
+      this.analyticsService.logEvent('upload_abandoned', { count: this.uploadItems.length });
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -172,6 +178,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   }
 
   addFiles(files: FileList): void {
+    this.analyticsService.logEvent('files_added', { count: files.length });
     for (let i = 0; i < files.length; i++) {
       this.uploadItems.push({
         file: files[i],
@@ -219,6 +226,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     if (this.uploadItems.length === 0) return;
 
     this.isProcessing = true;
+    this.analyticsService.logEvent('upload_start', { count: this.uploadItems.length });
     let completed = 0;
     const total = this.uploadItems.length;
 
@@ -254,6 +262,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
         error: () => {
           item.status = 'error';
           item.error = 'Upload failed';
+          this.analyticsService.logEvent('upload_error', { file_name: item.file.name });
           this.checkComplete(++completed, total);
         }
       });
