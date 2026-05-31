@@ -1,91 +1,92 @@
 <div class="photos-component-container">
-  <app-page-toolbar>
-    <div class="photos-toolbar">
-      <div class="photos-toolbar-row">
-        <div class="photos-toolbar-filters">
-          <mat-form-field class="photos-filter-field">
-            <mat-label>Filter</mat-label>
-            <input
-              matInput
-              [(ngModel)]="searchTerm"
-              name="searchTerm"
-              (ngModelChange)="onSearchTermChange($event)"
-            />
+  <div class="photos-container">
+    <app-page-toolbar>
+      <div class="photos-toolbar">
+        <div class="photos-toolbar-row">
+          <div class="photos-toolbar-filters">
+            <mat-form-field class="photos-filter-field">
+              <mat-label>Filter</mat-label>
+              <input
+                matInput
+                [(ngModel)]="searchTerm"
+                name="searchTerm"
+                (ngModelChange)="onSearchTermChange($event)"
+              />
+              <button
+                *ngIf="searchTerm !== ''"
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="clearSearchTerm()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+          <div class="d-md-none">
             <button
-              *ngIf="searchTerm !== ''"
-              matSuffix
-              mat-icon-button
-              aria-label="Clear"
-              (click)="clearSearchTerm()"
+              mat-stroked-button
+              [matMenuTriggerFor]="menu"
             >
-              <mat-icon>close</mat-icon>
+              Sort
             </button>
-          </mat-form-field>
-        </div>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="sortPhotosBy(sortRandomly, 'random')">Random</button>
+              <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken, 'taken')">Date Taken</button>
+              <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded, 'added')">Recently Added</button>
+            </mat-menu>
+          </div>
 
-        <div class="d-md-none">
-          <button
-            mat-stroked-button
-            [matMenuTriggerFor]="menu"
-          >
-            Sort
-          </button>
-          <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="sortPhotosBy(sortRandomly, 'random')">Random</button>
-            <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken, 'taken')">Date Taken</button>
-            <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded, 'added')">Recently Added</button>
-          </mat-menu>
-        </div>
-
-        <div class="photos-sort-controls d-none d-md-block">
-          <button
-            class="photos-sort-btn"
-            [class.active]="sortType === 'random'"
-            (click)="sortPhotosBy(sortRandomly, 'random')"
-          >Random</button>
-          <button
-            class="photos-sort-btn"
-            [class.active]="sortType === 'taken'"
-            (click)="sortPhotosBy(sortByYearTaken, 'taken')"
-          >Year Taken</button>
-          <button
-            class="photos-sort-btn"
-            [class.active]="sortType === 'added'"
-            (click)="sortPhotosBy(sortByDateAdded, 'added')"
-          >Recently Added</button>
+          <div class="photos-sort-controls d-none d-md-block">
+            <button
+              class="photos-sort-btn"
+              [class.active]="sortType === 'random'"
+              (click)="sortPhotosBy(sortRandomly, 'random')"
+            >Random</button>
+            <button
+              class="photos-sort-btn"
+              [class.active]="sortType === 'taken'"
+              (click)="sortPhotosBy(sortByYearTaken, 'taken')"
+            >Year Taken</button>
+            <button
+              class="photos-sort-btn"
+              [class.active]="sortType === 'added'"
+              (click)="sortPhotosBy(sortByDateAdded, 'added')"
+            >Recently Added</button>
+          </div>
         </div>
       </div>
+    </app-page-toolbar>
+
+    <div class="d-flex flex-column">
+      <app-photo-upload-progress
+        *ngFor="let upload of photoUploads"
+        [upload]="upload"
+        (completeUploadEvent)="completePhotoUpload(upload)"
+      ></app-photo-upload-progress>
     </div>
-  </app-page-toolbar>
 
-  <div class="d-flex flex-column">
-    <app-photo-upload-progress
-      *ngFor="let upload of photoUploads"
-      [upload]="upload"
-      (completeUploadEvent)="completePhotoUpload(upload)"
-    ></app-photo-upload-progress>
-  </div>
-
-  <div
-    class="photos-skeleton-grid"
-    *ngIf="showSpinner"
-  >
     <div
-      class="photos-skeleton-card"
-      *ngFor="let i of skeletonIterations"
+      class="photos-skeleton-grid"
+      *ngIf="showSpinner"
     >
-      <div class="skeleton-image"></div>
-      <div class="skeleton-photo-info">
-        <div class="skeleton-photo-line short"></div>
-        <div class="skeleton-photo-line xs"></div>
-        <div class="skeleton-photo-line medium"></div>
-        <div class="skeleton-photo-line"></div>
+      <div
+        class="photos-skeleton-card"
+        *ngFor="let i of skeletonIterations"
+      >
+        <div class="skeleton-image"></div>
+        <div class="skeleton-photo-info">
+          <div class="skeleton-photo-line short"></div>
+          <div class="skeleton-photo-line xs"></div>
+          <div class="skeleton-photo-line medium"></div>
+          <div class="skeleton-photo-line"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div id="lightgallery">
+  <div id="lightgallery">
   <div [hidden]="showSpinner">
     <mat-card
       class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6 mt-3 mb-3"

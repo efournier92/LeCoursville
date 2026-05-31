@@ -222,16 +222,27 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     let completed = 0;
     const total = this.uploadItems.length;
 
+    // Generate batch ID once so all files in this upload session land in the same folder
+    const batchDate = new Date();
+    const datePart = batchDate.toISOString().split('T')[0];
+    const hrs = String(batchDate.getHours()).padStart(2, '0');
+    const mins = String(batchDate.getMinutes()).padStart(2, '0');
+    const secs = String(batchDate.getSeconds()).padStart(2, '0');
+    const sanitizedName = this.uploaderName.replace(/[^a-zA-Z0-9]/g, '');
+    const sanitizedEvent = this.suggestedEvent ? `${this.suggestedEvent.replace(/[^a-zA-Z0-9]/g, '')}_` : '';
+    const namePart = sanitizedName ? `${sanitizedName}_` : 'Anonymous_';
+    const batchId = `${sanitizedEvent}${namePart}${datePart}-${hrs}${mins}${secs}`;
+
     for (const item of this.uploadItems) {
       item.status = 'uploading';
       item.progress = 0;
 
-      const sanitizedName = this.uploaderName.replace(/[^a-zA-Z0-9]/g, '');
       const { task } = await this.userUploadService.uploadFile(
         item.file,
         this.suggestedEvent,
         { anonymousId: this.generateAnonymousId() },
-        sanitizedName
+        sanitizedName,
+        batchId
       );
 
       task.percentageChanges().subscribe({

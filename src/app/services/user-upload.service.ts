@@ -41,12 +41,23 @@ export class UserUploadService {
     return name.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  async uploadFile(file: File, suggestedEvent: string, uploader: UploaderInfo, uploaderName?: string): Promise<{ task: AngularFireUploadTask, uploadId: string }> {
+  async uploadFile(file: File, suggestedEvent: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: AngularFireUploadTask, uploadId: string }> {
     const uploadId = this.db.createPushId();
-    const dateFolder = new Date().toISOString().split('T')[0];
-    const sanitizedEvent = suggestedEvent ? `${this.sanitizeName(suggestedEvent)}_` : '';
-    const namePart = uploaderName ? `${this.sanitizeName(uploaderName)}_` : 'Anonymous_';
-    const folderName = `${sanitizedEvent}${namePart}${dateFolder}`;
+    const now = new Date();
+    const datePart = now.toISOString().split('T')[0];
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const secs = String(now.getSeconds()).padStart(2, '0');
+    let folderName: string;
+    if (batchId) {
+      folderName = batchId;
+    } else {
+      const timePart = hrs + mins + secs;
+      const dateFolder = `${datePart}-${timePart}`;
+      const sanitizedEvent = suggestedEvent ? `${this.sanitizeName(suggestedEvent)}_` : '';
+      const namePart = uploaderName ? `${this.sanitizeName(uploaderName)}_` : 'Anonymous_';
+      folderName = `${sanitizedEvent}${namePart}${dateFolder}`;
+    }
 
     let path = `${this.userUploadsRef}/${folderName}/${file.name}`;
 
@@ -57,10 +68,6 @@ export class UserUploadService {
       // File exists at this path, append wall-clock time to filename
       const ext = file.name.includes('.') ? '.' + file.name.split('.').pop() : '';
       const baseName = ext ? file.name.slice(0, -ext.length) : file.name;
-      const now = new Date();
-      const hrs = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      const secs = String(now.getSeconds()).padStart(2, '0');
       const wallClock = hrs + mins + secs;
       const newFileName = `${baseName}_${wallClock}${ext}`;
       path = `${this.userUploadsRef}/${folderName}/${newFileName}`;

@@ -5,6 +5,20 @@
   background: var(--color-app-bg);
 }
 
+.photos-container {
+  @media (max-width: 480px) {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+#lightgallery {
+  @media (max-width: 480px) {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 .photos-toolbar {
   padding: 8px 0;
   width: 100%;

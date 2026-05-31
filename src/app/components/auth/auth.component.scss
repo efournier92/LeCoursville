@@ -4,6 +4,15 @@
   width: 100%;
 }
 
+.auth-container {
+  padding: 20px;
+
+  @media (max-width: 480px) {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 .auth-controls-container {
   margin: 20px;
 }
