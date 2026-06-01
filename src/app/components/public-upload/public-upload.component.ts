@@ -28,6 +28,8 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   isDragging = false;
   isProcessing = false;
   isComplete = false;
+  hasError = false;
+  errorMessage = '';
   suggestedEvent = '';
   uploaderName = '';
   private userSub?: Subscription;
@@ -205,6 +207,8 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   clearAll(): void {
     this.uploadItems = [];
     this.suggestedEvent = this.eventFromUrl;
+    this.hasError = false;
+    this.errorMessage = '';
     this.resetInputs();
   }
 
@@ -212,6 +216,8 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     this.uploadItems = [];
     this.isComplete = false;
     this.suggestedEvent = this.eventFromUrl;
+    this.hasError = false;
+    this.errorMessage = '';
     this.resetInputs();
   }
 
@@ -258,21 +264,21 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
           if (item.status === 'uploading') {
             item.progress = percent || 0;
           }
-        },
-        error: () => {
-          item.status = 'error';
-          item.error = 'Upload failed';
-          this.analyticsService.logEvent('upload_error', { file_name: item.file.name });
-          this.checkComplete(++completed, total);
         }
       });
 
       task.then(() => {
         item.status = 'complete';
+        item.error = undefined;
         this.checkComplete(++completed, total);
-      }).catch(() => {
+      }).catch((err) => {
         item.status = 'error';
-        item.error = 'Upload failed';
+        item.error = 'Failed to upload. Please try again.';
+        this.analyticsService.logEvent('upload_file_error', {
+          file_name: item.file.name,
+          file_type: item.file.type,
+          error_message: err?.message || 'unknown',
+        });
         this.checkComplete(++completed, total);
       });
     }
@@ -281,7 +287,22 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   private checkComplete(completed: number, total: number): void {
     if (completed === total) {
       this.isProcessing = false;
-      this.isComplete = true;
+      const failedCount = this.uploadItems.filter(i => i.status === 'error').length;
+      if (failedCount > 0) {
+        this.hasError = true;
+        if (failedCount === total) {
+          this.errorMessage = 'All uploads failed. Please check your connection and try again.';
+        } else {
+          this.errorMessage = `${failedCount} of ${total} uploads failed. The successful ones have been submitted for review.`;
+        }
+        this.analyticsService.logEvent('upload_batch_completed_with_errors', {
+          total,
+          failed: failedCount,
+          succeeded: total - failedCount,
+        });
+      } else {
+        this.isComplete = true;
+      }
     }
   }
 

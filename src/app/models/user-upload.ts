@@ -11,7 +11,7 @@ export class UserUpload {
   url = '';
   path = '';
   dateAdded = new Date();
-  suggestedEvent = '';
+  eventName = '';
   status: UploadStatus = 'pending';
   uploader: UploaderInfo = {};
   fileName = '';
