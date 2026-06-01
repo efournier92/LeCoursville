@@ -272,6 +272,58 @@ h1 {
   @include btn-upload;
 }
 
+.error-message {
+  text-align: center;
+  padding-top: 20px;
+
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    background: #c62828;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+
+    mat-icon {
+      font-size: 40px;
+      color: white;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  h2 {
+    color: #c62828;
+    margin-bottom: 8px;
+  }
+
+  .sorry-line {
+    font-size: 16px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+
+  p {
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  .hint {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .support-hint {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+}
+
 .complete-message {
   text-align: center;
   padding-top: 20px;

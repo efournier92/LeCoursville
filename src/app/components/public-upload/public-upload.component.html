@@ -1,8 +1,8 @@
 <div class="upload-container">
-  <h1 *ngIf="!isComplete">Upload Files</h1>
-  <p class="subtitle" *ngIf="!isComplete">Share With The Family</p>
+  <h1 *ngIf="!isComplete && !hasError">Upload Files</h1>
+  <p class="subtitle" *ngIf="!isComplete && !hasError">Share With The Family</p>
 
-  <div *ngIf="!isComplete">
+  <div *ngIf="!isComplete && !hasError">
     <div class="name-input">
       <label for="uploaderName">Your Name (optional)</label>
       <input id="uploaderName" type="text" [(ngModel)]="uploaderName" placeholder="e.g. John Smith" />
@@ -29,7 +29,7 @@
       <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">Or Upload An Entire Folder</button>
     </div>
 
-    <div class="file-list" *ngIf="uploadItems.length > 0">
+    <div class="file-list" *ngIf="uploadItems.length > 0 && !isComplete && !hasError">
       <div class="file-header">
         <span>{{ uploadItems.length }} File{{ uploadItems.length === 1 ? '' : 's' }} Selected</span>
         <button class="btn-text" (click)="clearAll()">Clear All</button>
@@ -48,6 +48,7 @@
           <div class="progress-bar" *ngIf="item.status === 'uploading'">
             <div class="progress-fill" [style.width.%]="item.progress"></div>
           </div>
+          <span class="item-error" *ngIf="item.status === 'error'">{{ item.error }}</span>
           <button class="btn-remove" *ngIf="item.status === 'pending'" (click)="removeItem(i)">×</button>
         </div>
       </div>
@@ -58,11 +59,20 @@
     </div>
   </div>
 
-  <div *ngIf="isComplete" class="complete-message">
+  <div *ngIf="isComplete && !hasError" class="complete-message">
     <div class="success-icon"><mat-icon>check</mat-icon></div>
-    <h2>Thank You For Sharing!</h2>
+    <h2>Thanks For Sharing!</h2>
     <p>{{ uploadItems.length }} File{{ uploadItems.length === 1 ? '' : 's' }} Uploaded</p>
     <p class="hint">We'll Add It To The Site Soon</p>
     <button class="btn-upload" (click)="reset()">Upload More</button>
+  </div>
+
+  <div *ngIf="hasError" class="error-message">
+    <div class="error-icon"><mat-icon>mood_bad</mat-icon></div>
+    <h2>Upload Failed</h2>
+    <p class="sorry-line">Sorry About That!</p>
+    <p class="hint">Please try again.</p>
+    <p class="support-hint">Email Eric if the problem continues.</p>
+    <button class="btn-upload" (click)="reset()">Try Again</button>
   </div>
 </div>

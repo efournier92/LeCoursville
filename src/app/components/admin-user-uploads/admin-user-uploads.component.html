@@ -23,13 +23,17 @@
           <mat-button-toggle value="all">
             All
           </mat-button-toggle>
+          <mat-button-toggle value="browser" (click)="switchToStorageBrowser()">
+            Storage Browser
+          </mat-button-toggle>
         </mat-button-toggle-group>
       </div>
 
-      <div class="uploads-list" *ngIf="filteredUploads.length > 0">
+      <!-- Existing Pending/All list (shown when filterStatus is 'pending' or 'all') -->
+      <div class="uploads-list" *ngIf="filterStatus !== 'browser' && filteredUploads.length > 0">
         <div class="upload-row" *ngFor="let upload of filteredUploads">
           <div class="upload-thumbnail">
-            <img *ngIf="upload.fileType.startsWith('image/')" [src]="upload.url" alt="Preview" />
+            <img *ngIf="upload.fileType.startsWith('image/')" [src]="upload.url" alt="Preview" (error)="upload.url = null" />
             <video *ngIf="upload.fileType.startsWith('video/')" [src]="upload.url"></video>
           </div>
 
@@ -77,10 +81,110 @@
         </div>
       </div>
 
-      <div class="empty-state" *ngIf="filteredUploads.length === 0">
+      <div class="empty-state" *ngIf="filterStatus !== 'browser' && filteredUploads.length === 0">
         <mat-icon>check_circle</mat-icon>
         <p *ngIf="filterStatus === 'pending'">No pending uploads to review</p>
         <p *ngIf="filterStatus === 'all'">No uploads found</p>
+      </div>
+
+      <!-- Storage Browser: Folder List (shown when filterStatus === 'browser' && storageBrowserTab === 'list') -->
+      <div class="storage-browser" *ngIf="filterStatus === 'browser' && storageBrowserTab === 'list'">
+
+        <!-- Loading state -->
+        <div class="browser-loading" *ngIf="isLoadingFolders">
+          <mat-icon>sync</mat-icon>
+          <p>Loading folders...</p>
+        </div>
+
+        <!-- Error state -->
+        <div class="browser-error" *ngIf="folderError">
+          <mat-icon>error_outline</mat-icon>
+          <p>{{ folderError }}</p>
+          <button mat-button (click)="loadFolders()">Retry</button>
+        </div>
+
+        <!-- Pending Uploads Section -->
+        <div class="folder-section" *ngIf="!isLoadingFolders && pendingFolders.length > 0">
+          <div class="section-header">
+            <mat-icon>hourglass_empty</mat-icon>
+            <span>Pending Uploads (userUploads)</span>
+            <span class="folder-count">{{ pendingFolders.length }}</span>
+          </div>
+          <div class="folder-list">
+            <div class="folder-row" *ngFor="let folder of pendingFolders" (click)="onFolderClick(folder)">
+              <mat-icon class="folder-icon">folder</mat-icon>
+              <div class="folder-info">
+                <div class="folder-name">{{ folder.name }}</div>
+                <div class="folder-meta">{{ folder.fileCount }} files</div>
+              </div>
+              <button mat-icon-button
+                      matTooltip="Download as ZIP"
+                      [disabled]="zipDownloadingFolder === folder.name"
+                      (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
+                <mat-icon *ngIf="zipDownloadingFolder !== folder.name">zip_download</mat-icon>
+                <mat-icon *ngIf="zipDownloadingFolder === folder.name">sync</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approved Uploads Section -->
+        <div class="folder-section" *ngIf="!isLoadingFolders && approvedFolders.length > 0">
+          <div class="section-header">
+            <mat-icon>check_circle</mat-icon>
+            <span>Approved Uploads (photos)</span>
+            <span class="folder-count">{{ approvedFolders.length }}</span>
+          </div>
+          <div class="folder-list">
+            <div class="folder-row" *ngFor="let folder of approvedFolders" (click)="onFolderClick(folder)">
+              <mat-icon class="folder-icon">folder</mat-icon>
+              <div class="folder-info">
+                <div class="folder-name">{{ folder.name }}</div>
+                <div class="folder-meta">{{ folder.fileCount }} files</div>
+              </div>
+              <button mat-icon-button
+                      matTooltip="Download as ZIP"
+                      [disabled]="zipDownloadingFolder === folder.name"
+                      (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
+                <mat-icon *ngIf="zipDownloadingFolder !== folder.name">zip_download</mat-icon>
+                <mat-icon *ngIf="zipDownloadingFolder === folder.name">sync</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!isLoadingFolders && pendingFolders.length === 0 && approvedFolders.length === 0 && !folderError">
+          <mat-icon>folder_open</mat-icon>
+          <p>No upload folders found</p>
+        </div>
+      </div>
+
+      <!-- Storage Browser: File List (shown when filterStatus === 'browser' && storageBrowserTab === 'files') -->
+      <div class="file-browser" *ngIf="filterStatus === 'browser' && storageBrowserTab === 'files'">
+        <div class="breadcrumb">
+          <button mat-button (click)="backToFolderList()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to folders
+          </button>
+          <span class="breadcrumb-path">{{ breadcrumbPath }}</span>
+        </div>
+
+        <div class="files-grid" *ngIf="currentFolderFiles.length > 0">
+          <div class="file-card" *ngFor="let file of currentFolderFiles">
+            <div class="file-thumbnail">
+              <img *ngIf="file.isImage && file.downloadUrl" [src]="file.downloadUrl" [alt]="file.name" />
+              <mat-icon *ngIf="!file.isImage || !file.downloadUrl">insert_drive_file</mat-icon>
+            </div>
+            <div class="file-name" [matTooltip]="file.name">{{ file.name }}</div>
+            <div class="file-size">{{ formatFileSize(file.size) }}</div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="currentFolderFiles.length === 0">
+          <mat-icon>folder_open</mat-icon>
+          <p>This folder is empty</p>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>

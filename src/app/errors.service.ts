@@ -34,16 +34,22 @@ export class ErrorsService {
   ) {}
 
   checkForNoInputsOnLogin(user: User) {
+    const authContainer = window.document.getElementById(
+      ErrorsConstants.SELECTORS.AUTH_CONTAINER,
+    );
+
+    // Only run the check on pages that have the FirebaseUI auth container (login page)
+    // Skip for public pages like /upload that don't have auth UI
+    if (!authContainer) {
+      return;
+    }
+
     setTimeout(() => {
       const navbarLinks = window.document.getElementById(
         ErrorsConstants.SELECTORS.NAVBAR_LINKS,
       );
 
-      const authContainer = window.document.getElementById(
-        ErrorsConstants.SELECTORS.AUTH_CONTAINER,
-      );
-
-      if (!navbarLinks && !authContainer.children.length) {
+      if (!navbarLinks && (!authContainer || !authContainer.children.length)) {
         this.analyticsService.logEvent(
           ErrorsConstants.EVENTS.NO_INPUTS_ON_LOGIN_ERROR,
           {

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/compat/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { finalize, take } from 'rxjs/operators';
 import { UserUpload, UploaderInfo } from '../models/user-upload';
 import { PhotoAlbum } from '../models/media/photo-album';
 import { AnalyticsService } from './analytics.service';
@@ -18,6 +19,7 @@ export class UserUploadService {
   constructor(
     private storage: AngularFireStorage,
     private db: AngularFireDatabase,
+    private auth: AngularFireAuth,
     private analytics: AnalyticsService,
   ) {}
 
@@ -43,7 +45,7 @@ export class UserUploadService {
     return name.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  async uploadFile(file: File, suggestedEvent: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: AngularFireUploadTask, uploadId: string }> {
+  async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: AngularFireUploadTask, uploadId: string }> {
     const uploadId = this.db.createPushId();
     const now = new Date();
     const datePart = now.toISOString().split('T')[0];
@@ -56,52 +58,70 @@ export class UserUploadService {
     } else {
       const timePart = hrs + mins + secs;
       const dateFolder = `${datePart}-${timePart}`;
-      const sanitizedEvent = suggestedEvent ? `${this.sanitizeName(suggestedEvent)}_` : '';
+      const sanitizedEvent = eventName ? `${this.sanitizeName(eventName)}_` : '';
       const namePart = uploaderName ? `${this.sanitizeName(uploaderName)}_` : 'Anonymous_';
       folderName = `${sanitizedEvent}${namePart}${dateFolder}`;
     }
 
     let path = `${this.userUploadsRef}/${folderName}/${file.name}`;
 
-    // Handle name conflicts in the same folder by appending wall-clock time
-    try {
-      const existingRef = this.storage.ref(path);
-      await existingRef.getDownloadURL().toPromise();
-      // File exists at this path, append wall-clock time to filename
-      const ext = file.name.includes('.') ? '.' + file.name.split('.').pop() : '';
-      const baseName = ext ? file.name.slice(0, -ext.length) : file.name;
-      const wallClock = hrs + mins + secs;
-      const newFileName = `${baseName}_${wallClock}${ext}`;
-      path = `${this.userUploadsRef}/${folderName}/${newFileName}`;
-    } catch {
-      // No conflict, path is fine
-    }
-
     const fileRef: AngularFireStorageReference = this.storage.ref(path);
     const task: AngularFireUploadTask = this.storage.upload(path, file);
 
     task.snapshotChanges().pipe(
+      take(1),
       finalize(() => {
-        fileRef.getDownloadURL().subscribe(url => {
-          const upload: UserUpload = {
-            id: uploadId,
-            url,
-            path,
-            dateAdded: new Date(),
-            suggestedEvent,
-            status: 'pending',
-            uploader,
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-          };
-          this.db.list(this.userUploadsRef).update(uploadId, upload);
-          this.analytics.logEvent('file_upload', {
-            file_type: file.type,
-            file_size: file.size,
-            suggested_event: suggestedEvent || 'none',
-            batch_id: batchId || 'single',
-          });
+        this.auth.authState.pipe(take(1)).subscribe({
+          next: user => {
+            if (user) {
+              fileRef.getDownloadURL().subscribe(url => {
+                const upload: UserUpload = {
+                  id: uploadId,
+                  url,
+                  path,
+                  dateAdded: new Date(),
+                  eventName,
+                  status: 'pending',
+                  uploader,
+                  fileName: file.name,
+                  fileType: file.type,
+                  fileSize: file.size,
+                };
+                this.db.list(this.userUploadsRef).update(uploadId, upload);
+                this.analytics.logEvent('file_upload', {
+                  file_type: file.type,
+                  file_size: file.size,
+                  event_name: eventName || 'none',
+                  batch_id: batchId || 'single',
+                });
+              });
+            } else {
+              // No auth — skip getDownloadURL (would 403 on read since read requires auth).
+              // Admin fills in the URL when they approve the upload.
+              const upload: UserUpload = {
+                id: uploadId,
+                url: '',
+                path,
+                dateAdded: new Date(),
+                eventName,
+                status: 'pending',
+                uploader,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+              };
+              this.db.list(this.userUploadsRef).update(uploadId, upload);
+              this.analytics.logEvent('file_upload', {
+                file_type: file.type,
+                file_size: file.size,
+                event_name: eventName || 'none',
+                batch_id: batchId || 'single',
+              });
+            }
+          },
+          error: err => {
+            console.error('Failed to write upload record to RTDB:', err);
+          }
         });
       })
     ).subscribe();
@@ -112,8 +132,11 @@ export class UserUploadService {
   async approveUpload(upload: UserUpload): Promise<void> {
     const storage = this.storage.storage;
 
-    // Cast to any to access native SDK methods not exposed in AngularFire types
-    const sourceRef = storage.refFromURL(upload.url) as any;
+    // Use path when URL is empty (unauthenticated upload);
+    // otherwise resolve from the stored URL.
+    const sourceRef = upload.url
+      ? (storage.refFromURL(upload.url) as any)
+      : (storage.ref(upload.path) as any);
     const fileName = upload.path.split('/').pop();
     const pathParts = upload.path.split('/');
     // path: userUploads/{uploaderName}_{date}/{fileName}
@@ -138,7 +161,7 @@ export class UserUploadService {
   private async createPhotoAlbum(upload: UserUpload, url: string, path: string): Promise<void> {
     const album = new PhotoAlbum();
     album.id = upload.id;
-    album.title = upload.suggestedEvent || 'Untitled Event';
+    album.title = upload.eventName || 'Untitled Event';
     album.date = new Date().toISOString().split('T')[0];
     album.listing = [upload.id];
     album.urls = { download: url, icon: url };
