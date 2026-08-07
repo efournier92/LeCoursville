@@ -15,6 +15,15 @@ TestBed.configureTestingModule({
   imports: [TestSharedModule, AppModule],
 });
 
+// Vitest runs all spec files in one worker (isolate=false), so the global
+// TestBed survives across files and one file's configureTestingModule() leaks
+// into the next — this caused order-dependent failures (e.g. a component
+// "should create" test failing only when a minimal-config spec ran before it).
+// Reset after every test so each spec file starts from the same state.
+afterEach(() => {
+  TestBed.resetTestingModule();
+});
+
 (globalThis as any).spyOn = vi.spyOn;
 
 function makeSpy(fn?: (...args: unknown[]) => unknown): any {
