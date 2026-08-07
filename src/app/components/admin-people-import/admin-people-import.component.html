@@ -151,7 +151,7 @@
               <mat-icon>close</mat-icon>
               Cancel
             </button>
-            <button mat-raised-button color="primary" (click)="confirmImport()" [disabled]="isImporting">
+            <button mat-flat-button color="primary" (click)="confirmImport()" [disabled]="isImporting">
               <mat-icon>check</mat-icon>
               {{ isImporting ? 'Importing...' : 'Confirm Import' }}
             </button>

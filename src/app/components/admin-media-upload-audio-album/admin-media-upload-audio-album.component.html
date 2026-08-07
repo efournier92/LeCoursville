@@ -64,7 +64,7 @@
           >Should Hide from Lists?</mat-checkbox
           >
           <button
-            mat-raised-button
+            mat-flat-button
             color="primary"
             class="admin-form-action-button admin-form-action-button-upload w-100"
             (click)="onUploadSelectedMedia()"
@@ -77,7 +77,7 @@
             }
           </button>
           <button
-            mat-raised-button
+            mat-flat-button
             color="accent"
             class="admin-form-action-button admin-form-action-button-cancel w-100"
             (click)="onCancelSelectedMedia(album)"
@@ -86,7 +86,7 @@
           </button>
           @if (album.id) {
             <button
-              mat-raised-button
+              mat-flat-button
               color="warn"
               class="admin-form-action-button admin-form-action-button-delete w-100"
               (click)="onDeleteSelectedMedia(album)"

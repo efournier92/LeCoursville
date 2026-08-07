@@ -11,6 +11,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from "@angular/common/http";
 import { MaterialModule } from "src/app/modules/material.module";
 import { NgxExtendedPdfViewerModule } from "ngx-extended-pdf-viewer";
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from "@angular/material/form-field";
 
 // Declarations
 import { AdminComponent } from "src/app/components/admin/admin.component";
@@ -141,5 +142,5 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
         PageToolbarComponent,
         PhotoUploadProgressComponent,
         NgxExtendedPdfViewerModule,
-        ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi())] })
+        ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi()), { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: "outline" } }] })
 export class AppModule {}

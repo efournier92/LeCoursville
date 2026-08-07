@@ -55,6 +55,20 @@ $theme: mat.define-theme(
 html {
   color-scheme: light;
   @include mat.all-component-themes($theme);
+  // M3 drops the color="primary" palette variants for mat-toolbar, so the top
+  // nav rendered as plain surface. Restore brand green via toolbar tokens.
+  @include mat.toolbar-overrides((
+    container-background-color: var(--color-brand-primary),
+    container-text-color: #ffffff,
+  ));
+}
+
+/* White nav controls on the green toolbar (nav links + menu toggle) */
+mat-toolbar {
+  .mat-mdc-button,
+  .mat-mdc-icon-button {
+    color: #ffffff;
+  }
 }
 
 html,
