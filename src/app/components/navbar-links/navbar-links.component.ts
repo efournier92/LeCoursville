@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { FEATURES, ACCOUNT_FEATURE, UPLOAD_FEATURE, FeatureConfig } from 'src/app/config/feature-config';
 
@@ -12,6 +12,7 @@ export interface LinkableButton {
     selector: 'app-navbar-links',
     templateUrl: './navbar-links.component.html',
     styleUrls: ['./navbar-links.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class NavbarLinksComponent implements OnInit {

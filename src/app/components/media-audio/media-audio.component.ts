@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
@@ -10,6 +10,7 @@ import { AuthService } from 'src/app/services/auth.service';
     selector: 'app-media-audio',
     templateUrl: './media-audio.component.html',
     styleUrls: ['./media-audio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaAudioComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Person } from 'src/app/models/person';
@@ -12,6 +12,7 @@ import { ClanService } from 'src/app/services/clan.service';
     selector: 'app-person-detail-modal',
     templateUrl: './person-detail-modal.component.html',
     styleUrls: ['./person-detail-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges {

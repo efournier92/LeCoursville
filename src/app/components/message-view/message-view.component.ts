@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { AuthService } from 'src/app/services/auth.service';
 import { Message, Like } from 'src/app/models/message';
@@ -12,6 +12,7 @@ import { MessageConstants } from 'src/app/constants/message-constants';
     selector: 'app-message-view',
     templateUrl: './message-view.component.html',
     styleUrls: ['./message-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export abstract class MessageViewComponent implements OnInit {

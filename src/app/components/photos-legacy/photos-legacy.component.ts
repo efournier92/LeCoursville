@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { Observable, BehaviorSubject } from "rxjs";
 import { PhotosService, PhotoUpload } from "src/app/services/photos.service";
@@ -19,6 +19,7 @@ declare global {
     selector: "app-photos-legacy",
     templateUrl: "./photos-legacy.component.html",
     styleUrls: ["./photos-legacy.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PhotosLegacyComponent implements OnInit {

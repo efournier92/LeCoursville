@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -23,16 +23,16 @@ export type PhotoAlbumPickerDialogResult =
     selector: 'app-photo-album-picker-dialog',
     templateUrl: './photo-album-picker-dialog.component.html',
     styleUrls: ['./photo-album-picker-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
-        CommonModule,
-        FormsModule,
-        MatButtonModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatRadioModule,
-        MatSelectModule,
-    ]
+    FormsModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    MatSelectModule
+]
 })
 export class PhotoAlbumPickerDialogComponent {
   mode: 'existing' | 'new' = 'new';

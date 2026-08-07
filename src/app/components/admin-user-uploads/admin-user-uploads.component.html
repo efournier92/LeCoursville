@@ -7,9 +7,11 @@
           <mat-card-subtitle>Review and moderate guest submissions</mat-card-subtitle>
         </div>
         <div class="header-stats">
-          <span class="pending-badge" *ngIf="pendingCount > 0">
-            {{ pendingCount }} pending
-          </span>
+          @if (pendingCount > 0) {
+            <span class="pending-badge">
+              {{ pendingCount }} pending
+            </span>
+          }
         </div>
       </div>
     </mat-card-header>
@@ -30,175 +32,226 @@
       </div>
 
       <!-- Existing Pending/All list (shown when filterStatus is 'pending' or 'all') -->
-      <div class="uploads-list" *ngIf="filterStatus !== 'browser' && filteredUploads.length > 0">
-        <div class="upload-row" *ngFor="let upload of filteredUploads">
-          <div class="upload-thumbnail">
-            <img *ngIf="upload.fileType.startsWith('image/')" [src]="upload.url" alt="Preview" (error)="upload.url = null" />
-            <video *ngIf="upload.fileType.startsWith('video/')" [src]="upload.url"></video>
-          </div>
-
-          <div class="upload-info">
-            <div class="upload-filename">{{ upload.fileName }}</div>
-            <div class="upload-meta">
-              <span class="meta-item">
-                <mat-icon>category</mat-icon>
-                {{ upload.fileType }}
-              </span>
-              <span class="meta-item">
-                <mat-icon>storage</mat-icon>
-                {{ formatFileSize(upload.fileSize) }}
-              </span>
-              <span class="meta-item" *ngIf="upload.suggestedEvent">
-                <mat-icon>event</mat-icon>
-                {{ upload.suggestedEvent }}
-              </span>
-              <span class="meta-item">
-                <mat-icon>schedule</mat-icon>
-                {{ upload.dateAdded | date:'short' }}
-              </span>
+      @if (filterStatus !== 'browser' && filteredUploads.length > 0) {
+        <div class="uploads-list">
+          @for (upload of filteredUploads; track upload) {
+            <div class="upload-row">
+              <div class="upload-thumbnail">
+                @if (upload.fileType.startsWith('image/')) {
+                  <img [src]="upload.url" alt="Preview" (error)="upload.url = null" />
+                }
+                @if (upload.fileType.startsWith('video/')) {
+                  <video [src]="upload.url"></video>
+                }
+              </div>
+              <div class="upload-info">
+                <div class="upload-filename">{{ upload.fileName }}</div>
+                <div class="upload-meta">
+                  <span class="meta-item">
+                    <mat-icon>category</mat-icon>
+                    {{ upload.fileType }}
+                  </span>
+                  <span class="meta-item">
+                    <mat-icon>storage</mat-icon>
+                    {{ formatFileSize(upload.fileSize) }}
+                  </span>
+                  @if (upload.suggestedEvent) {
+                    <span class="meta-item">
+                      <mat-icon>event</mat-icon>
+                      {{ upload.suggestedEvent }}
+                    </span>
+                  }
+                  <span class="meta-item">
+                    <mat-icon>schedule</mat-icon>
+                    {{ upload.dateAdded | date:'short' }}
+                  </span>
+                </div>
+                <div class="upload-status" [class]="upload.status">
+                  <span class="status-dot"></span>
+                  {{ getStatusLabel(upload) }}
+                </div>
+              </div>
+              <div class="upload-actions">
+                <button mat-icon-button (click)="onPreview(upload)" matTooltip="Preview">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" (click)="onApprove(upload)"
+                  [disabled]="isProcessing(upload.id) || upload.status !== 'pending'"
+                  matTooltip="Approve">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="onReject(upload)"
+                  [disabled]="isProcessing(upload.id)"
+                  matTooltip="Reject">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
-            <div class="upload-status" [class]="upload.status">
-              <span class="status-dot"></span>
-              {{ getStatusLabel(upload) }}
-            </div>
-          </div>
-
-          <div class="upload-actions">
-            <button mat-icon-button (click)="onPreview(upload)" matTooltip="Preview">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button color="primary" (click)="onApprove(upload)"
-                    [disabled]="isProcessing(upload.id) || upload.status !== 'pending'"
-                    matTooltip="Approve">
-              <mat-icon>check</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="onReject(upload)"
-                    [disabled]="isProcessing(upload.id)"
-                    matTooltip="Reject">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
+          }
         </div>
-      </div>
+      }
 
-      <div class="empty-state" *ngIf="filterStatus !== 'browser' && filteredUploads.length === 0">
-        <mat-icon>check_circle</mat-icon>
-        <p *ngIf="filterStatus === 'pending'">No pending uploads to review</p>
-        <p *ngIf="filterStatus === 'all'">No uploads found</p>
-      </div>
+      @if (filterStatus !== 'browser' && filteredUploads.length === 0) {
+        <div class="empty-state">
+          <mat-icon>check_circle</mat-icon>
+          @if (filterStatus === 'pending') {
+            <p>No pending uploads to review</p>
+          }
+          @if (filterStatus === 'all') {
+            <p>No uploads found</p>
+          }
+        </div>
+      }
 
       <!-- Storage Browser: Folder List (shown when filterStatus === 'browser' && storageBrowserTab === 'list') -->
-      <div class="storage-browser" *ngIf="filterStatus === 'browser' && storageBrowserTab === 'list'">
-
-        <!-- Loading state -->
-        <div class="browser-loading" *ngIf="isLoadingFolders">
-          <mat-icon>sync</mat-icon>
-          <p>Loading folders...</p>
-        </div>
-
-        <!-- Error state -->
-        <div class="browser-error" *ngIf="folderError">
-          <mat-icon>error_outline</mat-icon>
-          <p>{{ folderError }}</p>
-          <button mat-button (click)="loadFolders()">Retry</button>
-        </div>
-
-        <!-- Pending Uploads Section -->
-        <div class="folder-section" *ngIf="!isLoadingFolders && pendingFolders.length > 0">
-          <div class="section-header">
-            <mat-icon>hourglass_empty</mat-icon>
-            <span>Pending Uploads (userUploads)</span>
-            <span class="folder-count">{{ pendingFolders.length }}</span>
-          </div>
-          <div class="folder-list">
-            <div class="folder-row" *ngFor="let folder of pendingFolders" (click)="onFolderClick(folder)">
-              <mat-icon class="folder-icon">folder</mat-icon>
-              <div class="folder-info">
-                <div class="folder-name">{{ folder.name }}</div>
-                <div class="folder-meta">{{ folder.fileCount }} files</div>
+      @if (filterStatus === 'browser' && storageBrowserTab === 'list') {
+        <div class="storage-browser">
+          <!-- Loading state -->
+          @if (isLoadingFolders) {
+            <div class="browser-loading">
+              <mat-icon>sync</mat-icon>
+              <p>Loading folders...</p>
+            </div>
+          }
+          <!-- Error state -->
+          @if (folderError) {
+            <div class="browser-error">
+              <mat-icon>error_outline</mat-icon>
+              <p>{{ folderError }}</p>
+              <button mat-button (click)="loadFolders()">Retry</button>
+            </div>
+          }
+          <!-- Pending Uploads Section -->
+          @if (!isLoadingFolders && pendingFolders.length > 0) {
+            <div class="folder-section">
+              <div class="section-header">
+                <mat-icon>hourglass_empty</mat-icon>
+                <span>Pending Uploads (userUploads)</span>
+                <span class="folder-count">{{ pendingFolders.length }}</span>
               </div>
-              <button mat-icon-button
+              <div class="folder-list">
+                @for (folder of pendingFolders; track folder) {
+                  <div class="folder-row" (click)="onFolderClick(folder)">
+                    <mat-icon class="folder-icon">folder</mat-icon>
+                    <div class="folder-info">
+                      <div class="folder-name">{{ folder.name }}</div>
+                      <div class="folder-meta">{{ folder.fileCount }} files</div>
+                    </div>
+                    <button mat-icon-button
                       matTooltip="Download as ZIP"
                       [disabled]="zipDownloadingFolder === folder.name"
                       (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
-                <mat-icon *ngIf="zipDownloadingFolder !== folder.name">zip_download</mat-icon>
-                <mat-icon *ngIf="zipDownloadingFolder === folder.name">sync</mat-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Approved Uploads Section -->
-        <div class="folder-section" *ngIf="!isLoadingFolders && approvedFolders.length > 0">
-          <div class="section-header">
-            <mat-icon>check_circle</mat-icon>
-            <span>Approved Uploads (photos)</span>
-            <span class="folder-count">{{ approvedFolders.length }}</span>
-          </div>
-          <div class="folder-list">
-            <div class="folder-row" *ngFor="let folder of approvedFolders" (click)="onFolderClick(folder)">
-              <mat-icon class="folder-icon">folder</mat-icon>
-              <div class="folder-info">
-                <div class="folder-name">{{ folder.name }}</div>
-                <div class="folder-meta">{{ folder.fileCount }} files</div>
+                      @if (zipDownloadingFolder !== folder.name) {
+                        <mat-icon>zip_download</mat-icon>
+                      }
+                      @if (zipDownloadingFolder === folder.name) {
+                        <mat-icon>sync</mat-icon>
+                      }
+                    </button>
+                  </div>
+                }
               </div>
-              <button mat-icon-button
+            </div>
+          }
+          <!-- Approved Uploads Section -->
+          @if (!isLoadingFolders && approvedFolders.length > 0) {
+            <div class="folder-section">
+              <div class="section-header">
+                <mat-icon>check_circle</mat-icon>
+                <span>Approved Uploads (photos)</span>
+                <span class="folder-count">{{ approvedFolders.length }}</span>
+              </div>
+              <div class="folder-list">
+                @for (folder of approvedFolders; track folder) {
+                  <div class="folder-row" (click)="onFolderClick(folder)">
+                    <mat-icon class="folder-icon">folder</mat-icon>
+                    <div class="folder-info">
+                      <div class="folder-name">{{ folder.name }}</div>
+                      <div class="folder-meta">{{ folder.fileCount }} files</div>
+                    </div>
+                    <button mat-icon-button
                       matTooltip="Download as ZIP"
                       [disabled]="zipDownloadingFolder === folder.name"
                       (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
-                <mat-icon *ngIf="zipDownloadingFolder !== folder.name">zip_download</mat-icon>
-                <mat-icon *ngIf="zipDownloadingFolder === folder.name">sync</mat-icon>
-              </button>
+                      @if (zipDownloadingFolder !== folder.name) {
+                        <mat-icon>zip_download</mat-icon>
+                      }
+                      @if (zipDownloadingFolder === folder.name) {
+                        <mat-icon>sync</mat-icon>
+                      }
+                    </button>
+                  </div>
+                }
+              </div>
             </div>
-          </div>
+          }
+          <!-- Empty state -->
+          @if (!isLoadingFolders && pendingFolders.length === 0 && approvedFolders.length === 0 && !folderError) {
+            <div class="empty-state">
+              <mat-icon>folder_open</mat-icon>
+              <p>No upload folders found</p>
+            </div>
+          }
         </div>
-
-        <!-- Empty state -->
-        <div class="empty-state" *ngIf="!isLoadingFolders && pendingFolders.length === 0 && approvedFolders.length === 0 && !folderError">
-          <mat-icon>folder_open</mat-icon>
-          <p>No upload folders found</p>
-        </div>
-      </div>
+      }
 
       <!-- Storage Browser: File List (shown when filterStatus === 'browser' && storageBrowserTab === 'files') -->
-      <div class="file-browser" *ngIf="filterStatus === 'browser' && storageBrowserTab === 'files'">
-        <div class="breadcrumb">
-          <button mat-button (click)="backToFolderList()">
-            <mat-icon>arrow_back</mat-icon>
-            Back to folders
-          </button>
-          <span class="breadcrumb-path">{{ breadcrumbPath }}</span>
-        </div>
-
-        <div class="files-grid" *ngIf="currentFolderFiles.length > 0">
-          <div class="file-card" *ngFor="let file of currentFolderFiles">
-            <div class="file-thumbnail">
-              <img *ngIf="file.isImage && file.downloadUrl" [src]="file.downloadUrl" [alt]="file.name" />
-              <mat-icon *ngIf="!file.isImage || !file.downloadUrl">insert_drive_file</mat-icon>
-            </div>
-            <div class="file-name" [matTooltip]="file.name">{{ file.name }}</div>
-            <div class="file-size">{{ formatFileSize(file.size) }}</div>
+      @if (filterStatus === 'browser' && storageBrowserTab === 'files') {
+        <div class="file-browser">
+          <div class="breadcrumb">
+            <button mat-button (click)="backToFolderList()">
+              <mat-icon>arrow_back</mat-icon>
+              Back to folders
+            </button>
+            <span class="breadcrumb-path">{{ breadcrumbPath }}</span>
           </div>
+          @if (currentFolderFiles.length > 0) {
+            <div class="files-grid">
+              @for (file of currentFolderFiles; track file) {
+                <div class="file-card">
+                  <div class="file-thumbnail">
+                    @if (file.isImage && file.downloadUrl) {
+                      <img [src]="file.downloadUrl" [alt]="file.name" />
+                    }
+                    @if (!file.isImage || !file.downloadUrl) {
+                      <mat-icon>insert_drive_file</mat-icon>
+                    }
+                  </div>
+                  <div class="file-name" [matTooltip]="file.name">{{ file.name }}</div>
+                  <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                </div>
+              }
+            </div>
+          }
+          @if (currentFolderFiles.length === 0) {
+            <div class="empty-state">
+              <mat-icon>folder_open</mat-icon>
+              <p>This folder is empty</p>
+            </div>
+          }
         </div>
-
-        <div class="empty-state" *ngIf="currentFolderFiles.length === 0">
-          <mat-icon>folder_open</mat-icon>
-          <p>This folder is empty</p>
-        </div>
-      </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>
 
 <!-- Preview Dialog -->
 <ng-template #previewDialog>
-  <div class="preview-container" *ngIf="previewUpload">
-    <img *ngIf="previewUpload.fileType.startsWith('image/')" [src]="previewUpload.url" alt="Preview" />
-    <video *ngIf="previewUpload.fileType.startsWith('video/')" [src]="previewUpload.url" controls></video>
-    <div class="preview-info">
-      <h3>{{ previewUpload.fileName }}</h3>
-      <p *ngIf="previewUpload.suggestedEvent">Event: {{ previewUpload.suggestedEvent }}</p>
-      <p>Size: {{ formatFileSize(previewUpload.fileSize) }}</p>
+  @if (previewUpload) {
+    <div class="preview-container">
+      @if (previewUpload.fileType.startsWith('image/')) {
+        <img [src]="previewUpload.url" alt="Preview" />
+      }
+      @if (previewUpload.fileType.startsWith('video/')) {
+        <video [src]="previewUpload.url" controls></video>
+      }
+      <div class="preview-info">
+        <h3>{{ previewUpload.fileName }}</h3>
+        @if (previewUpload.suggestedEvent) {
+          <p>Event: {{ previewUpload.suggestedEvent }}</p>
+        }
+        <p>Size: {{ formatFileSize(previewUpload.fileSize) }}</p>
+      </div>
     </div>
-  </div>
+  }
 </ng-template>

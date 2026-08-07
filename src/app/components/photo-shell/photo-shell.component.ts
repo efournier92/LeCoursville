@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 
@@ -6,6 +6,7 @@ import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
     selector: 'app-photo-shell',
     templateUrl: './photo-shell.component.html',
     styleUrls: ['./photo-shell.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PhotoShellComponent implements OnInit, OnDestroy {

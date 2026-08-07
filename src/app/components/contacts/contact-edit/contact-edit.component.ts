@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Contact, Phone, Address, Email } from 'src/app/models/contact';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
@@ -11,6 +11,7 @@ import { ArrayService } from 'src/app/services/array.service';
     selector: 'app-contact-edit',
     templateUrl: './contact-edit.component.html',
     styleUrls: ['./contact-edit.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ContactEditComponent implements OnInit {

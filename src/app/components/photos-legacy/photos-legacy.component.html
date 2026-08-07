@@ -11,16 +11,17 @@
                 [(ngModel)]="searchTerm"
                 name="searchTerm"
                 (ngModelChange)="onSearchTermChange($event)"
-              />
-              <button
-                *ngIf="searchTerm !== ''"
-                matSuffix
-                mat-icon-button
-                aria-label="Clear"
-                (click)="clearSearchTerm()"
-              >
-                <mat-icon>close</mat-icon>
-              </button>
+                />
+              @if (searchTerm !== '') {
+                <button
+                  matSuffix
+                  mat-icon-button
+                  aria-label="Clear"
+                  (click)="clearSearchTerm()"
+                  >
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
             </mat-form-field>
           </div>
 
@@ -28,7 +29,7 @@
             <button
               mat-stroked-button
               [matMenuTriggerFor]="menu"
-            >
+              >
               Sort
             </button>
             <mat-menu #menu="matMenu">
@@ -56,188 +57,208 @@
             >Recently Added</button>
           </div>
 
-          <button *ngIf="user && user.roles && user.roles.admin" mat-stroked-button class="photos-upload-button">
-            <label class="photos-add-button-label">
-              <mat-icon>add_photo_alternate</mat-icon> Add Photos
-              <input type="file" accept="image/*" multiple hidden
-                     (change)="uploadPhotos($event.target.files)" />
-            </label>
-          </button>
+          @if (user && user.roles && user.roles.admin) {
+            <button mat-stroked-button class="photos-upload-button">
+              <label class="photos-add-button-label">
+                <mat-icon>add_photo_alternate</mat-icon> Add Photos
+                <input type="file" accept="image/*" multiple hidden
+                  (change)="uploadPhotos($event.target.files)" />
+              </label>
+            </button>
+          }
         </div>
       </div>
     </app-page-toolbar>
 
     <div class="d-flex flex-column">
-      <app-photo-upload-progress
-        *ngFor="let upload of photoUploads"
-        [upload]="upload"
-        (completeUploadEvent)="completePhotoUpload(upload)"
-      ></app-photo-upload-progress>
+      @for (upload of photoUploads; track upload) {
+        <app-photo-upload-progress
+          [upload]="upload"
+          (completeUploadEvent)="completePhotoUpload(upload)"
+        ></app-photo-upload-progress>
+      }
     </div>
 
-    <div
-      class="photos-skeleton-grid"
-      *ngIf="showSpinner"
-    >
+    @if (showSpinner) {
       <div
-        class="photos-skeleton-card"
-        *ngFor="let i of skeletonIterations"
-      >
-        <div class="skeleton-image"></div>
-        <div class="skeleton-photo-info">
-          <div class="skeleton-photo-line short"></div>
-          <div class="skeleton-photo-line xs"></div>
-          <div class="skeleton-photo-line medium"></div>
-          <div class="skeleton-photo-line"></div>
-        </div>
+        class="photos-skeleton-grid"
+        >
+        @for (i of skeletonIterations; track i) {
+          <div
+            class="photos-skeleton-card"
+            >
+            <div class="skeleton-image"></div>
+            <div class="skeleton-photo-info">
+              <div class="skeleton-photo-line short"></div>
+              <div class="skeleton-photo-line xs"></div>
+              <div class="skeleton-photo-line medium"></div>
+              <div class="skeleton-photo-line"></div>
+            </div>
+          </div>
+        }
       </div>
-    </div>
+    }
   </div>
 
   <div [hidden]="showSpinner">
-    <mat-card
-      class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6 mt-3 mb-3"
-      *ngFor="let photo of loadedPhotos"
-    >
-      <img
-        class="photo-image"
-        mat-card-image
-        src="{{ photo.url }}"
-        alt="{{ photo.info }}"
-      />
-      <mat-card-content *ngIf="!photo.isEditable">
-        <div class="photo-by">
-          <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br /></span>
-        </div>
-        <div class="mt-1">
-          <span *ngIf="photo.info">{{ photo.info }}<br /></span>
-          <span *ngIf="photo.location">{{ photo.location }}<br /></span>
-          <span *ngIf="photo.year"
-            ><i
-              ><span *ngIf="photo.isYearCirca">c. </span>{{ photo.year
-              }}<br /></i
-          ></span>
-        </div>
-      </mat-card-content>
-      <mat-card-footer
-        class="photos-controls-container d-flex justify-content-end mb-1"
-      >
-        <button
-          mat-icon-button
-          (click)="downloadPhoto(photo)"
-          *ngIf="!photo.isEditable"
-          matTooltip="Download"
+    @for (photo of loadedPhotos; track photo) {
+      <mat-card
+        class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6 mt-3 mb-3"
         >
-          <mat-icon>cloud_download</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          *ngIf="user.roles && user.roles.admin && !photo.isEditable"
-          (click)="photo.isEditable = true"
-          matTooltip="Edit"
-        >
-          <mat-icon>edit</mat-icon>
-        </button>
-      </mat-card-footer>
-      <mat-card-footer
-        *ngIf="user.roles && user.roles.admin && photo.isEditable"
-        class="photo-edit-footer"
-      >
-        <div class="photo-edit-form">
-          <mat-form-field class="photo-edit-field">
-            <mat-label>Info</mat-label>
-            <input
-              matInput
-              name="photoInfo"
-              [(ngModel)]="photo.info"
-            />
-          </mat-form-field>
-
-          <mat-form-field class="photo-edit-field photo-edit-field--full">
-            <mat-label>Location</mat-label>
-            <input
-              matInput
-              name="photo-location"
-              [(ngModel)]="photo.location"
-            />
-          </mat-form-field>
-
-          <div class="photo-edit-row">
-            <mat-form-field class="photo-edit-field year-field">
-              <mat-label>Year</mat-label>
-              <input
-                matInput
-                type="number"
-                name="photoYear"
-                [(ngModel)]="photo.year"
-              />
-            </mat-form-field>
-
-            <mat-checkbox
-              name="photo-year-circa"
-              [(ngModel)]="photo.isYearCirca"
-              class="photo-edit-checkbox"
+        <img
+          class="photo-image"
+          mat-card-image
+          src="{{ photo.url }}"
+          alt="{{ photo.info }}"
+          />
+        @if (!photo.isEditable) {
+          <mat-card-content>
+            <div class="photo-by">
+              @if (photo.takenBy) {
+                <span>{{ photo.takenBy }}<br /></span>
+              }
+            </div>
+            <div class="mt-1">
+              @if (photo.info) {
+                <span>{{ photo.info }}<br /></span>
+              }
+              @if (photo.location) {
+                <span>{{ photo.location }}<br /></span>
+              }
+              @if (photo.year) {
+                <span
+                  ><i
+                  >@if (photo.isYearCirca) {
+                  <span>c. </span>
+                  }{{ photo.year
+                  }}<br /></i
+                ></span>
+              }
+            </div>
+          </mat-card-content>
+        }
+        <mat-card-footer
+          class="photos-controls-container d-flex justify-content-end mb-1"
+          >
+          @if (!photo.isEditable) {
+            <button
+              mat-icon-button
+              (click)="downloadPhoto(photo)"
+              matTooltip="Download"
+              >
+              <mat-icon>cloud_download</mat-icon>
+            </button>
+          }
+          @if (user.roles && user.roles.admin && !photo.isEditable) {
+            <button
+              mat-icon-button
+              (click)="photo.isEditable = true"
+              matTooltip="Edit"
+              >
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+        </mat-card-footer>
+        @if (user.roles && user.roles.admin && photo.isEditable) {
+          <mat-card-footer
+            class="photo-edit-footer"
             >
-              <span class="photo-edit-checkbox-label">circa</span>
-            </mat-checkbox>
-          </div>
+            <div class="photo-edit-form">
+              <mat-form-field class="photo-edit-field">
+                <mat-label>Info</mat-label>
+                <input
+                  matInput
+                  name="photoInfo"
+                  [(ngModel)]="photo.info"
+                  />
+              </mat-form-field>
+              <mat-form-field class="photo-edit-field photo-edit-field--full">
+                <mat-label>Location</mat-label>
+                <input
+                  matInput
+                  name="photo-location"
+                  [(ngModel)]="photo.location"
+                  />
+              </mat-form-field>
+              <div class="photo-edit-row">
+                <mat-form-field class="photo-edit-field year-field">
+                  <mat-label>Year</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    name="photoYear"
+                    [(ngModel)]="photo.year"
+                    />
+                </mat-form-field>
+                <mat-checkbox
+                  name="photo-year-circa"
+                  [(ngModel)]="photo.isYearCirca"
+                  class="photo-edit-checkbox"
+                  >
+                  <span class="photo-edit-checkbox-label">circa</span>
+                </mat-checkbox>
+              </div>
+              <mat-form-field class="photo-edit-field">
+                <mat-label>Photo By</mat-label>
+                <input
+                  matInput
+                  name="photo-by"
+                  [(ngModel)]="photo.takenBy"
+                  />
+              </mat-form-field>
+            </div>
+            <div class="photo-edit-actions">
+              <button
+                mat-icon-button
+                (click)="deletePhoto(photo)"
+                matTooltip="Delete"
+                >
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="photo.isEditable = false"
+                matTooltip="Cancel"
+                >
+                <mat-icon>cancel</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="updatePhoto(photo)"
+                matTooltip="Save"
+                >
+                <mat-icon>save</mat-icon>
+              </button>
+            </div>
+          </mat-card-footer>
+        }
+      </mat-card>
+    }
 
-          <mat-form-field class="photo-edit-field">
-            <mat-label>Photo By</mat-label>
-            <input
-              matInput
-              name="photo-by"
-              [(ngModel)]="photo.takenBy"
-            />
-          </mat-form-field>
-        </div>
+    @if (loadedPhotos.length === 0 && searchTerm && !showSpinner) {
+      <app-no-results-message
+        [searchTerm]="searchTerm"
+      ></app-no-results-message>
+    }
 
-        <div class="photo-edit-actions">
-          <button
-            mat-icon-button
-            (click)="deletePhoto(photo)"
-            matTooltip="Delete"
+    @if (!(loadedPhotos.length === 0 && searchTerm && !showSpinner)) {
+      <div class="d-flex justify-content-center m-5">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="loadMorePhotos(10)"
           >
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="photo.isEditable = false"
-            matTooltip="Cancel"
-          >
-            <mat-icon>cancel</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="updatePhoto(photo)"
-            matTooltip="Save"
-          >
-            <mat-icon>save</mat-icon>
-          </button>
-        </div>
-      </mat-card-footer>
-    </mat-card>
-
-    <app-no-results-message
-      *ngIf="loadedPhotos.length === 0 && searchTerm && !showSpinner"
-      [searchTerm]="searchTerm"
-    ></app-no-results-message>
-
-    <div class="d-flex justify-content-center m-5" *ngIf="!(loadedPhotos.length === 0 && searchTerm && !showSpinner)">
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="loadMorePhotos(10)"
-      >
-        Load More
-      </button>
-    </div>
+          Load More
+        </button>
+      </div>
+    }
   </div>
 </div>
 
-<app-person-detail-modal
-  *ngIf="selectedPersonId"
-  [personId]="selectedPersonId"
-  (closeModal)="closeModal()"
-  (openPerson)="openPersonDetail($event)"
-></app-person-detail-modal>
+@if (selectedPersonId) {
+  <app-person-detail-modal
+    [personId]="selectedPersonId"
+    (closeModal)="closeModal()"
+    (openPerson)="openPersonDetail($event)"
+  ></app-person-detail-modal>
+}

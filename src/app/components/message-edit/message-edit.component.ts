@@ -5,6 +5,7 @@ import {
   ViewChild,
   Output,
   EventEmitter,
+  ChangeDetectionStrategy
 } from "@angular/core";
 import { CdkTextareaAutosize } from "@angular/cdk/text-field";
 import { Message } from "src/app/models/message";
@@ -22,6 +23,7 @@ import { AnalyticsService } from "src/app/services/analytics.service";
     selector: "app-message-edit",
     templateUrl: "./message-edit.component.html",
     styleUrls: ["./message-edit.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export abstract class MessageEditComponent implements OnInit {

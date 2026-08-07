@@ -1,23 +1,25 @@
-<div class="contact-card" *ngIf="contactCard" [style.border-left-color]="getClanColor()">
-  <div class="card-header">
-    <h3 class="person-name">
-      <span *ngIf="!contactCard?.spouse" class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span>
-      <ng-container *ngIf="contactCard?.spouse">
-        <ng-container *ngIf="hasSameLastName(); else differentLastNames">
-          <span class="clickable-name" (click)="onPersonNameClick()">{{ getCoupleNames()?.first }}</span><span class="couple-ampersand"> &amp; </span><span class="clickable-name" (click)="onSpouseNameClick()">{{ getCoupleNames()?.second }} {{ getCoupleNames()?.sharedLastName }}</span>
-        </ng-container>
-        <ng-template #differentLastNames>
-          <span class="clickable-name" (click)="onPersonNameClick()">{{ getCoupleNames()?.first }}</span><span class="couple-ampersand"> &amp; </span><span class="clickable-name" (click)="onSpouseNameClick()">{{ getCoupleNames()?.second }}</span>
-        </ng-template>
-      </ng-container>
-    </h3>
+@if (contactCard) {
+  <div class="contact-card" [style.border-left-color]="getClanColor()">
+    <div class="card-header">
+      <h3 class="person-name">
+        @if (!contactCard?.spouse) {
+          <span class="clickable-name" (click)="onPersonNameClick()">{{ getPersonFullName() }}</span>
+        }
+        @if (contactCard?.spouse) {
+          @if (hasSameLastName()) {
+            <span class="clickable-name" (click)="onPersonNameClick()">{{ getCoupleNames()?.first }}</span><span class="couple-ampersand"> &amp; </span><span class="clickable-name" (click)="onSpouseNameClick()">{{ getCoupleNames()?.second }} {{ getCoupleNames()?.sharedLastName }}</span>
+          } @else {
+            <span class="clickable-name" (click)="onPersonNameClick()">{{ getCoupleNames()?.first }}</span><span class="couple-ampersand"> &amp; </span><span class="clickable-name" (click)="onSpouseNameClick()">{{ getCoupleNames()?.second }}</span>
+          }
+        }
+      </h3>
+    </div>
+    <div class="card-content">
+      <app-contact-info
+        [addresses]="contactCard.addresses"
+        [phones]="contactCard.phones"
+        [emails]="contactCard.emails"
+      ></app-contact-info>
+    </div>
   </div>
-
-  <div class="card-content">
-    <app-contact-info
-      [addresses]="contactCard.addresses"
-      [phones]="contactCard.phones"
-      [emails]="contactCard.emails"
-    ></app-contact-info>
-  </div>
-</div>
+}

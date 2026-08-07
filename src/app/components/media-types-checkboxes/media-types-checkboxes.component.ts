@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MediaType } from 'src/app/constants/media-constants';
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 
@@ -6,6 +6,7 @@ import { MediaTypesService } from 'src/app/services/media-types-service.service'
     selector: 'app-media-types-checkboxes',
     templateUrl: './media-types-checkboxes.component.html',
     styleUrls: ['./media-types-checkboxes.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaTypesCheckboxesComponent implements OnInit {

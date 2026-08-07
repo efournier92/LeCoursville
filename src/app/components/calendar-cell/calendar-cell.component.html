@@ -1,25 +1,30 @@
-<div
-  class="calendar-cell-container"
-  *ngIf="shouldDisplayEvent()"
+@if (shouldDisplayEvent()) {
+  <div
+    class="calendar-cell-container"
   [ngClass]="{
     'event-living': event.isLiving,
     'event-not-living': !event.isLiving,
     'event-birth': event.type === 'birth',
     'event-anniv': event.type === 'anniversary'
   }"
->
-  <div class="calendar-cell-event-container" [ngClass]="event.type === 'birth' ? 'border-birth' : 'border-anniv'">
-    <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
-      <div class="calendar-years-since">
-        {{ getYearsSinceString(event) }}
+    >
+    <div class="calendar-cell-event-container" [ngClass]="event.type === 'birth' ? 'border-birth' : 'border-anniv'">
+      <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
+        <div class="calendar-years-since">
+          {{ getYearsSinceString(event) }}
+        </div>
+      </div>
+      <div class="calendar-event-title-container" [ngClass]="{'is-anniversary': getSpouseName()}">
+        <span class="anniv-first-line">
+          <span class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</span>
+          @if (getSpouseName()) {
+            <span class="event-ampersand-inline">&amp;</span>
+          }
+        </span>
+        @if (getSpouseName()) {
+          <span class="event-title-spouse-link" (click)="onSpouseTitleClick()">{{ getSpouseName() }}</span>
+        }
       </div>
     </div>
-    <div class="calendar-event-title-container" [ngClass]="{'is-anniversary': getSpouseName()}">
-      <span class="anniv-first-line">
-        <span class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</span>
-        <span *ngIf="getSpouseName()" class="event-ampersand-inline">&amp;</span>
-      </span>
-      <span *ngIf="getSpouseName()" class="event-title-spouse-link" (click)="onSpouseTitleClick()">{{ getSpouseName() }}</span>
-    </div>
   </div>
-</div>
+}

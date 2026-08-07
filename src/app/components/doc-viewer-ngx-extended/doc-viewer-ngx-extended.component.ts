@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { Doc } from 'src/app/models/media/doc';
@@ -8,6 +8,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     selector: 'app-doc-viewer-ngx-extended',
     templateUrl: './doc-viewer-ngx-extended.component.html',
     styleUrls: ['./doc-viewer-ngx-extended.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class DocViewerNgxExtendedComponent implements OnInit, OnDestroy {

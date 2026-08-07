@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
@@ -15,6 +15,7 @@ import { PromptModalService } from 'src/app/services/prompt-modal.service';
     selector: 'app-media-explorer',
     templateUrl: './media-explorer.component.html',
     styleUrls: ['./media-explorer.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaExplorerComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnChanges, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { MediaService } from 'src/app/services/media.service';
@@ -17,6 +17,7 @@ interface AudioTrack {
     selector: 'app-audio-player',
     templateUrl: './audio-player.component.html',
     styleUrls: ['./audio-player.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AudioPlayerComponent implements OnChanges {

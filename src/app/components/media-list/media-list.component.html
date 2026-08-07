@@ -3,72 +3,77 @@
     <mat-form-field
       class="media-list-filters-input"
       appearance="standard"
-    >
+      >
       <mat-label>Filter</mat-label>
       <input
         matInput
         name="media-list-filters-input-search-query"
         (input)="onSearchInputChange($event)"
         [(ngModel)]="searchQuery"
-      />
+        />
     </mat-form-field>
   </app-page-toolbar>
 
-  <div
-    class="media-skeleton-list"
-    *ngIf="isLoading"
-  >
+  @if (isLoading) {
     <div
-      class="media-skeleton-item"
-      *ngFor="let i of skeletonIterations"
-    >
-      <div class="skeleton-icon"></div>
-      <div class="skeleton-details">
-        <div class="skeleton-line title"></div>
-        <div class="skeleton-line artist"></div>
-        <div class="skeleton-line location"></div>
-      </div>
-    </div>
-  </div>
-
-  <ng-container *ngIf="!isLoading">
-  <div
-    class="flex-column media-list-row"
-    *ngFor="let media of filteredMedia"
-  >
-    <button
-      class="media-list-item"
-      *ngIf="shouldDisplayMedia(media)"
-      (click)="onMediaSelect(media)"
-    >
-      <div class="imageContainer">
-        <mat-icon
-          class="media-list-placeholder-icon"
-          [hidden]="media.isIconLoaded"
-        >
-          {{ getPlaceholderName(media.type) }}
-        </mat-icon>
-        <div class="imageCenterer">
-          <img
-            [src]="media.urls.icon"
-            (load)="onImageLoaded(media)"
-            [hidden]="!media.isIconLoaded"
-          />
+      class="media-skeleton-list"
+      >
+      @for (i of skeletonIterations; track i) {
+        <div
+          class="media-skeleton-item"
+          >
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-details">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line artist"></div>
+            <div class="skeleton-line location"></div>
+          </div>
         </div>
-      </div>
-      <div class="media-details">
-        <div class="media-details-name">{{ media.title }}</div>
-        <div class="media-details-artist">{{ media.artist }}</div>
-        <div class="media-details-location">{{ media.location }}</div>
-        <div class="media-details-date">{{ media.date }}</div>
-        <span class="media-details-duration">{{ media.duration }}</span>
-      </div>
-    </button>
-  </div>
-</ng-container>
+      }
+    </div>
+  }
 
-  <app-no-results-message
-    *ngIf="!isLoading && filteredMedia.length === 0 && searchQuery.trim()"
-    [searchTerm]="searchQuery"
-  ></app-no-results-message>
+  @if (!isLoading) {
+    @for (media of filteredMedia; track media) {
+      <div
+        class="flex-column media-list-row"
+        >
+        @if (shouldDisplayMedia(media)) {
+          <button
+            class="media-list-item"
+            (click)="onMediaSelect(media)"
+            >
+            <div class="imageContainer">
+              <mat-icon
+                class="media-list-placeholder-icon"
+                [hidden]="media.isIconLoaded"
+                >
+                {{ getPlaceholderName(media.type) }}
+              </mat-icon>
+              <div class="imageCenterer">
+                <img
+                  [src]="media.urls.icon"
+                  (load)="onImageLoaded(media)"
+                  [hidden]="!media.isIconLoaded"
+                  />
+              </div>
+            </div>
+            <div class="media-details">
+              <div class="media-details-name">{{ media.title }}</div>
+              <div class="media-details-artist">{{ media.artist }}</div>
+              <div class="media-details-location">{{ media.location }}</div>
+              <div class="media-details-date">{{ media.date }}</div>
+              <span class="media-details-duration">{{ media.duration }}</span>
+            </div>
+          </button>
+        }
+      </div>
+    }
+  }
+
+  @if (!isLoading && filteredMedia.length === 0 && searchQuery.trim()) {
+    <app-no-results-message
+      [searchTerm]="searchQuery"
+    ></app-no-results-message>
+  }
 </div>

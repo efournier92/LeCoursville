@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 
 interface HTMLInput extends HTMLElement {
   value: any;
@@ -9,6 +9,7 @@ interface HTMLInput extends HTMLElement {
     selector: 'app-file-input',
     templateUrl: './file-input.component.html',
     styleUrls: ['./file-input.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FileInputComponent implements OnInit {

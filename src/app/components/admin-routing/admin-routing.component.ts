@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoutingService } from 'src/app/services/routing.service';
 
@@ -6,6 +6,7 @@ import { RoutingService } from 'src/app/services/routing.service';
     selector: 'app-admin-routing',
     templateUrl: './admin-routing.component.html',
     styleUrls: ['./admin-routing.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminRoutingComponent {

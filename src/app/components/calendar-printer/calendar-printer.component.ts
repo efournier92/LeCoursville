@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { map } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
@@ -9,6 +9,7 @@ import { RtdbService } from 'src/app/services/rtdb.service';
     selector: 'app-calendar-printer',
     templateUrl: './calendar-printer.component.html',
     styleUrls: ['./calendar-printer.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CalendarPrinterComponent implements OnInit {

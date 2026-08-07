@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
@@ -11,6 +11,7 @@ const KEN_BURNS_CLASSES = ['kenburns-tl-br', 'kenburns-tr-bl', 'kenburns-bl-tr',
     selector: 'app-photo-slideshow',
     templateUrl: './photo-slideshow.component.html',
     styleUrls: ['./photo-slideshow.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PhotoSlideshowComponent implements OnInit, OnDestroy {

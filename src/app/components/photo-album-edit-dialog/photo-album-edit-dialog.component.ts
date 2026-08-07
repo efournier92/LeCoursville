@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -19,6 +19,7 @@ export type PhotoAlbumEditDialogResult =
     selector: 'app-photo-album-edit-dialog',
     templateUrl: './photo-album-edit-dialog.component.html',
     styleUrls: ['./photo-album-edit-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         FormsModule,
         MatButtonModule,

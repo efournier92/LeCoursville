@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { User } from 'src/app/models/user';
@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/services/auth.service';
     selector: 'app-media-video',
     templateUrl: './media-video.component.html',
     styleUrls: ['./media-video.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaVideoComponent implements OnInit {

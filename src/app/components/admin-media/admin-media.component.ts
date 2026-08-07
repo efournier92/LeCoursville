@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { _ } from 'core-js';
@@ -8,6 +8,7 @@ import { AudioAlbum } from 'src/app/models/media/audio-album';
     selector: 'app-admin-media',
     templateUrl: './admin-media.component.html',
     styleUrls: ['./admin-media.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminMediaComponent implements OnInit {

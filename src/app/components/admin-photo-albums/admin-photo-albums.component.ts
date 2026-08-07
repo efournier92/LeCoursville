@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -32,23 +32,23 @@ import { PhotoAlbumEditDialogComponent } from '../photo-album-edit-dialog/photo-
     selector: 'app-admin-photo-albums',
     templateUrl: './admin-photo-albums.component.html',
     styleUrls: ['./admin-photo-albums.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
-        CommonModule,
-        FormsModule,
-        MatButtonModule,
-        MatCardModule,
-        MatCheckboxModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatMenuModule,
-        MatProgressSpinnerModule,
-        MatTooltipModule,
-        NoResultsMessageComponent,
-        PageToolbarComponent,
-        PhotoUploadProgressComponent,
-    ]
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    NoResultsMessageComponent,
+    PageToolbarComponent,
+    PhotoUploadProgressComponent
+]
 })
 export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   @ViewChild('folderInput') folderInput?: ElementRef<HTMLInputElement>;

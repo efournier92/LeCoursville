@@ -8,7 +8,7 @@
           name="contact-name"
           [(ngModel)]="contact.name"
           placeholder="Name"
-        />
+          />
       </mat-form-field>
     </div>
     <div class="mb-3"></div>
@@ -18,226 +18,239 @@
         name="families"
         [(ngModel)]="contact.family"
         [value]="contact.family"
-      >
-        <mat-option
-          *ngFor="let family of families"
-          [value]="family"
         >
-          {{ family }}
-        </mat-option>
+        @for (family of families; track family) {
+          <mat-option
+            [value]="family"
+            >
+            {{ family }}
+          </mat-option>
+        }
       </mat-select>
     </mat-form-field>
     <div class="mb-3"></div>
     <mat-card-subtitle class="mb-2">Addresses</mat-card-subtitle>
-    <div
-      *ngFor="
-        let address of contact.addresses;
-        let last = last;
-        let index = index
-      "
-      class="input-row"
-    >
+    @for (
+      address of contact.addresses; track
+      address; let last = $last; let index = $index) {
       <div
-        class="mb-1"
-        *ngIf="contact.addresses.length > 1"
-      >
-        <mat-form-field class="w-100">
+        class="input-row"
+        >
+        @if (contact.addresses.length > 1) {
+          <div
+            class="mb-1"
+            >
+            <mat-form-field class="w-100">
+              <input
+                matInput
+                name="address-info"
+                [(ngModel)]="address.info"
+                placeholder="Info"
+                />
+            </mat-form-field>
+          </div>
+        }
+        <mat-form-field class="w-100 mb-1">
           <input
             matInput
-            name="address-info"
-            [(ngModel)]="address.info"
-            placeholder="Info"
-          />
+            name="address-street"
+            [(ngModel)]="address.street"
+            placeholder="Street"
+            />
         </mat-form-field>
+        <div class="mb-1">
+          <form>
+            <mat-form-field class="col-5">
+              <input
+                matInput
+                name="address-city"
+                [(ngModel)]="address.city"
+                placeholder="City"
+                />
+            </mat-form-field>
+            <mat-form-field class="col-2">
+              <input
+                matInput
+                name="addressState"
+                [(ngModel)]="address.state"
+                placeholder="State"
+                />
+            </mat-form-field>
+            <mat-form-field class="col-3">
+              <input
+                matInput
+                name="addressZip"
+                [(ngModel)]="address.zip"
+                placeholder="Zip"
+                />
+            </mat-form-field>
+            <button
+              mat-button
+              class="add-remove-button col-1"
+              (click)="removeAddress(contact.addresses, index)"
+              >
+              <mat-icon>remove</mat-icon>
+            </button>
+            <button
+              mat-button
+              class="add-remove-button col-1"
+              [disabled]="!last"
+              (click)="addAddress(contact)"
+              >
+              <mat-icon>@if (last) {
+                <span>add</span>
+              }</mat-icon>
+            </button>
+          </form>
+        </div>
       </div>
-      <mat-form-field class="w-100 mb-1">
-        <input
-          matInput
-          name="address-street"
-          [(ngModel)]="address.street"
-          placeholder="Street"
-        />
-      </mat-form-field>
-      <div class="mb-1">
+    }
+    @if (!contact.addresses || !contact.addresses.length) {
+      <div
+        class="form-group col-1 mb-3"
+        >
+        <button
+          mat-button
+          class="add-remove-button"
+          (click)="addAddress(contact)"
+          >
+          <mat-icon><span>add</span></mat-icon> Address
+        </button>
+      </div>
+    }
+    <mat-card-subtitle class="mb-2">Phones</mat-card-subtitle>
+    @for (phone of contact.phones; track phone; let last = $last; let index = $index) {
+      <div
+        class="mb-1"
+        >
         <form>
-          <mat-form-field class="col-5">
-            <input
-              matInput
-              name="address-city"
-              [(ngModel)]="address.city"
-              placeholder="City"
-            />
-          </mat-form-field>
-          <mat-form-field class="col-2">
-            <input
-              matInput
-              name="addressState"
-              [(ngModel)]="address.state"
-              placeholder="State"
-            />
-          </mat-form-field>
           <mat-form-field class="col-3">
             <input
               matInput
-              name="addressZip"
-              [(ngModel)]="address.zip"
-              placeholder="Zip"
-            />
+              name="phoneInfo"
+              [(ngModel)]="phone.info"
+              placeholder="Info"
+              />
+          </mat-form-field>
+          <mat-form-field class="col-7">
+            <input
+              matInput
+              name="phoneNumber"
+              [(ngModel)]="phone.number"
+              placeholder="Phone Number"
+              />
+          </mat-form-field>
+          <button
+            mat-button
+            (click)="removePhone(contact.phones, index)"
+            class="add-remove-button col-1 ml-1"
+            >
+            <mat-icon>remove</mat-icon>
+          </button>
+          <button
+            mat-button
+            class="add-remove-button col-1 ml-1"
+            (click)="addPhone(contact)"
+            >
+            <mat-icon>@if (last) {
+              <span>add</span>
+            }</mat-icon>
+          </button>
+        </form>
+      </div>
+    }
+    @if (!contact.phones || !contact.phones.length) {
+      <div
+        class="col-1 mb-3"
+        >
+        <button
+          mat-button
+          class="add-remove-button"
+          (click)="addPhone(contact)"
+          >
+          <mat-icon><span>add</span></mat-icon> Phone
+        </button>
+      </div>
+    }
+    <mat-card-subtitle class="mb-2">Emails</mat-card-subtitle>
+    @for (email of contact.emails; track email; let last = $last; let index = $index) {
+      <div
+        class="mt-1 mb-1"
+        >
+        <form>
+          <mat-form-field class="col-3">
+            <input
+              matInput
+              name="email-info"
+              [(ngModel)]="email.info"
+              placeholder="Info"
+              />
+          </mat-form-field>
+          <mat-form-field class="col-7">
+            <input
+              matInput
+              name="email-address"
+              [(ngModel)]="email.address"
+              placeholder="Email Address"
+              />
           </mat-form-field>
           <button
             mat-button
             class="add-remove-button col-1"
-            (click)="removeAddress(contact.addresses, index)"
-          >
+            (click)="removeEmail(contact.emails, index)"
+            >
             <mat-icon>remove</mat-icon>
           </button>
           <button
             mat-button
             class="add-remove-button col-1"
             [disabled]="!last"
-            (click)="addAddress(contact)"
-          >
-            <mat-icon><span *ngIf="last">add</span></mat-icon>
+            (click)="addEmail(contact)"
+            >
+            <mat-icon>@if (last) {
+              <span>add</span>
+            }</mat-icon>
           </button>
         </form>
+        <div class="mb-3"></div>
       </div>
-    </div>
-    <div
-      class="form-group col-1 mb-3"
-      *ngIf="!contact.addresses || !contact.addresses.length"
-    >
-      <button
-        mat-button
-        class="add-remove-button"
-        (click)="addAddress(contact)"
-      >
-        <mat-icon><span>add</span></mat-icon> Address
-      </button>
-    </div>
-    <mat-card-subtitle class="mb-2">Phones</mat-card-subtitle>
-    <div
-      class="mb-1"
-      *ngFor="let phone of contact.phones; let last = last; let index = index"
-    >
-      <form>
-        <mat-form-field class="col-3">
-          <input
-            matInput
-            name="phoneInfo"
-            [(ngModel)]="phone.info"
-            placeholder="Info"
-          />
-        </mat-form-field>
-        <mat-form-field class="col-7">
-          <input
-            matInput
-            name="phoneNumber"
-            [(ngModel)]="phone.number"
-            placeholder="Phone Number"
-          />
-        </mat-form-field>
-        <button
-          mat-button
-          (click)="removePhone(contact.phones, index)"
-          class="add-remove-button col-1 ml-1"
+    }
+    @if (!contact.emails || !contact.emails.length) {
+      <div
+        class="col-1"
         >
-          <mat-icon>remove</mat-icon>
-        </button>
         <button
           mat-button
-          class="add-remove-button col-1 ml-1"
-          (click)="addPhone(contact)"
-        >
-          <mat-icon><span *ngIf="last">add</span></mat-icon>
-        </button>
-      </form>
-    </div>
-    <div
-      class="col-1 mb-3"
-      *ngIf="!contact.phones || !contact.phones.length"
-    >
-      <button
-        mat-button
-        class="add-remove-button"
-        (click)="addPhone(contact)"
-      >
-        <mat-icon><span>add</span></mat-icon> Phone
-      </button>
-    </div>
-    <mat-card-subtitle class="mb-2">Emails</mat-card-subtitle>
-    <div
-      class="mt-1 mb-1"
-      *ngFor="let email of contact.emails; let last = last; let index = index"
-    >
-      <form>
-        <mat-form-field class="col-3">
-          <input
-            matInput
-            name="email-info"
-            [(ngModel)]="email.info"
-            placeholder="Info"
-          />
-        </mat-form-field>
-        <mat-form-field class="col-7">
-          <input
-            matInput
-            name="email-address"
-            [(ngModel)]="email.address"
-            placeholder="Email Address"
-          />
-        </mat-form-field>
-        <button
-          mat-button
-          class="add-remove-button col-1"
-          (click)="removeEmail(contact.emails, index)"
-        >
-          <mat-icon>remove</mat-icon>
-        </button>
-        <button
-          mat-button
-          class="add-remove-button col-1"
-          [disabled]="!last"
+          class="add-remove-button mb-3"
           (click)="addEmail(contact)"
-        >
-          <mat-icon><span *ngIf="last">add</span></mat-icon>
+          >
+          <mat-icon><span>add</span></mat-icon> Email
         </button>
-      </form>
-      <div class="mb-3"></div>
-    </div>
-    <div
-      class="col-1"
-      *ngIf="!contact.emails || !contact.emails.length"
-    >
+      </div>
+    }
+  </mat-card-content>
+  @if (user.roles.admin) {
+    <mat-card-footer
+      class="d-flex justify-content-end mb-1"
+      >
       <button
         mat-button
-        class="add-remove-button mb-3"
-        (click)="addEmail(contact)"
-      >
-        <mat-icon><span>add</span></mat-icon> Email
+        (click)="deleteContact(contact)"
+        >
+        <mat-icon>delete</mat-icon>
       </button>
-    </div>
-  </mat-card-content>
-  <mat-card-footer
-    *ngIf="user.roles.admin"
-    class="d-flex justify-content-end mb-1"
-  >
-    <button
-      mat-button
-      (click)="deleteContact(contact)"
-    >
-      <mat-icon>delete</mat-icon>
-    </button>
-    <button
-      mat-button
-      (click)="contact.isEditable = false"
-    >
-      <mat-icon>cancel</mat-icon>
-    </button>
-    <button
-      mat-button
-      (click)="updateContact(contact)"
-    >
-      <mat-icon>save</mat-icon>
-    </button>
-  </mat-card-footer>
+      <button
+        mat-button
+        (click)="contact.isEditable = false"
+        >
+        <mat-icon>cancel</mat-icon>
+      </button>
+      <button
+        mat-button
+        (click)="updateContact(contact)"
+        >
+        <mat-icon>save</mat-icon>
+      </button>
+    </mat-card-footer>
+  }
 </mat-card>

@@ -1,7 +1,9 @@
 <div class="page-toolbar" [class.has-title]="title">
-  <div class="page-toolbar-row" *ngIf="title">
-    <span class="page-toolbar-title">{{ title }}</span>
-  </div>
+  @if (title) {
+    <div class="page-toolbar-row">
+      <span class="page-toolbar-title">{{ title }}</span>
+    </div>
+  }
   <div class="page-toolbar-content">
     <ng-content></ng-content>
   </div>

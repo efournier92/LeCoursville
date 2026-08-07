@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarService } from 'src/app/services/calendar.service';
 import { AppSettings } from 'src/environments/app-settings';
@@ -7,6 +7,7 @@ import { AppSettings } from 'src/environments/app-settings';
     selector: 'app-calendar-cell',
     templateUrl: './calendar-cell.component.html',
     styleUrls: ['./calendar-cell.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CalendarCellComponent implements OnInit {

@@ -2,49 +2,50 @@
   <mat-toolbar
     class="d-inline-flex mat-elevation-z8 justify-content-between"
     color="primary"
-  >
+    >
     <img
       src="./assets/img/logo/L.png"
       class="toolbar-icon"
       (click)="onLogoClick()"
       [alt]="isAdminOrSuper() ? 'Admin' : 'L'"
       height="80%"
-    />
+      />
     <div class="icons-menu d-inline-flex">
-      <div
-        class="d-none d-lg-block"
-        *ngIf="user?.id"
-      >
-        <app-navbar-links [isMenuList]="false"></app-navbar-links>
-      </div>
-      <div
-        class="d-block d-lg-none"
-        *ngIf="user?.id"
-      >
-        <ng-container *ngIf="shouldShowSidenavToggle(); else featureMenu">
-          <button
-            mat-icon-button
-            (click)="onMenuClick()"
+      @if (user?.id) {
+        <div
+          class="d-none d-lg-block"
           >
-            <mat-icon>menu</mat-icon>
-          </button>
-        </ng-container>
-        <ng-template #featureMenu>
-          <button
-            mat-icon-button
-            class="menu-icon-container"
-            [matMenuTriggerFor]="menu"
+          <app-navbar-links [isMenuList]="false"></app-navbar-links>
+        </div>
+      }
+      @if (user?.id) {
+        <div
+          class="d-block d-lg-none"
           >
-            <mat-icon>menu</mat-icon>
-          </button>
-          <mat-menu
-            #menu="matMenu"
-            class="toolbar-routes-menu"
-          >
-            <app-navbar-links [isMenuList]="true"></app-navbar-links>
-          </mat-menu>
-        </ng-template>
-      </div>
+          @if (shouldShowSidenavToggle()) {
+            <button
+              mat-icon-button
+              (click)="onMenuClick()"
+              >
+              <mat-icon>menu</mat-icon>
+            </button>
+          } @else {
+            <button
+              mat-icon-button
+              class="menu-icon-container"
+              [matMenuTriggerFor]="menu"
+              >
+              <mat-icon>menu</mat-icon>
+            </button>
+            <mat-menu
+              #menu="matMenu"
+              class="toolbar-routes-menu"
+              >
+              <app-navbar-links [isMenuList]="true"></app-navbar-links>
+            </mat-menu>
+          }
+        </div>
+      }
     </div>
   </mat-toolbar>
   <router-outlet></router-outlet>

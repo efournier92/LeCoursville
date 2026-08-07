@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewEncapsulation } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { Person } from 'src/app/models/person';
 
 export interface PersonNode {
@@ -13,6 +13,7 @@ export interface PersonNode {
     templateUrl: './person-tree.component.html',
     styleUrls: ['./person-tree.component.scss', '../../shared/tree-styles.scss'],
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PersonTreeComponent {

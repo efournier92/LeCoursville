@@ -4,66 +4,82 @@
   </mat-card-title>
   <mat-card-content>
     <mat-list>
-      <mat-list-item *ngFor="let address of contact.addresses">
-        <mat-icon mat-list-icon>home</mat-icon>
-        <h4
-          mat-line
-          *ngIf="address.info"
-        >
-          {{ address.info }}
-        </h4>
-        <h4 mat-line>{{ address.street }}</h4>
-        <h4 mat-line>
-          {{ address.city }}, {{ address.state }} {{ address.zip }}
-        </h4>
-      </mat-list-item>
-      <div *ngFor="let phone of contact.phones">
-        <mat-list-item *ngIf="phone.number">
-          <mat-icon
-            mat-list-icon
-            *ngIf="phone.number"
-            >phone</mat-icon
-          >
-          <h4
-            mat-line
-            *ngIf="phone.number"
-          >
-            {{ phone.info | titlecase }}
-          </h4>
-          <h4
-            mat-line
-            *ngIf="phone.number"
-          >
-            {{ phone.number }}
-          </h4>
-        </mat-list-item>
-      </div>
-      <div *ngFor="let email of contact.emails">
-        <mat-list-item *ngIf="email.address">
-          <mat-icon mat-list-icon>email</mat-icon>
-          <h4
-            mat-line
-            *ngIf="email.info !== ''"
-          >
-            {{ email.info | titlecase }}
-          </h4>
+      @for (address of contact.addresses; track address) {
+        <mat-list-item>
+          <mat-icon mat-list-icon>home</mat-icon>
+          @if (address.info) {
+            <h4
+              mat-line
+              >
+              {{ address.info }}
+            </h4>
+          }
+          <h4 mat-line>{{ address.street }}</h4>
           <h4 mat-line>
-            {{ email.address }}
+            {{ address.city }}, {{ address.state }} {{ address.zip }}
           </h4>
         </mat-list-item>
-      </div>
-    </mat-list>
-  </mat-card-content>
-  <mat-card-footer
-    *ngIf="user.roles.admin"
-    class="d-flex justify-content-end"
-  >
-    <button
-      mat-button
-      class="mb-1"
-      (click)="contact.isEditable = true"
-    >
-      <mat-icon>edit</mat-icon>
-    </button>
-  </mat-card-footer>
-</mat-card>
+      }
+      @for (phone of contact.phones; track phone) {
+        <div>
+          @if (phone.number) {
+            <mat-list-item>
+              @if (phone.number) {
+                <mat-icon
+                  mat-list-icon
+                  >phone</mat-icon
+                  >
+                }
+                @if (phone.number) {
+                  <h4
+                    mat-line
+                    >
+                    {{ phone.info | titlecase }}
+                  </h4>
+                }
+                @if (phone.number) {
+                  <h4
+                    mat-line
+                    >
+                    {{ phone.number }}
+                  </h4>
+                }
+              </mat-list-item>
+            }
+          </div>
+        }
+        @for (email of contact.emails; track email) {
+          <div>
+            @if (email.address) {
+              <mat-list-item>
+                <mat-icon mat-list-icon>email</mat-icon>
+                @if (email.info !== '') {
+                  <h4
+                    mat-line
+                    >
+                    {{ email.info | titlecase }}
+                  </h4>
+                }
+                <h4 mat-line>
+                  {{ email.address }}
+                </h4>
+              </mat-list-item>
+            }
+          </div>
+        }
+      </mat-list>
+    </mat-card-content>
+    @if (user.roles.admin) {
+      <mat-card-footer
+        class="d-flex justify-content-end"
+        >
+        <button
+          mat-button
+          class="mb-1"
+          (click)="contact.isEditable = true"
+          >
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-card-footer>
+    }
+  </mat-card>

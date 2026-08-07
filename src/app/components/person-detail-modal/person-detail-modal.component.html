@@ -1,87 +1,101 @@
 <div class="modal-backdrop" (click)="onBackdropClick($event)">
-  <div class="modal-content" *ngIf="person">
-    <div class="modal-header">
-      <div class="clan-color-bar" [style.background-color]="getClanForPerson(person.clanId)?.hexColor || '#e0e0e0'"></div>
-      <div class="name-block">
-        <h2>{{ getDisplayName() }}</h2>
-        <span class="preferred-name" *ngIf="person.name.firstPreferred && person.name.firstPreferred !== person.name.firstGiven">{{ person.name.firstPreferred }}</span>
+  @if (person) {
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="clan-color-bar" [style.background-color]="getClanForPerson(person.clanId)?.hexColor || '#e0e0e0'"></div>
+        <div class="name-block">
+          <h2>{{ getDisplayName() }}</h2>
+          @if (person.name.firstPreferred && person.name.firstPreferred !== person.name.firstGiven) {
+            <span class="preferred-name">{{ person.name.firstPreferred }}</span>
+          }
+        </div>
+        <button mat-icon-button (click)="onClose()" class="close-button">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
-      <button mat-icon-button (click)="onClose()" class="close-button">
-        <mat-icon>close</mat-icon>
-      </button>
+      <div class="modal-body">
+        <mat-card class="detail-section">
+          <mat-card-content>
+            @if (getClanForPerson(person.clanId)) {
+              <div class="detail-row">
+                <span class="label">Family</span>
+                <a class="value link" (click)="navigateToClan($safeNavigationMigration(getClanForPerson(person.clanId)?.name))">{{ getClanForPerson(person.clanId)?.name }}</a>
+              </div>
+            }
+            @if (person.generationNumber !== null) {
+              <div class="detail-row">
+                <span class="label">Generation</span>
+                <span class="value">{{ person.generationNumber }}</span>
+              </div>
+            }
+            <div class="detail-row">
+              <span class="label">ID</span>
+              <span class="value mono">{{ person.id }}</span>
+            </div>
+            @if (person.birthday && person.birthday.year !== 0) {
+              <div class="detail-row">
+                <span class="label">Birthday</span>
+                <span class="value link" (click)="navigateToCalendar(person.birthday)">{{ formatDate(person.birthday) }}</span>
+                @if (calculateAge()) {
+                  <span class="age">({{ calculateAge() }})</span>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+        @if (spousePerson) {
+          <mat-card class="detail-section">
+            <mat-card-content>
+              <h3>Spouse</h3>
+              <div class="detail-row">
+                <span class="label">Name</span>
+                <span class="value link" (click)="onSpouseClick()">{{ getSpouseName() }}</span>
+              </div>
+              @if (person.anniversaryDate) {
+                <div class="detail-row">
+                  <span class="label">Anniversary</span>
+                  <span class="value link" (click)="navigateToCalendar(person.anniversaryDate)">{{ formatDate(person.anniversaryDate) }}</span>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+        @if ((person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0)) {
+          <mat-card class="detail-section">
+            <mat-card-content>
+              <h3>Contact</h3>
+              <app-contact-info
+                [addresses]="person.addresses"
+                [phones]="person.phones"
+                [emails]="person.emails"
+              ></app-contact-info>
+            </mat-card-content>
+          </mat-card>
+        }
+        @if (person && lineageTree.length > 0) {
+          <mat-card class="detail-section lineage-section">
+            <mat-card-content>
+              <h3>Lineage</h3>
+              @if (lineageTree.length > 0) {
+                <div class="lineage-trees">
+                  <app-person-tree
+                    [nodes]="lineageTree"
+                    [clickable]="true"
+                    [clanColorHex]="$safeNavigationMigration(getClanForPerson($safeNavigationMigration(person?.clanId))?.hexColor)"
+                    [selectedPersonId]="getLineagePersonId()"
+                    (personClick)="onLineagePersonClick($event)"
+                  ></app-person-tree>
+                </div>
+              }
+              @if (lineageTree.length === 0) {
+                <div class="lineage-empty">
+                  No lineage data available
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
     </div>
-
-    <div class="modal-body">
-      <mat-card class="detail-section">
-        <mat-card-content>
-          <div class="detail-row" *ngIf="getClanForPerson(person.clanId)">
-            <span class="label">Family</span>
-            <a class="value link" (click)="navigateToClan(getClanForPerson(person.clanId)?.name)">{{ getClanForPerson(person.clanId)?.name }}</a>
-          </div>
-
-          <div class="detail-row" *ngIf="person.generationNumber !== null">
-            <span class="label">Generation</span>
-            <span class="value">{{ person.generationNumber }}</span>
-          </div>
-
-          <div class="detail-row">
-            <span class="label">ID</span>
-            <span class="value mono">{{ person.id }}</span>
-          </div>
-
-          <div class="detail-row" *ngIf="person.birthday && person.birthday.year !== 0">
-            <span class="label">Birthday</span>
-            <span class="value link" (click)="navigateToCalendar(person.birthday)">{{ formatDate(person.birthday) }}</span>
-            <span class="age" *ngIf="calculateAge()">({{ calculateAge() }})</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="detail-section" *ngIf="spousePerson">
-        <mat-card-content>
-          <h3>Spouse</h3>
-          <div class="detail-row">
-            <span class="label">Name</span>
-            <span class="value link" (click)="onSpouseClick()">{{ getSpouseName() }}</span>
-          </div>
-          <div class="detail-row" *ngIf="person.anniversaryDate">
-            <span class="label">Anniversary</span>
-            <span class="value link" (click)="navigateToCalendar(person.anniversaryDate)">{{ formatDate(person.anniversaryDate) }}</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="detail-section" *ngIf="(person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0)">
-        <mat-card-content>
-          <h3>Contact</h3>
-          <app-contact-info
-            [addresses]="person.addresses"
-            [phones]="person.phones"
-            [emails]="person.emails"
-          ></app-contact-info>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="detail-section lineage-section" *ngIf="person && lineageTree.length > 0">
-        <mat-card-content>
-          <h3>Lineage</h3>
-
-          <div class="lineage-trees" *ngIf="lineageTree.length > 0">
-            <app-person-tree
-              [nodes]="lineageTree"
-              [clickable]="true"
-              [clanColorHex]="getClanForPerson(person?.clanId)?.hexColor"
-              [selectedPersonId]="getLineagePersonId()"
-              (personClick)="onLineagePersonClick($event)"
-            ></app-person-tree>
-          </div>
-
-          <div class="lineage-empty" *ngIf="lineageTree.length === 0">
-            No lineage data available
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-    </div>
-  </div>
+  }
 </div>

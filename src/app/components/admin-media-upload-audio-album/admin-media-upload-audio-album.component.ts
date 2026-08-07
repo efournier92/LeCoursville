@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { User } from 'src/app/models/user';
 import { AudioAlbumUploadService } from 'src/app/services/audio-album-upload.service';
@@ -11,6 +11,7 @@ import { MediaConstants } from 'src/app/constants/media-constants';
     selector: 'app-admin-media-upload-audio-album',
     templateUrl: './admin-media-upload-audio-album.component.html',
     styleUrls: ['./admin-media-upload-audio-album.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminMediaUploadAudioAlbumComponent implements OnInit {

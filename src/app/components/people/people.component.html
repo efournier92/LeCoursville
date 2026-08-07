@@ -7,120 +7,144 @@
         type="text"
         [(ngModel)]="filterQuery"
         (input)="onFilterChange(filterQuery)"
-      />
-      <button
-        *ngIf="filterQuery"
-        matSuffix
-        mat-icon-button
-        aria-label="Clear"
-        (click)="onFilterChange('')"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+        />
+      @if (filterQuery) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="onFilterChange('')"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </mat-form-field>
 
     <mat-form-field class="family-filter-form-field">
       <mat-label>By Family</mat-label>
       <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
-        <mat-option *ngFor="let clan of getFamilies()" [value]="clan.name">{{ clan.name }}</mat-option>
+        @for (clan of getFamilies(); track clan) {
+          <mat-option [value]="clan.name">{{ clan.name }}</mat-option>
+        }
       </mat-select>
-      <button *ngIf="selectedFamily" matSuffix mat-icon-button aria-label="Clear" (click)="clearFamilyFilter(); $event.stopPropagation()">
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (selectedFamily) {
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFamilyFilter(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </mat-form-field>
   </app-page-toolbar>
 
-  <div class="w-100 skeleton-state" *ngIf="familyGroups.length === 0 && !filterQuery.trim()">
-    <div class="skeleton-family" *ngFor="let i of skeletonIterations">
-      <div class="skeleton-header"></div>
-      <div class="skeleton-tree">
-        <div class="skeleton-row">
-          <div class="skeleton-bar short"></div>
-          <div class="skeleton-bar long"></div>
+  @if (familyGroups.length === 0 && !filterQuery.trim()) {
+    <div class="w-100 skeleton-state">
+      @for (i of skeletonIterations; track i) {
+        <div class="skeleton-family">
+          <div class="skeleton-header"></div>
+          <div class="skeleton-tree">
+            <div class="skeleton-row">
+              <div class="skeleton-bar short"></div>
+              <div class="skeleton-bar long"></div>
+            </div>
+            <div class="skeleton-children">
+              <div class="skeleton-child">
+                <div class="skeleton-bar"></div>
+              </div>
+              <div class="skeleton-child">
+                <div class="skeleton-bar"></div>
+              </div>
+              <div class="skeleton-child nested">
+                <div class="skeleton-bar"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="skeleton-children">
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child">
-            <div class="skeleton-bar"></div>
-          </div>
-          <div class="skeleton-child nested">
-            <div class="skeleton-bar"></div>
-          </div>
+      }
+    </div>
+  }
+
+  @if (familyGroups.length === 0 && filterQuery.trim()) {
+    <app-no-results-message
+      [searchTerm]="filterQuery"
+    ></app-no-results-message>
+  }
+
+  @for (group of familyGroups; track group) {
+    <div class="w-100">
+      <div class="family-group">
+        <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
+          <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
+          @if (group.livingMemberCount > 0) {
+            <span class="member-count">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
+          }
+        </div>
+        <div class="people-tree">
+          @if (group.firstGeneration.length > 0) {
+            <div class="first-generation-row">
+              @for (node of group.firstGeneration; track node) {
+                <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
+                  {{ getPersonName(node) }}
+                </span>
+                @if (getSpouseName(node)) {
+                  <span class="spouse-separator"> &amp; </span>
+                }
+                @if (getSpouseName(node)) {
+                  <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" (click)="openPersonDetail(getSpouseId(node))">
+                    {{ getSpouseName(node) }}
+                  </span>
+                }
+              }
+            </div>
+          }
+          @if (group.roots?.length) {
+            <div class="tree-rows">
+              <div class="generation-bar" [style.background-color]="getFamilyColorForClanTransparent(group.clan)"></div>
+              <div class="children-items">
+                <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
-  </div>
-
-  <app-no-results-message
-    *ngIf="familyGroups.length === 0 && filterQuery.trim()"
-    [searchTerm]="filterQuery"
-  ></app-no-results-message>
-
-  <div class="w-100" *ngFor="let group of familyGroups">
-    <div class="family-group">
-      <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
-        <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
-        <span class="member-count" *ngIf="group.livingMemberCount > 0">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
-      </div>
-      <div class="people-tree">
-        <div class="first-generation-row" *ngIf="group.firstGeneration.length > 0">
-          <ng-container *ngFor="let node of group.firstGeneration">
-            <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
-              {{ getPersonName(node) }}
-            </span>
-            <span class="spouse-separator" *ngIf="getSpouseName(node)"> &amp; </span>
-            <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" *ngIf="getSpouseName(node)" (click)="openPersonDetail(getSpouseId(node))">
-              {{ getSpouseName(node) }}
-            </span>
-          </ng-container>
-        </div>
-        <div class="tree-rows" *ngIf="group.roots?.length">
-          <div class="generation-bar" [style.background-color]="getFamilyColorForClanTransparent(group.clan)"></div>
-          <div class="children-items">
-            <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  }
 </div>
 
 <ng-template #nodeTemplate let-nodes="nodes" let-level="level">
-  <ng-container *ngFor="let node of nodes">
+  @for (node of nodes; track node) {
     <div class="tree-row">
       <span class="person-info">
         <span class="person-name clickable" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
           {{ getPersonName(node) }}
         </span>
-
-        <span class="spouse-separator" *ngIf="getSpouseName(node)"> &amp; </span>
-        <span class="person-name clickable"
-          [class.deceased]="isSpouseDeceased(node)"
-          *ngIf="getSpouseName(node)"
-          (click)="openPersonDetail(getSpouseId(node))">
-          {{ getSpouseName(node) }}
-        </span>
+        @if (getSpouseName(node)) {
+          <span class="spouse-separator"> &amp; </span>
+        }
+        @if (getSpouseName(node)) {
+          <span class="person-name clickable"
+            [class.deceased]="isSpouseDeceased(node)"
+            (click)="openPersonDetail(getSpouseId(node))">
+            {{ getSpouseName(node) }}
+          </span>
+        }
       </span>
     </div>
-
-    <ng-container *ngIf="hasChildren(node) === true">
-      <ng-container *ngIf="getNodeChildren(node) !== null">
+    @if (hasChildren(node) === true) {
+      @if (getNodeChildren(node) !== null) {
         <div class="children-container">
           <div class="generation-bar" [style.background-color]="getColorHex(node)"></div>
           <div class="children-items">
             <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
           </div>
         </div>
-      </ng-container>
-    </ng-container>
-  </ng-container>
+      }
+    }
+  }
 </ng-template>
 
-<app-person-detail-modal
-  *ngIf="selectedPersonId"
-  [personId]="selectedPersonId"
-  (closeModal)="closeModal()"
-  (openPerson)="openPersonDetail($event)"
-></app-person-detail-modal>
+@if (selectedPersonId) {
+  <app-person-detail-modal
+    [personId]="selectedPersonId"
+    (closeModal)="closeModal()"
+    (openPerson)="openPersonDetail($event)"
+  ></app-person-detail-modal>
+}

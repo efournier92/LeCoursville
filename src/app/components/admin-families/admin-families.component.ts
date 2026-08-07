@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Family } from 'src/app/models/family';
 import { FamilyService } from 'src/app/services/family.service';
 
@@ -14,6 +14,7 @@ interface ParsedFamily {
     selector: 'app-admin-families',
     templateUrl: './admin-families.component.html',
     styleUrls: ['./admin-families.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminFamiliesComponent implements OnInit {

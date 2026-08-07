@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MessageComponent } from 'src/app/components/message/message.component';
 import { Expression } from 'src/app/models/expression';
 import { ExpressionConstants } from 'src/app/constants/expression-constants';
@@ -10,6 +10,7 @@ import { SortProperty } from 'src/app/models/sort-settings';
     selector: 'app-expressions',
     templateUrl: './expressions.component.html',
     styleUrls: ['./expressions.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ExpressionsComponent extends MessageComponent implements OnInit {

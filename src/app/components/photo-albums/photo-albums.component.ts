@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
@@ -15,6 +15,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     selector: 'app-photo-albums',
     templateUrl: './photo-albums.component.html',
     styleUrls: ['./photo-albums.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PhotoAlbumsComponent implements OnInit, OnDestroy {

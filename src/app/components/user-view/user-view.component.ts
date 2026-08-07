@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { User } from 'src/app/models/user';
 
 @Component({
     selector: 'app-user-view',
     templateUrl: './user-view.component.html',
     styleUrls: ['./user-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class UserViewComponent implements OnInit {

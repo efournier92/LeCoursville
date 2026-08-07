@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -9,7 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { ref, list, getBlob, getMetadata, getDownloadURL } from 'firebase/storage';
 import { FirebaseService } from '../../services/firebase.service';
-import * as JSZip from 'jszip';
+import JSZip from 'jszip';
 import { UserUpload } from '../../models/user-upload';
 import { UserUploadService } from '../../services/user-upload.service';
 import { PhotoAlbumsService } from '../../services/photo-albums.service';
@@ -39,6 +39,7 @@ interface StorageFile {
     selector: 'app-admin-user-uploads',
     templateUrl: './admin-user-uploads.component.html',
     styleUrls: ['./admin-user-uploads.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         CommonModule,
         FormsModule,

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
@@ -11,6 +11,7 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
     selector: 'app-media-list',
     templateUrl: './media-list.component.html',
     styleUrls: ['./media-list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaListComponent implements OnInit {

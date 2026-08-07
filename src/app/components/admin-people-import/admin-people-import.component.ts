@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
@@ -18,6 +18,7 @@ interface ParsedPerson {
     selector: 'app-admin-people-import',
     templateUrl: './admin-people-import.component.html',
     styleUrls: ['./admin-people-import.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminPeopleImportComponent implements OnInit {

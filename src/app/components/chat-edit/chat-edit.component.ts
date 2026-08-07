@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { MessageEditComponent } from 'src/app/components/message-edit/message-edit.component';
 import { MessageConstants } from 'src/app/constants/message-constants';
@@ -7,6 +7,7 @@ import { MessageConstants } from 'src/app/constants/message-constants';
     selector: 'app-chat-edit',
     templateUrl: './chat-edit.component.html',
     styleUrls: ['./chat-edit.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatEditComponent extends MessageEditComponent {

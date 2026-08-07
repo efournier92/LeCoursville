@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, Inject, AfterViewInit, DOCUMENT } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, Inject, AfterViewInit, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarView } from 'angular-calendar';
@@ -11,6 +11,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     selector: 'app-calendar-view',
     templateUrl: './calendar-view.component.html',
     styleUrls: ['./calendar-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CalendarViewComponent implements OnInit, AfterViewInit {

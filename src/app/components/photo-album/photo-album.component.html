@@ -1,11 +1,15 @@
-<div class="photo-album-container" *ngIf="photos.length > 0">
-  <p class="photo-album-deprecated-note">
-    This legacy album viewer is deprecated; photo albums now live at
-    <a routerLink="/photos">Photos</a>.
-  </p>
-  <div class="photo-album-grid">
-    <a *ngFor="let photo of photos" [href]="photo.url" target="_blank" rel="noopener">
-      <img [src]="photo.url" [alt]="photo.title || 'Photo'" loading="lazy" />
-    </a>
+@if (photos.length > 0) {
+  <div class="photo-album-container">
+    <p class="photo-album-deprecated-note">
+      This legacy album viewer is deprecated; photo albums now live at
+      <a routerLink="/photos">Photos</a>.
+    </p>
+    <div class="photo-album-grid">
+      @for (photo of photos; track photo) {
+        <a [href]="photo.url" target="_blank" rel="noopener">
+          <img [src]="photo.url" [alt]="photo.title || 'Photo'" loading="lazy" />
+        </a>
+      }
+    </div>
   </div>
-</div>
+}

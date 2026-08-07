@@ -1,7 +1,7 @@
 <div
   class="row mb-4 message-card-content-container"
   [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
->
+  >
   <div class="col-2 col-md-1 message-tools-container">
     <div class="mb-3 message-button">
       <div class="d-flex justify-content-center mt-2">
@@ -10,7 +10,7 @@
           (click)="likeMessage()"
           (mouseover)="highlightElement('like', true)"
           (mouseleave)="highlightElement('like', false)"
-        >
+          >
           <mat-icon
             [matMenuTriggerFor]="menu"
             class="unselectable"
@@ -20,146 +20,163 @@
             }"
           >favorite_border</mat-icon>
           <mat-menu #menu="matMenu">
-            <div *ngFor="let liker of likers">
-              <button
-                mat-menu-item
-                disabled
-              >
-                <span>{{ liker }}</span>
-              </button>
-              <mat-divider *ngIf="likers.length !== 1"></mat-divider>
-            </div>
+            @for (liker of likers; track liker) {
+              <div>
+                <button
+                  mat-menu-item
+                  disabled
+                  >
+                  <span>{{ liker }}</span>
+                </button>
+                @if (likers.length !== 1) {
+                  <mat-divider></mat-divider>
+                }
+              </div>
+            }
           </mat-menu>
-          <strong
-            class="unselectable message-likes-container"
-            *ngIf="getLikes() !== 0"
+          @if (getLikes() !== 0) {
+            <strong
+              class="unselectable message-likes-container"
             [ngStyle]="{
               color: highlights.like === true ? '#FF9800' : '#F44336'
             }"
-          >
-            {{ getLikes() }}
-          </strong>
+              >
+              {{ getLikes() }}
+            </strong>
+          }
         </span>
       </div>
       <span
         class="message-button-label d-flex justify-content-center"
         [ngStyle]="{ color: highlights.like === true ? '#FF9800' : '#F44336' }"
         >Like</span
-      >
-    </div>
-    <div
-      class="mb-3 message-button"
-      [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
-    >
-      <div
-        class="d-flex flex-row justify-content-center"
-        (mouseover)="highlightElement('reply', true)"
-        (mouseleave)="highlightElement('reply', false)"
-        (click)="replyMessage()"
-      >
-        <mat-icon class="message-tool-icon" aria-hidden="true">reply_all</mat-icon>
-      </div>
-      <span class="message-button-label d-flex justify-content-center"
-        >Reply</span
-      >
-    </div>
-    <div
-      class="message-button"
-      *ngIf="
-        message.authorId === user.id || (user && user.roles && user.roles.admin)
-      "
-      [ngStyle]="{ color: highlights.edit === true ? '#FF9800' : '#F44336' }"
-    >
-      <div
-        class="d-flex flex-row justify-content-center"
-        (mouseover)="highlightElement('edit', true)"
-        (mouseleave)="highlightElement('edit', false)"
-        (click)="editMessage()"
-      >
-        <mat-icon class="message-tool-icon" aria-hidden="true">edit</mat-icon>
-      </div>
-      <span class="message-button-label d-flex justify-content-center"
-        >Edit</span
-      >
-    </div>
-  </div>
-  <mat-divider
-    class="message-controls-divider-vertical"
-    [vertical]="true"
-  ></mat-divider>
-  <div
-    class="message-view-container message-view-container col-7 col-sm-8 col-lg-10"
-  >
-    <mat-card-content
-      class="message-view-deleted-container col-9"
-      *ngIf="message.isDeleted"
-    >
-      <mat-card-title>
-        <mat-card-subtitle class="chat-message-author-name">
-          <i>This message was deleted.</i>
-        </mat-card-subtitle>
-      </mat-card-title>
-    </mat-card-content>
-    <mat-card-content *ngIf="!message.isDeleted">
-      <mat-card-title>
-        <div
-          class="message-title"
-          *ngIf="!message.isReply"
         >
-          {{ message.title }}
-        </div>
-        <mat-card-subtitle class="chat-message-author-name">
-          {{ message.authorName }}
-        </mat-card-subtitle>
-        <mat-card-subtitle class="message-timestamp">
-          {{ message.dateSent | date : "short" }}
-        </mat-card-subtitle>
-      </mat-card-title>
-      <div
-        class="message-body"
-        [innerHTML]="message.body"
-      >
-        <!-- {{ message.body }} -->
       </div>
-      <br />
-      <img
-        mat-card-image
-        src="{{ message.attachmentUrl }}"
-        class="massage-attachment-image"
-        *ngIf="getAttachmentType(message) === 'photo'"
-      />
-      <a
-        mat-button
-        [href]="message.attachmentUrl"
-        class="message-view-attachment-button"
-        target="_blank"
-        *ngIf="getAttachmentType(message) === 'document'"
-        >View Attachment</a
-      >
-      <a
-        mat-button
-        [href]="message.attachmentUrl"
-        class="message-view-attachment-button"
-        download
-        *ngIf="getAttachmentType(message) === 'other'"
-        >Download Attachment</a
-      >
-    </mat-card-content>
-  </div>
-</div>
-<mat-card-content *ngFor="let reply of message.replies">
-  <app-chat-view
-    *ngIf="!reply.isEditable"
-    [message]="reply"
-    [parent]="message"
-    (updateParentEvent)="updateParent()"
-  >
-  </app-chat-view>
-  <app-chat-edit
-    *ngIf="reply.isEditable"
-    [message]="reply"
-    [parent]="message"
-    (updateParentEvent)="updateParent()"
-  >
-  </app-chat-edit>
-</mat-card-content>
+      <div
+        class="mb-3 message-button"
+        [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
+        >
+        <div
+          class="d-flex flex-row justify-content-center"
+          (mouseover)="highlightElement('reply', true)"
+          (mouseleave)="highlightElement('reply', false)"
+          (click)="replyMessage()"
+          >
+          <mat-icon class="message-tool-icon" aria-hidden="true">reply_all</mat-icon>
+        </div>
+        <span class="message-button-label d-flex justify-content-center"
+          >Reply</span
+          >
+        </div>
+        @if (
+          message.authorId === user.id || (user && user.roles && user.roles.admin)
+          ) {
+          <div
+            class="message-button"
+            [ngStyle]="{ color: highlights.edit === true ? '#FF9800' : '#F44336' }"
+            >
+            <div
+              class="d-flex flex-row justify-content-center"
+              (mouseover)="highlightElement('edit', true)"
+              (mouseleave)="highlightElement('edit', false)"
+              (click)="editMessage()"
+              >
+              <mat-icon class="message-tool-icon" aria-hidden="true">edit</mat-icon>
+            </div>
+            <span class="message-button-label d-flex justify-content-center"
+              >Edit</span
+              >
+            </div>
+          }
+        </div>
+        <mat-divider
+          class="message-controls-divider-vertical"
+          [vertical]="true"
+        ></mat-divider>
+        <div
+          class="message-view-container message-view-container col-7 col-sm-8 col-lg-10"
+          >
+          @if (message.isDeleted) {
+            <mat-card-content
+              class="message-view-deleted-container col-9"
+              >
+              <mat-card-title>
+                <mat-card-subtitle class="chat-message-author-name">
+                  <i>This message was deleted.</i>
+                </mat-card-subtitle>
+              </mat-card-title>
+            </mat-card-content>
+          }
+          @if (!message.isDeleted) {
+            <mat-card-content>
+              <mat-card-title>
+                @if (!message.isReply) {
+                  <div
+                    class="message-title"
+                    >
+                    {{ message.title }}
+                  </div>
+                }
+                <mat-card-subtitle class="chat-message-author-name">
+                  {{ message.authorName }}
+                </mat-card-subtitle>
+                <mat-card-subtitle class="message-timestamp">
+                  {{ message.dateSent | date : "short" }}
+                </mat-card-subtitle>
+              </mat-card-title>
+              <div
+                class="message-body"
+                [innerHTML]="message.body"
+                >
+                <!-- {{ message.body }} -->
+              </div>
+              <br />
+              @if (getAttachmentType(message) === 'photo') {
+                <img
+                  mat-card-image
+                  src="{{ message.attachmentUrl }}"
+                  class="massage-attachment-image"
+                  />
+              }
+              @if (getAttachmentType(message) === 'document') {
+                <a
+                  mat-button
+                  [href]="message.attachmentUrl"
+                  class="message-view-attachment-button"
+                  target="_blank"
+                  >View Attachment</a
+                  >
+                }
+                @if (getAttachmentType(message) === 'other') {
+                  <a
+                    mat-button
+                    [href]="message.attachmentUrl"
+                    class="message-view-attachment-button"
+                    download
+                    >Download Attachment</a
+                    >
+                  }
+                </mat-card-content>
+              }
+            </div>
+          </div>
+          @for (reply of message.replies; track reply) {
+            <mat-card-content>
+              @if (!reply.isEditable) {
+                <app-chat-view
+                  [message]="reply"
+                  [parent]="message"
+                  (updateParentEvent)="updateParent()"
+                  >
+                </app-chat-view>
+              }
+              @if (reply.isEditable) {
+                <app-chat-edit
+                  [message]="reply"
+                  [parent]="message"
+                  (updateParentEvent)="updateParent()"
+                  >
+                </app-chat-edit>
+              }
+            </mat-card-content>
+          }

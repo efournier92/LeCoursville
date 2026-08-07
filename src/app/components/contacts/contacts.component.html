@@ -7,75 +7,88 @@
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onFilterChange(searchTerm)"
-      />
-      <button
-        *ngIf="searchTerm"
-        matSuffix
-        mat-icon-button
-        aria-label="Clear"
-        (click)="clearFilter()"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+        />
+      @if (searchTerm) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="clearFilter()"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </mat-form-field>
 
     <mat-form-field class="family-filter-form-field">
       <mat-label>By Family</mat-label>
       <mat-select [(value)]="selectedClan" (selectionChange)="onClanChange()" panelClass="clan-select-panel">
-        <mat-option *ngFor="let clan of getClans()" [value]="clan.name">{{ clan.name }}</mat-option>
+        @for (clan of getClans(); track clan) {
+          <mat-option [value]="clan.name">{{ clan.name }}</mat-option>
+        }
       </mat-select>
-      <button *ngIf="selectedClan" matSuffix mat-icon-button aria-label="Clear" (click)="clearClanFilter(); $event.stopPropagation()">
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (selectedClan) {
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearClanFilter(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </mat-form-field>
   </app-page-toolbar>
 
-  <div class="contacts-skeleton-grid" *ngIf="contacts.length === 0 && !searchTerm && !selectedClan">
-    <div
-      class="contacts-skeleton-card"
-      *ngFor="let i of skeletonIterations"
-    >
-      <div class="skeleton-header">
-        <div class="skeleton-name-line"></div>
-      </div>
-      <div class="skeleton-content">
-        <div class="skeleton-section">
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-          <div class="skeleton-line"></div>
+  @if (contacts.length === 0 && !searchTerm && !selectedClan) {
+    <div class="contacts-skeleton-grid">
+      @for (i of skeletonIterations; track i) {
+        <div
+          class="contacts-skeleton-card"
+          >
+          <div class="skeleton-header">
+            <div class="skeleton-name-line"></div>
+          </div>
+          <div class="skeleton-content">
+            <div class="skeleton-section">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line"></div>
+            </div>
+            <div class="skeleton-section">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+            </div>
+            <div class="skeleton-section">
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+            </div>
+          </div>
         </div>
-        <div class="skeleton-section">
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-        <div class="skeleton-section">
-          <div class="skeleton-line short"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-        </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 
-  <div class="contacts-grid" *ngIf="contacts.length > 0">
-    <app-contact-card
-      *ngFor="let card of contacts"
-      [contactCard]="card"
-      (personClick)="openPersonDetail($event)"
-      (spouseClick)="openPersonDetail($event)">
-    </app-contact-card>
-  </div>
+  @if (contacts.length > 0) {
+    <div class="contacts-grid">
+      @for (card of contacts; track card) {
+        <app-contact-card
+          [contactCard]="card"
+          (personClick)="openPersonDetail($event)"
+          (spouseClick)="openPersonDetail($event)">
+        </app-contact-card>
+      }
+    </div>
+  }
 
-  <app-no-results-message
-    *ngIf="contacts.length === 0 && (searchTerm || selectedClan) && searchTerm"
-    [searchTerm]="searchTerm"
-  ></app-no-results-message>
+  @if (contacts.length === 0 && (searchTerm || selectedClan) && searchTerm) {
+    <app-no-results-message
+      [searchTerm]="searchTerm"
+    ></app-no-results-message>
+  }
 </div>
 
-<app-person-detail-modal
-  *ngIf="selectedPersonId"
-  [personId]="selectedPersonId"
-  (closeModal)="closeModal()"
-  (openPerson)="openPersonDetail($event)">
-</app-person-detail-modal>
+@if (selectedPersonId) {
+  <app-person-detail-modal
+    [personId]="selectedPersonId"
+    (closeModal)="closeModal()"
+    (openPerson)="openPersonDetail($event)">
+  </app-person-detail-modal>
+}

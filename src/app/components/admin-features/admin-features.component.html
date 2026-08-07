@@ -10,9 +10,11 @@
         <mat-label>Default Landing Page</mat-label>
         <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
           <mat-option value="">-- Select --</mat-option>
-          <mat-option *ngFor="let feature of featureOptions" [value]="feature.route">
-            {{ feature.label }} ({{ feature.route }})
-          </mat-option>
+          @for (feature of featureOptions; track feature) {
+            <mat-option [value]="feature.route">
+              {{ feature.label }} ({{ feature.route }})
+            </mat-option>
+          }
         </mat-select>
       </mat-form-field>
     </mat-card-content>
@@ -26,17 +28,19 @@
 
     <mat-card-content>
       <div class="feature-list">
-        <div class="feature-row" *ngFor="let feature of featureDefs">
-          <mat-checkbox
-            [checked]="isEnabled(feature.id)"
-            (change)="onToggle(feature.id, $event.checked)"
-            color="primary">
-          </mat-checkbox>
-          <span class="feature-label">{{ feature.label }}</span>
-          <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
-            {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
-          </span>
-        </div>
+        @for (feature of featureDefs; track feature) {
+          <div class="feature-row">
+            <mat-checkbox
+              [checked]="isEnabled(feature.id)"
+              (change)="onToggle(feature.id, $event.checked)"
+              color="primary">
+            </mat-checkbox>
+            <span class="feature-label">{{ feature.label }}</span>
+            <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
+              {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
+            </span>
+          </div>
+        }
       </div>
     </mat-card-content>
   </mat-card>

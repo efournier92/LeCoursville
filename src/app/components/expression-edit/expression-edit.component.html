@@ -1,54 +1,57 @@
-<div class="expression-edit" *ngIf="user && !isSaving">
-  <div class="expression-edit-form">
-    <div class="form-row">
-      <mat-form-field>
-        <mat-label>Expression</mat-label>
-        <input
+@if (user && !isSaving) {
+  <div class="expression-edit">
+    <div class="expression-edit-form">
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Expression</mat-label>
+          <input
+            matInput
+            [(ngModel)]="message.title"
+            />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Attribution</mat-label>
+          <input
+            matInput
+            [(ngModel)]="message.attribution"
+            />
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Author</mat-label>
+          <input
+            matInput
+            [(ngModel)]="message.authorName"
+            />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Year Written</mat-label>
+          <input
+            matInput
+            [(ngModel)]="message.yearWritten"
+            />
+        </mat-form-field>
+      </div>
+      <mat-form-field class="w-100">
+        <mat-label>Description</mat-label>
+        <textarea
           matInput
-          [(ngModel)]="message.title"
-        />
+          cdkTextareaAutosize
+          #autosize="cdkTextareaAutosize"
+          [(ngModel)]="message.body"
+        ></textarea>
       </mat-form-field>
-      <mat-form-field>
-        <mat-label>Attribution</mat-label>
-        <input
-          matInput
-          [(ngModel)]="message.attribution"
-        />
-      </mat-form-field>
-    </div>
-    <div class="form-row">
-      <mat-form-field>
-        <mat-label>Author</mat-label>
-        <input
-          matInput
-          [(ngModel)]="message.authorName"
-        />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Year Written</mat-label>
-        <input
-          matInput
-          [(ngModel)]="message.yearWritten"
-        />
-      </mat-form-field>
-    </div>
-    <mat-form-field class="w-100">
-      <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        cdkTextareaAutosize
-        #autosize="cdkTextareaAutosize"
-        [(ngModel)]="message.body"
-      ></textarea>
-    </mat-form-field>
-
-    <div class="form-actions">
-      <button mat-button (click)="cancelEdit()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="saveMessage(message)">Save</button>
+      <div class="form-actions">
+        <button mat-button (click)="cancelEdit()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="saveMessage(message)">Save</button>
+      </div>
     </div>
   </div>
-</div>
+}
 
-<div class="expression-edit-saving" *ngIf="isSaving">
-  <mat-spinner></mat-spinner>
-</div>
+@if (isSaving) {
+  <div class="expression-edit-saving">
+    <mat-spinner></mat-spinner>
+  </div>
+}

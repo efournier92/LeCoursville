@@ -1,90 +1,91 @@
-<mat-card
-  class="user-card mat-elevation-z6"
-  *ngIf="userSignedIn?.id"
->
-  <form>
-    <div class="user-edit-id-top">{{ userOnCard.id }}</div>
-    <mat-form-field class="user-edit-form-field w-100">
-      <input
-        matInput
-        placeholder="Name"
-        name="user-name"
-        [(ngModel)]="userOnCard.name"
-      />
-    </mat-form-field>
-    <mat-form-field class="user-edit-form-field w-100">
-      <input
-        matInput
-        placeholder="Email"
-        name="user-email"
-        [(ngModel)]="userOnCard.email"
-      />
-    </mat-form-field>
-
-    <div class="user-edit-display-container">
-      <div class="user-edit-field-group">
-        <div class="user-edit-display-field">
-          <div class="user-edit-display-label">Last Active</div>
-          <div class="user-edit-display-value">{{ userOnCard.dateLastActive | date:'yyyy-MM-dd' }}</div>
-        </div>
-        <div class="user-edit-display-field user-edit-display-right">
-          <div class="user-edit-display-label">Registered</div>
-          <div class="user-edit-display-value">{{ userOnCard.dateRegistered | date:'yyyy-MM-dd' }}</div>
+@if (userSignedIn?.id) {
+  <mat-card
+    class="user-card mat-elevation-z6"
+    >
+    <form>
+      <div class="user-edit-id-top">{{ userOnCard.id }}</div>
+      <mat-form-field class="user-edit-form-field w-100">
+        <input
+          matInput
+          placeholder="Name"
+          name="user-name"
+          [(ngModel)]="userOnCard.name"
+          />
+      </mat-form-field>
+      <mat-form-field class="user-edit-form-field w-100">
+        <input
+          matInput
+          placeholder="Email"
+          name="user-email"
+          [(ngModel)]="userOnCard.email"
+          />
+      </mat-form-field>
+      <div class="user-edit-display-container">
+        <div class="user-edit-field-group">
+          <div class="user-edit-display-field">
+            <div class="user-edit-display-label">Last Active</div>
+            <div class="user-edit-display-value">{{ userOnCard.dateLastActive | date:'yyyy-MM-dd' }}</div>
+          </div>
+          <div class="user-edit-display-field user-edit-display-right">
+            <div class="user-edit-display-label">Registered</div>
+            <div class="user-edit-display-value">{{ userOnCard.dateRegistered | date:'yyyy-MM-dd' }}</div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div
-      *ngIf="isSuperUser()"
-      class="user-roles-container mt-3"
-    >
-      <mat-checkbox
-        name="user-roles-user"
-        [(ngModel)]="userOnCard.roles.user"
-      >
-        User
-      </mat-checkbox>
-      <mat-checkbox
-        name="user-roles-admin"
-        [(ngModel)]="userOnCard.roles.admin"
-      >
-        Admin
-      </mat-checkbox>
-      <mat-checkbox
-        name="user-roles-super"
-        [(ngModel)]="userOnCard.roles.super"
-      >
-        Super
-      </mat-checkbox>
-    </div>
-  </form>
-
-  <mat-card-footer class="user-card-footer-actions m-0 mt-4">
-    <button
-      mat-raised-button
-      class="admin-form-action-button admin-form-action-button-upload col m-2"
-      color="accent"
-      *ngIf="!isAdminMode"
-      (click)="onCancelEdit()"
-    >
-      <span>Cancel</span>
-    </button>
-    <button
-      mat-raised-button
-      class="admin-form-action-button admin-form-action-button-upload col m-2"
-      color="primary"
-      (click)="onSaveUser(userOnCard)"
-    >
-      <span>Save</span>
-    </button>
-    <button
-      mat-raised-button
-      class="admin-form-action-button admin-form-action-button-delete col m-2"
-      color="warn"
-      *ngIf="userSignedIn?.roles?.super"
-      (click)="onDeleteUser(userOnCard)"
-    >
-      <span>Delete</span>
-    </button>
-  </mat-card-footer>
-</mat-card>
+      @if (isSuperUser()) {
+        <div
+          class="user-roles-container mt-3"
+          >
+          <mat-checkbox
+            name="user-roles-user"
+            [(ngModel)]="userOnCard.roles.user"
+            >
+            User
+          </mat-checkbox>
+          <mat-checkbox
+            name="user-roles-admin"
+            [(ngModel)]="userOnCard.roles.admin"
+            >
+            Admin
+          </mat-checkbox>
+          <mat-checkbox
+            name="user-roles-super"
+            [(ngModel)]="userOnCard.roles.super"
+            >
+            Super
+          </mat-checkbox>
+        </div>
+      }
+    </form>
+    <mat-card-footer class="user-card-footer-actions m-0 mt-4">
+      @if (!isAdminMode) {
+        <button
+          mat-raised-button
+          class="admin-form-action-button admin-form-action-button-upload col m-2"
+          color="accent"
+          (click)="onCancelEdit()"
+          >
+          <span>Cancel</span>
+        </button>
+      }
+      <button
+        mat-raised-button
+        class="admin-form-action-button admin-form-action-button-upload col m-2"
+        color="primary"
+        (click)="onSaveUser(userOnCard)"
+        >
+        <span>Save</span>
+      </button>
+      @if (userSignedIn?.roles?.super) {
+        <button
+          mat-raised-button
+          class="admin-form-action-button admin-form-action-button-delete col m-2"
+          color="warn"
+          (click)="onDeleteUser(userOnCard)"
+          >
+          <span>Delete</span>
+        </button>
+      }
+    </mat-card-footer>
+  </mat-card>
+}

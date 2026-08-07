@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { Observable } from 'rxjs';
@@ -10,6 +10,7 @@ import { Photo } from 'src/app/models/photo';
     selector: 'app-photo-upload-progress',
     templateUrl: './photo-upload-progress.component.html',
     styleUrls: ['./photo-upload-progress.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [CommonModule, MatCardModule]
 })
 export class PhotoUploadProgressComponent implements OnInit {

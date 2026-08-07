@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +20,8 @@ interface UploadItem {
     selector: 'app-public-upload',
     templateUrl: './public-upload.component.html',
     styleUrls: ['./public-upload.component.scss'],
-    imports: [CommonModule, FormsModule, MatIconModule]
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [FormsModule, MatIconModule]
 })
 export class PublicUploadComponent implements OnInit, OnDestroy {
   uploadItems: UploadItem[] = [];

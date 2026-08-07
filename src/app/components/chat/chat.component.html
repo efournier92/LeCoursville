@@ -4,30 +4,33 @@
       mat-button
       class="create-message-button"
       (click)="onCreate()"
-    >
+      >
       <mat-icon>add</mat-icon>
       <span class="ml-2">New Message</span>
     </button>
   </div>
   <div class="chat-container d-flex justify-content-center row">
-    <mat-card
-      class="message-card-container mat-elevation-z6 mt-4 col-lg-11 col-xl-7"
-      *ngFor="let message of allItems"
-    >
-      <app-chat-view
-        *ngIf="!message.isEditable"
-        [message]="message"
-        [parent]="message"
-        (updateParentEvent)="updateMessages($event)"
-        (cancelEditEvent)="cancelEdit($event)"
-      ></app-chat-view>
-      <app-chat-edit
-        *ngIf="message.isEditable"
-        [message]="message"
-        [parent]="message"
-        (updateParentEvent)="updateMessages($event)"
-        (cancelEditEvent)="cancelEdit($event)"
-      ></app-chat-edit>
-    </mat-card>
+    @for (message of allItems; track message) {
+      <mat-card
+        class="message-card-container mat-elevation-z6 mt-4 col-lg-11 col-xl-7"
+        >
+        @if (!message.isEditable) {
+          <app-chat-view
+            [message]="message"
+            [parent]="message"
+            (updateParentEvent)="updateMessages($event)"
+            (cancelEditEvent)="cancelEdit($event)"
+          ></app-chat-view>
+        }
+        @if (message.isEditable) {
+          <app-chat-edit
+            [message]="message"
+            [parent]="message"
+            (updateParentEvent)="updateMessages($event)"
+            (cancelEditEvent)="cancelEdit($event)"
+          ></app-chat-edit>
+        }
+      </mat-card>
+    }
   </div>
 </div>

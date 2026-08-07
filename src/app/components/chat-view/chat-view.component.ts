@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MessageViewComponent } from 'src/app/components/message-view/message-view.component';
 import { MessageConstants } from 'src/app/constants/message-constants';
 
@@ -6,6 +6,7 @@ import { MessageConstants } from 'src/app/constants/message-constants';
     selector: 'app-chat-view',
     templateUrl: './chat-view.component.html',
     styleUrls: ['./chat-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatViewComponent extends MessageViewComponent {

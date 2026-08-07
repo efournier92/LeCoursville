@@ -1,11 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+
 
 @Component({
     selector: 'app-page-toolbar',
     templateUrl: './page-toolbar.component.html',
     styleUrls: ['./page-toolbar.component.scss'],
-    imports: [CommonModule]
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: []
 })
 export class PageToolbarComponent {
   @Input() title: string | null = null;

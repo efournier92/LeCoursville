@@ -8,7 +8,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { CalendarModule, DateAdapter } from "angular-calendar";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from "@angular/common/http";
 import { MaterialModule } from "src/app/modules/material.module";
 import { NgxExtendedPdfViewerModule } from "ngx-extended-pdf-viewer";
 
@@ -141,5 +141,5 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
         PageToolbarComponent,
         PhotoUploadProgressComponent,
         NgxExtendedPdfViewerModule,
-        ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withInterceptorsFromDi())] })
+        ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi())] })
 export class AppModule {}

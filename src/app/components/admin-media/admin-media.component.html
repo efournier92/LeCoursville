@@ -13,17 +13,19 @@
     <mat-tab label="Doc"> TODO </mat-tab>
   </mat-tab-group>
 
-  <div
-    class="media-upload-success-messages"
-    *ngFor="let success of successMessages"
-  >
-    {{ success }}
-  </div>
+  @for (success of successMessages; track success) {
+    <div
+      class="media-upload-success-messages"
+      >
+      {{ success }}
+    </div>
+  }
 
-  <div
-    class="media-upload-error-messages"
-    *ngFor="let error of errorMessages"
-  >
-    {{ error }}
-  </div>
+  @for (error of errorMessages; track error) {
+    <div
+      class="media-upload-error-messages"
+      >
+      {{ error }}
+    </div>
+  }
 </div>

@@ -1,43 +1,47 @@
-<div class="expression-card" *ngIf="!message.isDeleted">
-  <div class="expression-content">
-    <div class="expression-header">
-      <h3 class="expression-title">"{{ message.title }}"</h3>
-      <span class="expression-attribution">- {{ message.attribution }}</span>
+@if (!message.isDeleted) {
+  <div class="expression-card">
+    <div class="expression-content">
+      <div class="expression-header">
+        <h3 class="expression-title">"{{ message.title }}"</h3>
+        <span class="expression-attribution">- {{ message.attribution }}</span>
+      </div>
+      <div class="expression-body" [innerHTML]="message.body"></div>
+      <div class="expression-meta">
+        <span class="expression-author">- {{ message.authorName }}, {{ message.yearWritten }}</span>
+        @if (getAttachmentType(message) === 'photo') {
+          <img
+            [src]="message.attachmentUrl"
+            class="expression-image"
+            />
+        }
+        @if (getAttachmentType(message) === 'document') {
+          <a
+            [href]="message.attachmentUrl"
+            class="expression-attachment-link"
+            target="_blank"
+            >
+            <mat-icon>attach_file</mat-icon> View Attachment
+          </a>
+        }
+      </div>
     </div>
-
-    <div class="expression-body" [innerHTML]="message.body"></div>
-
-    <div class="expression-meta">
-      <span class="expression-author">- {{ message.authorName }}, {{ message.yearWritten }}</span>
-      <img
-        *ngIf="getAttachmentType(message) === 'photo'"
-        [src]="message.attachmentUrl"
-        class="expression-image"
-      />
-      <a
-        *ngIf="getAttachmentType(message) === 'document'"
-        [href]="message.attachmentUrl"
-        class="expression-attachment-link"
-        target="_blank"
-      >
-        <mat-icon>attach_file</mat-icon> View Attachment
-      </a>
-    </div>
+    @if (user && user.roles && user.roles.admin) {
+      <div
+        class="expression-actions"
+        >
+        <button
+          mat-icon-button
+          (click)="editMessage()"
+          >
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    }
   </div>
+}
 
-  <div
-    class="expression-actions"
-    *ngIf="user && user.roles && user.roles.admin"
-  >
-    <button
-      mat-icon-button
-      (click)="editMessage()"
-    >
-      <mat-icon>edit</mat-icon>
-    </button>
+@if (message.isDeleted) {
+  <div class="expression-card expression-deleted">
+    <span class="deleted-text">This expression was deleted.</span>
   </div>
-</div>
-
-<div class="expression-card expression-deleted" *ngIf="message.isDeleted">
-  <span class="deleted-text">This expression was deleted.</span>
-</div>
+}

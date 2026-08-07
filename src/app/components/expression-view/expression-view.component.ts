@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MessageViewComponent } from 'src/app/components/message-view/message-view.component';
 
 @Component({
     selector: 'app-expression-view',
     templateUrl: './expression-view.component.html',
     styleUrls: ['./expression-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ExpressionViewComponent extends MessageViewComponent {

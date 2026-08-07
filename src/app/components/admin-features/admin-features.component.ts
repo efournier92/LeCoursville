@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { FeatureFlag } from 'src/app/models/feature-flag';
 import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
@@ -7,6 +7,7 @@ import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
     selector: 'app-admin-features',
     templateUrl: './admin-features.component.html',
     styleUrls: ['./admin-features.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminFeaturesComponent implements OnInit {

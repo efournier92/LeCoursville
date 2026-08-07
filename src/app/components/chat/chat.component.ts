@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MessageComponent } from 'src/app/components/message/message.component';
 import { Message } from 'src/app/models/message';
 import { MessageConstants } from 'src/app/constants/message-constants';
@@ -7,6 +7,7 @@ import { MessageConstants } from 'src/app/constants/message-constants';
     selector: 'app-chat',
     templateUrl: './chat.component.html',
     styleUrls: ['./chat.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChatComponent extends MessageComponent implements OnInit {

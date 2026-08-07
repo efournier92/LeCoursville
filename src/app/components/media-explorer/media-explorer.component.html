@@ -1,97 +1,102 @@
 <div class="media-explorer-component justify-content-center">
   <div class="row">
-    <div
-      class="media-explorer-player-container col-lg-7 justify-content-center"
-      *ngIf="selectedMedia?.id"
-    >
+    @if (selectedMedia?.id) {
       <div
-        class="media-explorer-actions-container"
-      >
-        <button
-          mat-stroked-button
-          class="media-explorer-action-button"
-          *ngIf="shouldShowDownloadButton()"
-          matTooltip="Downloads the selected media to a file"
-          (click)="downloadSelectedMedia()"
+        class="media-explorer-player-container col-lg-7 justify-content-center"
         >
-          <mat-icon>download</mat-icon>
-          <span>Download</span>
-        </button>
-        <button
-          mat-stroked-button
-          class="media-explorer-action-button"
-          *ngIf="shouldShowShareableLinkButton()"
-          matTooltip="Copies a shareable link to your clipboard"
-          (click)="onGetShareableLink()"
-        >
-          <mat-icon>share</mat-icon>
-          <span>Share</span>
-        </button>
+        <div
+          class="media-explorer-actions-container"
+          >
+          @if (shouldShowDownloadButton()) {
+            <button
+              mat-stroked-button
+              class="media-explorer-action-button"
+              matTooltip="Downloads the selected media to a file"
+              (click)="downloadSelectedMedia()"
+              >
+              <mat-icon>download</mat-icon>
+              <span>Download</span>
+            </button>
+          }
+          @if (shouldShowShareableLinkButton()) {
+            <button
+              mat-stroked-button
+              class="media-explorer-action-button"
+              matTooltip="Copies a shareable link to your clipboard"
+              (click)="onGetShareableLink()"
+              >
+              <mat-icon>share</mat-icon>
+              <span>Share</span>
+            </button>
+          }
+        </div>
+        @if (isVideo(selectedMedia)) {
+          <div
+            class="media-component-container"
+            >
+            <app-video-player-drive-iframe
+              [video]="selectedMedia"
+              [events]="eventsSubject.asObservable()"
+              >
+            </app-video-player-drive-iframe>
+          </div>
+        }
+        @if (isDocument(selectedMedia)) {
+          <div
+            class="media-component-container document-component-container"
+            >
+            <app-doc-viewer-drive-iframe
+              [doc]="selectedMedia"
+              [events]="eventsSubject.asObservable()"
+              >
+            </app-doc-viewer-drive-iframe>
+          </div>
+        }
+        @if (isPhotoAlbum(selectedMedia)) {
+          <div
+            class="media-component-container"
+            >
+            <app-photo-album [album]="selectedMedia"> </app-photo-album>
+          </div>
+        }
+        @if (isAudioAlbum(selectedMedia)) {
+          <div
+            class="media-component-container"
+            >
+            <app-audio-player
+              [album]="selectedMedia"
+              [events]="eventsSubject.asObservable()"
+              >
+            </app-audio-player>
+          </div>
+        }
       </div>
-
-      <div
-        class="media-component-container"
-        *ngIf="isVideo(selectedMedia)"
-      >
-        <app-video-player-drive-iframe
-          [video]="selectedMedia"
-          [events]="eventsSubject.asObservable()"
-        >
-        </app-video-player-drive-iframe>
-      </div>
-
-      <div
-        class="media-component-container document-component-container"
-        *ngIf="isDocument(selectedMedia)"
-      >
-        <app-doc-viewer-drive-iframe
-          [doc]="selectedMedia"
-          [events]="eventsSubject.asObservable()"
-        >
-        </app-doc-viewer-drive-iframe>
-      </div>
-
-      <div
-        class="media-component-container"
-        *ngIf="isPhotoAlbum(selectedMedia)"
-      >
-        <app-photo-album [album]="selectedMedia"> </app-photo-album>
-      </div>
-
-      <div
-        class="media-component-container"
-        *ngIf="isAudioAlbum(selectedMedia)"
-      >
-        <app-audio-player
-          [album]="selectedMedia"
-          [events]="eventsSubject.asObservable()"
-        >
-        </app-audio-player>
-      </div>
-    </div>
+    }
 
     <div class="media-list-container col-lg-5">
       <!-- TODO: Move to app-media-list -->
-      <div
-        class="d-flex w-100 justify-content-center mt-2"
-        *ngIf="selectedMedia?.id && !user?.id"
-      >
-        <button
-          mat-raised-button
-          color="primary"
-          class="mb-4"
-          (click)="navigateToSignIn()"
-        >
-          Sign in for more
-        </button>
-      </div>
+      @if (selectedMedia?.id && !user?.id) {
+        <div
+          class="d-flex w-100 justify-content-center mt-2"
+          >
+          <button
+            mat-raised-button
+            color="primary"
+            class="mb-4"
+            (click)="navigateToSignIn()"
+            >
+            Sign in for more
+          </button>
+        </div>
+      }
 
-      <app-media-list
-        [mediaTypesToShow]="mediaTypesToShow"
-        [isAdminMode]="false"
-        (mediaClickEvent)="onMediaSelect($event)"
-        *ngIf="shouldDisplayMediaList()"
-      ></app-media-list>
+      @if (shouldDisplayMediaList()) {
+        <app-media-list
+          [mediaTypesToShow]="mediaTypesToShow"
+          [isAdminMode]="false"
+          (mediaClickEvent)="onMediaSelect($event)"
+        ></app-media-list>
+      }
     </div>
   </div>
 </div>

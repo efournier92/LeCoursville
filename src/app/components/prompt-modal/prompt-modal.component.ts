@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from "@angular/core";
+import { Component, OnInit, Inject, ChangeDetectionStrategy } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { DialogData } from "src/app/interfaces/dialog-data";
 import { PromptButton } from "../../interfaces/prompt-button";
@@ -7,6 +7,7 @@ import { PromptButton } from "../../interfaces/prompt-button";
     selector: "app-prompt-modal",
     templateUrl: "./prompt-modal.component.html",
     styleUrls: ["./prompt-modal.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PromptModalComponent implements OnInit {

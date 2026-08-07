@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { PhotoAlbum } from 'src/app/models/photo-album';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -14,6 +14,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     selector: 'app-photo-album',
     templateUrl: './photo-album.component.html',
     styleUrls: ['./photo-album.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PhotoAlbumComponent implements OnInit {

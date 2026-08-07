@@ -16,154 +16,189 @@
     <mat-icon>create_new_folder</mat-icon> Upload Folder
   </button>
   <input #folderInput type="file" webkitdirectory multiple hidden
-         (change)="onFolderPicked($event)" />
+    (change)="onFolderPicked($event)" />
 </app-page-toolbar>
 
 <div class="upload-drop-zone"
-     [class.drag-over]="isDragOver"
-     (dragover)="onDragOver($event)"
-     (dragleave)="onDragLeave($event)"
-     (drop)="onDrop($event)"
-     (click)="onUploadClick()">
+  [class.drag-over]="isDragOver"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+  (click)="onUploadClick()">
   <mat-icon class="drop-zone-icon">cloud_upload</mat-icon>
   <div class="drop-zone-label">Drag a folder here, or click "Upload Folder" above</div>
 </div>
 
-<div *ngIf="activeUploads.length > 0" class="active-uploads">
-  <div class="active-uploads-header">
-    <h3>Uploading... ({{ activeUploads.length }} remaining)</h3>
-    <button mat-button color="warn" (click)="cancelActiveUploads()">Cancel All</button>
+@if (activeUploads.length > 0) {
+  <div class="active-uploads">
+    <div class="active-uploads-header">
+      <h3>Uploading... ({{ activeUploads.length }} remaining)</h3>
+      <button mat-button color="warn" (click)="cancelActiveUploads()">Cancel All</button>
+    </div>
+    @for (entry of activeUploads; track entry) {
+      <app-photo-upload-progress
+        [upload]="entry.upload"
+        (completeUploadEvent)="completePhotoUpload($event)">
+      </app-photo-upload-progress>
+    }
   </div>
-  <app-photo-upload-progress *ngFor="let entry of activeUploads"
-                             [upload]="entry.upload"
-                             (completeUploadEvent)="completePhotoUpload($event)">
-  </app-photo-upload-progress>
-</div>
+}
 
 <!-- Album grid -->
-<div *ngIf="!selectedAlbum" class="admin-album-grid container-fluid">
-  <mat-card *ngFor="let album of getFilteredAlbums()"
-            class="admin-album-card mat-elevation-z6 col-12 col-sm-6 col-md-4 col-lg-3"
-            (click)="openAlbumPhotos(album)">
-    <div class="album-cover">
-      <img *ngIf="getCoverUrl(album); else placeholder"
-           [src]="getCoverUrl(album)"
-           [alt]="album.title"
-           loading="lazy" decoding="async"
-           width="400" height="400" />
-      <ng-template #placeholder>
-        <mat-icon class="album-cover-placeholder">photo_library</mat-icon>
-      </ng-template>
-    </div>
-    <mat-card-content>
-      <div class="album-title">{{ album.title }}</div>
-      <div class="album-count">{{ getPhotoCount(album) }} photos</div>
-    </mat-card-content>
-    <mat-card-actions (click)="$event.stopPropagation()">
-      <button mat-icon-button matTooltip="Add More Photos" (click)="onAddMoreClick(album)">
-        <mat-icon>add_photo_alternate</mat-icon>
-      </button>
-      <button mat-icon-button matTooltip="Rename" (click)="onEditAlbum(album)">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button matTooltip="Delete" (click)="onDeleteAlbum(album)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </mat-card-actions>
-  </mat-card>
-  <app-no-results-message *ngIf="getFilteredAlbums().length === 0" [searchTerm]="searchTerm"></app-no-results-message>
-</div>
+@if (!selectedAlbum) {
+  <div class="admin-album-grid container-fluid">
+    @for (album of getFilteredAlbums(); track album) {
+      <mat-card
+        class="admin-album-card mat-elevation-z6 col-12 col-sm-6 col-md-4 col-lg-3"
+        (click)="openAlbumPhotos(album)">
+        <div class="album-cover">
+          @if (getCoverUrl(album)) {
+            <img
+              [src]="getCoverUrl(album)"
+              [alt]="album.title"
+              loading="lazy" decoding="async"
+              width="400" height="400" />
+          } @else {
+            <mat-icon class="album-cover-placeholder">photo_library</mat-icon>
+          }
+        </div>
+        <mat-card-content>
+          <div class="album-title">{{ album.title }}</div>
+          <div class="album-count">{{ getPhotoCount(album) }} photos</div>
+        </mat-card-content>
+        <mat-card-actions (click)="$event.stopPropagation()">
+          <button mat-icon-button matTooltip="Add More Photos" (click)="onAddMoreClick(album)">
+            <mat-icon>add_photo_alternate</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Rename" (click)="onEditAlbum(album)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Delete" (click)="onDeleteAlbum(album)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    }
+    @if (getFilteredAlbums().length === 0) {
+      <app-no-results-message [searchTerm]="searchTerm"></app-no-results-message>
+    }
+  </div>
+}
 
 <!-- Drill-in: per-photo management for one album -->
-<div *ngIf="selectedAlbum" class="album-photos-panel">
-  <div class="album-photos-header">
-    <button mat-icon-button matTooltip="Back to albums" (click)="closeAlbumPhotos()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <h2>{{ selectedAlbum.title }}</h2>
-    <span class="album-photos-count">{{ selectedAlbumPhotos.length }} photos</span>
-    <span class="album-photos-spacer"></span>
-    <button mat-stroked-button (click)="onAddMoreClick(selectedAlbum)">
-      <mat-icon>add_photo_alternate</mat-icon> Add Photos
-    </button>
-    <button mat-stroked-button (click)="onEditAlbum(selectedAlbum)">
-      <mat-icon>edit</mat-icon> Rename
-    </button>
-    <button mat-stroked-button color="warn" (click)="onDeleteAlbum(selectedAlbum)">
-      <mat-icon>delete</mat-icon> Delete Album
-    </button>
-  </div>
-
-  <div class="admin-photo-grid container-fluid">
-    <mat-card *ngFor="let photo of selectedAlbumPhotos"
-              class="admin-photo-card mat-elevation-z6 col-12 col-sm-6 col-md-4 col-lg-3">
-      <div class="photo-card-image-wrap">
-        <img mat-card-image [src]="photo.url" [alt]="photo.info || 'Photo'"
-             loading="lazy" decoding="async"
-             width="400" height="400" />
-      </div>
-      <mat-card-content *ngIf="!isEditingPhoto(photo)">
-        <div class="photo-taken-by" *ngIf="photo.takenBy">{{ photo.takenBy }}</div>
-        <div class="photo-info">{{ photo.info }}</div>
-        <div class="photo-location" *ngIf="photo.location">{{ photo.location }}</div>
-        <div class="photo-year">{{ photo.isYearCirca ? 'c. ' : '' }}{{ photo.year }}</div>
-      </mat-card-content>
-      <mat-card-content *ngIf="isEditingPhoto(photo)">
-        <mat-form-field class="photo-edit-field photo-edit-field--full">
-          <mat-label>Caption (info)</mat-label>
-          <input matInput [(ngModel)]="editDraft.info" />
-        </mat-form-field>
-        <mat-form-field class="photo-edit-field photo-edit-field--full">
-          <mat-label>Location</mat-label>
-          <input matInput [(ngModel)]="editDraft.location" />
-        </mat-form-field>
-        <div class="photo-edit-row">
-          <mat-form-field class="photo-edit-field year-field">
-            <mat-label>Year</mat-label>
-            <input matInput type="number" [(ngModel)]="editDraft.year" />
-          </mat-form-field>
-          <mat-checkbox [(ngModel)]="editDraft.isYearCirca">Year is circa</mat-checkbox>
-        </div>
-        <mat-form-field class="photo-edit-field photo-edit-field--full">
-          <mat-label>Taken by</mat-label>
-          <input matInput [(ngModel)]="editDraft.takenBy" />
-        </mat-form-field>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-icon-button matTooltip="Edit" *ngIf="!isEditingPhoto(photo)"
+@if (selectedAlbum) {
+  <div class="album-photos-panel">
+    <div class="album-photos-header">
+      <button mat-icon-button matTooltip="Back to albums" (click)="closeAlbumPhotos()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2>{{ selectedAlbum.title }}</h2>
+      <span class="album-photos-count">{{ selectedAlbumPhotos.length }} photos</span>
+      <span class="album-photos-spacer"></span>
+      <button mat-stroked-button (click)="onAddMoreClick(selectedAlbum)">
+        <mat-icon>add_photo_alternate</mat-icon> Add Photos
+      </button>
+      <button mat-stroked-button (click)="onEditAlbum(selectedAlbum)">
+        <mat-icon>edit</mat-icon> Rename
+      </button>
+      <button mat-stroked-button color="warn" (click)="onDeleteAlbum(selectedAlbum)">
+        <mat-icon>delete</mat-icon> Delete Album
+      </button>
+    </div>
+    <div class="admin-photo-grid container-fluid">
+      @for (photo of selectedAlbumPhotos; track photo) {
+        <mat-card
+          class="admin-photo-card mat-elevation-z6 col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="photo-card-image-wrap">
+            <img mat-card-image [src]="photo.url" [alt]="photo.info || 'Photo'"
+              loading="lazy" decoding="async"
+              width="400" height="400" />
+          </div>
+          @if (!isEditingPhoto(photo)) {
+            <mat-card-content>
+              @if (photo.takenBy) {
+                <div class="photo-taken-by">{{ photo.takenBy }}</div>
+              }
+              <div class="photo-info">{{ photo.info }}</div>
+              @if (photo.location) {
+                <div class="photo-location">{{ photo.location }}</div>
+              }
+              <div class="photo-year">{{ photo.isYearCirca ? 'c. ' : '' }}{{ photo.year }}</div>
+            </mat-card-content>
+          }
+          @if (isEditingPhoto(photo)) {
+            <mat-card-content>
+              <mat-form-field class="photo-edit-field photo-edit-field--full">
+                <mat-label>Caption (info)</mat-label>
+                <input matInput [(ngModel)]="editDraft.info" />
+              </mat-form-field>
+              <mat-form-field class="photo-edit-field photo-edit-field--full">
+                <mat-label>Location</mat-label>
+                <input matInput [(ngModel)]="editDraft.location" />
+              </mat-form-field>
+              <div class="photo-edit-row">
+                <mat-form-field class="photo-edit-field year-field">
+                  <mat-label>Year</mat-label>
+                  <input matInput type="number" [(ngModel)]="editDraft.year" />
+                </mat-form-field>
+                <mat-checkbox [(ngModel)]="editDraft.isYearCirca">Year is circa</mat-checkbox>
+              </div>
+              <mat-form-field class="photo-edit-field photo-edit-field--full">
+                <mat-label>Taken by</mat-label>
+                <input matInput [(ngModel)]="editDraft.takenBy" />
+              </mat-form-field>
+            </mat-card-content>
+          }
+          <mat-card-actions>
+            @if (!isEditingPhoto(photo)) {
+              <button mat-icon-button matTooltip="Edit"
                 (click)="onEditPhoto(photo)"><mat-icon>edit</mat-icon></button>
-        <button mat-icon-button matTooltip="Save" *ngIf="isEditingPhoto(photo)"
-                (click)="onSavePhotoEdit()"><mat-icon>save</mat-icon></button>
-        <button mat-icon-button matTooltip="Cancel" *ngIf="isEditingPhoto(photo)"
-                (click)="onCancelPhotoEdit()"><mat-icon>cancel</mat-icon></button>
-        <button mat-icon-button matTooltip="Set as cover"
-                *ngIf="!isEditingPhoto(photo) && selectedAlbum.coverPhotoId !== photo.id"
-                (click)="onSetAsCover(photo)"><mat-icon>star</mat-icon></button>
-        <button mat-icon-button matTooltip="Delete" *ngIf="!isEditingPhoto(photo)"
-                (click)="onDeletePhoto(photo)"><mat-icon>delete</mat-icon></button>
-        <a mat-icon-button matTooltip="Download" [href]="photo.url" [download]="photo.path" target="_blank">
-          <mat-icon>cloud_download</mat-icon>
-        </a>
-      </mat-card-actions>
-    </mat-card>
-    <app-no-results-message *ngIf="selectedAlbumPhotos.length === 0" searchTerm=""></app-no-results-message>
-  </div>
-</div>
+              }
+              @if (isEditingPhoto(photo)) {
+                <button mat-icon-button matTooltip="Save"
+                  (click)="onSavePhotoEdit()"><mat-icon>save</mat-icon></button>
+                }
+                @if (isEditingPhoto(photo)) {
+                  <button mat-icon-button matTooltip="Cancel"
+                    (click)="onCancelPhotoEdit()"><mat-icon>cancel</mat-icon></button>
+                  }
+                  @if (!isEditingPhoto(photo) && selectedAlbum.coverPhotoId !== photo.id) {
+                    <button mat-icon-button matTooltip="Set as cover"
+                      (click)="onSetAsCover(photo)"><mat-icon>star</mat-icon></button>
+                    }
+                    @if (!isEditingPhoto(photo)) {
+                      <button mat-icon-button matTooltip="Delete"
+                        (click)="onDeletePhoto(photo)"><mat-icon>delete</mat-icon></button>
+                      }
+                      <a mat-icon-button matTooltip="Download" [href]="photo.url" [download]="photo.path" target="_blank">
+                        <mat-icon>cloud_download</mat-icon>
+                      </a>
+                    </mat-card-actions>
+                  </mat-card>
+                }
+                @if (selectedAlbumPhotos.length === 0) {
+                  <app-no-results-message searchTerm=""></app-no-results-message>
+                }
+              </div>
+            </div>
+          }
 
-<div *ngIf="editingAlbumId" class="album-edit-form-section">
-  <mat-card class="album-edit-card">
-    <mat-card-header>
-      <mat-card-title>Rename Album</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-form-field appearance="fill">
-        <mat-label>Album title</mat-label>
-        <input matInput [(ngModel)]="editingTitle" required maxlength="80" />
-      </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button (click)="onCancelEdit()">Cancel</button>
-      <button mat-raised-button color="primary" [disabled]="!editingTitle.trim()" (click)="onSaveEdit()">Save</button>
-    </mat-card-actions>
-  </mat-card>
-</div>
+          @if (editingAlbumId) {
+            <div class="album-edit-form-section">
+              <mat-card class="album-edit-card">
+                <mat-card-header>
+                  <mat-card-title>Rename Album</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field appearance="fill">
+                    <mat-label>Album title</mat-label>
+                    <input matInput [(ngModel)]="editingTitle" required maxlength="80" />
+                  </mat-form-field>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                  <button mat-button (click)="onCancelEdit()">Cancel</button>
+                  <button mat-raised-button color="primary" [disabled]="!editingTitle.trim()" (click)="onSaveEdit()">Save</button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          }

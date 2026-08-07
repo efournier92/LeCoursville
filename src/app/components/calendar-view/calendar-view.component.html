@@ -3,7 +3,7 @@
     #customCellTemplate
     let-day="day"
     let-locale="locale"
-  >
+    >
     <div class="cal-cell-content">
       <div class="cal-cell-top">
         <span class="cal-day-number">{{
@@ -11,32 +11,36 @@
         }}</span>
       </div>
       <div class="cal-events-container" [class.expanded]="expandedDays[day.date.toISOString()]">
-        <small
-          class="mb-1"
-          *ngFor="let event of day.events; let i = index"
-        >
-          <app-calendar-cell
-            *ngIf="isEventInActiveMonth(event) && (expandedDays[day.date.toISOString()] || i < maxEventsPerCell)"
-            [event]="event"
-            [selectedYear]="selectedYear"
-            (personClick)="personClick.emit($event)"
-            (spouseClick)="spouseClick.emit($event)"
-          ></app-calendar-cell>
-        </small>
-        <div
-          class="cal-events-overflow"
-          *ngIf="getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]"
-          (click)="toggleDayExpanded(day)"
-        >
-          +{{ getHiddenEventCount(day) }} more
-        </div>
-        <div
-          class="cal-events-collapse"
-          *ngIf="expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0"
-          (click)="toggleDayExpanded(day)"
-        >
-          Show less
-        </div>
+        @for (event of day.events; track event; let i = $index) {
+          <small
+            class="mb-1"
+            >
+            @if (isEventInActiveMonth(event) && (expandedDays[day.date.toISOString()] || i < maxEventsPerCell)) {
+              <app-calendar-cell
+                [event]="event"
+                [selectedYear]="selectedYear"
+                (personClick)="personClick.emit($event)"
+                (spouseClick)="spouseClick.emit($event)"
+              ></app-calendar-cell>
+            }
+          </small>
+        }
+        @if (getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]) {
+          <div
+            class="cal-events-overflow"
+            (click)="toggleDayExpanded(day)"
+            >
+            +{{ getHiddenEventCount(day) }} more
+          </div>
+        }
+        @if (expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0) {
+          <div
+            class="cal-events-collapse"
+            (click)="toggleDayExpanded(day)"
+            >
+            Show less
+          </div>
+        }
       </div>
     </div>
   </ng-template>
@@ -47,8 +51,8 @@
         [viewDate]="viewDate"
         [events]="events"
         [cellTemplate]="customCellTemplate"
-      >
+        >
       </mwl-calendar-month-view>
-      </div>
+    </div>
   </div>
 </div>

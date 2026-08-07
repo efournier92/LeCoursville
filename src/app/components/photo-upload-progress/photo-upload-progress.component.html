@@ -2,22 +2,23 @@
   class="upload-progress-card mat-elevation-z6"
   color="primary"
   [ngClass]="{ 'upload-card-success': uploadFinished }"
->
+  >
   <progress
     max="100"
     class="photo-upload-progress"
     [value]="uploadProgress | async"
   ></progress>
-  <div
-    class="upload-success-container"
-    *ngIf="photo && photo.url"
-  >
-    Uploaded to
-    <a
-      class="photo-upload-link"
-      [href]="photo.url"
-    >
-      {{ photo.path }}
-    </a>
-  </div>
+  @if (photo && photo.url) {
+    <div
+      class="upload-success-container"
+      >
+      Uploaded to
+      <a
+        class="photo-upload-link"
+        [href]="photo.url"
+        >
+        {{ photo.path }}
+      </a>
+    </div>
+  }
 </mat-card>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Calendar } from 'src/app/models/calendar';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
@@ -6,6 +6,7 @@ import { RtdbService } from 'src/app/services/rtdb.service';
     selector: 'app-admin-calendars',
     templateUrl: './admin-calendars.component.html',
     styleUrls: ['./admin-calendars.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminCalendarsComponent implements OnInit {

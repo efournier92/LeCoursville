@@ -1,27 +1,41 @@
 <mat-card class="mat-elevation-z6">
   <mat-card-title>{{ userOnCard.name }}</mat-card-title>
-  <mat-card-subtitle *ngIf="shouldDisplayUserId()">{{
-    userOnCard.id
-  }}</mat-card-subtitle>
+  @if (shouldDisplayUserId()) {
+    <mat-card-subtitle>{{
+      userOnCard.id
+    }}</mat-card-subtitle>
+  }
   <mat-card-content>
     <div><b>Email: </b>{{ userOnCard.email }}</div>
     <div><b>Registered: </b>{{ userOnCard.dateRegistered | date }}</div>
     <div><b>Last Active: </b>{{ userOnCard.dateLastActive | date }}</div>
-    <div *ngIf="shouldDisplayRoles()">
-      <span> <b>Roles: </b></span>
-      <span *ngIf="userOnCard.roles.user">User</span
-      ><span *ngIf="userOnCard.roles.admin">, </span>
-      <span *ngIf="userOnCard.roles.admin">Admin</span
-      ><span *ngIf="userOnCard.roles.super">, </span>
-      <span *ngIf="userOnCard.roles.super">Super</span>
-    </div>
-  </mat-card-content>
-  <mat-card-footer class="d-flex justify-content-end user-card-footer">
-    <button
-      mat-button
-      (click)="onEdit()"
-    >
-      Edit
-    </button>
-  </mat-card-footer>
-</mat-card>
+    @if (shouldDisplayRoles()) {
+      <div>
+        <span> <b>Roles: </b></span>
+        @if (userOnCard.roles.user) {
+          <span>User</span
+            >
+            }@if (userOnCard.roles.admin) {
+            <span>, </span>
+          }
+          @if (userOnCard.roles.admin) {
+            <span>Admin</span
+              >
+              }@if (userOnCard.roles.super) {
+              <span>, </span>
+            }
+            @if (userOnCard.roles.super) {
+              <span>Super</span>
+            }
+          </div>
+        }
+      </mat-card-content>
+      <mat-card-footer class="d-flex justify-content-end user-card-footer">
+        <button
+          mat-button
+          (click)="onEdit()"
+          >
+          Edit
+        </button>
+      </mat-card-footer>
+    </mat-card>

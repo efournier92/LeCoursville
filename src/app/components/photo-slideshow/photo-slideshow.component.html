@@ -1,10 +1,12 @@
 <div class="slideshow-stage" [class.paused]="!isPlaying">
-  <img *ngIf="currentPhoto()"
-       class="slideshow-image"
-       [class]="kenBurnsClass"
-       [src]="currentPhoto().url"
-       [alt]="currentPhoto().info || ''"
-       [style.animationDuration.ms]="slideDurationMs" />
+  @if (currentPhoto()) {
+    <img
+      class="slideshow-image"
+      [class]="kenBurnsClass"
+      [src]="currentPhoto().url"
+      [alt]="currentPhoto().info || ''"
+      [style.animationDuration.ms]="slideDurationMs" />
+  }
 
   <div class="slideshow-controls">
     <button mat-icon-button (click)="prev()" matTooltip="Previous">

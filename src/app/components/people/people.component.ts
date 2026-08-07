@@ -39,6 +39,7 @@ interface TableRow {
     selector: 'app-people',
     templateUrl: './people.component.html',
     styleUrls: ['./people.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PeopleComponent implements OnInit, OnDestroy {

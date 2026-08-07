@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { Video } from 'src/app/models/media/video';
@@ -11,6 +11,7 @@ import { VideoUploadService } from 'src/app/services/video-upload.service';
     selector: 'app-admin-media-upload-video',
     templateUrl: './admin-media-upload-video.component.html',
     styleUrls: ['./admin-media-upload-video.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AdminMediaUploadVideoComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media/video';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -11,6 +11,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     selector: 'app-video-player-videogular',
     templateUrl: './video-player-videogular.component.html',
     styleUrls: ['./video-player-videogular.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {

@@ -1,21 +1,25 @@
 <header class="gallery-bar">
   <div class="gallery-bar-left">
     <h1 class="gallery-title">Photos</h1>
-    <span class="gallery-count" *ngIf="albums.length > 0">
-      {{ albums.length }} album{{ albums.length === 1 ? '' : 's' }}
-    </span>
+    @if (albums.length > 0) {
+      <span class="gallery-count">
+        {{ albums.length }} album{{ albums.length === 1 ? '' : 's' }}
+      </span>
+    }
   </div>
   <div class="gallery-bar-actions">
     <div class="gallery-search" role="search">
       <mat-icon class="gallery-search-icon" aria-hidden="true">search</mat-icon>
       <input class="gallery-search-input"
-             type="text"
-             placeholder="Search albums"
-             aria-label="Search albums"
-             [(ngModel)]="searchTerm" />
-      <button *ngIf="searchTerm" class="gallery-search-clear" aria-label="Clear search" (click)="searchTerm = ''">
-        <mat-icon aria-hidden="true">close</mat-icon>
-      </button>
+        type="text"
+        placeholder="Search albums"
+        aria-label="Search albums"
+        [(ngModel)]="searchTerm" />
+      @if (searchTerm) {
+        <button class="gallery-search-clear" aria-label="Clear search" (click)="searchTerm = ''">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      }
     </div>
     <div class="gallery-segmented" role="group" aria-label="Sort albums">
       <button class="gallery-segmented-btn" [class.active]="sortType === 'recent'" (click)="sortType = 'recent'">Recent</button>
@@ -25,22 +29,27 @@
 </header>
 
 <div class="album-grid">
-  <div *ngFor="let album of getFilteredAlbums()"
-       class="album-tile"
-       (click)="onAlbumClick(album)">
-    <img *ngIf="resolveCover(album); else placeholder"
-         [src]="resolveCover(album)"
-         [alt]="album.title"
-         loading="lazy" decoding="async" />
-    <ng-template #placeholder>
-      <div class="album-tile-placeholder">
-        <mat-icon>photo_library</mat-icon>
+  @for (album of getFilteredAlbums(); track album) {
+    <div
+      class="album-tile"
+      (click)="onAlbumClick(album)">
+      @if (resolveCover(album)) {
+        <img
+          [src]="resolveCover(album)"
+          [alt]="album.title"
+          loading="lazy" decoding="async" />
+      } @else {
+        <div class="album-tile-placeholder">
+          <mat-icon>photo_library</mat-icon>
+        </div>
+      }
+      <div class="album-tile-scrim">
+        <div class="album-tile-title">{{ album.title }}</div>
+        <div class="album-tile-count">{{ getPhotoCount(album) }} photos</div>
       </div>
-    </ng-template>
-    <div class="album-tile-scrim">
-      <div class="album-tile-title">{{ album.title }}</div>
-      <div class="album-tile-count">{{ getPhotoCount(album) }} photos</div>
     </div>
-  </div>
-  <app-no-results-message *ngIf="getFilteredAlbums().length === 0" [searchTerm]="searchTerm"></app-no-results-message>
+  }
+  @if (getFilteredAlbums().length === 0) {
+    <app-no-results-message [searchTerm]="searchTerm"></app-no-results-message>
+  }
 </div>

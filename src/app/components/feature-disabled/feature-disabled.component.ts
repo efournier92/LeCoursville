@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FEATURES } from 'src/app/config/feature-config';
 
@@ -6,6 +6,7 @@ import { FEATURES } from 'src/app/config/feature-config';
     selector: 'app-feature-disabled',
     templateUrl: './feature-disabled.component.html',
     styleUrls: ['./feature-disabled.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FeatureDisabledComponent implements OnInit {

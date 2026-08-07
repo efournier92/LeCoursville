@@ -3,37 +3,46 @@
     <h3 class="calendar-printer-title">Print Calendar</h3>
   </div>
   <div class="calendar-printer-body">
-    <div *ngIf="loading" class="calendar-printer-status">
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    </div>
-
-    <div *ngIf="!loading && availableYears.length === 0" class="calendar-printer-empty">
-      <mat-icon>info_outline</mat-icon>
-      <span>No calendars configured yet</span>
-    </div>
-
-    <div *ngIf="!loading && availableYears.length > 0">
-      <div class="calendar-printer-years">
-        <button
-          *ngFor="let year of availableYears"
-          class="calendar-printer-year-btn"
-          [class.is-selected]="year === selectedYear"
-          (click)="onYearChange(year)"
-        >
-          {{ year }}
-        </button>
+    @if (loading) {
+      <div class="calendar-printer-status">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       </div>
+    }
 
-      <div *ngIf="calendarUrl" class="calendar-printer-actions">
-        <button mat-button class="calendar-printer-action-btn" (click)="openPrint()">
-          Print {{ selectedYear }}
-        </button>
-      </div>
-
-      <div *ngIf="!calendarUrl" class="calendar-printer-empty">
+    @if (!loading && availableYears.length === 0) {
+      <div class="calendar-printer-empty">
         <mat-icon>info_outline</mat-icon>
-        <span>No PDF configured for {{ selectedYear }}</span>
+        <span>No calendars configured yet</span>
       </div>
-    </div>
+    }
+
+    @if (!loading && availableYears.length > 0) {
+      <div>
+        <div class="calendar-printer-years">
+          @for (year of availableYears; track year) {
+            <button
+              class="calendar-printer-year-btn"
+              [class.is-selected]="year === selectedYear"
+              (click)="onYearChange(year)"
+              >
+              {{ year }}
+            </button>
+          }
+        </div>
+        @if (calendarUrl) {
+          <div class="calendar-printer-actions">
+            <button mat-button class="calendar-printer-action-btn" (click)="openPrint()">
+              Print {{ selectedYear }}
+            </button>
+          </div>
+        }
+        @if (!calendarUrl) {
+          <div class="calendar-printer-empty">
+            <mat-icon>info_outline</mat-icon>
+            <span>No PDF configured for {{ selectedYear }}</span>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>

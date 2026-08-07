@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { AuthService } from "src/app/services/auth.service";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
@@ -8,6 +8,7 @@ import { AnalyticsService } from "src/app/services/analytics.service";
     selector: "app-auth",
     templateUrl: "./auth.component.html",
     styleUrls: ["./auth.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AuthComponent implements OnInit {

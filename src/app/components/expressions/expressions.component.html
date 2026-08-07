@@ -7,16 +7,17 @@
         type="text"
         [(ngModel)]="sortSettings.activeFilterQuery"
         (input)="onFilterQueryChange($event.target.value)"
-      />
-      <button
-        *ngIf="sortSettings.activeFilterQuery"
-        matSuffix
-        mat-icon-button
-        aria-label="Clear"
-        (click)="onFilterQueryChange('')"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+        />
+      @if (sortSettings.activeFilterQuery) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="onFilterQueryChange('')"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </mat-form-field>
 
     <div class="sort-controls">
@@ -25,7 +26,7 @@
         class="sort-button"
         mat-button
         (click)="reverseSortDirection()"
-      >
+        >
         {{ sortSettings.activeSortProperty?.title }}
         <mat-icon>{{ sortSettings.isSortDescending() ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
       </button>
@@ -33,84 +34,97 @@
         class="sort-menu-trigger"
         mat-icon-button
         [matMenuTriggerFor]="sortMenu"
-      >
+        >
         <mat-icon>expand_more</mat-icon>
       </button>
     </div>
 
-    <div
-      class="create-expression"
-      *ngIf="user && user.roles && user.roles.admin"
-    >
-      <button mat-button class="create-expression-button" (click)="onCreate()">
-        <mat-icon>add</mat-icon>
-        Create Expression
-      </button>
-    </div>
+    @if (user && user.roles && user.roles.admin) {
+      <div
+        class="create-expression"
+        >
+        <button mat-button class="create-expression-button" (click)="onCreate()">
+          <mat-icon>add</mat-icon>
+          Create Expression
+        </button>
+      </div>
+    }
 
-    <button
-      class="show-all-button"
-      *ngIf="shouldDisplayShowAllButton()"
-      mat-button
-      (click)="onShowAll()"
-    >
-      Show All
-    </button>
+    @if (shouldDisplayShowAllButton()) {
+      <button
+        class="show-all-button"
+        mat-button
+        (click)="onShowAll()"
+        >
+        Show All
+      </button>
+    }
   </app-page-toolbar>
 
   <mat-menu #sortMenu="matMenu">
-    <button
-      mat-menu-item
-      *ngFor="let sortProperty of sortSettings.sortableProperties"
-      (click)="setSortProperty(sortProperty)"
-    >
-      {{ sortProperty.title }}
-    </button>
+    @for (sortProperty of sortSettings.sortableProperties; track sortProperty) {
+      <button
+        mat-menu-item
+        (click)="setSortProperty(sortProperty)"
+        >
+        {{ sortProperty.title }}
+      </button>
+    }
   </mat-menu>
 
-  <div class="expressions-skeleton" *ngIf="isLoading">
-    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
-      <div class="skeleton-content">
-        <div class="skeleton-header">
-          <div class="skeleton-line skeleton-title"></div>
-          <div class="skeleton-line skeleton-attribution"></div>
+  @if (isLoading) {
+    <div class="expressions-skeleton">
+      @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+        <div class="skeleton-card">
+          <div class="skeleton-content">
+            <div class="skeleton-header">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-attribution"></div>
+            </div>
+            <div class="skeleton-body">
+              <div class="skeleton-line skeleton-text"></div>
+              <div class="skeleton-line skeleton-text short"></div>
+            </div>
+            <div class="skeleton-meta">
+              <div class="skeleton-line skeleton-author"></div>
+            </div>
+          </div>
         </div>
-        <div class="skeleton-body">
-          <div class="skeleton-line skeleton-text"></div>
-          <div class="skeleton-line skeleton-text short"></div>
-        </div>
-        <div class="skeleton-meta">
-          <div class="skeleton-line skeleton-author"></div>
-        </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 
-  <div class="expressions-list" *ngIf="!isLoading">
-    <div
-      class="expression-card-wrapper"
-      *ngFor="let expression of displayedItems"
-    >
-      <app-expression-view
-        *ngIf="!expression.isEditable"
-        [message]="expression"
-        [parent]="expression"
-        (updateParentEvent)="updateMessages($event)"
-      >
-      </app-expression-view>
-      <app-expression-edit
-        *ngIf="expression.isEditable"
-        [message]="expression"
-        [parent]="expression"
-        (updateParentEvent)="updateMessages($event)"
-        (cancelEditEvent)="cancelEdit($event)"
-      >
-      </app-expression-edit>
+  @if (!isLoading) {
+    <div class="expressions-list">
+      @for (expression of displayedItems; track expression) {
+        <div
+          class="expression-card-wrapper"
+          >
+          @if (!expression.isEditable) {
+            <app-expression-view
+              [message]="expression"
+              [parent]="expression"
+              (updateParentEvent)="updateMessages($event)"
+              >
+            </app-expression-view>
+          }
+          @if (expression.isEditable) {
+            <app-expression-edit
+              [message]="expression"
+              [parent]="expression"
+              (updateParentEvent)="updateMessages($event)"
+              (cancelEditEvent)="cancelEdit($event)"
+              >
+            </app-expression-edit>
+          }
+        </div>
+      }
     </div>
-  </div>
+  }
 
-  <app-no-results-message
-    *ngIf="displayedItems.length === 0 && sortSettings.activeFilterQuery && !isLoading"
-    [searchTerm]="sortSettings.activeFilterQuery"
-  ></app-no-results-message>
+  @if (displayedItems.length === 0 && sortSettings.activeFilterQuery && !isLoading) {
+    <app-no-results-message
+      [searchTerm]="sortSettings.activeFilterQuery"
+    ></app-no-results-message>
+  }
 </div>

@@ -5,15 +5,16 @@
       matInput
       type="text"
       (input)="onInputChange($event.target.value)"
-    />
-    <button
-      *ngIf="inputValue"
-      matSuffix
-      mat-icon-button
-      aria-label="Clear"
-      (click)="clearInput()"
-    >
-      <mat-icon>close</mat-icon>
-    </button>
+      />
+    @if (inputValue) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="clearInput()"
+        >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
   </mat-form-field>
 </div>
