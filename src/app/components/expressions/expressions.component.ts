@@ -7,9 +7,10 @@ import { SortSettingsForExpressions } from 'src/app/models/sort-settings-for-exp
 import { SortProperty } from 'src/app/models/sort-settings';
 
 @Component({
-  selector: 'app-expressions',
-  templateUrl: './expressions.component.html',
-  styleUrls: ['./expressions.component.scss'],
+    selector: 'app-expressions',
+    templateUrl: './expressions.component.html',
+    styleUrls: ['./expressions.component.scss'],
+    standalone: false
 })
 export class ExpressionsComponent extends MessageComponent implements OnInit {
   headerQuoteText: string = ExpressionConstants.HeaderQuoteText;

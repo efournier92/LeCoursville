@@ -16,9 +16,10 @@ declare global {
 }
 
 @Component({
-  selector: "app-photos-legacy",
-  templateUrl: "./photos-legacy.component.html",
-  styleUrls: ["./photos-legacy.component.scss"],
+    selector: "app-photos-legacy",
+    templateUrl: "./photos-legacy.component.html",
+    styleUrls: ["./photos-legacy.component.scss"],
+    standalone: false
 })
 export class PhotosLegacyComponent implements OnInit {
   user: User;

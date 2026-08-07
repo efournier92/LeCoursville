@@ -10,9 +10,10 @@ import { ArrayService } from 'src/app/services/array.service';
 import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
-  selector: 'app-message',
-  templateUrl: './message.component.html',
-  styleUrls: ['./message.component.scss'],
+    selector: 'app-message',
+    templateUrl: './message.component.html',
+    styleUrls: ['./message.component.scss'],
+    standalone: false
 })
 export abstract class MessageComponent implements OnInit {
   user: User;

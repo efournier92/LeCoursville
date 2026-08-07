@@ -6,9 +6,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-media-video',
-  templateUrl: './media-video.component.html',
-  styleUrls: ['./media-video.component.scss']
+    selector: 'app-media-video',
+    templateUrl: './media-video.component.html',
+    styleUrls: ['./media-video.component.scss'],
+    standalone: false
 })
 export class MediaVideoComponent implements OnInit {
   selectedAlbum: any;

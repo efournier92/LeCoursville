@@ -8,9 +8,10 @@ import { UploadableMedia } from 'src/app/models/media/media';
 import { MediaConstants } from 'src/app/constants/media-constants';
 
 @Component({
-  selector: 'app-admin-media-upload-audio-album',
-  templateUrl: './admin-media-upload-audio-album.component.html',
-  styleUrls: ['./admin-media-upload-audio-album.component.scss']
+    selector: 'app-admin-media-upload-audio-album',
+    templateUrl: './admin-media-upload-audio-album.component.html',
+    styleUrls: ['./admin-media-upload-audio-album.component.scss'],
+    standalone: false
 })
 export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   album: AudioAlbum = new AudioAlbum();

@@ -36,9 +36,10 @@ interface TableRow {
 }
 
 @Component({
-  selector: 'app-people',
-  templateUrl: './people.component.html',
-  styleUrls: ['./people.component.scss']
+    selector: 'app-people',
+    templateUrl: './people.component.html',
+    styleUrls: ['./people.component.scss'],
+    standalone: false
 })
 export class PeopleComponent implements OnInit, OnDestroy {
   allPeople: Person[] = [];

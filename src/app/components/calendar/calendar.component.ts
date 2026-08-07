@@ -13,9 +13,10 @@ import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PersonDetailModalComponent } from 'src/app/components/person-detail-modal/person-detail-modal.component';
 
 @Component({
-  selector: 'app-calendar',
-  templateUrl: './calendar.component.html',
-  styleUrls: ['./calendar.component.scss']
+    selector: 'app-calendar',
+    templateUrl: './calendar.component.html',
+    styleUrls: ['./calendar.component.scss'],
+    standalone: false
 })
 export class CalendarComponent implements OnInit {
   @Output() refreshView = new EventEmitter();

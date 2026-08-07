@@ -3,9 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FEATURES } from 'src/app/config/feature-config';
 
 @Component({
-  selector: 'app-feature-disabled',
-  templateUrl: './feature-disabled.component.html',
-  styleUrls: ['./feature-disabled.component.scss']
+    selector: 'app-feature-disabled',
+    templateUrl: './feature-disabled.component.html',
+    styleUrls: ['./feature-disabled.component.scss'],
+    standalone: false
 })
 export class FeatureDisabledComponent implements OnInit {
   featureId: string = '';

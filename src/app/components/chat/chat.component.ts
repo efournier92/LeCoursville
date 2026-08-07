@@ -4,9 +4,10 @@ import { Message } from 'src/app/models/message';
 import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
-  selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+    selector: 'app-chat',
+    templateUrl: './chat.component.html',
+    styleUrls: ['./chat.component.scss'],
+    standalone: false
 })
 export class ChatComponent extends MessageComponent implements OnInit {
   messageType: string = MessageConstants.Types.Chat;

@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { RoutingService } from 'src/app/services/routing.service';
 
 @Component({
-  selector: 'app-admin-routing',
-  templateUrl: './admin-routing.component.html',
-  styleUrls: ['./admin-routing.component.scss']
+    selector: 'app-admin-routing',
+    templateUrl: './admin-routing.component.html',
+    styleUrls: ['./admin-routing.component.scss'],
+    standalone: false
 })
 export class AdminRoutingComponent {
 

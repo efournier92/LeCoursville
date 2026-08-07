@@ -3,9 +3,10 @@ import { MediaType } from 'src/app/constants/media-constants';
 import { MediaTypesService } from 'src/app/services/media-types-service.service';
 
 @Component({
-  selector: 'app-media-types-checkboxes',
-  templateUrl: './media-types-checkboxes.component.html',
-  styleUrls: ['./media-types-checkboxes.component.scss']
+    selector: 'app-media-types-checkboxes',
+    templateUrl: './media-types-checkboxes.component.html',
+    styleUrls: ['./media-types-checkboxes.component.scss'],
+    standalone: false
 })
 export class MediaTypesCheckboxesComponent implements OnInit {
   allTypes: MediaType[] = [];

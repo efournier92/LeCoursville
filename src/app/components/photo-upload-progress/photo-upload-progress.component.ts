@@ -7,11 +7,10 @@ import { PhotoUpload, PhotosService } from 'src/app/services/photos.service';
 import { Photo } from 'src/app/models/photo';
 
 @Component({
-  selector: 'app-photo-upload-progress',
-  standalone: true,
-  templateUrl: './photo-upload-progress.component.html',
-  styleUrls: ['./photo-upload-progress.component.scss'],
-  imports: [CommonModule, MatCardModule],
+    selector: 'app-photo-upload-progress',
+    templateUrl: './photo-upload-progress.component.html',
+    styleUrls: ['./photo-upload-progress.component.scss'],
+    imports: [CommonModule, MatCardModule]
 })
 export class PhotoUploadProgressComponent implements OnInit {
   @Input() upload: PhotoUpload;

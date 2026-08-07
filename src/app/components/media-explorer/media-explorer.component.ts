@@ -12,9 +12,10 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { PromptModalService } from 'src/app/services/prompt-modal.service';
 
 @Component({
-  selector: 'app-media-explorer',
-  templateUrl: './media-explorer.component.html',
-  styleUrls: ['./media-explorer.component.scss'],
+    selector: 'app-media-explorer',
+    templateUrl: './media-explorer.component.html',
+    styleUrls: ['./media-explorer.component.scss'],
+    standalone: false
 })
 export class MediaExplorerComponent implements OnInit {
   @Input() mediaTypesToShow: string;

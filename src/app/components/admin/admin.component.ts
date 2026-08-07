@@ -6,9 +6,10 @@ import { RoutingService } from 'src/app/services/routing.service';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss']
+    selector: 'app-admin',
+    templateUrl: './admin.component.html',
+    styleUrls: ['./admin.component.scss'],
+    standalone: false
 })
 export class AdminComponent implements OnInit {
   user: User;

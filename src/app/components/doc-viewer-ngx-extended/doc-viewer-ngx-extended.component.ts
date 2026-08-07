@@ -5,9 +5,10 @@ import { Doc } from 'src/app/models/media/doc';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
-  selector: 'app-doc-viewer-ngx-extended',
-  templateUrl: './doc-viewer-ngx-extended.component.html',
-  styleUrls: ['./doc-viewer-ngx-extended.component.scss']
+    selector: 'app-doc-viewer-ngx-extended',
+    templateUrl: './doc-viewer-ngx-extended.component.html',
+    styleUrls: ['./doc-viewer-ngx-extended.component.scss'],
+    standalone: false
 })
 export class DocViewerNgxExtendedComponent implements OnInit, OnDestroy {
   @Input() doc: Doc;

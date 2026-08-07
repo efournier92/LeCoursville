@@ -8,9 +8,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 const KEN_BURNS_CLASSES = ['kenburns-tl-br', 'kenburns-tr-bl', 'kenburns-bl-tr', 'kenburns-br-tl'];
 
 @Component({
-  selector: 'app-photo-slideshow',
-  templateUrl: './photo-slideshow.component.html',
-  styleUrls: ['./photo-slideshow.component.scss'],
+    selector: 'app-photo-slideshow',
+    templateUrl: './photo-slideshow.component.html',
+    styleUrls: ['./photo-slideshow.component.scss'],
+    standalone: false
 })
 export class PhotoSlideshowComponent implements OnInit, OnDestroy {
   albumId = '';

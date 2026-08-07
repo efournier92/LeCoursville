@@ -4,9 +4,10 @@ import { Video } from 'src/app/models/media/video';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-video-player-drive-iframe',
-  templateUrl: './video-player-drive-iframe.component.html',
-  styleUrls: ['./video-player-drive-iframe.component.scss']
+    selector: 'app-video-player-drive-iframe',
+    templateUrl: './video-player-drive-iframe.component.html',
+    styleUrls: ['./video-player-drive-iframe.component.scss'],
+    standalone: false
 })
 export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   @Input() video: Video;

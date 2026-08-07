@@ -14,9 +14,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
  * at /admin/photo-albums.
  */
 @Component({
-  selector: 'app-photo-album-detail',
-  templateUrl: './photo-album-detail.component.html',
-  styleUrls: ['./photo-album-detail.component.scss'],
+    selector: 'app-photo-album-detail',
+    templateUrl: './photo-album-detail.component.html',
+    styleUrls: ['./photo-album-detail.component.scss'],
+    standalone: false
 })
 export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   albumId = '';

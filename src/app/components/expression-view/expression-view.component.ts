@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { MessageViewComponent } from 'src/app/components/message-view/message-view.component';
 
 @Component({
-  selector: 'app-expression-view',
-  templateUrl: './expression-view.component.html',
-  styleUrls: ['./expression-view.component.scss']
+    selector: 'app-expression-view',
+    templateUrl: './expression-view.component.html',
+    styleUrls: ['./expression-view.component.scss'],
+    standalone: false
 })
 export class ExpressionViewComponent extends MessageViewComponent {
   // Inherits functionality from messages

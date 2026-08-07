@@ -4,9 +4,10 @@ import { FeatureFlag } from 'src/app/models/feature-flag';
 import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
 
 @Component({
-  selector: 'app-admin-features',
-  templateUrl: './admin-features.component.html',
-  styleUrls: ['./admin-features.component.scss']
+    selector: 'app-admin-features',
+    templateUrl: './admin-features.component.html',
+    styleUrls: ['./admin-features.component.scss'],
+    standalone: false
 })
 export class AdminFeaturesComponent implements OnInit {
   flagsMap: Record<string, FeatureFlag | null> = {};

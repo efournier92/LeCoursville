@@ -17,11 +17,10 @@ interface UploadItem {
 }
 
 @Component({
-  selector: 'app-public-upload',
-  standalone: true,
-  templateUrl: './public-upload.component.html',
-  styleUrls: ['./public-upload.component.scss'],
-  imports: [CommonModule, FormsModule, MatIconModule],
+    selector: 'app-public-upload',
+    templateUrl: './public-upload.component.html',
+    styleUrls: ['./public-upload.component.scss'],
+    imports: [CommonModule, FormsModule, MatIconModule]
 })
 export class PublicUploadComponent implements OnInit, OnDestroy {
   uploadItems: UploadItem[] = [];

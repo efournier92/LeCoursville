@@ -9,9 +9,10 @@ import { ClanService } from "src/app/services/clan.service";
 import { Clan } from "src/app/models/clan";
 
 @Component({
-  selector: "app-contacts",
-  templateUrl: "./contacts.component.html",
-  styleUrls: ["./contacts.component.scss"],
+    selector: "app-contacts",
+    templateUrl: "./contacts.component.html",
+    styleUrls: ["./contacts.component.scss"],
+    standalone: false
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   contacts: ContactCard[] = [];

@@ -8,9 +8,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
  * wrapper, which does not support Angular 17+).
  */
 @Component({
-  selector: 'app-video-player-videogular',
-  templateUrl: './video-player-videogular.component.html',
-  styleUrls: ['./video-player-videogular.component.scss']
+    selector: 'app-video-player-videogular',
+    templateUrl: './video-player-videogular.component.html',
+    styleUrls: ['./video-player-videogular.component.scss'],
+    standalone: false
 })
 export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
   @Input() video: Video;

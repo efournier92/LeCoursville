@@ -3,9 +3,10 @@ import { Calendar } from 'src/app/models/calendar';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
 @Component({
-  selector: 'app-admin-calendars',
-  templateUrl: './admin-calendars.component.html',
-  styleUrls: ['./admin-calendars.component.scss']
+    selector: 'app-admin-calendars',
+    templateUrl: './admin-calendars.component.html',
+    styleUrls: ['./admin-calendars.component.scss'],
+    standalone: false
 })
 export class AdminCalendarsComponent implements OnInit {
   calendars: Calendar[] = [];

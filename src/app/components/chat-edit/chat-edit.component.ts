@@ -4,9 +4,10 @@ import { MessageEditComponent } from 'src/app/components/message-edit/message-ed
 import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
-  selector: 'app-chat-edit',
-  templateUrl: './chat-edit.component.html',
-  styleUrls: ['./chat-edit.component.scss']
+    selector: 'app-chat-edit',
+    templateUrl: './chat-edit.component.html',
+    styleUrls: ['./chat-edit.component.scss'],
+    standalone: false
 })
 export class ChatEditComponent extends MessageEditComponent {
   messageType: string = MessageConstants.Types.Chat;

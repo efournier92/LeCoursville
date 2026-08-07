@@ -5,9 +5,10 @@ import { AuthService } from 'src/app/services/auth.service';
 import { PromptModalService } from 'src/app/services/prompt-modal.service';
 
 @Component({
-  selector: 'app-user-edit',
-  templateUrl: './user-edit.component.html',
-  styleUrls: ['./user-edit.component.scss'],
+    selector: 'app-user-edit',
+    templateUrl: './user-edit.component.html',
+    styleUrls: ['./user-edit.component.scss'],
+    standalone: false
 })
 export class UserEditComponent implements OnInit {
   @Input() userOnCard: User;

@@ -7,9 +7,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-media-audio',
-  templateUrl: './media-audio.component.html',
-  styleUrls: ['./media-audio.component.scss']
+    selector: 'app-media-audio',
+    templateUrl: './media-audio.component.html',
+    styleUrls: ['./media-audio.component.scss'],
+    standalone: false
 })
 export class MediaAudioComponent implements OnInit {
   selectedAlbum: AudioAlbum;

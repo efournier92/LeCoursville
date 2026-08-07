@@ -19,9 +19,10 @@ import { PromptModalService } from "src/app/services/prompt-modal.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
 
 @Component({
-  selector: "app-message-edit",
-  templateUrl: "./message-edit.component.html",
-  styleUrls: ["./message-edit.component.scss"],
+    selector: "app-message-edit",
+    templateUrl: "./message-edit.component.html",
+    styleUrls: ["./message-edit.component.scss"],
+    standalone: false
 })
 export abstract class MessageEditComponent implements OnInit {
   @Input() message: Message;

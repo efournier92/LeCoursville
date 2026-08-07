@@ -14,9 +14,10 @@ interface AudioTrack {
  * which does not support Angular 17+).
  */
 @Component({
-  selector: 'app-audio-player',
-  templateUrl: './audio-player.component.html',
-  styleUrls: ['./audio-player.component.scss']
+    selector: 'app-audio-player',
+    templateUrl: './audio-player.component.html',
+    styleUrls: ['./audio-player.component.scss'],
+    standalone: false
 })
 export class AudioPlayerComponent implements OnChanges {
   @Input() album: AudioAlbum = new AudioAlbum();

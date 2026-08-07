@@ -4,9 +4,10 @@ import { CalendarService } from 'src/app/services/calendar.service';
 import { AppSettings } from 'src/environments/app-settings';
 
 @Component({
-  selector: 'app-calendar-cell',
-  templateUrl: './calendar-cell.component.html',
-  styleUrls: ['./calendar-cell.component.scss']
+    selector: 'app-calendar-cell',
+    templateUrl: './calendar-cell.component.html',
+    styleUrls: ['./calendar-cell.component.scss'],
+    standalone: false
 })
 export class CalendarCellComponent implements OnInit {
   @Input() event: RecurringEvent;

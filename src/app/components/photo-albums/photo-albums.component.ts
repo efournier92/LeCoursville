@@ -12,9 +12,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
  * rename, delete, upload) happens on the admin side at /admin/photo-albums.
  */
 @Component({
-  selector: 'app-photo-albums',
-  templateUrl: './photo-albums.component.html',
-  styleUrls: ['./photo-albums.component.scss'],
+    selector: 'app-photo-albums',
+    templateUrl: './photo-albums.component.html',
+    styleUrls: ['./photo-albums.component.scss'],
+    standalone: false
 })
 export class PhotoAlbumsComponent implements OnInit, OnDestroy {
   albums: PhotoAlbum[] = [];

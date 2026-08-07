@@ -9,9 +9,10 @@ import { CalendarService } from 'src/app/services/calendar.service';
 import { ClanService } from 'src/app/services/clan.service';
 
 @Component({
-  selector: 'app-person-detail-modal',
-  templateUrl: './person-detail-modal.component.html',
-  styleUrls: ['./person-detail-modal.component.scss']
+    selector: 'app-person-detail-modal',
+    templateUrl: './person-detail-modal.component.html',
+    styleUrls: ['./person-detail-modal.component.scss'],
+    standalone: false
 })
 export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() personId: string | null = null;

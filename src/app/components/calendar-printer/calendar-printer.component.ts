@@ -6,9 +6,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
 @Component({
-  selector: 'app-calendar-printer',
-  templateUrl: './calendar-printer.component.html',
-  styleUrls: ['./calendar-printer.component.scss']
+    selector: 'app-calendar-printer',
+    templateUrl: './calendar-printer.component.html',
+    styleUrls: ['./calendar-printer.component.scss'],
+    standalone: false
 })
 export class CalendarPrinterComponent implements OnInit {
   availableYears: number[] = [];

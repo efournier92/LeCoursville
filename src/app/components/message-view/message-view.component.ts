@@ -9,9 +9,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
-  selector: 'app-message-view',
-  templateUrl: './message-view.component.html',
-  styleUrls: ['./message-view.component.scss']
+    selector: 'app-message-view',
+    templateUrl: './message-view.component.html',
+    styleUrls: ['./message-view.component.scss'],
+    standalone: false
 })
 export abstract class MessageViewComponent implements OnInit {
   @Input() message: Message;

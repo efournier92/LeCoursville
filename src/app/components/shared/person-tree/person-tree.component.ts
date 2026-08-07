@@ -9,10 +9,11 @@ export interface PersonNode {
 }
 
 @Component({
-  selector: 'app-person-tree',
-  templateUrl: './person-tree.component.html',
-  styleUrls: ['./person-tree.component.scss', '../../shared/tree-styles.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-person-tree',
+    templateUrl: './person-tree.component.html',
+    styleUrls: ['./person-tree.component.scss', '../../shared/tree-styles.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class PersonTreeComponent {
   @Input() nodes: PersonNode[] = [];

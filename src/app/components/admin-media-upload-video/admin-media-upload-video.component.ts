@@ -8,9 +8,10 @@ import { MediaService } from 'src/app/services/media.service';
 import { VideoUploadService } from 'src/app/services/video-upload.service';
 
 @Component({
-  selector: 'app-admin-media-upload-video',
-  templateUrl: './admin-media-upload-video.component.html',
-  styleUrls: ['./admin-media-upload-video.component.scss']
+    selector: 'app-admin-media-upload-video',
+    templateUrl: './admin-media-upload-video.component.html',
+    styleUrls: ['./admin-media-upload-video.component.scss'],
+    standalone: false
 })
 export class AdminMediaUploadVideoComponent implements OnInit {
   video: Video = new Video();

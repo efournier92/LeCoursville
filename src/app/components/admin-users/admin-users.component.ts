@@ -6,9 +6,10 @@ import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
 import { PageEvent as PageEvent } from '@angular/material/paginator';
 
 @Component({
-  selector: 'app-admin-users',
-  templateUrl: './admin-users.component.html',
-  styleUrls: ['./admin-users.component.scss']
+    selector: 'app-admin-users',
+    templateUrl: './admin-users.component.html',
+    styleUrls: ['./admin-users.component.scss'],
+    standalone: false
 })
 export class AdminUsersComponent implements OnInit {
   user: User;

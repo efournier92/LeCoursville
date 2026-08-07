@@ -29,27 +29,26 @@ import {
 import { PhotoAlbumEditDialogComponent } from '../photo-album-edit-dialog/photo-album-edit-dialog.component';
 
 @Component({
-  selector: 'app-admin-photo-albums',
-  standalone: true,
-  templateUrl: './admin-photo-albums.component.html',
-  styleUrls: ['./admin-photo-albums.component.scss'],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatCardModule,
-    MatCheckboxModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
-    NoResultsMessageComponent,
-    PageToolbarComponent,
-    PhotoUploadProgressComponent,
-  ],
+    selector: 'app-admin-photo-albums',
+    templateUrl: './admin-photo-albums.component.html',
+    styleUrls: ['./admin-photo-albums.component.scss'],
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatButtonModule,
+        MatCardModule,
+        MatCheckboxModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatMenuModule,
+        MatProgressSpinnerModule,
+        MatTooltipModule,
+        NoResultsMessageComponent,
+        PageToolbarComponent,
+        PhotoUploadProgressComponent,
+    ]
 })
 export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   @ViewChild('folderInput') folderInput?: ElementRef<HTMLInputElement>;

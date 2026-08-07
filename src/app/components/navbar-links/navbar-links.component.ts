@@ -9,9 +9,10 @@ export interface LinkableButton {
 }
 
 @Component({
-  selector: 'app-navbar-links',
-  templateUrl: './navbar-links.component.html',
-  styleUrls: ['./navbar-links.component.scss']
+    selector: 'app-navbar-links',
+    templateUrl: './navbar-links.component.html',
+    styleUrls: ['./navbar-links.component.scss'],
+    standalone: false
 })
 export class NavbarLinksComponent implements OnInit {
   @Input() isMenuList: boolean;

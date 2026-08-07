@@ -8,9 +8,10 @@ import { MediaService } from 'src/app/services/media.service';
 import { MediaIconsService } from 'src/assets/img/media-placeholders/services/media-icons.service';
 
 @Component({
-  selector: 'app-media-list',
-  templateUrl: './media-list.component.html',
-  styleUrls: ['./media-list.component.scss'],
+    selector: 'app-media-list',
+    templateUrl: './media-list.component.html',
+    styleUrls: ['./media-list.component.scss'],
+    standalone: false
 })
 export class MediaListComponent implements OnInit {
   @Input() mediaTypesToShow: string[];

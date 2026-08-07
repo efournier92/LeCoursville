@@ -36,20 +36,19 @@ interface StorageFile {
 }
 
 @Component({
-  selector: 'app-admin-user-uploads',
-  standalone: true,
-  templateUrl: './admin-user-uploads.component.html',
-  styleUrls: ['./admin-user-uploads.component.scss'],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatButtonToggleModule,
-    MatCardModule,
-    MatDialogModule,
-    MatIconModule,
-    MatTooltipModule,
-    PhotoAlbumPickerDialogComponent,
-  ],
+    selector: 'app-admin-user-uploads',
+    templateUrl: './admin-user-uploads.component.html',
+    styleUrls: ['./admin-user-uploads.component.scss'],
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatButtonToggleModule,
+        MatCardModule,
+        MatDialogModule,
+        MatIconModule,
+        MatTooltipModule,
+        PhotoAlbumPickerDialogComponent,
+    ]
 })
 export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   allUploads: UserUpload[] = [];

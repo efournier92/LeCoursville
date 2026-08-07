@@ -5,9 +5,10 @@ import { _ } from 'core-js';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 
 @Component({
-  selector: 'app-admin-media',
-  templateUrl: './admin-media.component.html',
-  styleUrls: ['./admin-media.component.scss']
+    selector: 'app-admin-media',
+    templateUrl: './admin-media.component.html',
+    styleUrls: ['./admin-media.component.scss'],
+    standalone: false
 })
 export class AdminMediaComponent implements OnInit {
   mediaTypes: string[] = ['Videos', 'Photos', 'Photo Album', 'Audio Track', 'Audio Album'];

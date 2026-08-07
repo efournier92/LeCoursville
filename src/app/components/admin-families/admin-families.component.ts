@@ -11,9 +11,10 @@ interface ParsedFamily {
 }
 
 @Component({
-  selector: 'app-admin-families',
-  templateUrl: './admin-families.component.html',
-  styleUrls: ['./admin-families.component.scss']
+    selector: 'app-admin-families',
+    templateUrl: './admin-families.component.html',
+    styleUrls: ['./admin-families.component.scss'],
+    standalone: false
 })
 export class AdminFamiliesComponent implements OnInit {
   families: Family[] = [];

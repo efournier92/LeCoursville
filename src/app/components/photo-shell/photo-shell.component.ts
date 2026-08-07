@@ -3,9 +3,10 @@ import { Subscription } from 'rxjs';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 
 @Component({
-  selector: 'app-photo-shell',
-  templateUrl: './photo-shell.component.html',
-  styleUrls: ['./photo-shell.component.scss'],
+    selector: 'app-photo-shell',
+    templateUrl: './photo-shell.component.html',
+    styleUrls: ['./photo-shell.component.scss'],
+    standalone: false
 })
 export class PhotoShellComponent implements OnInit, OnDestroy {
   enablePhotoAlbums = false;

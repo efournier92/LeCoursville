@@ -7,9 +7,10 @@ interface DatepickerData {
 }
 
 @Component({
-  selector: 'app-calendar-datepicker-dialog',
-  templateUrl: './calendar-datepicker-dialog.component.html',
-  styleUrls: ['./calendar-datepicker-dialog.component.scss']
+    selector: 'app-calendar-datepicker-dialog',
+    templateUrl: './calendar-datepicker-dialog.component.html',
+    styleUrls: ['./calendar-datepicker-dialog.component.scss'],
+    standalone: false
 })
 export class CalendarDatepickerDialogComponent implements OnInit {
   pickerDate: Date;

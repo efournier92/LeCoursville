@@ -4,9 +4,10 @@ import { DialogData } from "src/app/interfaces/dialog-data";
 import { PromptButton } from "../../interfaces/prompt-button";
 
 @Component({
-  selector: "app-prompt-modal",
-  templateUrl: "./prompt-modal.component.html",
-  styleUrls: ["./prompt-modal.component.scss"],
+    selector: "app-prompt-modal",
+    templateUrl: "./prompt-modal.component.html",
+    styleUrls: ["./prompt-modal.component.scss"],
+    standalone: false
 })
 export class PromptModalComponent implements OnInit {
   buttons: PromptButton[];

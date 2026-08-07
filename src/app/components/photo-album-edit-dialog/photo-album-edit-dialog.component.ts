@@ -16,17 +16,16 @@ export type PhotoAlbumEditDialogResult =
   | undefined;
 
 @Component({
-  selector: 'app-photo-album-edit-dialog',
-  standalone: true,
-  templateUrl: './photo-album-edit-dialog.component.html',
-  styleUrls: ['./photo-album-edit-dialog.component.scss'],
-  imports: [
-    FormsModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-  ],
+    selector: 'app-photo-album-edit-dialog',
+    templateUrl: './photo-album-edit-dialog.component.html',
+    styleUrls: ['./photo-album-edit-dialog.component.scss'],
+    imports: [
+        FormsModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+    ]
 })
 export class PhotoAlbumEditDialogComponent {
   title: string;

@@ -5,9 +5,10 @@ import { RoutingService } from "src/app/services/routing.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
 
 @Component({
-  selector: "app-auth",
-  templateUrl: "./auth.component.html",
-  styleUrls: ["./auth.component.scss"],
+    selector: "app-auth",
+    templateUrl: "./auth.component.html",
+    styleUrls: ["./auth.component.scss"],
+    standalone: false
 })
 export class AuthComponent implements OnInit {
   user: User;

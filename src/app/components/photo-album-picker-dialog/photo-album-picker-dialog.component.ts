@@ -20,20 +20,19 @@ export type PhotoAlbumPickerDialogResult =
   | undefined;
 
 @Component({
-  selector: 'app-photo-album-picker-dialog',
-  standalone: true,
-  templateUrl: './photo-album-picker-dialog.component.html',
-  styleUrls: ['./photo-album-picker-dialog.component.scss'],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatRadioModule,
-    MatSelectModule,
-  ],
+    selector: 'app-photo-album-picker-dialog',
+    templateUrl: './photo-album-picker-dialog.component.html',
+    styleUrls: ['./photo-album-picker-dialog.component.scss'],
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRadioModule,
+        MatSelectModule,
+    ]
 })
 export class PhotoAlbumPickerDialogComponent {
   mode: 'existing' | 'new' = 'new';

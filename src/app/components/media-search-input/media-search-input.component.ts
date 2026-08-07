@@ -1,9 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
-  selector: 'app-media-search-input',
-  templateUrl: './media-search-input.component.html',
-  styleUrls: ['./media-search-input.component.scss']
+    selector: 'app-media-search-input',
+    templateUrl: './media-search-input.component.html',
+    styleUrls: ['./media-search-input.component.scss'],
+    standalone: false
 })
 export class MediaSearchInputComponent implements OnInit {
   inputValue = '';

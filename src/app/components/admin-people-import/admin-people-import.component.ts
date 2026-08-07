@@ -15,9 +15,10 @@ interface ParsedPerson {
 }
 
 @Component({
-  selector: 'app-admin-people-import',
-  templateUrl: './admin-people-import.component.html',
-  styleUrls: ['./admin-people-import.component.scss']
+    selector: 'app-admin-people-import',
+    templateUrl: './admin-people-import.component.html',
+    styleUrls: ['./admin-people-import.component.scss'],
+    standalone: false
 })
 export class AdminPeopleImportComponent implements OnInit {
   parsedPeople: ParsedPerson[] = [];

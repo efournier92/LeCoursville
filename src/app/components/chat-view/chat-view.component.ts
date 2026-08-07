@@ -3,9 +3,10 @@ import { MessageViewComponent } from 'src/app/components/message-view/message-vi
 import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
-  selector: 'app-chat-view',
-  templateUrl: './chat-view.component.html',
-  styleUrls: ['./chat-view.component.scss']
+    selector: 'app-chat-view',
+    templateUrl: './chat-view.component.html',
+    styleUrls: ['./chat-view.component.scss'],
+    standalone: false
 })
 export class ChatViewComponent extends MessageViewComponent {
   messageType: string = MessageConstants.Types.Chat;

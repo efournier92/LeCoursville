@@ -6,9 +6,10 @@ interface HTMLInput extends HTMLElement {
 }
 
 @Component({
-  selector: 'app-file-input',
-  templateUrl: './file-input.component.html',
-  styleUrls: ['./file-input.component.scss']
+    selector: 'app-file-input',
+    templateUrl: './file-input.component.html',
+    styleUrls: ['./file-input.component.scss'],
+    standalone: false
 })
 export class FileInputComponent implements OnInit {
   @Input() matIcon: string;

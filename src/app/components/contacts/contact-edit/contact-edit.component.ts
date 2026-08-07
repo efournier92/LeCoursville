@@ -8,9 +8,10 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ArrayService } from 'src/app/services/array.service';
 
 @Component({
-  selector: 'app-contact-edit',
-  templateUrl: './contact-edit.component.html',
-  styleUrls: ['./contact-edit.component.scss']
+    selector: 'app-contact-edit',
+    templateUrl: './contact-edit.component.html',
+    styleUrls: ['./contact-edit.component.scss'],
+    standalone: false
 })
 export class ContactEditComponent implements OnInit {
   @Input() contact: Contact;

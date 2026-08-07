@@ -4,10 +4,11 @@ import { ContactCard } from 'src/app/services/contacts-from-people.service';
 import { NameUtilsService } from 'src/app/services/name-utils.service';
 
 @Component({
-  selector: 'app-contact-card',
-  templateUrl: './contact-card.component.html',
-  styleUrls: ['./contact-card.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-contact-card',
+    templateUrl: './contact-card.component.html',
+    styleUrls: ['./contact-card.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ContactCardComponent implements OnDestroy {
   @Input() contactCard: ContactCard | null = null;

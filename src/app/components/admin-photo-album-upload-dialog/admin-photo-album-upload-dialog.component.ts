@@ -18,19 +18,18 @@ export type AdminPhotoAlbumUploadDialogResult =
   | undefined;
 
 @Component({
-  selector: 'app-admin-photo-album-upload-dialog',
-  standalone: true,
-  templateUrl: './admin-photo-album-upload-dialog.component.html',
-  styleUrls: ['./admin-photo-album-upload-dialog.component.scss'],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-  ],
+    selector: 'app-admin-photo-album-upload-dialog',
+    templateUrl: './admin-photo-album-upload-dialog.component.html',
+    styleUrls: ['./admin-photo-album-upload-dialog.component.scss'],
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+    ]
 })
 export class AdminPhotoAlbumUploadDialogComponent {
   title: string;
