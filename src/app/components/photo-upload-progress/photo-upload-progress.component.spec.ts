@@ -1,16 +1,18 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { PhotoUploadProgressComponent } from './photo-upload-progress.component';
 
 describe('PhotoUploadProgressComponent', () => {
   let component: PhotoUploadProgressComponent;
   let fixture: ComponentFixture<PhotoUploadProgressComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [PhotoUploadProgressComponent]
+      imports: [AppModule, TestSharedModule, PhotoUploadProgressComponent]
     })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PhotoUploadProgressComponent);

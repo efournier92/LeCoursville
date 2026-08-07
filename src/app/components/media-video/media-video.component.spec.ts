@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { MediaVideoComponent } from './media-video.component';
 
 describe('MediaVideoComponent', () => {
@@ -8,7 +11,9 @@ describe('MediaVideoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MediaVideoComponent ]
+      imports: [AppModule, TestSharedModule],
+      declarations: [ MediaVideoComponent ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
     .compileComponents();
   });

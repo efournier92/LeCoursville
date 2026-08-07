@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ContactCardComponent } from './contact-card.component';
 import { ContactCard } from 'src/app/services/contacts-from-people.service';
 import { Person } from 'src/app/models/person';
@@ -10,7 +11,8 @@ describe('ContactCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ContactCardComponent]
+      declarations: [ContactCardComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactCardComponent);
@@ -50,14 +52,14 @@ describe('ContactCardComponent', () => {
       });
       component.contactCard = createContactCard({ person, spouse });
       fixture.detectChanges();
-      expect(component.getSpouseFullName()).toBe('Jane Smith');
+      expect((component as any).getSpouseFullName()).toBe('Jane Smith');
     });
 
     it('returns empty string when spouse is null', () => {
       const person = createPerson({ id: 'person1' });
       component.contactCard = createContactCard({ person, spouse: null });
       fixture.detectChanges();
-      expect(component.getSpouseFullName()).toBe('');
+      expect((component as any).getSpouseFullName()).toBe('');
     });
   });
 
@@ -79,7 +81,7 @@ describe('ContactCardComponent', () => {
   describe('hasEmails', () => {
     it('returns true when emails array has items', () => {
       const card = createContactCard({
-        emails: [{ address: 'test@test.com', label: null }]
+        emails: [{ address: 'test@test.com', label: null, owner: null }]
       });
       component.contactCard = card;
       expect(component.hasEmails()).toBe(true);
@@ -95,7 +97,7 @@ describe('ContactCardComponent', () => {
   describe('hasPhones', () => {
     it('returns true when phones array has items', () => {
       const card = createContactCard({
-        phones: [{ label: 'Mobile', number: '555-1234' }]
+        phones: [{ label: 'Mobile', number: '555-1234', owner: null }]
       });
       component.contactCard = card;
       expect(component.hasPhones()).toBe(true);

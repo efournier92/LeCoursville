@@ -1,16 +1,21 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../../test-shared.module';
+import { AppModule } from '../../../app.module';
 import { ContactEditComponent } from './contact-edit.component';
 
 describe('ContactEditComponent', () => {
   let component: ContactEditComponent;
   let fixture: ComponentFixture<ContactEditComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ContactEditComponent]
+      imports: [AppModule, TestSharedModule],
+      declarations: [ContactEditComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContactEditComponent);

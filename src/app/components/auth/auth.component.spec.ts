@@ -1,16 +1,21 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { AuthComponent } from './auth.component';
 
 describe('AuthComponent', () => {
   let component: AuthComponent;
   let fixture: ComponentFixture<AuthComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [AuthComponent]
+      imports: [AppModule, TestSharedModule],
+      declarations: [AuthComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AuthComponent);

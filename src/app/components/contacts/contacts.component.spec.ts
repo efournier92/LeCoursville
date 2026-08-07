@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { ContactsComponent } from './contacts.component';
 import { ContactsFromPeopleService, ContactCard } from 'src/app/services/contacts-from-people.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -23,7 +26,9 @@ describe('ContactsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
+      imports: [AppModule, TestSharedModule],
       declarations: [ContactsComponent],
+      schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: ContactsFromPeopleService, useValue: mockContactsService },
         { provide: AnalyticsService, useValue: mockAnalyticsService }
@@ -46,13 +51,13 @@ describe('ContactsComponent', () => {
         spouse: null,
         clan: null,
         addresses: [],
-        emails: [{ address: 'test@test.com', label: null }],
+        emails: [{ address: 'test@test.com', label: null, owner: null }],
         phones: []
       }
     ];
     contactsSubject.next(testCards);
     fixture.detectChanges();
-    expect(component.contacts$).toEqual(testCards);
+    expect(component.contacts).toEqual(testCards);
   });
 
   it('generation 1 people appear before generation 2 people', () => {
@@ -62,8 +67,8 @@ describe('ContactsComponent', () => {
     ];
     contactsSubject.next(testCards);
     fixture.detectChanges();
-    expect(component.contacts$[0].person.generationNumber).toBe(1);
-    expect(component.contacts$[1].person.generationNumber).toBe(2);
+    expect(component.contacts[0].person.generationNumber).toBe(1);
+    expect(component.contacts[1].person.generationNumber).toBe(2);
   });
 });
 

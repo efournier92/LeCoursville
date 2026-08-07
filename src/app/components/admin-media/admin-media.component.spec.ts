@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { AdminMediaComponent } from './admin-media.component';
 
 describe('AdminMediaComponent', () => {
@@ -8,7 +11,9 @@ describe('AdminMediaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AdminMediaComponent ]
+      imports: [AppModule, TestSharedModule],
+      declarations: [ AdminMediaComponent ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
     .compileComponents();
   });

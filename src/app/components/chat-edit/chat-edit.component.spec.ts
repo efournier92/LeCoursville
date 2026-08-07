@@ -1,16 +1,22 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatInputModule } from '@angular/material/input';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { ChatEditComponent } from './chat-edit.component';
 
 describe('ChatEditComponent', () => {
   let component: ChatEditComponent;
   let fixture: ComponentFixture<ChatEditComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ChatEditComponent]
+      imports: [AppModule, TestSharedModule, MatInputModule],
+      declarations: [ChatEditComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ChatEditComponent);

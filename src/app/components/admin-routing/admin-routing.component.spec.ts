@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { AdminRoutingComponent } from './admin-routing.component';
 import { RoutingService } from 'src/app/services/routing.service';
+import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { of } from 'rxjs';
 
 describe('AdminRoutingComponent', () => {
   let component: AdminRoutingComponent;
@@ -16,9 +21,12 @@ describe('AdminRoutingComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
+      imports: [AppModule, TestSharedModule],
       declarations: [AdminRoutingComponent],
+      schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: RoutingService, useValue: spy },
+        { provide: FeatureFlagsService, useValue: { getPromotedRoute: () => of(null) } },
       ]
     }).compileComponents();
 

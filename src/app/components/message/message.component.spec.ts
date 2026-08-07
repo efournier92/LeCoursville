@@ -1,9 +1,11 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MessageComponent } from './message.component';
 
+@Component({ template: '' })
 class StubMessageComponent extends MessageComponent {
-  ngOnInit(): void {}
+  override ngOnInit(): void {}
 }
 
 describe('MessageComponent', () => {
@@ -12,7 +14,7 @@ describe('MessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StubMessageComponent ]
+      imports: [ StubMessageComponent ]
     })
     .compileComponents();
 

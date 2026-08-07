@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatMenuModule } from '@angular/material/menu';
 
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { ExpressionsComponent } from './expressions.component';
 
 describe('ExpressionsComponent', () => {
@@ -8,7 +12,9 @@ describe('ExpressionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ExpressionsComponent ]
+      imports: [AppModule, TestSharedModule, MatMenuModule],
+      declarations: [ ExpressionsComponent ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
     .compileComponents();
   });

@@ -48,7 +48,7 @@ describe('ContactsFromPeopleService', () => {
   });
 
   describe('getContacts', () => {
-    it('returns list sorted by generation then id', (done) => {
+    it('returns list sorted by generation then id', async () => {
       const clans: Clan[] = [{ id: 'clan1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 }];
       const people: Person[] = [
         createPerson({ id: 'gen2-person', generationNumber: 2, emails: [], phones: [] }),
@@ -59,22 +59,23 @@ describe('ContactsFromPeopleService', () => {
       mockClans$.next(clans);
       mockAddresses$.next([]);
 
-      service.getContacts().subscribe((contacts: ContactCard[]) => {
-        expect(contacts.length).toBe(2);
-        expect(contacts[0].person.generationNumber).toBe(1);
-        expect(contacts[1].person.generationNumber).toBe(2);
-        done();
+      await new Promise<void>((resolve) => {
+        service.getContacts().subscribe((contacts: ContactCard[]) => {
+          expect(contacts.length).toBe(2);
+          expect(contacts[0].person.generationNumber).toBe(1);
+          expect(contacts[1].person.generationNumber).toBe(2);
+          resolve();
+        });
       });
     });
 
-    it('person without spouseId shows only their own fields', (done) => {
+    it('person without spouseId shows only their own fields', async () => {
       const people: Person[] = [
         createPerson({
           id: 'person1',
           spouseId: null,
           emails: [{ address: 'test@test.com', label: 'Home' }],
           phones: [{ label: 'Mobile', number: '555-1234' }],
-          addressId: null
         })
       ];
 
@@ -82,16 +83,18 @@ describe('ContactsFromPeopleService', () => {
       mockClans$.next([]);
       mockAddresses$.next([]);
 
-      service.getContacts().subscribe((contacts: ContactCard[]) => {
-        expect(contacts.length).toBe(1);
-        expect(contacts[0].spouse).toBeNull();
-        expect(contacts[0].emails.length).toBe(1);
-        expect(contacts[0].phones.length).toBe(1);
-        done();
+      await new Promise<void>((resolve) => {
+        service.getContacts().subscribe((contacts: ContactCard[]) => {
+          expect(contacts.length).toBe(1);
+          expect(contacts[0].spouse).toBeNull();
+          expect(contacts[0].emails.length).toBe(1);
+          expect(contacts[0].phones.length).toBe(1);
+          resolve();
+        });
       });
     });
 
-    it('person with spouseId merges emails from both (deduplicated)', (done) => {
+    it('person with spouseId merges emails from both (deduplicated)', async () => {
       const people: Person[] = [
         createPerson({
           id: 'person1',
@@ -109,15 +112,17 @@ describe('ContactsFromPeopleService', () => {
       mockClans$.next([]);
       mockAddresses$.next([]);
 
-      service.getContacts().subscribe((contacts: ContactCard[]) => {
-        expect(contacts.length).toBe(1);
-        expect(contacts[0].spouse).not.toBeNull();
-        expect(contacts[0].emails.length).toBe(2);
-        done();
+      await new Promise<void>((resolve) => {
+        service.getContacts().subscribe((contacts: ContactCard[]) => {
+          expect(contacts.length).toBe(1);
+          expect(contacts[0].spouse).not.toBeNull();
+          expect(contacts[0].emails.length).toBe(2);
+          resolve();
+        });
       });
     });
 
-    it('person with spouseId merges phones from both (deduplicated)', (done) => {
+    it('person with spouseId merges phones from both (deduplicated)', async () => {
       const people: Person[] = [
         createPerson({
           id: 'person1',
@@ -135,14 +140,16 @@ describe('ContactsFromPeopleService', () => {
       mockClans$.next([]);
       mockAddresses$.next([]);
 
-      service.getContacts().subscribe((contacts: ContactCard[]) => {
-        expect(contacts.length).toBe(1);
-        expect(contacts[0].phones.length).toBe(2);
-        done();
+      await new Promise<void>((resolve) => {
+        service.getContacts().subscribe((contacts: ContactCard[]) => {
+          expect(contacts.length).toBe(1);
+          expect(contacts[0].phones.length).toBe(2);
+          resolve();
+        });
       });
     });
 
-    it('spouse records (id.endsWith("-S")) excluded from top-level list', (done) => {
+    it('spouse records (id.endsWith("-S")) excluded from top-level list', async () => {
       const people: Person[] = [
         createPerson({ id: 'person1', generationNumber: 1 }),
         createPerson({ id: 'person1-S', generationNumber: 1 })
@@ -152,10 +159,12 @@ describe('ContactsFromPeopleService', () => {
       mockClans$.next([]);
       mockAddresses$.next([]);
 
-      service.getContacts().subscribe((contacts: ContactCard[]) => {
-        expect(contacts.length).toBe(1);
-        expect(contacts[0].person.id).toBe('person1');
-        done();
+      await new Promise<void>((resolve) => {
+        service.getContacts().subscribe((contacts: ContactCard[]) => {
+          expect(contacts.length).toBe(1);
+          expect(contacts[0].person.id).toBe('person1');
+          resolve();
+        });
       });
     });
   });

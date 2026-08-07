@@ -1,4 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { of } from 'rxjs';
@@ -8,12 +11,15 @@ describe('AdminFeaturesComponent', () => {
   let fixture: ComponentFixture<AdminFeaturesComponent>;
   let mockFeatureFlagsService: jasmine.SpyObj<FeatureFlagsService>;
 
-  beforeEach(async(() => {
-    const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags', 'setFeatureFlag']);
+  beforeEach(() => {
+    const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags', 'setFeatureFlag', 'getPromotedRoute']);
     spy.getAllFeatureFlags.and.returnValue(of({}));
+    spy.getPromotedRoute.and.returnValue(of(null));
 
     TestBed.configureTestingModule({
+      imports: [AppModule, TestSharedModule],
       declarations: [AdminFeaturesComponent],
+      schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: FeatureFlagsService, useValue: spy },
       ]
@@ -23,7 +29,7 @@ describe('AdminFeaturesComponent', () => {
     fixture = TestBed.createComponent(AdminFeaturesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

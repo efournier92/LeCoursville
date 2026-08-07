@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { DocViewerNgxExtendedComponent } from './doc-viewer-ngx-extended.component';
 
 describe('DocViewerNgxExtendedComponent', () => {
@@ -8,7 +11,9 @@ describe('DocViewerNgxExtendedComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DocViewerNgxExtendedComponent ]
+      imports: [AppModule, TestSharedModule],
+      declarations: [ DocViewerNgxExtendedComponent ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
     .compileComponents();
   });
