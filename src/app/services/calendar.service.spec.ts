@@ -29,26 +29,7 @@ describe('CalendarService', () => {
 
   describe('deriveEventsFromPeople', () => {
     it('creates birthday event for person with birthday', inject([CalendarService], (service: CalendarService) => {
-      const person: Person = {
-        id: 'person-1',
-        name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-        birthday: { year: 1990, month: 6, day: 15 },
-        spouseId: null,
-        anniversaryDate: null,
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      mockPeopleSubject.next([person]);
+      mockPeopleSubject.next([createPerson({ id: 'person-1', birthday: { year: 1990, month: 6, day: 15 } })]);
 
       const events = service['calendarEventsSource'].getValue();
       expect(events.length).toBe(1);
@@ -57,27 +38,15 @@ describe('CalendarService', () => {
       expect(events[0].title).toContain('John');
     }));
 
-    it('filters out notLiving persons when showNotLiving is false', inject([CalendarService], (service: CalendarService) => {
-      const person: Person = {
-        id: 'person-1',
-        name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-        birthday: { year: 1990, month: 6, day: 15 },
-        spouseId: null,
-        anniversaryDate: null,
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
+    it('does not emit a birthday event for a person without a birthday year', inject([CalendarService], (service: CalendarService) => {
+      mockPeopleSubject.next([createPerson({ id: 'person-1', birthday: { year: 0, month: 6, day: 15 } })]);
 
-      mockPeopleSubject.next([person]);
+      const events = service['calendarEventsSource'].getValue();
+      expect(events.length).toBe(0);
+    }));
+
+    it('marks events with the person isLiving flag so updateEvents can filter them', inject([CalendarService], (service: CalendarService) => {
+      mockPeopleSubject.next([createPerson({ id: 'person-1', isLiving: false })]);
 
       const events = service['calendarEventsSource'].getValue();
       expect(events.length).toBe(1);
@@ -85,48 +54,17 @@ describe('CalendarService', () => {
 
       const filtered = service.updateEvents(events, 2024, true, true, false);
       expect(filtered.length).toBe(0);
+
+      const withNotLiving = service.updateEvents(events, 2024, true, true, true);
+      expect(withNotLiving.length).toBe(1);
     }));
 
-    it('creates anniversary event for person with spouse and anniversaryDate', inject([CalendarService], (service: CalendarService) => {
-      const spouse: Person = {
-        id: 'spouse-1',
-        name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null },
-        birthday: { year: 1992, month: 3, day: 20 },
-        spouseId: 'person-1',
-        anniversaryDate: { year: 2015, month: 7, day: 4 },
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      const person: Person = {
-        id: 'person-1',
-        name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-        birthday: { year: 1990, month: 6, day: 15 },
-        spouseId: 'spouse-1',
-        anniversaryDate: { year: 2015, month: 7, day: 4 },
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      mockPeopleSubject.next([person, spouse]);
+    it('creates a single anniversary event for a couple and merges both names into the title', inject([CalendarService], (service: CalendarService) => {
+      // Spouses share one anniversary; only the primary record carries the date.
+      mockPeopleSubject.next([
+        createPerson({ id: 'person-1', spouseId: 'spouse-1', anniversaryDate: { year: 2015, month: 7, day: 4 } }),
+        createPerson({ id: 'spouse-1', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }, spouseId: 'person-1' })
+      ]);
 
       const events = service['calendarEventsSource'].getValue();
       const anniversaryEvents = events.filter(e => e.type === 'anniversary');
@@ -136,45 +74,10 @@ describe('CalendarService', () => {
     }));
 
     it('anniversary event has personId and personId2 set', inject([CalendarService], (service: CalendarService) => {
-      const spouse: Person = {
-        id: 'spouse-1',
-        name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null },
-        birthday: { year: 1992, month: 3, day: 20 },
-        spouseId: 'person-1',
-        anniversaryDate: { year: 2015, month: 7, day: 4 },
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      const person: Person = {
-        id: 'person-1',
-        name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-        birthday: { year: 1990, month: 6, day: 15 },
-        spouseId: 'spouse-1',
-        anniversaryDate: { year: 2015, month: 7, day: 4 },
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      mockPeopleSubject.next([person, spouse]);
+      mockPeopleSubject.next([
+        createPerson({ id: 'person-1', spouseId: 'spouse-1', anniversaryDate: { year: 2015, month: 7, day: 4 } }),
+        createPerson({ id: 'spouse-1', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }, spouseId: 'person-1' })
+      ]);
 
       const events = service['calendarEventsSource'].getValue();
       const anniversaryEvent = events.find(e => e.type === 'anniversary');
@@ -209,26 +112,7 @@ describe('CalendarService', () => {
     }));
 
     it('getEventsByPerson returns only events for specified person', inject([CalendarService], (service: CalendarService) => {
-      const person: Person = {
-        id: 'person-1',
-        name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-        birthday: { year: 1990, month: 6, day: 15 },
-        spouseId: null,
-        anniversaryDate: null,
-        clanId: null,
-        emails: [],
-        phones: [],
-        addresses: [],
-        directDescendent: false,
-        generationNumber: 1,
-        parentIds: [],
-        lineage: null,
-        isLiving: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      mockPeopleSubject.next([person]);
+      mockPeopleSubject.next([createPerson({ id: 'person-1' })]);
 
       const events = service['calendarEventsSource'].getValue();
       expect(events.length).toBe(1);
@@ -243,3 +127,25 @@ describe('CalendarService', () => {
     }));
   });
 });
+
+function createPerson(overrides: Partial<Person> = {}): Person {
+  return {
+    id: 'default-id',
+    name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
+    birthday: { year: 1990, month: 6, day: 15 },
+    spouseId: null,
+    anniversaryDate: null,
+    clanId: null,
+    emails: [],
+    phones: [],
+    addresses: [],
+    directDescendent: false,
+    generationNumber: 1,
+    parentIds: [],
+    lineage: null,
+    isLiving: true,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    ...overrides
+  };
+}

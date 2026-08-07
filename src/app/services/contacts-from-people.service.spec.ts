@@ -1,42 +1,33 @@
 import { TestBed } from '@angular/core/testing';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ContactsFromPeopleService, ContactCard } from './contacts-from-people.service';
 import { PeopleService } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
-import { AddressesService } from 'src/app/services/addresses.service';
-import { BehaviorSubject } from 'rxjs';
-import { Person, Email, Phone } from 'src/app/models/person';
+import { Person } from 'src/app/models/person';
 import { Clan } from 'src/app/models/clan';
-import { Address } from 'src/app/models/address';
 
 describe('ContactsFromPeopleService', () => {
   let service: ContactsFromPeopleService;
-  let mockPeopleService: any;
-  let mockClanService: any;
-  let mockAddressesService: any;
+  let mockPeopleService: { people$: unknown };
+  let mockClanService: { clans$: unknown };
 
-  const mockPeople$ = new BehaviorSubject<Person[]>([]);
-  const mockClans$ = new BehaviorSubject<Clan[]>([]);
-  const mockAddresses$ = new BehaviorSubject<Address[]>([]);
+  // Fresh subjects per test: the service holds combineLatest subscriptions for
+  // its whole lifetime, so stale values from a previous test would otherwise
+  // leak into the next one (the original suite failed intermittently on this).
+  let peopleSubject: BehaviorSubject<Person[]>;
+  let clansSubject: BehaviorSubject<Clan[]>;
 
   beforeEach(() => {
-    mockPeopleService = {
-      people$: mockPeople$.asObservable(),
-      getPerson: jasmine.createSpy('getPerson').and.returnValue(new BehaviorSubject(null).asObservable())
-    };
-    mockClanService = {
-      clans$: mockClans$.asObservable()
-    };
-    mockAddressesService = {
-      addresses$: mockAddresses$.asObservable(),
-      addressesSource: { getValue: () => [] } as BehaviorSubject<Address[]>
-    };
+    peopleSubject = new BehaviorSubject<Person[]>([]);
+    clansSubject = new BehaviorSubject<Clan[]>([]);
+    mockPeopleService = { people$: peopleSubject.asObservable() };
+    mockClanService = { clans$: clansSubject.asObservable() };
 
     TestBed.configureTestingModule({
       providers: [
         ContactsFromPeopleService,
         { provide: PeopleService, useValue: mockPeopleService },
         { provide: ClanService, useValue: mockClanService },
-        { provide: AddressesService, useValue: mockAddressesService },
       ]
     });
 
@@ -51,25 +42,20 @@ describe('ContactsFromPeopleService', () => {
     it('returns list sorted by generation then id', async () => {
       const clans: Clan[] = [{ id: 'clan1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 }];
       const people: Person[] = [
-        createPerson({ id: 'gen2-person', generationNumber: 2, emails: [], phones: [] }),
-        createPerson({ id: 'gen1-person', generationNumber: 1, emails: [], phones: [] })
+        createPerson({ id: 'gen2-person', generationNumber: 2, emails: [{ address: 'a@test.com', label: null }] }),
+        createPerson({ id: 'gen1-person', generationNumber: 1, emails: [{ address: 'b@test.com', label: null }] })
       ];
 
-      mockPeople$.next(people);
-      mockClans$.next(clans);
-      mockAddresses$.next([]);
+      peopleSubject.next(people);
+      clansSubject.next(clans);
 
-      await new Promise<void>((resolve) => {
-        service.getContacts().subscribe((contacts: ContactCard[]) => {
-          expect(contacts.length).toBe(2);
-          expect(contacts[0].person.generationNumber).toBe(1);
-          expect(contacts[1].person.generationNumber).toBe(2);
-          resolve();
-        });
-      });
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.length).toBe(2);
+      expect(contacts[0].person.generationNumber).toBe(1);
+      expect(contacts[1].person.generationNumber).toBe(2);
     });
 
-    it('person without spouseId shows only their own fields', async () => {
+    it('person without spouse shows only their own fields', async () => {
       const people: Person[] = [
         createPerson({
           id: 'person1',
@@ -79,93 +65,88 @@ describe('ContactsFromPeopleService', () => {
         })
       ];
 
-      mockPeople$.next(people);
-      mockClans$.next([]);
-      mockAddresses$.next([]);
+      peopleSubject.next(people);
+      clansSubject.next([]);
 
-      await new Promise<void>((resolve) => {
-        service.getContacts().subscribe((contacts: ContactCard[]) => {
-          expect(contacts.length).toBe(1);
-          expect(contacts[0].spouse).toBeNull();
-          expect(contacts[0].emails.length).toBe(1);
-          expect(contacts[0].phones.length).toBe(1);
-          resolve();
-        });
-      });
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.length).toBe(1);
+      expect(contacts[0].spouse).toBeNull();
+      expect(contacts[0].emails.length).toBe(1);
+      expect(contacts[0].phones.length).toBe(1);
     });
 
-    it('person with spouseId merges emails from both (deduplicated)', async () => {
+    it('merges spouse emails into the primary card, deduplicated by address', async () => {
+      // Real data model: the spouse is a "-S" suffixed record. It must not
+      // produce a second top-level card while its contact info is merged.
       const people: Person[] = [
         createPerson({
           id: 'person1',
-          spouseId: 'person2',
+          spouseId: 'person1-S',
           emails: [{ address: 'person1@test.com', label: null }]
         }),
         createPerson({
-          id: 'person2',
-          spouseId: 'person1',
+          id: 'person1-S',
           emails: [{ address: 'person2@test.com', label: null }, { address: 'person1@test.com', label: null }]
         })
       ];
 
-      mockPeople$.next(people);
-      mockClans$.next([]);
-      mockAddresses$.next([]);
+      peopleSubject.next(people);
+      clansSubject.next([]);
 
-      await new Promise<void>((resolve) => {
-        service.getContacts().subscribe((contacts: ContactCard[]) => {
-          expect(contacts.length).toBe(1);
-          expect(contacts[0].spouse).not.toBeNull();
-          expect(contacts[0].emails.length).toBe(2);
-          resolve();
-        });
-      });
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.length).toBe(1);
+      expect(contacts[0].person.id).toBe('person1');
+      expect(contacts[0].spouse).not.toBeNull();
+      expect(contacts[0].emails.length).toBe(2);
     });
 
-    it('person with spouseId merges phones from both (deduplicated)', async () => {
+    it('merges spouse phones into the primary card, deduplicated by number', async () => {
       const people: Person[] = [
         createPerson({
           id: 'person1',
-          spouseId: 'person2',
+          spouseId: 'person1-S',
           phones: [{ label: 'Mobile', number: '555-1111' }]
         }),
         createPerson({
-          id: 'person2',
-          spouseId: 'person1',
+          id: 'person1-S',
           phones: [{ label: 'Home', number: '555-2222' }]
         })
       ];
 
-      mockPeople$.next(people);
-      mockClans$.next([]);
-      mockAddresses$.next([]);
+      peopleSubject.next(people);
+      clansSubject.next([]);
 
-      await new Promise<void>((resolve) => {
-        service.getContacts().subscribe((contacts: ContactCard[]) => {
-          expect(contacts.length).toBe(1);
-          expect(contacts[0].phones.length).toBe(2);
-          resolve();
-        });
-      });
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.length).toBe(1);
+      expect(contacts[0].person.id).toBe('person1');
+      expect(contacts[0].phones.length).toBe(2);
     });
 
-    it('spouse records (id.endsWith("-S")) excluded from top-level list', async () => {
+    it('spouse records (id.endsWith("-S")) excluded from top-level list while regular spouse is living', async () => {
       const people: Person[] = [
-        createPerson({ id: 'person1', generationNumber: 1 }),
-        createPerson({ id: 'person1-S', generationNumber: 1 })
+        createPerson({ id: 'person1', generationNumber: 1, emails: [{ address: 'a@test.com', label: null }] }),
+        createPerson({ id: 'person1-S', generationNumber: 1, emails: [{ address: 'b@test.com', label: null }] })
       ];
 
-      mockPeople$.next(people);
-      mockClans$.next([]);
-      mockAddresses$.next([]);
+      peopleSubject.next(people);
+      clansSubject.next([]);
 
-      await new Promise<void>((resolve) => {
-        service.getContacts().subscribe((contacts: ContactCard[]) => {
-          expect(contacts.length).toBe(1);
-          expect(contacts[0].person.id).toBe('person1');
-          resolve();
-        });
-      });
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.length).toBe(1);
+      expect(contacts[0].person.id).toBe('person1');
+    });
+
+    it('excludes deceased people unless they are a -S record whose regular spouse is deceased', async () => {
+      const people: Person[] = [
+        createPerson({ id: 'deceased1', isLiving: false, emails: [{ address: 'a@test.com', label: null }] }),
+        createPerson({ id: 'widow1', isLiving: true, emails: [{ address: 'b@test.com', label: null }] }),
+      ];
+
+      peopleSubject.next(people);
+      clansSubject.next([]);
+
+      const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
+      expect(contacts.map(c => c.person.id)).toEqual(['widow1']);
     });
   });
 });

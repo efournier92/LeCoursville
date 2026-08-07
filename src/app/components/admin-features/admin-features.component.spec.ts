@@ -11,12 +11,12 @@ describe('AdminFeaturesComponent', () => {
   let fixture: ComponentFixture<AdminFeaturesComponent>;
   let mockFeatureFlagsService: jasmine.SpyObj<FeatureFlagsService>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags', 'setFeatureFlag', 'getPromotedRoute']);
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
       declarations: [AdminFeaturesComponent],
       schemas: [NO_ERRORS_SCHEMA],
@@ -39,10 +39,11 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.getAllFeatureFlags).toHaveBeenCalled();
   });
 
-  it('renders all 7 feature rows from featureDefs', () => {
+  it('renders one feature row per entry in featureDefs', () => {
     fixture.detectChanges();
-    const items = fixture.nativeElement.querySelectorAll('mat-list-item');
-    expect(items.length).toBe(7);
+    const items = fixture.nativeElement.querySelectorAll('.feature-row');
+    expect(items.length).toBe(component.featureDefs.length);
+    expect(items.length).toBeGreaterThan(0);
   });
 
   it('isEnabled() returns true when Firebase flag is null (default ON)', () => {

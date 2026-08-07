@@ -7,17 +7,16 @@ import { ContactsFromPeopleService, ContactCard } from 'src/app/services/contact
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { BehaviorSubject } from 'rxjs';
 import { Person } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
 
 describe('ContactsComponent', () => {
   let component: ContactsComponent;
   let fixture: ComponentFixture<ContactsComponent>;
   let mockContactsService: any;
   let mockAnalyticsService: any;
-
-  const contactsSubject = new BehaviorSubject<ContactCard[]>([]);
+  let contactsSubject: BehaviorSubject<ContactCard[]>;
 
   beforeEach(async () => {
+    contactsSubject = new BehaviorSubject<ContactCard[]>([]);
     mockContactsService = {
       contacts$: contactsSubject.asObservable()
     };
@@ -60,15 +59,29 @@ describe('ContactsComponent', () => {
     expect(component.contacts).toEqual(testCards);
   });
 
-  it('generation 1 people appear before generation 2 people', () => {
-    const testCards: ContactCard[] = [
-      { person: createPerson({ id: 'gen2', generationNumber: 2 }), spouse: null, clan: null, addresses: [], emails: [], phones: [] },
-      { person: createPerson({ id: 'gen1', generationNumber: 1 }), spouse: null, clan: null, addresses: [], emails: [], phones: [] }
+  it('filters contacts by search term', () => {
+    component.searchTerm = 'Doe';
+    contactsSubject.next([
+      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] },
+      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] }
+    ]);
+
+    expect(component.contacts.length).toBe(1);
+    expect(component.contacts[0].person.id).toBe('gen1');
+  });
+
+  it('clearing the search term restores the full list', () => {
+    const cards: ContactCard[] = [
+      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] },
+      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] }
     ];
-    contactsSubject.next(testCards);
-    fixture.detectChanges();
-    expect(component.contacts[0].person.generationNumber).toBe(1);
-    expect(component.contacts[1].person.generationNumber).toBe(2);
+    component.searchTerm = 'Doe';
+    contactsSubject.next(cards);
+    expect(component.contacts.length).toBe(1);
+
+    component.searchTerm = '';
+    contactsSubject.next(cards);
+    expect(component.contacts.length).toBe(2);
   });
 });
 

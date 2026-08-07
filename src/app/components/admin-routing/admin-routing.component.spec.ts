@@ -7,6 +7,16 @@ import { RoutingService } from 'src/app/services/routing.service';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { of } from 'rxjs';
 
+function findButton(fixture: ComponentFixture<AdminRoutingComponent>, label: string): HTMLButtonElement | null {
+  const buttons = fixture.nativeElement.querySelectorAll('button');
+  for (const button of Array.from(buttons)) {
+    if ((button as HTMLElement).textContent?.includes(label)) {
+      return button as HTMLButtonElement;
+    }
+  }
+  return null;
+}
+
 describe('AdminRoutingComponent', () => {
   let component: AdminRoutingComponent;
   let fixture: ComponentFixture<AdminRoutingComponent>;
@@ -40,14 +50,14 @@ describe('AdminRoutingComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('New "Features" button toggle is present in the template', () => {
-    const featuresButton = fixture.nativeElement.querySelector('mat-button-toggle:nth-child(4)');
+  it('renders a Features navigation button', () => {
+    const featuresButton = findButton(fixture, 'Features');
     expect(featuresButton).toBeTruthy();
   });
 
-  it('Clicking "Features" toggle calls onClickFeaturesRoute()', () => {
-    const featuresButton = fixture.nativeElement.querySelector('mat-button-toggle:nth-child(4)');
-    featuresButton.click();
+  it('clicking the Features button calls onClickFeaturesRoute()', () => {
+    const featuresButton = findButton(fixture, 'Features');
+    featuresButton!.click();
     fixture.detectChanges();
     expect(mockRoutingService.NavigateToAdminFeatures).toHaveBeenCalled();
   });

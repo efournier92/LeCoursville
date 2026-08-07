@@ -43,23 +43,60 @@ describe('ContactCardComponent', () => {
     });
   });
 
-  describe('getSpouseFullName', () => {
-    it('returns spouse full name', () => {
+  describe('getCoupleFirstNames', () => {
+    it('returns both first names when the couple shares a last name', () => {
+      const person = createPerson({ id: 'person1' });
+      const spouse = createPerson({
+        id: 'person2',
+        name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Doe', suffix: null }
+      });
+      component.contactCard = createContactCard({ person, spouse });
+      expect(component.getCoupleFirstNames()).toEqual({ first: 'John', second: 'Jane' });
+    });
+
+    it('returns empty second name when last names differ', () => {
       const person = createPerson({ id: 'person1' });
       const spouse = createPerson({
         id: 'person2',
         name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }
       });
       component.contactCard = createContactCard({ person, spouse });
-      fixture.detectChanges();
-      expect((component as any).getSpouseFullName()).toBe('Jane Smith');
+      expect(component.getCoupleFirstNames()).toEqual({ first: 'John', second: '' });
     });
 
-    it('returns empty string when spouse is null', () => {
+    it('returns null when there is no spouse', () => {
+      component.contactCard = createContactCard({ person: createPerson({ id: 'person1' }), spouse: null });
+      expect(component.getCoupleFirstNames()).toBeNull();
+    });
+  });
+
+  describe('shared last name helpers', () => {
+    it('getSharedLastName returns the shared name when last names match', () => {
       const person = createPerson({ id: 'person1' });
-      component.contactCard = createContactCard({ person, spouse: null });
-      fixture.detectChanges();
-      expect((component as any).getSpouseFullName()).toBe('');
+      const spouse = createPerson({
+        id: 'person2',
+        name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Doe', suffix: null }
+      });
+      component.contactCard = createContactCard({ person, spouse });
+      expect(component.getSharedLastName()).toBe('Doe');
+      expect(component.hasSameLastName()).toBe(true);
+    });
+
+    it('returns empty / false when last names differ', () => {
+      const person = createPerson({ id: 'person1' });
+      const spouse = createPerson({
+        id: 'person2',
+        name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }
+      });
+      component.contactCard = createContactCard({ person, spouse });
+      expect(component.getSharedLastName()).toBe('');
+      expect(component.hasSameLastName()).toBe(false);
+    });
+
+    it('returns empty / false when there is no spouse', () => {
+      component.contactCard = createContactCard({ person: createPerson({ id: 'person1' }), spouse: null });
+      expect(component.getSharedLastName()).toBe('');
+      expect(component.hasSameLastName()).toBe(false);
     });
   });
 
@@ -127,14 +164,14 @@ describe('ContactCardComponent', () => {
   });
 
   describe('formatAddress', () => {
-    it('formats address with street, city, state, zip', () => {
+    it('formats address with street on its own line then city, state, zip', () => {
       const address = { street: '123 Main St', city: 'Boston', state: 'MA', zip: '02101', full: null, label: null };
-      expect(component.formatAddress(address)).toBe('123 Main St, Boston, MA, 02101');
+      expect(component.formatAddress(address)).toBe('123 Main St\nBoston, MA 02101');
     });
 
     it('filters out null parts', () => {
       const address = { street: '123 Main St', city: null, state: 'MA', zip: null, full: null, label: null };
-      expect(component.formatAddress(address)).toBe('123 Main St, MA');
+      expect(component.formatAddress(address)).toBe('123 Main St\nMA');
     });
   });
 });

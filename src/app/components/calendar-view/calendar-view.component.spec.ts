@@ -20,10 +20,29 @@ describe('CalendarViewComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CalendarViewComponent);
     component = fixture.componentInstance;
+    component.viewDate = new Date(2024, 6, 1);
+    component.selectedYear = 2024;
+    component.events = [];
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('getHiddenEventCount returns 0 for a day with few events', () => {
+    const day = {
+      date: new Date(2024, 6, 1),
+      events: [{ date: new Date(2024, 6, 2) }],
+    };
+    expect(component.getHiddenEventCount(day)).toBe(0);
+  });
+
+  it('getHiddenEventCount caps visible events per cell', () => {
+    const day = {
+      date: new Date(2024, 6, 1),
+      events: [1, 2, 3, 4, 5, 6].map(i => ({ date: new Date(2024, 6, i) })),
+    };
+    expect(component.getHiddenEventCount(day)).toBe(2);
   });
 });

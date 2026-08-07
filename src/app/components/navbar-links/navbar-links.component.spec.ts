@@ -1,4 +1,7 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestSharedModule } from '../../../test-shared.module';
+import { AppModule } from '../../app.module';
 import { NavbarLinksComponent } from './navbar-links.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { of } from 'rxjs';
@@ -14,7 +17,9 @@ describe('NavbarLinksComponent', () => {
     spy.getAllFeatureFlags.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
+      imports: [AppModule, TestSharedModule],
       declarations: [NavbarLinksComponent],
+      schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: FeatureFlagsService, useValue: spy },
       ]
@@ -23,71 +28,62 @@ describe('NavbarLinksComponent', () => {
     mockFeatureFlagsService = TestBed.inject(FeatureFlagsService) as jasmine.SpyObj<FeatureFlagsService>;
     fixture = TestBed.createComponent(NavbarLinksComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('when getAllFeatureFlags() returns { music: { enabled: false } }', () => {
-    it('the Music button is not in filteredButtons', fakeAsync(() => {
-      const flagsMap: Record<string, FeatureFlag | null> = {
-        music: { enabled: false, updatedAt: Date.now() }
-      };
-      mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of(flagsMap));
-      fixture.detectChanges();
-      tick();
-      fixture.detectChanges();
-
-      const musicButton = component.filteredButtons.find(b => b.title === 'Music');
-      expect(musicButton).toBeUndefined();
-    }));
+  it('all core toggleable buttons are present when every flag defaults to enabled', () => {
+    const toggleableTitles = ['Expressions', 'Music', 'Videos', 'Calendar', 'Contacts', 'Photos', 'Chat'];
+    const filteredToggleable = component.filteredButtons.filter(b =>
+      toggleableTitles.includes(b.title)
+    );
+    expect(filteredToggleable.length).toBe(7);
   });
 
-  describe('when getAllFeatureFlags() returns {} (empty)', () => {
-    it('all 7 toggleable buttons are present in filteredButtons', fakeAsync(() => {
-      mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of({}));
-      fixture.detectChanges();
-      tick();
-      fixture.detectChanges();
+  it('a feature flag set to disabled removes that button from filteredButtons', () => {
+    const flagsMap: Record<string, FeatureFlag | null> = {
+      music: { enabled: false, updatedAt: Date.now() }
+    };
+    mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of(flagsMap));
+    component.ngOnInit();
+    fixture.detectChanges();
 
-      const toggleableTitles = ['Expressions', 'Music', 'Videos', 'Calendar', 'Contacts', 'Photos', 'Chat'];
-      const filteredToggleable = component.filteredButtons.filter(b =>
-        toggleableTitles.includes(b.title)
-      );
-      expect(filteredToggleable.length).toBe(7);
-    }));
+    const musicButton = component.filteredButtons.find(b => b.title === 'Music');
+    expect(musicButton).toBeUndefined();
+    expect(component.filteredButtons.find(b => b.title === 'Calendar')).toBeDefined();
   });
 
-  describe('Account button behavior', () => {
-    it('Account button is always present regardless of flags', fakeAsync(() => {
-      const flagsMap: Record<string, FeatureFlag | null> = {
-        expressions: { enabled: false, updatedAt: Date.now() },
-        music: { enabled: false, updatedAt: Date.now() },
-        videos: { enabled: false, updatedAt: Date.now() },
-        calendar: { enabled: false, updatedAt: Date.now() },
-        contacts: { enabled: false, updatedAt: Date.now() },
-        photos: { enabled: false, updatedAt: Date.now() },
-        chat: { enabled: false, updatedAt: Date.now() },
-      };
-      mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of(flagsMap));
-      fixture.detectChanges();
-      tick();
-      fixture.detectChanges();
+  it('view-toggle flags (shared route) never become tabs and default to hidden', () => {
+    // enablePhotoAlbums shares /photos with Photos and defaults OFF.
+    const photoAlbumButton = component.buttons.find(b => b.title === 'Photo Albums (new view)');
+    expect(photoAlbumButton).toBeUndefined();
+  });
 
-      const accountButton = component.filteredButtons.find(b => b.title === 'Account');
-      expect(accountButton).toBeDefined();
-      expect(accountButton.link).toBe('/');
-    }));
+  it('Account button is always present regardless of flags', () => {
+    const flagsMap: Record<string, FeatureFlag | null> = {
+      expressions: { enabled: false, updatedAt: Date.now() },
+      music: { enabled: false, updatedAt: Date.now() },
+      videos: { enabled: false, updatedAt: Date.now() },
+      calendar: { enabled: false, updatedAt: Date.now() },
+      contacts: { enabled: false, updatedAt: Date.now() },
+      photos: { enabled: false, updatedAt: Date.now() },
+      chat: { enabled: false, updatedAt: Date.now() },
+    };
+    mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of(flagsMap));
+    component.ngOnInit();
+    fixture.detectChanges();
 
-    it('Account button maps to link === "/" and is never filtered', fakeAsync(() => {
-      mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(of({}));
-      fixture.detectChanges();
-      tick();
-      fixture.detectChanges();
+    const accountButton = component.filteredButtons.find(b => b.title === 'Account');
+    expect(accountButton).toBeDefined();
+    expect(accountButton!.link).toBe('/');
+  });
 
-      const accountButton = component.buttons.find(b => b.link === '/');
-      expect(accountButton.title).toBe('Account');
-    }));
+  it('Account button maps to link === "/" and is never filtered', () => {
+    const accountButton = component.buttons.find(b => b.link === '/');
+    expect(accountButton).toBeDefined();
+    expect(accountButton!.title).toBe('Account');
   });
 });
