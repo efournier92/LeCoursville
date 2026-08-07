@@ -1,41 +1,46 @@
-<mat-card class="mat-elevation-z6">
-  <mat-card-title>{{ userOnCard.name }}</mat-card-title>
-  @if (shouldDisplayUserId()) {
-    <mat-card-subtitle>{{
-      userOnCard.id
-    }}</mat-card-subtitle>
+<div class="account-profile">
+  <div class="account-avatar" aria-hidden="true">{{ initials }}</div>
+  <h2 class="account-name">{{ userOnCard?.name }}</h2>
+  <p class="account-email">{{ userOnCard?.email }}</p>
+
+  @if (shouldDisplayRoles()) {
+    <div class="account-roles">
+      @if (userOnCard?.roles?.user) {
+        <span class="account-role">User</span>
+      }
+      @if (userOnCard?.roles?.admin) {
+        <span class="account-role">Admin</span>
+      }
+      @if (userOnCard?.roles?.super) {
+        <span class="account-role">Super</span>
+      }
+    </div>
   }
-  <mat-card-content>
-    <div><b>Email: </b>{{ userOnCard.email }}</div>
-    <div><b>Registered: </b>{{ userOnCard.dateRegistered | date }}</div>
-    <div><b>Last Active: </b>{{ userOnCard.dateLastActive | date }}</div>
-    @if (shouldDisplayRoles()) {
-      <div>
-        <span> <b>Roles: </b></span>
-        @if (userOnCard.roles.user) {
-          <span>User</span
-            >
-            }@if (userOnCard.roles.admin) {
-            <span>, </span>
-          }
-          @if (userOnCard.roles.admin) {
-            <span>Admin</span
-              >
-              }@if (userOnCard.roles.super) {
-              <span>, </span>
-            }
-            @if (userOnCard.roles.super) {
-              <span>Super</span>
-            }
-          </div>
-        }
-      </mat-card-content>
-      <mat-card-footer class="d-flex justify-content-end user-card-footer">
-        <button
-          mat-button
-          (click)="onEdit()"
-          >
-          Edit
-        </button>
-      </mat-card-footer>
-    </mat-card>
+
+  @if (shouldDisplayUserId()) {
+    <div class="account-id">{{ userOnCard?.id }}</div>
+  }
+
+  <dl class="account-meta">
+    <div class="account-meta-row">
+      <dt>Registered</dt>
+      <dd>{{ userOnCard?.dateRegistered | date }}</dd>
+    </div>
+    <div class="account-meta-row">
+      <dt>Last active</dt>
+      <dd>{{ userOnCard?.dateLastActive | date }}</dd>
+    </div>
+  </dl>
+
+  <div class="account-actions">
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      (click)="onEdit()"
+      >
+      <mat-icon aria-hidden="true">edit</mat-icon>
+      <span>Edit profile</span>
+    </button>
+  </div>
+</div>

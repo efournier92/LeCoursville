@@ -21,6 +21,17 @@ export class UserViewComponent implements OnInit {
 
   // PUBLIC METHODS
 
+  get initials(): string {
+    const name = this.userOnCard?.name?.trim();
+    if (!name) {
+      return "?";
+    }
+    const parts = name.split(/\s+/);
+    const first = parts[0]?.charAt(0) || "";
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
+    return (first + last).toUpperCase();
+  }
+
   shouldDisplayRoles(): boolean {
     return this.isAdminUser();
   }

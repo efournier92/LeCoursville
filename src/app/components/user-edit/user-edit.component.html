@@ -3,19 +3,22 @@
     class="user-card mat-elevation-z6"
     >
     <form>
-      <div class="user-edit-id-top">{{ userOnCard.id }}</div>
+      @if (isAdminMode) {
+        <div class="user-edit-id-top">{{ userOnCard.id }}</div>
+      }
       <mat-form-field class="user-edit-form-field w-100">
+        <mat-label>Name</mat-label>
         <input
           matInput
-          placeholder="Name"
           name="user-name"
           [(ngModel)]="userOnCard.name"
           />
       </mat-form-field>
       <mat-form-field class="user-edit-form-field w-100">
+        <mat-label>Email</mat-label>
         <input
           matInput
-          placeholder="Email"
+          type="email"
           name="user-email"
           [(ngModel)]="userOnCard.email"
           />
@@ -60,7 +63,7 @@
     <mat-card-footer class="user-card-footer-actions m-0 mt-4">
       @if (!isAdminMode) {
         <button
-          mat-raised-button
+          mat-flat-button
           class="admin-form-action-button admin-form-action-button-upload col m-2"
           color="accent"
           (click)="onCancelEdit()"
@@ -69,7 +72,7 @@
         </button>
       }
       <button
-        mat-raised-button
+        mat-flat-button
         class="admin-form-action-button admin-form-action-button-upload col m-2"
         color="primary"
         (click)="onSaveUser(userOnCard)"
@@ -78,7 +81,7 @@
       </button>
       @if (userSignedIn?.roles?.super) {
         <button
-          mat-raised-button
+          mat-flat-button
           class="admin-form-action-button admin-form-action-button-delete col m-2"
           color="warn"
           (click)="onDeleteUser(userOnCard)"
