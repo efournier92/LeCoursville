@@ -28,7 +28,7 @@
     "angular-resizable-element": "^8.0.3",
     "bootstrap": "^5.3.8",
     "date-fns": "^4.1.0",
-    "firebase": "^9.15",
+    "firebase": "^12.17.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
