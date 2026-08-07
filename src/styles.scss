@@ -6,6 +6,38 @@
 @import "../node_modules/angular-calendar/css/angular-calendar.css";
 @import "photoswipe/dist/photoswipe.css";
 
+// Self-hosted Material Icons font (ligature icon set). The Google Fonts
+// <link> was removed: runtime fetches to fonts.gstatic.com were flaky
+// (ERR_ABORTED / blocked by extensions), which rendered every icon as raw
+// ligature text. Same font file Google served, now served from this app.
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  src: url("assets/fonts/MaterialIcons-Regular.woff2") format("woff2");
+}
+
+// This class is what mat-icon (fontSet "material-icons") and any raw
+// <i class="material-icons"> rely on for font-family + baseline metrics.
+// Previously shipped by the Google Fonts stylesheet; now defined locally.
+.material-icons {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga";
+}
+
 // Material 3 theme (Angular Material 18+ token API). Brand green primary,
 // amber tertiary; M3 error palette covers `warn` states.
 $theme: mat.define-theme(
