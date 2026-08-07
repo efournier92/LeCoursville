@@ -147,7 +147,6 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
   ],
   providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }],
   bootstrap: [AppComponent],
-  entryComponents: [CalendarDatepickerDialogComponent, CalendarPrinterComponent, PromptModalComponent],
   exports: [ContactEditComponent],
 })
 export class AppModule {}

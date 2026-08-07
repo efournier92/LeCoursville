@@ -20,7 +20,7 @@ $light-theme: mat.define-light-theme(
       accent: $accent,
       warn: $warn,
     ),
-    typography: mat.define-typography-config(),
+    typography: mat.define-legacy-typography-config(),
     density: 0,
   )
 );
@@ -32,7 +32,7 @@ $dark-theme: mat.define-dark-theme(
       accent: $accent,
       warn: $warn,
     ),
-    typography: mat.define-typography-config(),
+    typography: mat.define-legacy-typography-config(),
     density: -2,
   )
 );

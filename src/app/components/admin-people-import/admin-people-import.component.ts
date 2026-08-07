@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
 import { Clan } from 'src/app/models/clan';

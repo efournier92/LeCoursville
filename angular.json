@@ -148,7 +148,6 @@
       }
     }
   },
-  "defaultProject": "lecoursville",
   "cli": {
     "analytics": false
   }

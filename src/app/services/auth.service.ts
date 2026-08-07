@@ -6,7 +6,7 @@ import {
   sendPasswordResetEmail,
   User as FirebaseUser,
 } from "firebase/auth";
-import { MatDialogRef } from "@angular/material/dialog";
+import { MatLegacyDialogRef as MatDialogRef } from "@angular/material/legacy-dialog";
 import { BehaviorSubject, Observable } from "rxjs";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";

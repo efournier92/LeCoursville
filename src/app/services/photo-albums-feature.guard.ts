@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { FeatureFlagsService } from './feature-flags.service';
@@ -12,7 +12,7 @@ import { FeatureFlagsService } from './feature-flags.service';
  * safely deployable while the feature is OFF.
  */
 @Injectable({ providedIn: 'root' })
-export class PhotoAlbumsFeatureGuard implements CanActivate {
+export class PhotoAlbumsFeatureGuard  {
   constructor(
     private featureFlagsService: FeatureFlagsService,
     private router: Router,

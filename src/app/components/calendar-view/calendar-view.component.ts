@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, Inject, AfterViewInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarView } from 'angular-calendar';
 import { AuthService } from 'src/app/services/auth.service';

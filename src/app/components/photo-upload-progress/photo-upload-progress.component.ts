@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { Observable } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { PhotoUpload, PhotosService } from 'src/app/services/photos.service';

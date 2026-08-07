@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
+import { MatLegacyDialog as MatDialog } from "@angular/material/legacy-dialog";
 import { Observable, BehaviorSubject } from "rxjs";
 import { PhotosService, PhotoUpload } from "src/app/services/photos.service";
 import { Photo } from "src/app/models/photo";
