@@ -1,19 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { PhotosComponent } from './photos.component';
+import { PhotosLegacyComponent } from './photos-legacy.component';
 
-describe('PhotosComponent', () => {
-  let component: PhotosComponent;
-  let fixture: ComponentFixture<PhotosComponent>;
+describe('PhotosLegacyComponent', () => {
+  let component: PhotosLegacyComponent;
+  let fixture: ComponentFixture<PhotosLegacyComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [PhotosComponent]
+      declarations: [PhotosLegacyComponent]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PhotosComponent);
+    fixture = TestBed.createComponent(PhotosLegacyComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

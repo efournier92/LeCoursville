@@ -28,7 +28,11 @@ export class AdminFeaturesComponent implements OnInit {
 
   isEnabled(featureId: string): boolean {
     const flag = this.flagsMap[featureId];
-    return flag === null || flag === undefined || flag.enabled === true;
+    if (flag === null || flag === undefined) {
+      const def = FEATURES.find(f => f.id === featureId);
+      return def?.defaultEnabled !== false;
+    }
+    return flag.enabled === true;
   }
 
   onToggle(featureId: string, enabled: boolean): void {

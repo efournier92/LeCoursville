@@ -1,0 +1,243 @@
+// Shared floating frosted command bar for the photo gallery pages.
+// Imported by photo-albums.component.scss and photo-album-detail.component.scss.
+
+.gallery-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin: 16px 16px 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+
+  .gallery-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .gallery-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1a202c;
+
+    &--ellipsis {
+      flex: 0 1 auto;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .gallery-count {
+    margin-left: 2px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #8a94a3;
+  }
+
+  .gallery-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+
+  // Search pill
+  .gallery-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    min-width: 180px;
+    max-width: 360px;
+    flex: 1 1 240px;
+    padding: 0 8px 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+
+    &:focus-within {
+      border-color: var(--color-brand-primary);
+      box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.14);
+    }
+
+    > mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: #8a94a3;
+      flex-shrink: 0;
+    }
+  }
+
+  .gallery-search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.9rem;
+    color: #1a202c;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .gallery-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.07);
+      color: #1a202c;
+    }
+  }
+
+  // Segmented sort control (album list) — compact, natural width
+  .gallery-segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+  }
+
+  .gallery-segmented-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: #5b6472;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+
+    &.active {
+      background: #fff;
+      color: #1a202c;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+  }
+
+  // Back button (album detail)
+  .gallery-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #32383f;
+    cursor: pointer;
+    transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+
+    &:hover {
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
+      transform: translateX(-1px);
+    }
+  }
+
+  // Primary action (album detail)
+  .gallery-slideshow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-brand-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3);
+    transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--color-brand-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(45, 90, 39, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .gallery-bar {
+    margin: 12px 12px 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+
+  // Tools drop as a single unit below the title; the row itself never wraps.
+  .gallery-bar-actions {
+    width: 100%;
+  }
+
+  .gallery-search {
+    flex: 1 1 auto;
+    min-width: 150px;
+  }
+}

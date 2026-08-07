@@ -4,7 +4,9 @@ import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { ContactsComponent } from 'src/app/components/contacts/contacts.component';
 import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
-import { PhotosComponent } from 'src/app/components/photos/photos.component';
+import { PhotoShellComponent } from 'src/app/components/photo-shell/photo-shell.component';
+import { PhotoAlbumDetailComponent } from 'src/app/components/photo-album-detail/photo-album-detail.component';
+import { PhotoSlideshowComponent } from 'src/app/components/photo-slideshow/photo-slideshow.component';
 import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
 import { AdminMediaComponent } from './components/admin-media/admin-media.component';
@@ -16,6 +18,7 @@ import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.
 import { MediaVideoComponent } from './components/media-video/media-video.component';
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
 import { FeatureFlagGuard } from './services/feature-flag-guard.service';
+import { PhotoAlbumsFeatureGuard } from './services/photo-albums-feature.guard';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { PeopleComponent } from './components/people/people.component';
 import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
@@ -23,6 +26,7 @@ import { AdminFamiliesComponent } from './components/admin-families/admin-famili
 import { AdminCalendarsComponent } from './components/admin-calendars/admin-calendars.component';
 import { PublicUploadComponent } from './components/public-upload/public-upload.component';
 import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
+import { AdminPhotoAlbumsComponent } from './components/admin-photo-albums/admin-photo-albums.component';
 
 const routes: Routes =
   [
@@ -56,9 +60,21 @@ const routes: Routes =
     },
     {
       path: 'photos',
-      component: PhotosComponent,
+      component: PhotoShellComponent,
       canActivate: [AuthGuardService, FeatureFlagGuard],
       data: { featureId: 'photos' },
+    },
+    {
+      path: 'photos/:albumId',
+      component: PhotoAlbumDetailComponent,
+      canActivate: [AuthGuardService, FeatureFlagGuard, PhotoAlbumsFeatureGuard],
+      data: { featureId: 'photos', fallbackUrl: '/photos' },
+    },
+    {
+      path: 'photos/:albumId/slideshow',
+      component: PhotoSlideshowComponent,
+      canActivate: [AuthGuardService, FeatureFlagGuard, PhotoAlbumsFeatureGuard],
+      data: { featureId: 'photos', fallbackUrl: '/photos' },
     },
     // PEOPLE
     {
@@ -98,6 +114,12 @@ const routes: Routes =
         {
           path: 'media',
           component: AdminMediaComponent,
+        },
+        {
+          path: 'photo-albums',
+          component: AdminPhotoAlbumsComponent,
+          canActivate: [PhotoAlbumsFeatureGuard],
+          data: { fallbackUrl: '/admin' },
         },
         {
           path: 'users',

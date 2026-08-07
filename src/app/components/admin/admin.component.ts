@@ -3,6 +3,7 @@ import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
 import { RoutingService } from 'src/app/services/routing.service';
+import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 
 @Component({
   selector: 'app-admin',
@@ -12,16 +13,21 @@ import { RoutingService } from 'src/app/services/routing.service';
 export class AdminComponent implements OnInit {
   user: User;
   version: string;
+  showPhotoAlbumsNav = false;
 
   constructor(
     private authService: AuthService,
     private versionService: VersionService,
     private routingService: RoutingService,
+    private featureFlagsService: FeatureFlagsService,
   ) { }
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
     this.setVersion();
+    this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
+      this.showPhotoAlbumsNav = !!flags['enablePhotoAlbums']?.enabled;
+    });
   }
 
   private subscribeToUserObservable(): void {

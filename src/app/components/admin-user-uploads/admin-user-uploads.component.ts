@@ -1,14 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { ref, list, getBlob, getMetadata, getDownloadURL } from 'firebase/storage';
 import * as JSZip from 'jszip';
 import { UserUpload } from '../../models/user-upload';
 import { UserUploadService } from '../../services/user-upload.service';
+import { PhotoAlbumsService } from '../../services/photo-albums.service';
+import { PhotoAlbum } from '../../models/photo-album';
+import { PhotoAlbumPickerDialogComponent } from '../photo-album-picker-dialog/photo-album-picker-dialog.component';
+import { AnalyticsService } from '../../services/analytics.service';
+import { FeatureFlagsService } from '../../services/feature-flags.service';
 
 interface StorageFolder {
   name: string;
@@ -32,10 +40,20 @@ interface StorageFile {
   standalone: true,
   templateUrl: './admin-user-uploads.component.html',
   styleUrls: ['./admin-user-uploads.component.scss'],
-  imports: [CommonModule, MatCardModule, MatButtonToggleModule, MatIconModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonToggleModule,
+    MatCardModule,
+    MatDialogModule,
+    MatIconModule,
+    MatTooltipModule,
+    PhotoAlbumPickerDialogComponent,
+  ],
 })
 export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   allUploads: UserUpload[] = [];
+  allAlbums: PhotoAlbum[] = [];
   processingIds = new Set<string>();
   previewUpload: UserUpload | null = null;
   filterStatus: 'pending' | 'all' | 'browser' = 'pending';
@@ -52,18 +70,33 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   isLoadingFolders: boolean = false;
   folderError: string | null = null;
 
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private userUploadService: UserUploadService,
+    private photoAlbumsService: PhotoAlbumsService,
     private afStorage: AngularFireStorage,
+    private dialog: MatDialog,
+    private analyticsService: AnalyticsService,
+    private featureFlagsService: FeatureFlagsService,
   ) {}
 
   ngOnInit(): void {
-    this.userUploadService.subscribeToAllUploads(uploads => {
-      this.allUploads = uploads;
-    });
+    this.subscriptions.push(
+      this.userUploadService.allUploads$.subscribe(uploads => {
+        this.allUploads = uploads || [];
+      }),
+    );
+    this.subscriptions.push(
+      this.photoAlbumsService.albums$.subscribe(albums => {
+        this.allAlbums = albums || [];
+      }),
+    );
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+  }
 
   get filteredUploads(): UserUpload[] {
     if (this.filterStatus === 'pending') {
@@ -77,9 +110,49 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   async onApprove(upload: UserUpload): Promise<void> {
+    const flags = await firstValueFrom(this.featureFlagsService.getAllFeatureFlags());
+    if (!flags['enablePhotoAlbums']?.enabled) {
+      // Feature OFF: keep the pre-photo-albums approval behavior.
+      this.processingIds.add(upload.id);
+      try {
+        await this.userUploadService.approveUpload(upload);
+      } catch (error) {
+        console.error('Approval failed:', error);
+      } finally {
+        this.processingIds.delete(upload.id);
+      }
+      return;
+    }
+    const dialogRef = this.dialog.open(PhotoAlbumPickerDialogComponent, {
+      data: {
+        suggestedTitle: upload.eventName || 'Untitled Album',
+        albums: this.allAlbums,
+      },
+      width: '480px',
+      panelClass: 'photo-album-picker-dialog',
+    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result) {
+      return;
+    }
+    let albumId: string;
+    let mode: 'existing' | 'new';
+    if (result.action === 'use-existing') {
+      albumId = result.albumId;
+      mode = 'existing';
+    } else {
+      const created = await this.photoAlbumsService.createAlbum(result.title);
+      albumId = created.id;
+      mode = 'new';
+    }
     this.processingIds.add(upload.id);
     try {
-      await this.userUploadService.approveUpload(upload);
+      await this.userUploadService.approveUploadToAlbum(upload, albumId);
+      this.analyticsService.logEvent('photo_admin_approve_with_album', {
+        uploadId: upload.id,
+        albumId,
+        mode,
+      });
     } catch (error) {
       console.error('Approval failed:', error);
     } finally {

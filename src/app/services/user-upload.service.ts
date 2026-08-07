@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/compat/storage';
+import { ref as fbRef, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize, take } from 'rxjs/operators';
 import { UserUpload, UploaderInfo } from '../models/user-upload';
-import { PhotoAlbum } from '../models/media/photo-album';
+import { Photo } from '../models/photo';
 import { AnalyticsService } from './analytics.service';
+import { PhotoAlbumsService } from './photo-albums.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +23,7 @@ export class UserUploadService {
     private db: AngularFireDatabase,
     private auth: AngularFireAuth,
     private analytics: AnalyticsService,
+    private photoAlbumsService: PhotoAlbumsService,
   ) {}
 
   getPendingUploads(): AngularFireList<UserUpload> {
@@ -129,27 +132,46 @@ export class UserUploadService {
     return { task, uploadId };
   }
 
+  /**
+   * @deprecated Use `approveUploadToAlbum(upload, albumId)` so the resulting
+   * photo gets an `albumId` and the album gains the new member. This legacy
+   * method writes a loose photo (no album) and is kept only so any external
+   * callers do not break; do not call from new code.
+   */
   async approveUpload(upload: UserUpload): Promise<void> {
-    const storage = this.storage.storage;
-
-    // Use path when URL is empty (unauthenticated upload);
-    // otherwise resolve from the stored URL.
-    const sourceRef = upload.url
-      ? (storage.refFromURL(upload.url) as any)
-      : (storage.ref(upload.path) as any);
+    const storageInstance = this.storage.storage;
     const fileName = upload.path.split('/').pop();
     const pathParts = upload.path.split('/');
-    // path: userUploads/{uploaderName}_{date}/{fileName}
-    const folderName = pathParts[1]; // e.g. JohnDoe_2026-05-25
+    const folderName = pathParts[1];
     const newPath = `photos/${folderName}/${fileName}`;
-    const destRef = storage.ref(newPath);
+    const sourceStorageRef = upload.url
+      ? fbRef(storageInstance, upload.url)
+      : fbRef(storageInstance, upload.path);
+    const destStorageRef = fbRef(storageInstance, newPath);
+    const blob = await getBlob(sourceStorageRef);
+    await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
+    await deleteObject(sourceStorageRef);
+    const newUrl = await getDownloadURL(destStorageRef);
 
-    await sourceRef.copyTo(destRef);
-    await sourceRef.delete();
-
-    const newUrl = await destRef.getDownloadURL();
-
-    await this.createPhotoAlbum(upload, newUrl, newPath);
+    const photoId = this.db.createPushId();
+    const extension = upload.fileName?.split('.').pop() || 'jpg';
+    const photo: Photo = {
+      id: photoId,
+      dateAdded: new Date(),
+      path: newPath,
+      extension,
+      url: newUrl,
+      info: '',
+      location: '',
+      year: 0,
+      takenBy: '',
+      uploadedBy: upload.uploader?.anonymousId || 'anonymous',
+      isYearCirca: false,
+      isEditable: false,
+      isMessageAttachment: false,
+      albumId: null,
+    };
+    await this.db.object(`photos/${photoId}`).set(photo);
 
     this.db.list(this.userUploadsRef).update(upload.id, {
       status: 'approved',
@@ -158,15 +180,42 @@ export class UserUploadService {
     });
   }
 
-  private async createPhotoAlbum(upload: UserUpload, url: string, path: string): Promise<void> {
-    const album = new PhotoAlbum();
-    album.id = upload.id;
-    album.title = upload.eventName || 'Untitled Event';
-    album.date = new Date().toISOString().split('T')[0];
-    album.listing = [upload.id];
-    album.urls = { download: url, icon: url };
-
-    this.db.list('photoAlbums').update(album.id, album);
+  async approveUploadToAlbum(upload: UserUpload, albumId: string): Promise<void> {
+    const photoId = this.db.createPushId();
+    const extension = upload.fileName?.split('.').pop() || 'jpg';
+    const newPath = `photos/${albumId}/${upload.fileName}`;
+    const storageInstance = this.storage.storage;
+    const sourceStorageRef = upload.url
+      ? fbRef(storageInstance, upload.url)
+      : fbRef(storageInstance, upload.path);
+    const destStorageRef = fbRef(storageInstance, newPath);
+    const blob = await getBlob(sourceStorageRef);
+    await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
+    await deleteObject(sourceStorageRef);
+    const downloadUrl = await getDownloadURL(destStorageRef);
+    const photo: Photo = {
+      id: photoId,
+      dateAdded: new Date(),
+      path: newPath,
+      extension,
+      url: downloadUrl,
+      info: '',
+      location: '',
+      year: 0,
+      takenBy: '',
+      uploadedBy: upload.uploader?.anonymousId || 'anonymous',
+      isYearCirca: false,
+      isEditable: false,
+      isMessageAttachment: false,
+      albumId,
+    };
+    await this.db.object(`photos/${photoId}`).set(photo);
+    await this.db.object(`userUploads/${upload.id}`).update({
+      status: 'approved',
+      path: newPath,
+      url: downloadUrl,
+    });
+    await this.photoAlbumsService.updateAlbum(albumId, {});
   }
 
   async rejectUpload(upload: UserUpload): Promise<void> {

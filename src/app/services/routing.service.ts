@@ -97,6 +97,15 @@ export class RoutingService {
     this.NavigateToRoute('/admin/users');
   }
 
+  NavigateToPhotoAlbum(albumId: string): void {
+    this.router.navigate(['/photos', albumId]);
+  }
+
+  NavigateToPhotoSlideshow(albumId: string, durationSec?: number): void {
+    const queryParams = durationSec ? { duration: durationSec } : {};
+    this.router.navigate(['/photos', albumId, 'slideshow'], { queryParams });
+  }
+
   NavigateToAdminMedia() {
     this.NavigateToRoute('/admin/media');
   }

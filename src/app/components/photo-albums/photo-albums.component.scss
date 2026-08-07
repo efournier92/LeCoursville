@@ -1,0 +1,74 @@
+@use "../shared/gallery-bar";
+
+.album-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.album-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f1f5f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 200ms ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 300ms ease;
+  }
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+    img {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.album-tile-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    color: var(--color-brand-primary);
+    opacity: 0.7;
+  }
+}
+
+.album-tile-scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24px 12px 10px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.65));
+  color: #fff;
+}
+
+.album-tile-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-tile-count {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}

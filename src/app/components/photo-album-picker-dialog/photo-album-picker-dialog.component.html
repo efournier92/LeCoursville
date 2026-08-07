@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Add photo to album</h2>
+<mat-dialog-content>
+  <mat-radio-group [(ngModel)]="mode" class="picker-radio-group">
+    <mat-radio-button value="existing">Use existing album</mat-radio-button>
+    <mat-form-field *ngIf="mode === 'existing'" class="picker-field">
+      <mat-select [(ngModel)]="selectedAlbumId" placeholder="Select album">
+        <mat-option *ngFor="let album of data.albums" [value]="album.id">
+          {{ album.title }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-radio-button value="new">Create new album</mat-radio-button>
+    <mat-form-field *ngIf="mode === 'new'" class="picker-field">
+      <mat-label>Album title</mat-label>
+      <input matInput [(ngModel)]="newTitle" placeholder="Album title" maxlength="80" />
+    </mat-form-field>
+  </mat-radio-group>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="!isValid()" (click)="onConfirm()">Approve & Add</button>
+</mat-dialog-actions>

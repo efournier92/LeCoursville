@@ -36,6 +36,12 @@
           <span>Media</span>
         </a>
       </li>
+      <li routerLinkActive="active" *ngIf="showPhotoAlbumsNav">
+        <a routerLink="/admin/photo-albums" (click)="closeSidenav()">
+          <mat-icon>photo_library</mat-icon>
+          <span>Photo Albums</span>
+        </a>
+      </li>
       <li routerLinkActive="active">
         <a routerLink="/admin/uploads" (click)="closeSidenav()">
           <mat-icon>upload_file</mat-icon>

@@ -1,0 +1,61 @@
+<header class="gallery-bar">
+  <div class="gallery-bar-left">
+    <button class="gallery-back-btn" routerLink="/photos" aria-label="Back to albums" matTooltip="Back to albums">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    </button>
+    <h1 class="gallery-title gallery-title--ellipsis">{{ album?.title || 'Album' }}</h1>
+  </div>
+  <div class="gallery-bar-actions">
+    <div class="gallery-search" role="search">
+      <mat-icon class="gallery-search-icon" aria-hidden="true">search</mat-icon>
+      <input class="gallery-search-input"
+             type="text"
+             placeholder="Search photos"
+             aria-label="Search photos"
+             [(ngModel)]="searchTerm" />
+      <button *ngIf="searchTerm" class="gallery-search-clear" aria-label="Clear search" (click)="searchTerm = ''">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+    <button class="gallery-slideshow-btn"
+            [disabled]="photos.length === 0"
+            (click)="onStartSlideshow()">
+      <mat-icon aria-hidden="true">play_arrow</mat-icon>
+      Slideshow
+    </button>
+  </div>
+</header>
+
+<div class="photo-grid" *ngIf="!showSpinner; else loadingTpl">
+  <div *ngFor="let photo of getFilteredPhotos()"
+       class="photo-tile"
+       (click)="onPhotoClick(photo)">
+    <img [src]="photo.url" [alt]="photo.info || 'Photo'"
+         loading="lazy" decoding="async" />
+    <div class="photo-tile-meta" *ngIf="hasMetadata(photo)">
+      <span *ngIf="photo.takenBy" class="photo-meta-taken-by">{{ photo.takenBy }}</span>
+      <span *ngIf="photo.info" class="photo-meta-info">{{ photo.info }}</span>
+      <span *ngIf="photo.location" class="photo-meta-location">{{ photo.location }}</span>
+      <span *ngIf="photo.year" class="photo-meta-year">{{ photo.isYearCirca ? 'c. ' : '' }}{{ photo.year }}</span>
+    </div>
+  </div>
+  <app-no-results-message *ngIf="getFilteredPhotos().length === 0" [searchTerm]="searchTerm"></app-no-results-message>
+</div>
+<ng-template #loadingTpl>
+  <div class="photos-skeleton-grid">
+    <div *ngFor="let _ of skeletonIterations" class="photos-skeleton-card">
+      <div class="skeleton-photo-image shimmer"></div>
+    </div>
+  </div>
+</ng-template>
+
+<div class="pswp-gallery" [id]="'gallery-' + albumId" style="display: none;">
+  <a *ngFor="let photo of photos; let i = index"
+     [href]="photo.url"
+     [attr.data-pswp-width]="1600"
+     [attr.data-pswp-height]="1600"
+     [attr.data-cropped]="true"
+     target="_blank" rel="noopener">
+    <img [src]="photo.url" [alt]="photo.info || ''" />
+  </a>
+</div>

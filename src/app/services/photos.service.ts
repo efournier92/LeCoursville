@@ -17,6 +17,8 @@ export interface PhotoUpload {
   providedIn: 'root'
 })
 export class PhotosService {
+  private readonly PHOTOS_PATH = 'photos';
+
   photos: AngularFireList<Photo>;
   allPhotos: AngularFireList<Photo>;
   photoCount = 0;
@@ -25,6 +27,9 @@ export class PhotosService {
 
   private allPhotosSource: BehaviorSubject<Photo[]> = new BehaviorSubject([]);
   allPhotosObservable: Observable<Photo[]> = this.allPhotosSource.asObservable();
+
+  private nonMessagePhotosSource = new BehaviorSubject<Photo[]>([]);
+  public nonMessagePhotos$: Observable<Photo[]> = this.nonMessagePhotosSource.asObservable();
 
   constructor(
     private storage: AngularFireStorage,
@@ -38,6 +43,7 @@ export class PhotosService {
           this.getAllPhotos().valueChanges().subscribe(
             (photos: Photo[]) => {
               this.updateAllPhotosEvent(photos);
+              this.nonMessagePhotosSource.next(photos.filter(p => !p.isMessageAttachment));
             }
           );
         }
@@ -45,9 +51,14 @@ export class PhotosService {
     );
   }
 
-  updatePhoto(photo: Photo): void {
-    const photosDb = this.db.list('photos');
-    // photosDb.update(photo.id, photo);
+  async updatePhoto(photo: Photo): Promise<void> {
+    await this.db.object(`${this.PHOTOS_PATH}/${photo.id}`).update({
+      info: photo.info,
+      location: photo.location,
+      year: photo.year,
+      isYearCirca: photo.isYearCirca,
+      takenBy: photo.takenBy,
+    });
   }
 
   deletePhoto(photo: Photo): void {
@@ -60,7 +71,7 @@ export class PhotosService {
   }
 
   getAllPhotos(): AngularFireList<Photo> {
-    this.allPhotos = this.db.list('photos');
+    this.allPhotos = this.db.list(this.PHOTOS_PATH);
     return this.allPhotos;
   }
 
@@ -82,8 +93,33 @@ export class PhotosService {
     return photoByIdObservable;
   }
 
+  getPhotosByAlbum(albumId: string): Observable<Photo[]> {
+    return this.db.list(this.PHOTOS_PATH, ref => ref.orderByChild('albumId').equalTo(albumId))
+      .valueChanges() as Observable<Photo[]>;
+  }
+
+  getLoosePhotos(): Observable<Photo[]> {
+    return this.db.list(this.PHOTOS_PATH, ref =>
+      ref.orderByChild('albumId').equalTo('')
+    ).valueChanges() as Observable<Photo[]>;
+  }
+
+  async setPhotoAlbum(photoId: string, albumId: string | null): Promise<void> {
+    await this.db.object(`${this.PHOTOS_PATH}/${photoId}`).update({ albumId });
+  }
+
+  async setAlbumCover(albumId: string, photoId: string | null): Promise<void> {
+    await this.db.object(`photoAlbums/${albumId}`).update({ coverPhotoId: photoId, updatedAt: Date.now() });
+  }
+
   uploadPhoto(file: any, isMessageAttachment: boolean): PhotoUpload {
     return this.uploadImage(file, isMessageAttachment, 'photos');
+  }
+
+  uploadPhotoToAlbum(file: any, albumId: string): PhotoUpload {
+    const upload = this.uploadImage(file, false, 'photos');
+    upload.photo.albumId = albumId;
+    return upload;
   }
 
   uploadVideoScreenshot(file: any, isMessageAttachment: boolean) {

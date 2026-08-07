@@ -4,7 +4,6 @@ import { Observable } from 'rxjs/internal/Observable';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { Video } from 'src/app/models/media/video';
-import { PhotoAlbum } from 'src/app/models/media/photo-album';
 import { Doc } from 'src/app/models/media/doc';
 import { MediaService } from 'src/app/services/media.service';
 import { MediaConstants } from '../constants/media-constants';

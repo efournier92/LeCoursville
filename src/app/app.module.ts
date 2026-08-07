@@ -56,7 +56,11 @@ import { MediaExplorerComponent } from "src/app/components/media-explorer/media-
 import { MediaListComponent } from "src/app/components/media-list/media-list.component";
 import { PhotoAlbumComponent } from "./components/photo-album/photo-album.component";
 import { PhotoUploadProgressComponent } from "src/app/components/photo-upload-progress/photo-upload-progress.component";
-import { PhotosComponent } from "src/app/components/photos/photos.component";
+import { PhotoShellComponent } from "src/app/components/photo-shell/photo-shell.component";
+import { PhotoAlbumsComponent } from "src/app/components/photo-albums/photo-albums.component";
+import { PhotoAlbumDetailComponent } from "src/app/components/photo-album-detail/photo-album-detail.component";
+import { PhotoSlideshowComponent } from "src/app/components/photo-slideshow/photo-slideshow.component";
+import { PhotosLegacyComponent } from "src/app/components/photos-legacy/photos-legacy.component";
 import { AudioPlayerComponent } from "src/app/components/audio-player/audio-player.component";
 import { MediaTypesCheckboxesComponent } from "src/app/components/media-types-checkboxes/media-types-checkboxes.component";
 import { MediaSearchInputComponent } from "src/app/components/media-search-input/media-search-input.component";
@@ -78,10 +82,10 @@ import { ExpressionViewComponent } from "src/app/components/expression-view/expr
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
 import { PeopleComponent } from "./components/people/people.component";
 import { PersonDetailModalComponent } from "./components/person-detail-modal/person-detail-modal.component";
+import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
 import { PersonTreeComponent } from "./components/shared/person-tree/person-tree.component";
 import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
-import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { AdminFamiliesComponent } from "./components/admin-families/admin-families.component";
 import { AdminCalendarsComponent } from "./components/admin-calendars/admin-calendars.component";
 
@@ -109,10 +113,12 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
     FileInputComponent,
     MediaExplorerComponent,
     MediaListComponent,
-    NoResultsMessageComponent,
     PhotoAlbumComponent,
-    PhotoUploadProgressComponent,
-    PhotosComponent,
+    PhotoShellComponent,
+    PhotoAlbumsComponent,
+    PhotoAlbumDetailComponent,
+    PhotoSlideshowComponent,
+    PhotosLegacyComponent,
     AudioPlayerComponent,
     MediaTypesCheckboxesComponent,
     MediaSearchInputComponent,
@@ -134,7 +140,6 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
     ExpressionEditComponent,
     PeopleComponent,
     PersonDetailModalComponent,
-    PageToolbarComponent,
     PersonTreeComponent,
     AdminPeopleImportComponent,
     AdminFamiliesComponent,
@@ -164,6 +169,10 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
     InfiniteScrollModule,
     LightgalleryModule,
     MaterialModule,
+    // Standalone components used in templates of module-declared components.
+    NoResultsMessageComponent,
+    PageToolbarComponent,
+    PhotoUploadProgressComponent,
     NgxAudioPlayerModule,
     NgxExtendedPdfViewerModule,
     ReactiveFormsModule,

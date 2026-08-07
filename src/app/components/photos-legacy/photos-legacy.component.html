@@ -55,6 +55,14 @@
               (click)="sortPhotosBy(sortByDateAdded, 'added')"
             >Recently Added</button>
           </div>
+
+          <button *ngIf="user && user.roles && user.roles.admin" mat-stroked-button class="photos-upload-button">
+            <label class="photos-add-button-label">
+              <mat-icon>add_photo_alternate</mat-icon> Add Photos
+              <input type="file" accept="image/*" multiple hidden
+                     (change)="uploadPhotos($event.target.files)" />
+            </label>
+          </button>
         </div>
       </div>
     </app-page-toolbar>

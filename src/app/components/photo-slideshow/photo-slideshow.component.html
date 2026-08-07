@@ -1,0 +1,24 @@
+<div class="slideshow-stage" [class.paused]="!isPlaying">
+  <img *ngIf="currentPhoto()"
+       class="slideshow-image"
+       [class]="kenBurnsClass"
+       [src]="currentPhoto().url"
+       [alt]="currentPhoto().info || ''"
+       [style.animationDuration.ms]="slideDurationMs" />
+
+  <div class="slideshow-controls">
+    <button mat-icon-button (click)="prev()" matTooltip="Previous">
+      <mat-icon>skip_previous</mat-icon>
+    </button>
+    <button mat-icon-button (click)="togglePlay()" matTooltip="Play / Pause">
+      <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+    </button>
+    <button mat-icon-button (click)="next()" matTooltip="Next">
+      <mat-icon>skip_next</mat-icon>
+    </button>
+    <span class="slideshow-counter">{{ currentIndex + 1 }} / {{ shuffled.length }}</span>
+    <button mat-icon-button (click)="exit()" matTooltip="Exit (Esc)">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>

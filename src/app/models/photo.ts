@@ -12,4 +12,5 @@ export class Photo {
   isYearCirca = false;
   isEditable = false;
   isMessageAttachment = false;
+  albumId: string | null = null;
 }

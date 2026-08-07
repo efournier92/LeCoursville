@@ -17,11 +17,11 @@ declare global {
 }
 
 @Component({
-  selector: "app-photos",
-  templateUrl: "./photos.component.html",
-  styleUrls: ["./photos.component.scss"],
+  selector: "app-photos-legacy",
+  templateUrl: "./photos-legacy.component.html",
+  styleUrls: ["./photos-legacy.component.scss"],
 })
-export class PhotosComponent implements OnInit {
+export class PhotosLegacyComponent implements OnInit {
   user: User;
   allPhotos: Photo[] = [];
   loadablePhotos: Photo[] = [];
@@ -110,16 +110,11 @@ export class PhotosComponent implements OnInit {
     const dialogRef = this.promptModal.openDialog("Are You Sure?", message);
     dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
       if (confirmedAction) {
-        for (let i = 0; i < this.allPhotos.length; i++) {
-          if (
-            this.loadedPhotos &&
-            this.loadedPhotos[i] &&
-            this.loadedPhotos[i].id &&
-            this.loadedPhotos[i].id === photoToDelete.id
-          ) {
-            this.loadedPhotos.splice(i, 1);
-          }
+        const idx = this.loadedPhotos.findIndex(p => p.id === photoToDelete.id);
+        if (idx >= 0) {
+          this.loadedPhotos.splice(idx, 1);
         }
+        this.allPhotos = this.allPhotos.filter(p => p.id !== photoToDelete.id);
         this.photosService.deletePhoto(photoToDelete);
         this.sortType = "added";
         setTimeout(() => {
@@ -316,9 +311,13 @@ export class PhotosComponent implements OnInit {
 
   private updatePhotoGallery(): void {
     const photoGallery = document.getElementById("lightgallery");
+    // Not in the DOM yet when the BehaviorSubject emits during ngOnInit.
+    if (!photoGallery) {
+      return;
+    }
     const galleryId = photoGallery.getAttribute("lg-uid");
 
-    if (galleryId) {
+    if (galleryId && window.lgData && window.lgData[galleryId]) {
       window.lgData[galleryId].destroy(true);
     }
 

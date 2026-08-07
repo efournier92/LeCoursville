@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>Upload Folder</h2>
+<mat-dialog-content>
+  <p class="upload-dialog-summary">
+    Detected <strong>{{ data.fileCount }}</strong> image{{ data.fileCount === 1 ? '' : 's' }} in the picked folder.
+  </p>
+  <mat-form-field appearance="fill" class="album-title-field">
+    <mat-label>Album title</mat-label>
+    <input matInput [(ngModel)]="title" required maxlength="80" [disabled]="isUploading" />
+  </mat-form-field>
+  <p class="upload-dialog-warning" *ngIf="data.fileCount === 0">
+    No image files were detected. Pick a folder that contains photos.
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isUploading">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="!isValid()" (click)="onStart()">
+    {{ isUploading ? 'Uploading...' : 'Start Upload' }}
+  </button>
+</mat-dialog-actions>

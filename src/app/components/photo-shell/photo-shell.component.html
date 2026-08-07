@@ -1,0 +1,4 @@
+<app-photo-albums *ngIf="enablePhotoAlbums; else legacy"></app-photo-albums>
+<ng-template #legacy>
+  <app-photos-legacy></app-photos-legacy>
+</ng-template>

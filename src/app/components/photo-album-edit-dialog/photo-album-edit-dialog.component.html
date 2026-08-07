@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{ data.album ? 'Edit Album' : 'New Album' }}</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="fill" class="album-edit-field">
+    <mat-label>Album title</mat-label>
+    <input matInput [(ngModel)]="title" required maxlength="80" />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="!title.trim()" (click)="onSave()">
+    {{ data.album ? 'Save' : 'Create' }}
+  </button>
+</mat-dialog-actions>

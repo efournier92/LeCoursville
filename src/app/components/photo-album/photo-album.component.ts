@@ -2,7 +2,7 @@ import { Component, Input, OnInit, AfterViewChecked } from '@angular/core';
 import { InitDetail } from 'lightgallery/lg-events';
 import { LightGallery } from 'lightgallery/lightgallery';
 import { UploadableMedia } from 'src/app/models/media/media';
-import { PhotoAlbum } from 'src/app/models/media/photo-album';
+import { PhotoAlbum } from 'src/app/models/photo-album';
 import lgZoom from 'lightgallery/plugins/zoom';
 import lgAutoplay from 'lightgallery/plugins/autoplay';
 import { MediaService } from 'src/app/services/media.service';
@@ -58,7 +58,11 @@ export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
 
   // HELPER METHODS
   private initializeAlbumListing() {
-    this.album.listing.forEach(
+    const listing = (this.album as any)?.listing as string[] | undefined;
+    if (!listing) {
+      return;
+    }
+    listing.forEach(
       (id: string) => {
         // this.subscribeToGetMediaObservable(id);
       }
