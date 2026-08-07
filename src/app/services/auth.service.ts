@@ -1,30 +1,33 @@
 import { Injectable } from "@angular/core";
-import { AngularFireAuth } from "@angular/fire/compat/auth";
 import {
-  AngularFireDatabase,
-  AngularFireObject,
-} from "@angular/fire/compat/database";
+  onAuthStateChanged,
+  signOut as firebaseSignOut,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  User as FirebaseUser,
+} from "firebase/auth";
 import { MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Observable } from "rxjs";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { PromptModalService } from "src/app/services/prompt-modal.service";
+import { FirebaseService } from "src/app/services/firebase.service";
+import { RtdbService } from "src/app/services/rtdb.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
   user: User;
-  userObj: AngularFireObject<User>;
   userObservable: Observable<{}>;
   hasAlreadyUpdatedUser: boolean;
 
   private userSource: BehaviorSubject<{}>;
 
   constructor(
-    private db: AngularFireDatabase,
-    private angularFireAuth: AngularFireAuth,
+    private rtdb: RtdbService,
+    private firebase: FirebaseService,
     private routingService: RoutingService,
     private promptModal: PromptModalService,
   ) {
@@ -36,13 +39,23 @@ export class AuthService {
 
   // PUBLIC METHODS
 
+  /** Native email/password sign-in (replaces the FirebaseUI widget). */
+  async signIn(email: string, password: string): Promise<FirebaseUser> {
+    const cred = await signInWithEmailAndPassword(this.firebase.auth, email, password);
+    return cred.user;
+  }
+
+  /** Native password reset email (replaces FirebaseUI's reset link). */
+  async sendPasswordReset(email: string): Promise<void> {
+    await sendPasswordResetEmail(this.firebase.auth, email);
+  }
+
   getUser(authData: any): void {
     if (!authData || !authData.uid) {
       return;
     }
 
-    this.userObj = this.db.object(`users/${authData.uid}`);
-    this.userObj.valueChanges().subscribe((user: User) => {
+    this.rtdb.object<User>(`users/${authData.uid}`).valueChanges().subscribe((user: User) => {
       if (!user) {
         return;
       }
@@ -53,14 +66,12 @@ export class AuthService {
   }
 
   getUserNameById(userId: string): string {
-    const userObj = this.db.object(`users/${userId}`);
     let user: User;
-
-    userObj.valueChanges().subscribe((updatedUser: User) => {
+    this.rtdb.object<User>(`users/${userId}`).valueChanges().subscribe((updatedUser: User) => {
       user = updatedUser;
     });
 
-    return user.name;
+    return user?.name;
   }
 
   updateUser(user: User): void {
@@ -68,7 +79,7 @@ export class AuthService {
       return;
     }
     this.userSource.next(user);
-    this.db.object(`users/${user.id}`).update(user);
+    this.rtdb.object<User>(`users/${user.id}`).update(user);
     this.setUserInLocalStorage(user);
   }
 
@@ -94,8 +105,7 @@ export class AuthService {
     if (!authUser?.uid) {
       return;
     }
-    this.userObj = this.db.object(`users/${authUser?.uid}`);
-    this.userObj.valueChanges().subscribe((existingUser: User) => {
+    this.rtdb.object<User>(`users/${authUser?.uid}`).valueChanges().subscribe((existingUser: User) => {
       if (!existingUser) {
         this.createUser(authData, existingUser);
         return;
@@ -113,12 +123,10 @@ export class AuthService {
     this.setUserInLocalStorage(user);
   }
 
-  signOut(): void {
-    this.angularFireAuth.signOut().then(() => {
-      this.userObj = undefined;
-      this.removeUserFromLocalStorage();
-      this.routingService.RefreshCurrentRoute();
-    });
+  async signOut(): Promise<void> {
+    await firebaseSignOut(this.firebase.auth);
+    this.removeUserFromLocalStorage();
+    this.routingService.RefreshCurrentRoute();
   }
 
   openSignOutDialog(): MatDialogRef<PromptModalComponent, any> {
@@ -151,7 +159,7 @@ export class AuthService {
   // HELPERS
 
   private subscribeToAuthState(): void {
-    this.angularFireAuth.authState.subscribe((authData) =>
+    onAuthStateChanged(this.firebase.auth, (authData) =>
       this.getUser(authData),
     );
   }

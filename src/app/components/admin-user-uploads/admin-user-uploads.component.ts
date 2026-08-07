@@ -7,8 +7,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { ref, list, getBlob, getMetadata, getDownloadURL } from 'firebase/storage';
+import { FirebaseService } from '../../services/firebase.service';
 import * as JSZip from 'jszip';
 import { UserUpload } from '../../models/user-upload';
 import { UserUploadService } from '../../services/user-upload.service';
@@ -75,7 +75,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   constructor(
     private userUploadService: UserUploadService,
     private photoAlbumsService: PhotoAlbumsService,
-    private afStorage: AngularFireStorage,
+    private firebase: FirebaseService,
     private dialog: MatDialog,
     private analyticsService: AnalyticsService,
     private featureFlagsService: FeatureFlagsService,
@@ -216,11 +216,11 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   private getStorageRef(section: 'userUploads' | 'photos') {
-    return ref(this.afStorage.storage, section);
+    return ref(this.firebase.storage, section);
   }
 
   private getFolderRef(section: 'userUploads' | 'photos', folderName: string) {
-    return ref(this.afStorage.storage, `${section}/${folderName}`);
+    return ref(this.firebase.storage, `${section}/${folderName}`);
   }
 
   private async loadFolderSection(section: 'userUploads' | 'photos'): Promise<void> {
@@ -268,7 +268,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   async loadFilesInFolder(fullPath: string): Promise<void> {
     this.currentFolderFiles = [];
-    const storageRef = ref(this.afStorage.storage, fullPath);
+    const storageRef = ref(this.firebase.storage, fullPath);
     try {
       const result = await list(storageRef, { maxResults: 200 });
       const fileRefs = result.items;
@@ -312,7 +312,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   async downloadFolderAsZip(folder: StorageFolder): Promise<void> {
     this.zipDownloadingFolder = folder.name;
     const zip = new JSZip();
-    const storageRef = ref(this.afStorage.storage, folder.fullPath);
+    const storageRef = ref(this.firebase.storage, folder.fullPath);
 
     try {
       const result = await list(storageRef, { maxResults: 500 });

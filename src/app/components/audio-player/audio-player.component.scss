@@ -17,3 +17,99 @@
   width: 90%;
   margin: auto;
 }
+
+.audio-player-native {
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.audio-player-now-playing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.audio-player-track-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.audio-player-track-artist {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.audio-player-element {
+  width: 100%;
+  display: block;
+}
+
+.audio-player-tracklist {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  border-top: 1px solid #eef0f3;
+}
+
+.audio-player-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: left;
+  transition: background 150ms ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &.active {
+    background: #f0f7ef;
+
+    mat-icon {
+      color: var(--color-brand-primary);
+    }
+  }
+}
+
+.audio-player-track-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1a202c;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.audio-player-track-artist {
+  font-size: 0.8rem;
+  color: #8a94a3;
+  white-space: nowrap;
+}
+
+.audio-player-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 24px 0;
+}

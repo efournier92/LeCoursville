@@ -94,20 +94,17 @@
     </div>
   </div>
 
-  <div id="lightgallery">
   <div [hidden]="showSpinner">
     <mat-card
       class="photo-card mat-elevation-z6 col-xs-10 col-sm-8 col-md-6 mt-3 mb-3"
       *ngFor="let photo of loadedPhotos"
     >
-      <!-- <a href="{{ photo.url }}" class="light-link"> -->
       <img
         class="photo-image"
         mat-card-image
         src="{{ photo.url }}"
         alt="{{ photo.info }}"
       />
-      <!-- </a> -->
       <mat-card-content *ngIf="!photo.isEditable">
         <div class="photo-by">
           <span *ngIf="photo.takenBy">{{ photo.takenBy }}<br /></span>

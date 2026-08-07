@@ -1,15 +1,11 @@
-<lightgallery
-  [settings]="lightGallerySettings"
-  [onInit]="onLightGalleryInit"
->
-  <a
-    *ngFor="let photo of photos"
-    [href]="photo.url"
-    data-src="{{ photo.url }}"
-  >
-    <img
-      [src]="photo.url"
-      class="photo-album-image col-4 col-md-3 col-xl-2"
-    />
-  </a>
-</lightgallery>
+<div class="photo-album-container" *ngIf="photos.length > 0">
+  <p class="photo-album-deprecated-note">
+    This legacy album viewer is deprecated; photo albums now live at
+    <a routerLink="/photos">Photos</a>.
+  </p>
+  <div class="photo-album-grid">
+    <a *ngFor="let photo of photos" [href]="photo.url" target="_blank" rel="noopener">
+      <img [src]="photo.url" [alt]="photo.title || 'Photo'" loading="lazy" />
+    </a>
+  </div>
+</div>

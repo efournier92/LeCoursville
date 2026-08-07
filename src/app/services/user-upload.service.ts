@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
-import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/compat/storage';
-import { ref as fbRef, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
+import {
+  deleteObject,
+  getBlob,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from 'firebase/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { finalize, take } from 'rxjs/operators';
 import { UserUpload, UploaderInfo } from '../models/user-upload';
 import { Photo } from '../models/photo';
 import { AnalyticsService } from './analytics.service';
 import { PhotoAlbumsService } from './photo-albums.service';
+import { FirebaseService } from './firebase.service';
+import { RtdbService } from './rtdb.service';
+import { FireUploadTask } from './fire-upload-task';
 
 @Injectable({
   providedIn: 'root'
@@ -19,21 +25,26 @@ export class UserUploadService {
   allUploads$: Observable<UserUpload[]> = this.allUploadsSource.asObservable();
 
   constructor(
-    private storage: AngularFireStorage,
-    private db: AngularFireDatabase,
-    private auth: AngularFireAuth,
+    private firebase: FirebaseService,
+    private rtdb: RtdbService,
     private analytics: AnalyticsService,
     private photoAlbumsService: PhotoAlbumsService,
-  ) {}
-
-  getPendingUploads(): AngularFireList<UserUpload> {
-    return this.db.list(this.userUploadsRef, ref =>
-      ref.orderByChild('status').equalTo('pending')
-    );
+  ) {
+    // Keep `allUploads$` live for consumers (admin-user-uploads list).
+    this.rtdb.list<UserUpload>(this.userUploadsRef).valueChanges().subscribe(uploads => {
+      this.allUploadsSource.next(uploads || []);
+    });
   }
 
-  getAllUploads(): AngularFireList<UserUpload> {
-    return this.db.list(this.userUploadsRef);
+  getPendingUploads() {
+    return this.rtdb.list<UserUpload>(this.userUploadsRef, [
+      this.rtdb.orderByChild('status'),
+      this.rtdb.equalTo('pending'),
+    ]);
+  }
+
+  getAllUploads() {
+    return this.rtdb.list<UserUpload>(this.userUploadsRef);
   }
 
   subscribeToPendingUploads(callback: (uploads: UserUpload[]) => void): void {
@@ -48,8 +59,8 @@ export class UserUploadService {
     return name.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: AngularFireUploadTask, uploadId: string }> {
-    const uploadId = this.db.createPushId();
+  async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: FireUploadTask, uploadId: string }> {
+    const uploadId = this.rtdb.createPushId();
     const now = new Date();
     const datePart = now.toISOString().split('T')[0];
     const hrs = String(now.getHours()).padStart(2, '0');
@@ -66,70 +77,50 @@ export class UserUploadService {
       folderName = `${sanitizedEvent}${namePart}${dateFolder}`;
     }
 
-    let path = `${this.userUploadsRef}/${folderName}/${file.name}`;
+    const path = `${this.userUploadsRef}/${folderName}/${file.name}`;
+    const storageRef = ref(this.firebase.storage, path);
+    const task = uploadBytesResumable(storageRef, file);
 
-    const fileRef: AngularFireStorageReference = this.storage.ref(path);
-    const task: AngularFireUploadTask = this.storage.upload(path, file);
-
-    task.snapshotChanges().pipe(
-      take(1),
-      finalize(() => {
-        this.auth.authState.pipe(take(1)).subscribe({
-          next: user => {
-            if (user) {
-              fileRef.getDownloadURL().subscribe(url => {
-                const upload: UserUpload = {
-                  id: uploadId,
-                  url,
-                  path,
-                  dateAdded: new Date(),
-                  eventName,
-                  status: 'pending',
-                  uploader,
-                  fileName: file.name,
-                  fileType: file.type,
-                  fileSize: file.size,
-                };
-                this.db.list(this.userUploadsRef).update(uploadId, upload);
-                this.analytics.logEvent('file_upload', {
-                  file_type: file.type,
-                  file_size: file.size,
-                  event_name: eventName || 'none',
-                  batch_id: batchId || 'single',
-                });
-              });
-            } else {
-              // No auth — skip getDownloadURL (would 403 on read since read requires auth).
-              // Admin fills in the URL when they approve the upload.
-              const upload: UserUpload = {
-                id: uploadId,
-                url: '',
-                path,
-                dateAdded: new Date(),
-                eventName,
-                status: 'pending',
-                uploader,
-                fileName: file.name,
-                fileType: file.type,
-                fileSize: file.size,
-              };
-              this.db.list(this.userUploadsRef).update(uploadId, upload);
-              this.analytics.logEvent('file_upload', {
-                file_type: file.type,
-                file_size: file.size,
-                event_name: eventName || 'none',
-                batch_id: batchId || 'single',
-              });
-            }
-          },
-          error: err => {
-            console.error('Failed to write upload record to RTDB:', err);
+    task.on('state_changed', {
+      next: () => {},
+      error: err => {
+        console.error('Upload failed:', err);
+      },
+      complete: async () => {
+        const user = this.firebase.auth.currentUser;
+        let url = '';
+        if (user) {
+          try {
+            url = await getDownloadURL(storageRef);
+          } catch (e) {
+            console.error('Failed to resolve download URL:', e);
           }
+        }
+        // No auth — skip getDownloadURL (would 403 on read since read requires
+        // auth); admin fills in the URL when they approve the upload.
+        const upload: UserUpload = {
+          id: uploadId,
+          url,
+          path,
+          dateAdded: new Date(),
+          eventName,
+          status: 'pending',
+          uploader,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        };
+        await this.rtdb.object(`${this.userUploadsRef}/${uploadId}`).set(upload);
+        this.analytics.logEvent('file_upload', {
+          file_type: file.type,
+          file_size: file.size,
+          event_name: eventName || 'none',
+          batch_id: batchId || 'single',
         });
-      })
-    ).subscribe();
+      },
+    });
 
-    return { task, uploadId };
+    return { task: new FireUploadTask(task), uploadId };
   }
 
   /**
@@ -139,21 +130,21 @@ export class UserUploadService {
    * callers do not break; do not call from new code.
    */
   async approveUpload(upload: UserUpload): Promise<void> {
-    const storageInstance = this.storage.storage;
+    const storageInstance = this.firebase.storage;
     const fileName = upload.path.split('/').pop();
     const pathParts = upload.path.split('/');
     const folderName = pathParts[1];
     const newPath = `photos/${folderName}/${fileName}`;
     const sourceStorageRef = upload.url
-      ? fbRef(storageInstance, upload.url)
-      : fbRef(storageInstance, upload.path);
-    const destStorageRef = fbRef(storageInstance, newPath);
+      ? ref(storageInstance, upload.url)
+      : ref(storageInstance, upload.path);
+    const destStorageRef = ref(storageInstance, newPath);
     const blob = await getBlob(sourceStorageRef);
     await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
     await deleteObject(sourceStorageRef);
     const newUrl = await getDownloadURL(destStorageRef);
 
-    const photoId = this.db.createPushId();
+    const photoId = this.rtdb.createPushId();
     const extension = upload.fileName?.split('.').pop() || 'jpg';
     const photo: Photo = {
       id: photoId,
@@ -171,9 +162,9 @@ export class UserUploadService {
       isMessageAttachment: false,
       albumId: null,
     };
-    await this.db.object(`photos/${photoId}`).set(photo);
+    await this.rtdb.object(`photos/${photoId}`).set(photo);
 
-    this.db.list(this.userUploadsRef).update(upload.id, {
+    await this.rtdb.object(`${this.userUploadsRef}/${upload.id}`).update({
       status: 'approved',
       path: newPath,
       url: newUrl,
@@ -181,14 +172,14 @@ export class UserUploadService {
   }
 
   async approveUploadToAlbum(upload: UserUpload, albumId: string): Promise<void> {
-    const photoId = this.db.createPushId();
+    const photoId = this.rtdb.createPushId();
     const extension = upload.fileName?.split('.').pop() || 'jpg';
     const newPath = `photos/${albumId}/${upload.fileName}`;
-    const storageInstance = this.storage.storage;
+    const storageInstance = this.firebase.storage;
     const sourceStorageRef = upload.url
-      ? fbRef(storageInstance, upload.url)
-      : fbRef(storageInstance, upload.path);
-    const destStorageRef = fbRef(storageInstance, newPath);
+      ? ref(storageInstance, upload.url)
+      : ref(storageInstance, upload.path);
+    const destStorageRef = ref(storageInstance, newPath);
     const blob = await getBlob(sourceStorageRef);
     await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
     await deleteObject(sourceStorageRef);
@@ -209,8 +200,8 @@ export class UserUploadService {
       isMessageAttachment: false,
       albumId,
     };
-    await this.db.object(`photos/${photoId}`).set(photo);
-    await this.db.object(`userUploads/${upload.id}`).update({
+    await this.rtdb.object(`photos/${photoId}`).set(photo);
+    await this.rtdb.object(`userUploads/${upload.id}`).update({
       status: 'approved',
       path: newPath,
       url: downloadUrl,
@@ -219,18 +210,18 @@ export class UserUploadService {
   }
 
   async rejectUpload(upload: UserUpload): Promise<void> {
-    const storageRef = this.storage.storage.refFromURL(upload.url);
-    await storageRef.delete();
-    this.db.list(this.userUploadsRef).remove(upload.id);
+    const storageRef = ref(this.firebase.storage, upload.url);
+    await deleteObject(storageRef);
+    await this.rtdb.object(`${this.userUploadsRef}/${upload.id}`).remove();
   }
 
   async deleteUpload(upload: UserUpload): Promise<void> {
     try {
-      const storageRef = this.storage.storage.refFromURL(upload.url);
-      await storageRef.delete();
+      const storageRef = ref(this.firebase.storage, upload.url);
+      await deleteObject(storageRef);
     } catch (e) {
       console.warn('File already deleted from storage');
     }
-    this.db.list(this.userUploadsRef).remove(upload.id);
+    await this.rtdb.object(`${this.userUploadsRef}/${upload.id}`).remove();
   }
 }

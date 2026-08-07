@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { FeatureFlag } from 'src/app/models/feature-flag';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class FeatureFlagsService {
 
   private flagsSubject: BehaviorSubject<Record<string, FeatureFlag | null>> = new BehaviorSubject<Record<string, FeatureFlag | null>>({});
 
-  constructor(private db: AngularFireDatabase) {
+  constructor(private rtdb: RtdbService) {
     this.loadAllFlags();
   }
 
@@ -20,7 +21,7 @@ export class FeatureFlagsService {
     if (this.flagsLoaded) return;
     this.flagsLoaded = true;
 
-    this.db.object(this.FEATURES_PATH).valueChanges().subscribe((flags: Record<string, FeatureFlag> | null) => {
+    this.rtdb.object<Record<string, FeatureFlag>>(this.FEATURES_PATH).valueChanges().subscribe((flags) => {
       this.flagsSubject.next(flags || {});
     }, (error) => {
       console.error('Error loading feature flags:', error);
@@ -28,12 +29,12 @@ export class FeatureFlagsService {
   }
 
   getFeatureFlag(featureId: string): Observable<FeatureFlag | null> {
-    return this.db.object(`${this.FEATURES_PATH}/${featureId}`).valueChanges() as Observable<FeatureFlag | null>;
+    return this.rtdb.object<FeatureFlag>(`${this.FEATURES_PATH}/${featureId}`).valueChanges();
   }
 
   setFeatureFlag(featureId: string, enabled: boolean): Promise<void> {
     console.log('Setting feature flag:', featureId, enabled);
-    return this.db.object(`${this.FEATURES_PATH}/${featureId}`).set({
+    return this.rtdb.object(`${this.FEATURES_PATH}/${featureId}`).set({
       enabled,
       updatedAt: Date.now(),
     }).catch(error => {
@@ -56,11 +57,14 @@ export class FeatureFlagsService {
   }
 
   getPromotedRoute(): Observable<string | null> {
-    return this.db.object('promotedRoute').valueChanges() as Observable<string | null>;
+    // DB stores { route, updatedAt } under `promotedRoute`; emit the route string.
+    return this.rtdb.object<{ route?: string }>('promotedRoute').valueChanges().pipe(
+      map(v => (v && typeof v === 'object' && v.route ? v.route : null)),
+    );
   }
 
   setPromotedRoute(route: string): Promise<void> {
-    return this.db.object('promotedRoute').set({
+    return this.rtdb.object('promotedRoute').set({
       route,
       updatedAt: Date.now(),
     });

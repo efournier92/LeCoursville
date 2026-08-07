@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Calendar } from 'src/app/models/calendar';
+import { RtdbService } from 'src/app/services/rtdb.service';
 
 @Component({
   selector: 'app-admin-calendars',
@@ -14,10 +14,10 @@ export class AdminCalendarsComponent implements OnInit {
   formData = { year: '', url: '' };
   formError = '';
 
-  constructor(private db: AngularFireDatabase) {}
+  constructor(private rtdb: RtdbService) {}
 
   ngOnInit(): void {
-    this.db.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
+    this.rtdb.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
       this.calendars = calendars.sort((a, b) => parseInt(a.year) - parseInt(b.year));
     });
   }
@@ -37,7 +37,7 @@ export class AdminCalendarsComponent implements OnInit {
   }
 
   onDelete(calendar: Calendar): void {
-    this.db.object(`/calendars/${calendar.id}`).remove();
+    this.rtdb.object(`/calendars/${calendar.id}`).remove();
   }
 
   onSave(): void {
@@ -62,9 +62,9 @@ export class AdminCalendarsComponent implements OnInit {
     if (this.isAdding) {
       const id = `cal-${year}`;
       const calendar: Calendar = { id, year, url, path: '' };
-      this.db.object(`/calendars/${id}`).set(calendar).then(() => this.onCancel());
+      this.rtdb.object(`/calendars/${id}`).set(calendar).then(() => this.onCancel());
     } else if (this.editingCalendar) {
-      this.db.object(`/calendars/${this.editingCalendar.id}`).update({ year, url }).then(() => this.onCancel());
+      this.rtdb.object(`/calendars/${this.editingCalendar.id}`).update({ year, url }).then(() => this.onCancel());
     }
   }
 

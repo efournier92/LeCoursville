@@ -1,15 +1,22 @@
 import { Injectable } from '@angular/core';
-import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
-import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/compat/storage';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from 'firebase/storage';
 import { Photo } from 'src/app/models/photo';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { FirebaseService } from './firebase.service';
+import { RtdbService } from './rtdb.service';
+import { FireUploadTask } from './fire-upload-task';
 
 export interface PhotoUpload {
   photo: Photo;
-  task: AngularFireUploadTask;
+  task: FireUploadTask;
   onUrlAvailable: Observable<string>;
 }
 
@@ -19,8 +26,6 @@ export interface PhotoUpload {
 export class PhotosService {
   private readonly PHOTOS_PATH = 'photos';
 
-  photos: AngularFireList<Photo>;
-  allPhotos: AngularFireList<Photo>;
   photoCount = 0;
   increment = 2;
   user: User;
@@ -32,15 +37,15 @@ export class PhotosService {
   public nonMessagePhotos$: Observable<Photo[]> = this.nonMessagePhotosSource.asObservable();
 
   constructor(
-    private storage: AngularFireStorage,
-    private db: AngularFireDatabase,
+    private firebase: FirebaseService,
+    private rtdb: RtdbService,
     private auth: AuthService,
   ) {
     this.auth.userObservable.subscribe(
       (user: User) => {
         if (user) {
           this.user = user;
-          this.getAllPhotos().valueChanges().subscribe(
+          this.rtdb.list<Photo>(this.PHOTOS_PATH).valueChanges().subscribe(
             (photos: Photo[]) => {
               this.updateAllPhotosEvent(photos);
               this.nonMessagePhotosSource.next(photos.filter(p => !p.isMessageAttachment));
@@ -52,7 +57,7 @@ export class PhotosService {
   }
 
   async updatePhoto(photo: Photo): Promise<void> {
-    await this.db.object(`${this.PHOTOS_PATH}/${photo.id}`).update({
+    await this.rtdb.object(`${this.PHOTOS_PATH}/${photo.id}`).update({
       info: photo.info,
       location: photo.location,
       year: photo.year,
@@ -62,54 +67,47 @@ export class PhotosService {
   }
 
   deletePhoto(photo: Photo): void {
-    this.allPhotos.remove(photo.id);
-    this.storage.storage.refFromURL(photo.url).delete();
+    this.rtdb.object(`${this.PHOTOS_PATH}/${photo.id}`).remove();
+    if (photo.url) {
+      deleteObject(ref(this.firebase.storage, photo.url)).catch(() => {});
+    }
   }
 
   updateAllPhotosEvent(photos: Photo[]): void {
     this.allPhotosSource.next(photos);
   }
 
-  getAllPhotos(): AngularFireList<Photo> {
-    this.allPhotos = this.db.list(this.PHOTOS_PATH);
-    return this.allPhotos;
+  getAllPhotos(): Observable<Photo[]> {
+    return this.rtdb.list<Photo>(this.PHOTOS_PATH).valueChanges();
   }
 
   getPhotoById(photoId: string): Observable<Photo> {
-    const photoObj = this.db.object(`photos/${photoId}`);
-    const photoByIdSource: BehaviorSubject<Photo> = new BehaviorSubject<Photo>(new Photo());
-    const photoByIdObservable: Observable<Photo> = photoByIdSource.asObservable();
-
-    function updatePhotoEvent(photo: Photo): void {
-      photoByIdSource.next(photo);
-    }
-    photoObj.valueChanges().subscribe(
-      (photo: Photo) => {
-        if (photo && photo.id) {
-          updatePhotoEvent(photo);
-        }
-      }
+    return this.rtdb.object<Photo>(`photos/${photoId}`).valueChanges().pipe(
+      filter((photo): photo is Photo => !!photo && !!photo.id),
+      map(photo => photo as Photo),
     );
-    return photoByIdObservable;
   }
 
   getPhotosByAlbum(albumId: string): Observable<Photo[]> {
-    return this.db.list(this.PHOTOS_PATH, ref => ref.orderByChild('albumId').equalTo(albumId))
-      .valueChanges() as Observable<Photo[]>;
+    return this.rtdb.list<Photo>(this.PHOTOS_PATH, [
+      this.rtdb.orderByChild('albumId'),
+      this.rtdb.equalTo(albumId),
+    ]).valueChanges();
   }
 
   getLoosePhotos(): Observable<Photo[]> {
-    return this.db.list(this.PHOTOS_PATH, ref =>
-      ref.orderByChild('albumId').equalTo('')
-    ).valueChanges() as Observable<Photo[]>;
+    return this.rtdb.list<Photo>(this.PHOTOS_PATH, [
+      this.rtdb.orderByChild('albumId'),
+      this.rtdb.equalTo(''),
+    ]).valueChanges();
   }
 
   async setPhotoAlbum(photoId: string, albumId: string | null): Promise<void> {
-    await this.db.object(`${this.PHOTOS_PATH}/${photoId}`).update({ albumId });
+    await this.rtdb.object(`${this.PHOTOS_PATH}/${photoId}`).update({ albumId });
   }
 
   async setAlbumCover(albumId: string, photoId: string | null): Promise<void> {
-    await this.db.object(`photoAlbums/${albumId}`).update({ coverPhotoId: photoId, updatedAt: Date.now() });
+    await this.rtdb.object(`photoAlbums/${albumId}`).update({ coverPhotoId: photoId, updatedAt: Date.now() });
   }
 
   uploadPhoto(file: any, isMessageAttachment: boolean): PhotoUpload {
@@ -122,41 +120,42 @@ export class PhotosService {
     return upload;
   }
 
-  uploadVideoScreenshot(file: any, isMessageAttachment: boolean) {
+  uploadVideoScreenshot(file: any, isMessageAttachment: boolean): void {
     this.uploadImage(file, isMessageAttachment, 'videoScreenshots');
   }
 
   uploadImage(file: any, isMessageAttachment: boolean, imageBucket: string): PhotoUpload {
     const photo: Photo = new Photo();
-    photo.id = this.db.createPushId();
+    photo.id = this.rtdb.createPushId();
     photo.dateAdded = new Date();
     photo.uploadedBy = this.user?.id || 'anonymous';
     photo.isMessageAttachment = isMessageAttachment;
     photo.extension = file.name.split('.').pop();
     photo.path = `${imageBucket}/${photo.id}.${photo.extension}`;
 
-    const fileRef: AngularFireStorageReference = this.storage.ref(photo.path);
-    const task: AngularFireUploadTask = this.storage.upload(photo.path, file);
-    task.snapshotChanges().pipe(
-      finalize(() => {
-        fileRef.getDownloadURL().subscribe(
-          url => {
-            const photosDb: AngularFireList<object> = this.db.list(imageBucket);
-            photo.url = url;
-            photosDb.update(photo.id, photo);
-            photoUploadSource.next(url);
-          }
-        );
-      })
-    ).subscribe();
-
+    const storageRef = ref(this.firebase.storage, photo.path);
+    const task = uploadBytesResumable(storageRef, file);
     const photoUploadSource = new BehaviorSubject('');
-    const onUrlAvailable = photoUploadSource.asObservable();
+
+    task.on('state_changed', {
+      next: () => {},
+      error: (e) => console.error('Upload failed:', e),
+      complete: async () => {
+        try {
+          const url = await getDownloadURL(storageRef);
+          photo.url = url;
+          await this.rtdb.object(`${imageBucket}/${photo.id}`).set(photo);
+          photoUploadSource.next(url);
+        } catch (e) {
+          console.error('Upload finalize failed:', e);
+        }
+      },
+    });
 
     const upload = new Object() as PhotoUpload;
-    upload.task = task;
+    upload.task = new FireUploadTask(task);
     upload.photo = photo;
-    upload.onUrlAvailable = onUrlAvailable;
+    upload.onUrlAvailable = photoUploadSource.asObservable();
 
     return upload;
   }

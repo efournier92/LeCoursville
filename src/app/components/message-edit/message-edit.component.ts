@@ -7,8 +7,8 @@ import {
   EventEmitter,
 } from "@angular/core";
 import { CdkTextareaAutosize } from "@angular/cdk/text-field";
-import { AngularFireDatabase } from "@angular/fire/compat/database";
 import { Message } from "src/app/models/message";
+import { RtdbService } from "src/app/services/rtdb.service";
 import { AuthService } from "src/app/services/auth.service";
 import { MessageService } from "src/app/services/message.service";
 import { User } from "src/app/models/user";
@@ -44,7 +44,7 @@ export abstract class MessageEditComponent implements OnInit {
     private authService: AuthService,
     private photoService: PhotosService,
     private highlightService: HighlightService,
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
     private promptModal: PromptModalService,
     private analyticsService: AnalyticsService,
   ) {}
@@ -80,7 +80,7 @@ export abstract class MessageEditComponent implements OnInit {
           return;
         }
         newMessage = this.markMessageSaved(newMessage);
-        newMessage.id = newMessage.id || this.db.createPushId();
+        newMessage.id = newMessage.id || this.rtdb.createPushId();
         if (newMessage.isReply) {
           if (this.parent) {
             this.updateParent();

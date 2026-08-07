@@ -12,6 +12,11 @@ import { AnalyticsService } from "src/app/services/analytics.service";
 export class AuthComponent implements OnInit {
   user: User;
   isEditMode: boolean;
+  email = "";
+  password = "";
+  loading = false;
+  error = "";
+  info = "";
 
   constructor(
     private authService: AuthService,
@@ -39,20 +44,39 @@ export class AuthComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  onSignInSuccess(authData: any): boolean {
-    const userData = authData?.authResult?.user;
-
-    this.analyticsService.logEvent("auth_sign_in", { userId: userData?.uid });
-
-    if (!userData) {
-      this.authService.signOut();
-      return false;
+  async onSignIn(): Promise<void> {
+    if (!this.email.trim() || !this.password) {
+      this.error = "Enter your email and password.";
+      return;
     }
+    this.loading = true;
+    this.error = "";
+    this.info = "";
+    try {
+      const fbUser = await this.authService.signIn(this.email.trim(), this.password);
+      this.analyticsService.logEvent("auth_sign_in", { userId: fbUser.uid });
+      this.authService.onSignIn({ authResult: { user: fbUser } });
+      this.password = "";
+    } catch (e: any) {
+      this.error = this.mapAuthError(e?.code || "");
+    } finally {
+      this.loading = false;
+    }
+  }
 
-    this.authService.onSignIn(authData);
-    this.routingService.NavigateToAudio();
-
-    return true;
+  async onForgotPassword(): Promise<void> {
+    if (!this.email.trim()) {
+      this.error = "Enter your email first, then click the reset link.";
+      return;
+    }
+    this.error = "";
+    this.info = "";
+    try {
+      await this.authService.sendPasswordReset(this.email.trim());
+      this.info = "Password reset email sent — check your inbox.";
+    } catch (e: any) {
+      this.error = this.mapAuthError(e?.code || "");
+    }
   }
 
   onSignOutButtonClick(): void {
@@ -67,5 +91,24 @@ export class AuthComponent implements OnInit {
 
   onCancelEdit(): void {
     this.isEditMode = false;
+  }
+
+  // HELPERS
+
+  private mapAuthError(code: string): string {
+    switch (code) {
+      case "auth/user-not-found":
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Incorrect email or password.";
+      case "auth/invalid-email":
+        return "That email address looks invalid.";
+      case "auth/too-many-requests":
+        return "Too many attempts — try again in a minute.";
+      case "auth/network-request-failed":
+        return "Network error — check your connection.";
+      default:
+        return "Sign-in failed. Try again.";
+    }
   }
 }

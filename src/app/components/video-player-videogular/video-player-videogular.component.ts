@@ -1,8 +1,12 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { Video } from 'src/app/models/media/video';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
+/**
+ * Native HTML5 video player (replaces the deprecated @videogular/ngx-videogular
+ * wrapper, which does not support Angular 17+).
+ */
 @Component({
   selector: 'app-video-player-videogular',
   templateUrl: './video-player-videogular.component.html',
@@ -12,9 +16,9 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
   @Input() video: Video;
   @Input() events: Observable<Video>;
 
-  videos: Video[];
-  videogular: any;
-  isLoading: boolean;
+  @ViewChild('nativeVideo', { static: false }) nativeVideo: ElementRef<HTMLVideoElement>;
+
+  currentVideo: Video;
 
   private eventsSubscription: Subscription;
 
@@ -25,7 +29,7 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
-    this.videos = [this.video];
+    this.currentVideo = this.video;
 
     this.subscribeToParentMediaChanges();
 
@@ -35,27 +39,18 @@ export class VideoPlayerVideogularComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.eventsSubscription.unsubscribe();
+    this.eventsSubscription?.unsubscribe();
   }
 
   // SUBSCRIPTIONS
 
   private subscribeToParentMediaChanges() {
-    this.events.subscribe((media) => {
-      this.videos = [media];
-      this.videogular.play();
+    if (!this.events) {
+      return;
+    }
+    this.eventsSubscription = this.events.subscribe((media) => {
+      this.currentVideo = media;
+      this.nativeVideo?.nativeElement?.play();
     });
-  }
-
-  // PUBLIC METHODS
-
-  initVideoPlayer(data: any) {
-    this.videogular = data;
-
-    data.getDefaultMedia().subscriptions.loadStart.subscribe(
-      () => {
-        this.isLoading = true;
-      }
-    );
   }
 }

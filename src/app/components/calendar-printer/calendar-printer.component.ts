@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { map } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { RtdbService } from 'src/app/services/rtdb.service';
 
 @Component({
   selector: 'app-calendar-printer',
@@ -18,7 +18,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<CalendarPrinterComponent>,
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
     private analyticsService: AnalyticsService,
   ) {}
 
@@ -32,7 +32,7 @@ export class CalendarPrinterComponent implements OnInit {
     const thisYear = new Date().getFullYear();
     const maxYears = [thisYear, thisYear + 1, thisYear + 2];
 
-    this.db.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
+    this.rtdb.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
       const configuredYears = new Set(
         calendars.map(c => parseInt(c.year)).filter(y => !isNaN(y))
       );
@@ -55,7 +55,7 @@ export class CalendarPrinterComponent implements OnInit {
 
   private loadCalendarUrl(): void {
     if (!this.selectedYear) return;
-    this.db.object<{ url: string }>(`/calendars/cal-${this.selectedYear}`).valueChanges().pipe(
+    this.rtdb.object<{ url: string }>(`/calendars/cal-${this.selectedYear}`).valueChanges().pipe(
       map(cal => cal?.url || null)
     ).subscribe(url => {
       this.calendarUrl = url;

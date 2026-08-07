@@ -1,15 +1,18 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAnalytics } from '@angular/fire/compat/analytics';
+import { logEvent } from 'firebase/analytics';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
   constructor(
-    private analytics: AngularFireAnalytics,
+    private firebase: FirebaseService,
   ) { }
 
   logEvent(name: string, data: any) {
-    this.analytics.logEvent(name, data);
+    if (this.firebase.analytics) {
+      logEvent(this.firebase.analytics, name, data);
+    }
   }
 }

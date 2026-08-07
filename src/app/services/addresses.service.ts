@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Address } from 'src/app/models/address';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,16 +14,17 @@ export class AddressesService {
   private addressMapSource: BehaviorSubject<Map<string, Address>> = new BehaviorSubject(new Map());
   addressMap$: Observable<Map<string, Address>> = this.addressMapSource.asObservable();
 
-  constructor(private db: AngularFireDatabase) {
-    this.getAddresses().snapshotChanges().pipe(
+  constructor(
+    private rtdb: RtdbService,
+  ) {
+    this.rtdb.list<Address>('addresses').snapshotChanges<Address>().pipe(
       map(changes => {
         const map = new Map<string, Address>();
         changes.forEach(c => {
-          const data = c.payload.val() as Address;
-          const key = c.payload.key as string;
+          const data = c.value;
           if (data) {
-            data.id = key;
-            map.set(key, data);
+            data.id = c.key;
+            map.set(c.key, data);
           }
         });
         return map;
@@ -34,12 +35,8 @@ export class AddressesService {
     });
   }
 
-  getAddresses(): AngularFireList<Address> {
-    return this.db.list('addresses');
-  }
-
   getAddress(id: string): Observable<Address | null> {
-    return this.db.object('addresses/' + id).valueChanges() as Observable<Address | null>;
+    return this.rtdb.object<Address>('addresses/' + id).valueChanges();
   }
 
   getAddressMap(): Map<string, Address> {
@@ -48,16 +45,16 @@ export class AddressesService {
 
   saveAddress(address: Address): void {
     if (!address.id) {
-      address.id = this.db.createPushId();
+      address.id = this.rtdb.createPushId();
     }
-    this.db.object('addresses/' + address.id).set(address);
+    this.rtdb.object('addresses/' + address.id).set(address);
   }
 
   updateAddress(id: string, data: Partial<Address>): void {
-    this.db.object('addresses/' + id).update(data);
+    this.rtdb.object('addresses/' + id).update(data);
   }
 
   deleteAddress(id: string): void {
-    this.db.object('addresses/' + id).remove();
+    this.rtdb.object('addresses/' + id).remove();
   }
 }

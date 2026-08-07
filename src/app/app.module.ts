@@ -1,35 +1,16 @@
-import { AuthConfig } from "src/app/auth.config";
-import { environment } from "src/environments/environment";
 import { LocationStrategy, PathLocationStrategy } from "@angular/common";
 import { NO_ERRORS_SCHEMA, NgModule } from "@angular/core";
 import { adapterFactory } from "angular-calendar/date-adapters/date-fns";
 
 // Imports
-import { AngularFireModule } from "@angular/fire/compat";
-import { AngularFireDatabaseModule } from "@angular/fire/compat/database";
-import { AngularFireStorageModule } from "@angular/fire/compat/storage";
-import { AngularFireAnalyticsModule } from "@angular/fire/compat/analytics";
-import { AngularFireAuthModule } from "@angular/fire/compat/auth";
 import { AppRoutingModule } from "src/app/app-routing.module";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { CalendarModule, DateAdapter } from "angular-calendar";
-import { ClipboardModule } from "@angular/cdk/clipboard";
-import { FileSaverModule } from "ngx-filesaver";
-import { FilterPipeModule } from "ngx-filter-pipe";
-import { FirebaseUIModule } from "firebaseui-angular";
-import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
-import { InfiniteScrollModule } from "ngx-infinite-scroll";
-import { LightgalleryModule } from "lightgallery/angular";
 import { MaterialModule } from "src/app/modules/material.module";
-import { NgxAudioPlayerModule } from "ngx-audio-player";
 import { NgxExtendedPdfViewerModule } from "ngx-extended-pdf-viewer";
-import { VgBufferingModule } from "@videogular/ngx-videogular/buffering";
-import { VgControlsModule } from "@videogular/ngx-videogular/controls";
-import { VgCoreModule } from "@videogular/ngx-videogular/core";
-import { VgOverlayPlayModule } from "@videogular/ngx-videogular/overlay-play";
 
 // Declarations
 import { AdminComponent } from "src/app/components/admin/admin.component";
@@ -147,11 +128,6 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
   ],
   schemas: [NO_ERRORS_SCHEMA],
   imports: [
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireAnalyticsModule,
-    AngularFireDatabaseModule,
-    AngularFireStorageModule,
-    AngularFireAuthModule,
     AppRoutingModule,
     BrowserModule,
     BrowserAnimationsModule,
@@ -159,27 +135,15 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
       provide: DateAdapter,
       useFactory: adapterFactory,
     }),
-    ClipboardModule,
-    FileSaverModule,
-    FilterPipeModule,
-    FirebaseUIModule.forRoot(AuthConfig),
-    FontAwesomeModule,
     FormsModule,
     HttpClientModule,
-    InfiniteScrollModule,
-    LightgalleryModule,
     MaterialModule,
     // Standalone components used in templates of module-declared components.
     NoResultsMessageComponent,
     PageToolbarComponent,
     PhotoUploadProgressComponent,
-    NgxAudioPlayerModule,
     NgxExtendedPdfViewerModule,
     ReactiveFormsModule,
-    VgBufferingModule,
-    VgControlsModule,
-    VgCoreModule,
-    VgOverlayPlayModule,
   ],
   providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }],
   bootstrap: [AppComponent],

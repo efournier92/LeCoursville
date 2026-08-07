@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
@@ -7,10 +7,10 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 export class PushIdFactory {
 
   constructor(
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
   ) { }
 
   create() {
-    return this.db.createPushId();
+    return this.rtdb.createPushId();
   }
 }

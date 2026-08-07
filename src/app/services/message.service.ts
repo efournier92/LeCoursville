@@ -1,21 +1,20 @@
 import { Injectable } from '@angular/core';
-import { AngularFireList, AngularFireDatabase } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Message } from 'src/app/models/message';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageService {
-  messages: AngularFireList<Message>;
   messagesObservable: Observable<Message[]>;
 
   private messagesSource: BehaviorSubject<Message[]>;
 
   constructor(
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
     private auth: AuthService,
   ) {
     this.messagesSource = new BehaviorSubject([]);
@@ -26,16 +25,16 @@ export class MessageService {
   // PUBLIC
 
   create(message: Message): void {
-    message.id = this.db.createPushId();
-    this.messages.update(message.id, message);
+    message.id = this.rtdb.createPushId();
+    this.rtdb.object(`messages/${message.id}`).update(message as any);
   }
 
   updateMessage(message: Message): void {
-    this.messages.update(message.id, message);
+    this.rtdb.object(`messages/${message.id}`).update(message as any);
   }
 
   deleteMessage(message: Message): void {
-    this.messages.remove(message.id);
+    this.rtdb.object(`messages/${message.id}`).remove();
   }
 
   filterByType(messages: Message[], type: string): any[] {
@@ -44,9 +43,8 @@ export class MessageService {
 
   // HELPERS
 
-  private getMessages(): AngularFireList<Message> {
-    this.messages = this.db.list('messages');
-    return this.messages;
+  private getMessages() {
+    return this.rtdb.list<Message>('messages');
   }
 
   private updateMessagesEvent(messages: Message[]): void {

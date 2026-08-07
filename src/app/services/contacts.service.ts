@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Contact } from 'src/app/models/contact';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactsService {
-  contacts: AngularFireList<Contact>;
   userId: string;
   user: User;
 
@@ -17,7 +16,7 @@ export class ContactsService {
   userContacts: Observable<any[]> = this.contactsSource.asObservable();
 
   constructor(
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
     private auth: AuthService,
   ) {
     this.auth.userObservable.subscribe(
@@ -37,29 +36,28 @@ export class ContactsService {
     this.contactsSource.next(contacts);
   }
 
-  getContacts(): AngularFireList<Contact> {
+  getContacts() {
     if (!this.user) {
       return undefined;
     }
 
-    this.contacts = this.db.list(`contacts`);
-    return this.contacts;
+    return this.rtdb.list<Contact>(`contacts`);
   }
 
   newContact(contact: Contact): void {
-    contact.id = this.db.createPushId();
-    this.contacts.set(contact.id, contact);
+    contact.id = this.rtdb.createPushId();
+    this.rtdb.object(`contacts/${contact.id}`).set(contact);
   }
 
   updateContact(contact: Contact): void {
     if (!contact.id) {
-      contact.id = this.db.createPushId();
+      contact.id = this.rtdb.createPushId();
     }
 
-    this.contacts.update(contact.id, contact);
+    this.rtdb.object(`contacts/${contact.id}`).update(contact as any);
   }
 
   deleteContact(contact: Contact): void {
-    this.contacts.remove(contact.id);
+    this.rtdb.object(`contacts/${contact.id}`).remove();
   }
 }

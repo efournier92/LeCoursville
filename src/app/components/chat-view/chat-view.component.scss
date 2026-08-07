@@ -1,1 +1,25 @@
 @import "src/app/components/message-view/message-view.component.scss";
+
+.message-like-icon {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+
+  .message-likes-container {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    font-size: 0.7rem;
+    background: #fff;
+    border-radius: 50%;
+    padding: 0 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.message-tool-icon {
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+}

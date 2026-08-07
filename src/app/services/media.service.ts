@@ -1,25 +1,23 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { MediaTypesService } from './media-types-service.service';
-import { MediaAudioComponent } from '../components/media-audio/media-audio.component';
+import { RtdbService } from './rtdb.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MediaService {
   user: any;
-  mediaList: AngularFireList<UploadableMedia>;
 
   private mediaSource: BehaviorSubject<UploadableMedia[]> = new BehaviorSubject<UploadableMedia[]>([]);
   mediaObservable: Observable<UploadableMedia[]> = this.mediaSource.asObservable();
   allMedia: UploadableMedia[];
 
   constructor(
-    private db: AngularFireDatabase,
+    private rtdb: RtdbService,
     private auth: AuthService,
     private mediaTypesService: MediaTypesService,
   ) {
@@ -45,15 +43,14 @@ export class MediaService {
 
   create(media: UploadableMedia): void {
     if (!media || !media.id) {
-      media.id = this.db.createPushId();
+      media.id = this.rtdb.createPushId();
     }
 
-    this.mediaList.update(media.id, media);
+    this.rtdb.object(`media/${media.id}`).update(media as any);
   }
 
-  getMedia(): AngularFireList<UploadableMedia> {
-    this.mediaList = this.db.list('media');
-    return this.mediaList;
+  getMedia() {
+    return this.rtdb.list<UploadableMedia>('media');
   }
 
   getMediaById(id: string): UploadableMedia {
@@ -91,11 +88,11 @@ export class MediaService {
   deleteMedia(media: UploadableMedia): void {
     if (media?.listing?.length > 0) {
       media.listing.forEach((id: string) => {
-        this.mediaList.remove(id);
+        this.rtdb.object(`media/${id}`).remove();
       });
     }
 
-    this.mediaList.remove(media.id);
+    this.rtdb.object(`media/${media.id}`).remove();
   }
 
   loadAllMedia(type: string) {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/compat/database';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Person } from 'src/app/models/person';
+import { RtdbService } from './rtdb.service';
 
 export interface ImportResult {
   created: number;
@@ -18,7 +18,7 @@ export class PeopleService {
   private peopleSource: BehaviorSubject<Person[]> = new BehaviorSubject([]);
   people$: Observable<Person[]> = this.peopleSource.asObservable();
 
-  constructor(private db: AngularFireDatabase) {
+  constructor(private rtdb: RtdbService) {
     this.getPeople().valueChanges().subscribe(
       (people: Person[]) => {
         this.peopleSource.next(people);
@@ -28,25 +28,25 @@ export class PeopleService {
 
   wipeAllPeopleAndCalendarEvents(): Promise<void> {
     return Promise.all([
-      this.db.object('people').remove(),
-      this.db.object('calendarEvents').remove()
+      this.rtdb.object('people').remove(),
+      this.rtdb.object('calendarEvents').remove()
     ]).then(() => {});
   }
 
-  getPeople(): AngularFireList<Person> {
-    return this.db.list('people');
+  getPeople() {
+    return this.rtdb.list<Person>('people');
   }
 
   getPerson(id: string): Observable<Person | null> {
-    return this.db.object('people/' + id).valueChanges() as Observable<Person | null>;
+    return this.rtdb.object<Person>('people/' + id).valueChanges();
   }
 
   savePerson(person: Person): void {
-    this.db.object('people/' + person.id).set(person);
+    this.rtdb.object('people/' + person.id).set(person);
   }
 
   updatePerson(id: string, data: Partial<Person>): void {
-    this.db.object('people/' + id).update(data);
+    this.rtdb.object('people/' + id).update(data);
   }
 
   importPeople(people: Person[]): Observable<ImportResult> {
@@ -78,7 +78,7 @@ export class PeopleService {
         }
       }
 
-      this.db.object('/').update(updates).then(() => {
+      this.rtdb.object('/').update(updates).then(() => {
         observer.next({ created, updated, inactive, conflicts });
         observer.complete();
       }).catch(error => {

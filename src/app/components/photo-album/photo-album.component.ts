@@ -1,82 +1,32 @@
-import { Component, Input, OnInit, AfterViewChecked } from '@angular/core';
-import { InitDetail } from 'lightgallery/lg-events';
-import { LightGallery } from 'lightgallery/lightgallery';
+import { Component, Input, OnInit } from '@angular/core';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { PhotoAlbum } from 'src/app/models/photo-album';
-import lgZoom from 'lightgallery/plugins/zoom';
-import lgAutoplay from 'lightgallery/plugins/autoplay';
-import { MediaService } from 'src/app/services/media.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
+/**
+ * @deprecated Legacy media-explorer album viewer. Its lightgallery integration
+ * was a hollow shell (the media subscription has been commented out for
+ * months), and the curated album experience now lives in the photo-albums
+ * feature (/photos, /photos/:albumId). Kept as a plain image grid so any
+ * existing usage in the media explorer does not break.
+ */
 @Component({
   selector: 'app-photo-album',
   templateUrl: './photo-album.component.html',
   styleUrls: ['./photo-album.component.scss']
 })
-export class PhotoAlbumComponent implements OnInit, AfterViewChecked {
+export class PhotoAlbumComponent implements OnInit {
   @Input() album: PhotoAlbum;
 
   photos: UploadableMedia[] = [];
-  needsRefresh: any;
-
-  private lightGallery: LightGallery;
-
-  lightGallerySettings = {
-    plugins: [lgZoom, lgAutoplay],
-    counter: true,
-    thumbnail: true,
-    showZoomInOutIcons: true,
-    autoplay: true,
-    progressBar: true,
-    showCloseIcon: true
-  };
 
   constructor(
-    private mediaService: MediaService,
     private analyticsService: AnalyticsService,
   ) { }
 
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
-    this.initializeAlbumListing();
     this.analyticsService.logEvent('component_load_media_photo_album', { });
-  }
-
-  ngAfterViewChecked(): void {
-    if (this.needsRefresh) {
-        this.lightGallery.refresh();
-        this.needsRefresh = false;
-    }
-  }
-
-  // PUBLIC METHODS
-
-  onLightGalleryInit = (detail: InitDetail): void => {
-    this.lightGallery = detail.instance;
-  }
-
-  // HELPER METHODS
-  private initializeAlbumListing() {
-    const listing = (this.album as any)?.listing as string[] | undefined;
-    if (!listing) {
-      return;
-    }
-    listing.forEach(
-      (id: string) => {
-        // this.subscribeToGetMediaObservable(id);
-      }
-    );
-  }
-
-  private subscribeToGetMediaObservable(id: string) {
-    // this.mediaService.getById(id).subscribe(
-    //   (media: Media) => {
-    //     if (media.id) {
-    //       this.photos.push(media);
-    //       this.needsRefresh = true;
-    //     }
-    //   }
-    // );
   }
 }

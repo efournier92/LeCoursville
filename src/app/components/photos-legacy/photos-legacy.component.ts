@@ -12,7 +12,6 @@ declare const lightGallery: any;
 
 declare global {
   interface Window {
-    lgData: any;
   }
 }
 
@@ -30,7 +29,6 @@ export class PhotosLegacyComponent implements OnInit {
   searchTerm = "";
   years: number[];
   showSpinner = true;
-  photoGallery: Element;
   photoUploads: PhotoUpload[] = [];
   sortType = "random";
   skeletonIterations = [1, 2, 3];
@@ -54,7 +52,6 @@ export class PhotosLegacyComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
-    this.subscribeToPhotosObservable();
     this.loadAllPhotos();
     this.years = this.photosService.getYears();
     this.analyticsService.logEvent("component_load_photos", {});
@@ -66,10 +63,6 @@ export class PhotosLegacyComponent implements OnInit {
     this.authService.userObservable.subscribe(
       (user: User) => (this.user = user),
     );
-  }
-
-  private subscribeToPhotosObservable() {
-    this.loadedPhotosObservable.subscribe(() => this.updatePhotoGallery());
   }
 
   // PUBLIC METHODS
@@ -279,7 +272,6 @@ export class PhotosLegacyComponent implements OnInit {
   private loadAllPhotos(): void {
     this.photosService
       .getAllPhotos()
-      .valueChanges()
       .subscribe((photos: Photo[]) => {
         if (this.shouldRefreshPhotos(photos)) {
           this.allPhotos = photos;
@@ -309,29 +301,4 @@ export class PhotosLegacyComponent implements OnInit {
     this.loadedPhotosSource.next(photos);
   }
 
-  private updatePhotoGallery(): void {
-    const photoGallery = document.getElementById("lightgallery");
-    // Not in the DOM yet when the BehaviorSubject emits during ngOnInit.
-    if (!photoGallery) {
-      return;
-    }
-    const galleryId = photoGallery.getAttribute("lg-uid");
-
-    if (galleryId && window.lgData && window.lgData[galleryId]) {
-      window.lgData[galleryId].destroy(true);
-    }
-
-    const galleryOptions = {
-      selector: ".light-link",
-      pause: 5000,
-      download: false,
-      autoplay: false,
-      progressBar: false,
-    };
-
-    // if (this.loadablePhotos && this.loadablePhotos.length > 0) {
-    //   this.photoGallery = document.getElementById('lightgallery');
-    //   lightGallery(this.photoGallery, galleryOptions);
-    // }
-  }
 }
