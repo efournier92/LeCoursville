@@ -30,12 +30,14 @@ describe('FeatureFlagsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('loads flags and exposes flagsReady', (done) => {
-    service.flagsReady().subscribe(ready => {
-      expect(ready).toBe(true);
-      service.getAllFeatureFlags().subscribe(flags => {
-        expect(flags['photos']?.enabled).toBe(true);
-        done();
+  it('loads flags and exposes flagsReady', async () => {
+    await new Promise<void>((resolve) => {
+      service.flagsReady().subscribe(ready => {
+        expect(ready).toBe(true);
+        service.getAllFeatureFlags().subscribe(flags => {
+          expect(flags['photos']?.enabled).toBe(true);
+          resolve();
+        });
       });
     });
   });

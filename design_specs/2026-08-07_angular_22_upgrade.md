@@ -49,14 +49,14 @@ Photo-albums work is merged to local `master` (`bfba16d`, squash #45) — **not 
 - Screenshots saved under `/var/folders/px/4kz2zhts5wb7ph04p303k2840000gn/T/opencode/shots*/` for human review (model cannot view images).
 
 ## Known issues / next steps
+0. **Test suite (migrated Karma→Vitest)**: `npx ng test` now runs — **80/114 passing** (was: zero, did not compile on master). Remaining 34 failures are legacy test debt: stale assertions (calendar anniversary count, contacts count, admin-features rows, navbar buttons, contact-card address format), specs missing required `@Input()` fixture data (chat-edit, user-view, calendar*, expression-*, contact-*), a couple missing Material module imports (chat-view, calendar-printer), and rtdb-mock gaps in 2 specs. Each is a small per-spec fix; no app-code bugs indicated.
 1. **One-time `Maximum call stack size exceeded`** (RTDB callback) observed right after login during upgrade churn; never reproduced across subsequent sweeps. Likely a Vite HMR artifact. If it recurs on prod build, trace write-back subscriptions (auth `updateUser` writes `dateLastActive`; guarded by `hasAlreadyUpdatedUser`).
 2. **`getLoosePhotos()`** uses `orderByChild('albumId').equalTo('')` — RTDB excludes records with a *missing* `albumId`, so legacy photos without the field won't appear as "loose". Consider a migration or dual-query.
-3. **Tests**: suite fails to compile on master (`contacts-from-people.service.spec.ts` Person type errors — pre-existing, untouched). Karma→Vitest migration is available (`ng update @angular/cli --name migrate-karma-to-vitest`) — recommend fixing the spec types then migrating.
-4. **Sass `@import` deprecations** (Dart Sass 3.0 removes them) — run the sass migrator across component styles (`npx sass-migrator module` or Angular's future automation).
-5. **Material legacy classes** like `mat-elevation-z6` still used in several templates — harmless now, but replace with M3 elevation tokens in a polish pass.
-6. **Deploy**: master not pushed (`photo-albums` squash lives only locally). No deploy performed, per instruction.
-7. **Dev DB**: `enablePhotoAlbums` flag OFF (default). Dev database has albums but few/no photos; album detail + PhotoSwipe lightbox untested at runtime for lack of data — verify with an uploaded album before shipping.
-8. `getPromotedRoute()` now emits the stored `route` string (the old code cast the whole `{route,updatedAt}` object to string — latent bug fixed); verify promoted-route flow still behaves as expected.
+3. **Sass `@import` deprecations** (Dart Sass 3.0 removes them) — run the sass migrator across component styles.
+4. **Material legacy classes** like `mat-elevation-z6` still used in several templates — harmless now, but replace with M3 elevation tokens in a polish pass.
+5. **Deploy**: master not pushed (`photo-albums` squash lives only locally). No deploy performed, per instruction.
+6. **Dev DB**: `enablePhotoAlbums` flag OFF (default). Dev database has albums but few/no photos; album detail + PhotoSwipe lightbox untested at runtime for lack of data — verify with an uploaded album before shipping.
+7. `getPromotedRoute()` now emits the stored `route` string (the old code cast the whole `{route,updatedAt}` object to string — latent bug fixed); verify promoted-route flow still behaves as expected.
 
 ## Useful commands
 - Dev: `npx ng serve` / build: `npx ng build` (prod: `--configuration production`)
