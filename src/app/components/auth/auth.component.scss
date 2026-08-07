@@ -1,41 +1,65 @@
-.auth-component-container {
+.auth-page {
   width: 100%;
-}
-
-.auth-container {
+  min-height: 100vh; /* fallback for browsers without dvh */
+  min-height: 100dvh;
   display: flex;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 32px 16px 56px;
+  box-sizing: border-box;
+
+  // Brand-tinted backdrop: soft green glow top, fading into the app background.
+  // Replaces the old fixed watermark image that overlapped content on every
+  // viewport size.
+  background:
+    radial-gradient(900px 420px at 50% -8%, rgba(45, 90, 39, 0.12), transparent 65%),
+    linear-gradient(180deg, #eef3eb 0%, var(--color-app-bg) 48%);
 
   @media (max-width: 480px) {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 20px 12px 40px;
   }
 }
 
-.auth-controls-container {
-  margin: 20px;
-}
-
-.auth-signin-card {
+.auth-card {
   width: 100%;
-  max-width: 420px;
-  margin: 24px auto 0;
-  padding: 36px 32px 28px;
+  max-width: 440px;
+  padding: 40px 36px 32px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 18px 50px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+
+  // Solid fallback for browsers without backdrop-filter support.
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: #ffffff;
+  }
 
   @media (max-width: 480px) {
-    padding: 28px 20px 22px;
+    padding: 32px 20px 26px;
     border-radius: 20px;
   }
 }
 
-.auth-signin-logo {
+.auth-card--account {
+  max-width: 480px;
+  padding: 32px 28px 24px;
+
+  // user-view / user-edit render their own mat-card; in the account page the
+  // outer card is the visual container, so flatten the inner one.
+  ::ng-deep mat-card {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+  }
+}
+
+.auth-logo {
   display: block;
   width: 56px;
   height: 56px;
@@ -46,17 +70,17 @@
   object-fit: contain;
 }
 
-.auth-signin-title {
+.auth-title {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: center;
   color: #1a202c;
 }
 
-.auth-signin-subtitle {
-  margin: 6px 0 24px;
+.auth-subtitle {
+  margin: 6px 0 26px;
   text-align: center;
   font-size: 0.9rem;
   color: #8a94a3;
@@ -65,46 +89,74 @@
 .auth-field {
   display: block;
   width: 100%;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.auth-error {
-  margin: 8px 0 0;
+.auth-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.auth-banner--error {
   background: rgba(220, 38, 38, 0.08);
   color: #b91c1c;
-  font-size: 0.85rem;
 }
 
-.auth-info {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
+.auth-banner--info {
   background: rgba(45, 90, 39, 0.08);
   color: var(--color-brand-primary);
-  font-size: 0.85rem;
 }
 
 .auth-submit {
   display: block;
   width: 100%;
-  height: 44px;
+  height: 48px;
   margin-top: 20px;
   border-radius: 999px;
   font-weight: 600;
+  font-size: 0.95rem;
   letter-spacing: 0.01em;
 }
 
 .auth-reset {
   display: block;
-  margin: 12px auto 0;
+  margin: 14px auto 0;
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
+
+  &:hover {
+    color: var(--color-brand-primary);
+  }
 }
 
-.auth-image {
-  position: fixed;
-  bottom: 0px;
-  opacity: 0.2;
+.auth-signout-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.auth-signout {
+  min-height: 40px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 2px;
+  }
 }
