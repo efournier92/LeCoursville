@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 import { FeatureFlagsService } from './feature-flags.service';
 
 /**
@@ -12,15 +13,22 @@ import { FeatureFlagsService } from './feature-flags.service';
  * safely deployable while the feature is OFF.
  */
 @Injectable({ providedIn: 'root' })
-export class PhotoAlbumsFeatureGuard  {
+export class PhotoAlbumsFeatureGuard implements CanActivate {
   constructor(
     private featureFlagsService: FeatureFlagsService,
     private router: Router,
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
-    return this.featureFlagsService.getAllFeatureFlags().pipe(
-      map(flags => {
+    return combineLatest([
+      this.featureFlagsService.getAllFeatureFlags(),
+      this.featureFlagsService.flagsReady(),
+    ]).pipe(
+      // Wait for the first real RTDB snapshot so a fresh page load does not
+      // read the empty initial map and wrongly redirect.
+      filter(([, ready]) => ready),
+      take(1),
+      map(([flags]) => {
         if (flags['enablePhotoAlbums']?.enabled) {
           return true;
         }

@@ -12,6 +12,7 @@ export class FeatureFlagsService {
   private flagsLoaded = false;
 
   private flagsSubject: BehaviorSubject<Record<string, FeatureFlag | null>> = new BehaviorSubject<Record<string, FeatureFlag | null>>({});
+  private flagsReadySubject = new BehaviorSubject<boolean>(false);
 
   constructor(private rtdb: RtdbService) {
     this.loadAllFlags();
@@ -23,9 +24,19 @@ export class FeatureFlagsService {
 
     this.rtdb.object<Record<string, FeatureFlag>>(this.FEATURES_PATH).valueChanges().subscribe((flags) => {
       this.flagsSubject.next(flags || {});
+      this.flagsReadySubject.next(true);
     }, (error) => {
       console.error('Error loading feature flags:', error);
+      // Fail open: treat as all flags enabled so guards never dead-lock.
+      this.flagsReadySubject.next(true);
     });
+  }
+
+  /** Emits true once the RTDB has delivered the initial flags snapshot (or the
+   * load failed). Guards should combine with getAllFeatureFlags() and wait for
+   * this before deciding, otherwise they read an empty map on first navigation. */
+  flagsReady(): Observable<boolean> {
+    return this.flagsReadySubject.asObservable();
   }
 
   getFeatureFlag(featureId: string): Observable<FeatureFlag | null> {
