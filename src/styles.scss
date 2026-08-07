@@ -3,43 +3,25 @@
 // @import "bootstrap/dist/css/bootstrap-grid.min.css";
 // @import "bootstrap/dist/css/bootstrap-utilities.rtl.min.css";
 // @import "bootstrap/dist/css/bootstrap-utilities.min.css";
-@import "@angular/material/theming";
 @import "../node_modules/angular-calendar/css/angular-calendar.css";
 @import "photoswipe/dist/photoswipe.css";
 
-@include mat-core();
-
-$primary: mat-palette($mat-green, 900);
-$accent: mat-palette($mat-amber, 800);
-$warn: mat-palette($mat-red, 500);
-
+// Material 17 legacy theming (M3 token API arrives with Material 18).
 $light-theme: mat.define-light-theme(
   (
     color: (
-      primary: $primary,
-      accent: $accent,
-      warn: $warn,
+      primary: mat.define-palette(mat.$green-palette, 900),
+      accent: mat.define-palette(mat.$amber-palette, 800),
+      warn: mat.define-palette(mat.$red-palette, 500),
     ),
-    typography: mat.define-legacy-typography-config(),
+    typography: mat.define-typography-config(),
     density: 0,
-  )
-);
-
-$dark-theme: mat.define-dark-theme(
-  (
-    color: (
-      primary: $primary,
-      accent: $accent,
-      warn: $warn,
-    ),
-    typography: mat.define-legacy-typography-config(),
-    density: -2,
   )
 );
 
 html,
 body {
-  @include angular-material-theme($light-theme);
+  @include mat.all-component-themes($light-theme);
   margin: 0;
   height: 100%;
   --color-app-bg: #f5f6fa;
