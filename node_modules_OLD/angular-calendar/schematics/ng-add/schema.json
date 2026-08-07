@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "angular-calendar-schematic-ng-add",
+  "title": "angular-calendar ng-add schematic",
+  "type": "object",
+  "properties": {
+    "dateAdapter": {
+      "description": "Which date adapter to use",
+      "type": "string",
+      "default": "date-fns",
+      "enum": ["moment", "date-fns"],
+      "x-prompt": {
+        "message": "What date adapter would you like to use?",
+        "type": "list",
+        "items": [
+          {
+            "value": "date-fns",
+            "label": "date-fns        [ https://date-fns.org/ ]"
+          },
+          {
+            "value": "moment",
+            "label": "moment          [ https://momentjs.com/ ]"
+          }
+        ]
+      }
+    },
+    "standalone": {
+      "type": "boolean",
+      "default": true,
+      "description": "Install to a standalone component (default) or NgModule",
+      "x-prompt": {
+        "message": "Install to a standalone component or NgModule?",
+        "type": "list",
+        "items": [
+          {
+            "value": true,
+            "label": "Standalone component (recommended)"
+          },
+          {
+            "value": false,
+            "label": "NgModule"
+          }
+        ]
+      }
+    },
+    "installToPath": {
+      "type": "string",
+      "description": "Path to the component or NgModule file relative to the project root (e.g., 'src/app/my-component.ts')",
+      "x-prompt": {
+        "message": "Please enter the path to the component or NgModule file (optional, will use the root app component/module if not specified)",
+        "type": "input"
+      }
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Which project should the styles be added to",
+      "x-prompt": "Please enter the name of the project that will use the calendar (optional, will use the default project if not specified)"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

@@ -1,4 +1,4 @@
-@import 'src/app/styles/admin-forms';
+@use 'src/app/styles/admin-forms' as *;
 
 .admin-media-upload-upload-form {
   max-width: 100%;

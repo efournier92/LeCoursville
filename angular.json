@@ -18,6 +18,7 @@
           "builder": "@angular/build:application",
           "options": {
             "allowedCommonJsDependencies": [
+              "jszip",
               "html2canvas",
               "file-saver",
               "@babel/runtime-corejs3",

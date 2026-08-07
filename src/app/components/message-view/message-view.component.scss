@@ -1,4 +1,4 @@
-@import "src/app/components/message/message.component.scss";
+@use "src/app/components/message/message.component.scss" as *;
 
 .message-view-container {
   margin-left: 6px;

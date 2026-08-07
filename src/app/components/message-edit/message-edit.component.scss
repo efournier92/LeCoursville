@@ -1,5 +1,5 @@
-@import "src/app/components/message/message.component.scss";
-@import "src/app/components/photos-legacy/photos-legacy.component.scss";
+@use "src/app/components/message/message.component.scss" as *;
+@use "src/app/components/photos-legacy/photos-legacy.component.scss" as *;
 
 .message-title-input-container {
   line-height: 1;

@@ -1,0 +1,139 @@
+{
+  "name": "calendar-utils",
+  "version": "0.12.5",
+  "description": "Utility functions to generate views for calendars",
+  "main": "bundles/calendar-utils.umd.js",
+  "module": "calendar-utils.js",
+  "typings": "calendar-utils.d.ts",
+  "exports": {
+    "./date-adapters/date-adapter": {
+      "main": "./date-adapters/date-adapter/index.js",
+      "types": "./date-adapters/date-adapter/index.d.ts",
+      "require": "./date-adapter/date-adapters/index.js",
+      "import": "./date-adapters/esm/date-adapter/index.js"
+    },
+    "./date-adapters/date-fns": {
+      "main": "./date-adapters/date-fns/index.js",
+      "types": "./date-adapters/date-fns/index.d.ts",
+      "require": "./date-adapters/date-fns/index.js",
+      "import": "./date-adapters/esm/date-fns/index.js"
+    },
+    "./date-adapters/moment": {
+      "main": "./date-adapters/moment/index.js",
+      "types": "./date-adapters/moment/index.d.ts",
+      "require": "./date-adapters/moment/index.js",
+      "import": "./date-adapters/esm/moment/index.js"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "main": "./bundles/calendar-utils.umd.js",
+      "types": "./calendar-utils.d.ts",
+      "require": "./bundles/calendar-utils.umd.js",
+      "import": "./calendar-utils.js"
+    }
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattlewis92/calendar-utils.git"
+  },
+  "keywords": [
+    "calendar",
+    "utilities"
+  ],
+  "author": "Matt Lewis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mattlewis92/calendar-utils/issues"
+  },
+  "homepage": "https://github.com/mattlewis92/calendar-utils#readme",
+  "devDependencies": {
+    "@sinonjs/fake-timers": "^9.1.2",
+    "@types/chai": "^4.3.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^18.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
+    "chai": "^4.3.6",
+    "copyfiles": "^2.4.1",
+    "dayjs": "^1.11.13",
+    "eslint": "^8.21.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-jest": "^26.7.0",
+    "husky": "^8.0.0",
+    "jest": "^30.0.5",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "timezone-mock": "^1.3.4",
+    "ts-jest": "^29.4.1",
+    "ts-loader": "^9.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.9.2",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "peerDependencies": {
+    "date-fns": "^4.0.0",
+    "luxon": "^3.0.0",
+    "moment": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "date-fns": {
+      "optional": true
+    },
+    "luxon": {
+      "optional": true
+    },
+    "moment": {
+      "optional": true
+    }
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 99,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/"
+    ]
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --runInBand --coverage && pnpm lint && pnpm build",
+    "test:coverage": "jest --coverage",
+    "start": "pnpm test:watch",
+    "build:umd": "webpack",
+    "build:esm": "tsc --module es2015",
+    "build:date-adapters": "tsc -p tsconfig-date-adapters.json && tsc -p tsconfig-date-adapters.json --module es2015 --outDir dist/date-adapters/esm",
+    "copyfiles": "copyfiles README.md LICENSE package.json dist && copyfiles -u 1 src/date-adapters/**/package.json dist",
+    "build": "pnpm clean && pnpm build:umd && pnpm build:esm && pnpm build:date-adapters && pnpm copyfiles",
+    "clean": "rm -rf dist",
+    "preversion": "jest",
+    "postversion": "pnpm build && git push && pnpm publish dist && pnpm clean",
+    "lint": "eslint \"{src,test}/**/*.ts\""
+  }
+}

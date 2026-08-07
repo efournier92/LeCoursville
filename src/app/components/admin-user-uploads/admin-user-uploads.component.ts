@@ -48,7 +48,6 @@ interface StorageFile {
         MatDialogModule,
         MatIconModule,
         MatTooltipModule,
-        PhotoAlbumPickerDialogComponent,
     ]
 })
 export class AdminUserUploadsComponent implements OnInit, OnDestroy {

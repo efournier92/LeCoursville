@@ -1,4 +1,4 @@
-@import "src/app/components/message-view/message-view.component.scss";
+@use "src/app/components/message-view/message-view.component.scss" as *;
 
 .message-like-icon {
   position: relative;

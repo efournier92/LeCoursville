@@ -1,4 +1,4 @@
-@import '../../styles/buttons';
+@use '../../styles/buttons' as *;
 
 .upload-container {
   max-width: 600px;

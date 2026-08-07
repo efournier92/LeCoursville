@@ -1,0 +1,7 @@
+import { PDFPageView } from '../options/pdf_page_view';
+export interface AnnotationEditorLayerRenderedEvent {
+    source: PDFPageView;
+    pageNumber: number;
+    error?: any;
+    layer: unknown;
+}

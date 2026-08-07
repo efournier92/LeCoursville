@@ -1,4 +1,4 @@
-@import "src/app/components/message-edit/message-edit.component.scss";
+@use "src/app/components/message-edit/message-edit.component.scss" as *;
 
 .message-tool-icon {
   font-size: 26px;
