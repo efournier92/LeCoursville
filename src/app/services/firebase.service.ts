@@ -7,6 +7,22 @@ import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
 import { environment } from 'src/environments/environment';
 
 /**
+ * Every file under `src/environments/` is gitignored (they carry real Firebase
+ * configs), so their shape varies per machine and per age. Read the emulator
+ * switches structurally: an environment without them (an older `environment.prod.ts`,
+ * a fresh clone's `environment.ts`) must still compile, and must never connect
+ * to an emulator.
+ */
+type EmulatorSwitches = {
+  useEmulators?: boolean;
+  emulator?: {
+    auth: string;
+    database: { host: string; port: number };
+    storage: { host: string; port: number };
+  };
+};
+
+/**
  * Single Firebase app instance for the whole application, exposed through the
  * framework-agnostic modular SDK (v9+). Replaces AngularFire compat modules,
  * which are in maintenance and do not support Angular 17+ peers.
@@ -20,16 +36,18 @@ export class FirebaseService {
   analytics: Analytics | null = null;
 
   constructor() {
+    const env = environment as unknown as EmulatorSwitches;
+    const useEmulators = env.useEmulators === true;
     this.app = initializeApp(environment.firebaseConfig);
     this.auth = getAuth(this.app);
     this.db = getDatabase(this.app);
     this.storage = getStorage(this.app);
-    if (environment.useEmulators && environment.emulator) {
-      connectAuthEmulator(this.auth, environment.emulator.auth, { disableWarnings: true });
-      connectDatabaseEmulator(this.db, environment.emulator.database.host, environment.emulator.database.port);
-      connectStorageEmulator(this.storage, environment.emulator.storage.host, environment.emulator.storage.port);
+    if (useEmulators && env.emulator) {
+      connectAuthEmulator(this.auth, env.emulator.auth, { disableWarnings: true });
+      connectDatabaseEmulator(this.db, env.emulator.database.host, env.emulator.database.port);
+      connectStorageEmulator(this.storage, env.emulator.storage.host, env.emulator.storage.port);
     }
-    if (typeof window !== 'undefined' && !environment.useEmulators) {
+    if (typeof window !== 'undefined' && !useEmulators) {
       // Analytics is optional at runtime (e.g. unsupported webviews); resolve
       // asynchronously so app init never blocks on it. Skipped in emulator
       // mode: there is no analytics emulator, and the gate asserts zero
