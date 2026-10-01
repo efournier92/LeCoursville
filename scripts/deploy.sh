@@ -4,16 +4,21 @@ set -e
 # Deploy LeCoursville
 # Usage: ./deploy.sh <prod|dev>
 
+# Hosting is the ONLY Firebase target this repo deploys. Never use a bare
+# `firebase deploy` here: firebase.json also wires `storage.rules` for the
+# storage emulator, and that file is deliberately open (`allow read, write:
+# if true`) so the e2e gate can seed fixtures. A bare deploy ships it and
+# overwrites the real rules in the Firebase console with an open bucket.
 deploy_prod() {
   echo "Deploying to production..."
   firebase use lecoursville
-  firebase deploy
+  firebase deploy --only hosting
 }
 
 deploy_dev() {
   echo "Deploying to dev..."
   firebase use lecoursville-dev
-  firebase deploy
+  firebase deploy --only hosting
 }
 
 build_prod() {
