@@ -58,6 +58,53 @@ validate_dev_branch() {
   echo "Proceeding..."
 }
 
+# Every file under src/environments/ is gitignored and read at BUILD time, so a
+# local config swap can produce a bundle wired to the wrong Firebase project.
+# That has happened: a prod-configured bundle was deployed to the dev site, which
+# showed up as auth/invalid-continue-uri and quietly pointed dev testing at the
+# production database. Assert the built bundle's identity before tagging or
+# deploying, and fail loudly instead.
+validate_bundle_config() {
+  local env=$1
+  local pub_dir=""
+  for candidate in dist/lecoursville/browser dist/lecoursville; do
+    if [ -d "$candidate" ]; then
+      pub_dir="$candidate"
+      break
+    fi
+  done
+  if [ -z "$pub_dir" ]; then
+    echo "ERROR: no build output found (looked in dist/lecoursville/browser and dist/lecoursville)."
+    exit 1
+  fi
+
+  local expect_domain expect_db other_domain other_db
+  if [ "$env" = "prod" ]; then
+    expect_domain="lecoursville.firebaseapp.com"
+    expect_db="lecoursville.firebaseio.com"
+    other_domain="lecoursville-dev.firebaseapp.com"
+    other_db="lecoursville-dev-default-rtdb"
+  else
+    expect_domain="lecoursville-dev.firebaseapp.com"
+    expect_db="lecoursville-dev-default-rtdb"
+    other_domain="lecoursville.firebaseapp.com"
+    other_db="lecoursville.firebaseio.com"
+  fi
+
+  echo "=== Checking built bundle identity ($env) ==="
+  if ! grep -rq --include='*.js' "$expect_domain" "$pub_dir" || ! grep -rq --include='*.js' "$expect_db" "$pub_dir"; then
+    echo "ERROR: building for '$env' but the bundle has no $expect_domain / $expect_db."
+    echo "Check src/environments/environment.ts (gitignored; read at build time) and rebuild."
+    exit 1
+  fi
+  if grep -rq --include='*.js' "$other_domain" "$pub_dir" || grep -rq --include='*.js' "$other_db" "$pub_dir"; then
+    echo "ERROR: building for '$env' but the bundle contains the other project's config"
+    echo "       ($other_domain / $other_db). Refusing to deploy across projects."
+    exit 1
+  fi
+  echo "Bundle identity OK: $env config in $pub_dir"
+}
+
 run_e2e_gate() {
   echo "=== Running e2e gate ==="
   npm run e2e:gate
@@ -98,6 +145,7 @@ main() {
     validate_prod_branch
     run_e2e_gate
     build_prod
+    validate_bundle_config prod
     tag_build
     deploy_prod
     echo "=== Production deploy complete ==="
@@ -105,6 +153,7 @@ main() {
     validate_dev_branch
     run_e2e_gate
     build_dev
+    validate_bundle_config dev
     deploy_dev
     echo "=== Dev deploy complete ==="
   else
