@@ -23,6 +23,10 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
   photos: Photo[] = [];
   searchTerm = '';
   sortType: 'recent' | 'title' = 'recent';
+  // status contract per design_specs/loading-contract.md; albums$ seeds
+  // null (not loaded) and emits real snapshots (possibly empty) after.
+  status: 'loading' | 'error' | 'ready' = 'loading';
+  skeletonIterations = [1, 2, 3, 4, 5, 6];
 
   private subscriptions: Subscription[] = [];
 
@@ -34,19 +38,39 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadData();
+
+    this.analyticsService.logEvent('photo_album_view', {});
+  }
+
+  private loadData(): void {
     this.subscriptions.push(
       this.photoAlbumsService.albums$.subscribe(albums => {
-        this.albums = albums || [];
-      }),
+        // null is the service's not-yet-loaded seed; only a real snapshot
+        // (even an empty one) resolves the page.
+        if (albums === null) {
+          return;
+        }
+        this.albums = albums;
+        this.status = 'ready';
+      }, () => this.status = 'error'),
     );
 
     this.subscriptions.push(
       this.photosService.nonMessagePhotos$.subscribe(photos => {
         this.photos = photos || [];
+      }, () => {
+        // Covers-only stream; a failure degrades cover art, and the page
+        // state is owned by albums$.
       }),
     );
+  }
 
-    this.analyticsService.logEvent('photo_album_view', {});
+  onRetry(): void {
+    this.status = 'loading';
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
+    this.loadData();
   }
 
   ngOnDestroy(): void {

@@ -6,8 +6,12 @@ import { RtdbService, RtdbListRef } from './rtdb.service';
 @Injectable({ providedIn: 'root' })
 export class PhotoAlbumsService {
   private readonly PHOTO_ALBUMS_PATH = 'photoAlbums';
-  private albumsSource: BehaviorSubject<PhotoAlbum[]> = new BehaviorSubject<PhotoAlbum[]>([]);
-  public albums$: Observable<PhotoAlbum[]> = this.albumsSource.asObservable();
+  // Seed is null, not []: an empty array means "Firebase says zero albums"
+  // (empty state), null means "not yet loaded" (skeleton). Emitting a []
+  // seed made consumers flash the empty state before the first real
+  // snapshot. Admin consumers already coerce falsy to [].
+  private albumsSource: BehaviorSubject<PhotoAlbum[] | null> = new BehaviorSubject<PhotoAlbum[] | null>(null);
+  public albums$: Observable<PhotoAlbum[] | null> = this.albumsSource.asObservable();
 
   constructor(private rtdb: RtdbService) {
     this.getAllAlbums().valueChanges().subscribe((albums: PhotoAlbum[]) => {

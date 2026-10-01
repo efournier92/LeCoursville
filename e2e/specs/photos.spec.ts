@@ -17,6 +17,33 @@ test.describe('photos', () => {
     await expect(page.getByText('E2E Album Two')).toBeVisible();
   });
 
+  test('albums page resolves without ever showing the empty state', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/photos');
+    // The skeleton is transient (it clears 500ms after the first RTDB
+    // emission), so the deterministic assertions are the invariant ones:
+    // real content arrives and the empty state never renders for it.
+    await expect(page.locator('[data-testid="albums-skeleton"], .album-tile').first()).toBeAttached();
+    await expect(page.getByText('No albums yet')).toHaveCount(0);
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+    await expect(page.getByTestId('albums-skeleton')).toHaveCount(0);
+  });
+
+  test('album search with no matches shows a full-width no-results message', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/photos');
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+    await page.getByLabel('Search albums').fill('zzz-no-match');
+    const message = page.locator('.no-results-message');
+    await expect(message).toBeVisible();
+    // The message spans the whole grid row, not one 180px cell.
+    const [messageBox, gridBox] = await Promise.all([
+      message.boundingBox(),
+      page.locator('.album-grid').boundingBox(),
+    ]);
+    expect(messageBox!.width).toBeGreaterThan(gridBox!.width * 0.9);
+  });
+
   test('album detail renders the seeded photos from the storage emulator', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/photos/album-1');

@@ -23,38 +23,54 @@
   </div>
 </app-page-toolbar>
 
-<div class="album-grid">
-  @for (album of getFilteredAlbums(); track album) {
-    <div
-      class="album-tile"
-      (click)="onAlbumClick(album)">
-      @if (resolveCover(album)) {
-        <img
-          [src]="resolveCover(album)"
-          [alt]="album.title"
-          loading="lazy" decoding="async" />
-      } @else {
-        <div class="album-tile-placeholder">
-          <mat-icon>photo_library</mat-icon>
+@if (status === 'loading') {
+  <div class="album-grid" data-testid="albums-skeleton" aria-busy="true">
+    @for (i of skeletonIterations; track i) {
+      <div class="album-tile skeleton-tile">
+        <div class="skeleton-image"></div>
+        <div class="album-tile-scrim">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line count"></div>
         </div>
-      }
-      <div class="album-tile-scrim">
-        <div class="album-tile-title">{{ album.title }}</div>
-        <div class="album-tile-count">{{ getPhotoCount(album) }} photos</div>
       </div>
-    </div>
-  }
-  @if (getFilteredAlbums().length === 0 && searchTerm) {
-    <app-no-results-message
-      [searchTerm]="searchTerm"
-      noun="albums"
-    ></app-no-results-message>
-  }
-  @if (getFilteredAlbums().length === 0 && !searchTerm) {
-    <app-no-results-message
-      title="No albums yet"
-      hint="Albums you create will appear here."
-      [isCentered]="true"
-    ></app-no-results-message>
-  }
-</div>
+    }
+  </div>
+} @else if (status === 'error') {
+  <app-load-error message="Couldn't load albums." (retry)="onRetry()"></app-load-error>
+} @else {
+  <div class="album-grid">
+    @for (album of getFilteredAlbums(); track album) {
+      <div
+        class="album-tile"
+        (click)="onAlbumClick(album)">
+        @if (resolveCover(album)) {
+          <img
+            [src]="resolveCover(album)"
+            [alt]="album.title"
+            loading="lazy" decoding="async" />
+        } @else {
+          <div class="album-tile-placeholder">
+            <mat-icon>photo_library</mat-icon>
+          </div>
+        }
+        <div class="album-tile-scrim">
+          <div class="album-tile-title">{{ album.title }}</div>
+          <div class="album-tile-count">{{ getPhotoCount(album) }} photos</div>
+        </div>
+      </div>
+    }
+    @if (getFilteredAlbums().length === 0 && searchTerm) {
+      <app-no-results-message
+        [searchTerm]="searchTerm"
+        noun="albums"
+      ></app-no-results-message>
+    }
+    @if (getFilteredAlbums().length === 0 && !searchTerm) {
+      <app-no-results-message
+        title="No albums yet"
+        hint="Albums you create will appear here."
+        [isCentered]="true"
+      ></app-no-results-message>
+    }
+  </div>
+}
