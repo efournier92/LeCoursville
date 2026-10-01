@@ -17,9 +17,12 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
   headerQuoteText: string = ExpressionConstants.HeaderQuoteText;
   headerAttributionText: string = ExpressionConstants.HeaderAttributionText;
   isLoading: boolean = true;
-  private hasLoadedOnce: boolean = false;
   messageType: string = MessageConstants.Types.Expression;
   sortSettings: SortSettingsForExpressions = new SortSettingsForExpressions();
+  // The base class skips the service's synchronous [] seed, so the first
+  // real emission may arrive after the first render; never leave this
+  // unassigned or the template's displayedItems.length throws.
+  displayedItems: Expression[] = [];
 
   // LIFECYCLE HOOKS
 
@@ -59,14 +62,9 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
       MessageConstants.Types.Expression,
     );
 
-    // First emit ends the skeleton state even when the list is empty —
-    // a data-less list must show an empty state, not shimmer forever.
-    if (!this.hasLoadedOnce) {
-      this.hasLoadedOnce = true;
-      setTimeout(() => {
-        this.isLoading = false;
-      }, 500);
-    }
+    // A first emit (even an empty list) ends the skeleton; the base class
+    // filters out the BehaviorSubject seed replay before calling this.
+    this.isLoading = false;
 
     this.sortSettings.activeFilterParams = this.queryParams;
 

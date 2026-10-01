@@ -1,5 +1,16 @@
 <div class="slideshow-stage" [class.paused]="!isPlaying">
-  @if (currentPhoto()) {
+  @if (status === 'loading') {
+    <div class="slideshow-loading" aria-busy="true"></div>
+  } @else if (status === 'error') {
+    <div class="slideshow-message">
+      <app-load-error message="Couldn't load the slideshow." (retry)="onRetry()"></app-load-error>
+    </div>
+  } @else if (shuffled.length === 0) {
+    <div class="slideshow-message">
+      <p>No photos in this album yet.</p>
+      <button type="button" class="slideshow-empty-exit" (click)="exit()">Back to album</button>
+    </div>
+  } @else {
     <img
       class="slideshow-image"
       [class]="kenBurnsClass"
@@ -8,19 +19,21 @@
       [style.animationDuration.ms]="slideDurationMs" />
   }
 
-  <div class="slideshow-controls">
-    <button mat-icon-button (click)="prev()" matTooltip="Previous">
-      <mat-icon>skip_previous</mat-icon>
-    </button>
-    <button mat-icon-button (click)="togglePlay()" matTooltip="Play / Pause">
-      <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
-    </button>
-    <button mat-icon-button (click)="next()" matTooltip="Next">
-      <mat-icon>skip_next</mat-icon>
-    </button>
-    <span class="slideshow-counter">{{ currentIndex + 1 }} / {{ shuffled.length }}</span>
-    <button mat-icon-button (click)="exit()" matTooltip="Exit (Esc)">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
+  @if (status === 'ready' && shuffled.length > 0) {
+    <div class="slideshow-controls">
+      <button mat-icon-button (click)="prev()" matTooltip="Previous">
+        <mat-icon>skip_previous</mat-icon>
+      </button>
+      <button mat-icon-button (click)="togglePlay()" matTooltip="Play / Pause">
+        <mat-icon>{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+      </button>
+      <button mat-icon-button (click)="next()" matTooltip="Next">
+        <mat-icon>skip_next</mat-icon>
+      </button>
+      <span class="slideshow-counter">{{ currentIndex + 1 }} / {{ shuffled.length }}</span>
+      <button mat-icon-button (click)="exit()" matTooltip="Exit (Esc)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
 </div>

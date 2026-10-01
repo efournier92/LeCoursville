@@ -19,6 +19,9 @@ export class PhotoShellComponent implements OnInit, OnDestroy {
     this.subscription = this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
       const flag = flags?.['enablePhotoAlbums'];
       this.enablePhotoAlbums = !!flag?.enabled;
+    }, () => {
+      // minimalist: the pre-resolution default already renders the legacy
+      // photos page, so a failed flags stream fails open to working content.
     });
   }
 

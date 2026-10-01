@@ -4,13 +4,14 @@ export const E2E_USERS = {
   admin: { email: 'admin@e2e.local', password: 'E2e-pass-2026' },
   user: { email: 'user@e2e.local', password: 'E2e-pass-2026' },
   other: { email: 'other@e2e.local', password: 'E2e-pass-2026' },
+  sparse: { email: 'sparse@e2e.local', password: 'E2e-pass-2026' },
 };
 
 /**
  * Signs in through the real auth form (emulator auth). Lands on the promoted
  * route (/calendar) when navigation completes.
  */
-export async function login(page: Page, who: 'admin' | 'user' | 'other' = 'admin') {
+export async function login(page: Page, who: 'admin' | 'user' | 'other' | 'sparse' = 'admin') {
   const creds = E2E_USERS[who];
   await page.goto('/');
   await page.getByTestId('auth-email').fill(creds.email);

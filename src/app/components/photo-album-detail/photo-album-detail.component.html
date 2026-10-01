@@ -24,7 +24,17 @@
   </button>
 </app-page-toolbar>
 
-@if (!showSpinner) {
+@if (status === 'loading') {
+  <div class="photos-skeleton-grid" aria-busy="true">
+    @for (_ of skeletonIterations; track _) {
+      <div class="photos-skeleton-card">
+        <div class="skeleton-photo-image"></div>
+      </div>
+    }
+  </div>
+} @else if (status === 'error') {
+  <app-load-error message="Couldn't load this album." (retry)="onRetry()"></app-load-error>
+} @else {
   <div class="photo-grid">
     @for (photo of getFilteredPhotos(); track photo) {
       <div
@@ -59,14 +69,6 @@
         hint="Photos added to this album will appear here."
         [isCentered]="true"
       ></app-no-results-message>
-    }
-  </div>
-} @else {
-  <div class="photos-skeleton-grid">
-    @for (_ of skeletonIterations; track _) {
-      <div class="photos-skeleton-card">
-        <div class="skeleton-photo-image"></div>
-      </div>
     }
   </div>
 }

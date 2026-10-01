@@ -35,8 +35,12 @@
     </mat-form-field>
   </app-page-toolbar>
 
-  @if (contacts.length === 0 && !searchTerm && !selectedClan) {
-    <div class="contacts-skeleton-grid">
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load contacts." (retry)="retry()"></app-load-error>
+  }
+
+  @if (status === 'loading' && !searchTerm && !selectedClan) {
+    <div class="contacts-skeleton-grid" aria-busy="true">
       @for (i of skeletonIterations; track i) {
         <div
           class="contacts-skeleton-card"
@@ -81,6 +85,13 @@
   @if (contacts.length === 0 && (searchTerm || selectedClan) && searchTerm) {
     <app-no-results-message
       [searchTerm]="searchTerm"
+    ></app-no-results-message>
+  }
+
+  @if (status === 'ready' && contacts.length === 0 && !searchTerm && !selectedClan) {
+    <app-no-results-message
+      title="No contacts yet"
+      hint="Contact info will show up here once it's added."
     ></app-no-results-message>
   }
 </div>

@@ -1,4 +1,17 @@
-@if (user?.name) {
+@if (status === 'error') {
+  <div class="calendar-component-container page-ground page-content">
+    <app-load-error message="We couldn't load the calendar." (retry)="retry()"></app-load-error>
+  </div>
+} @else if (status === 'loading') {
+  <div class="calendar-component-container page-ground page-content" aria-busy="true">
+    <div class="calendar-skeleton">
+      <div class="calendar-skeleton-pill"></div>
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="calendar-skeleton-bar"></div>
+      }
+    </div>
+  </div>
+} @else {
   <div class="calendar-component-container page-ground page-content">
     <app-page-toolbar title="Calendar">
       <div class="calendar-toolbar">
@@ -50,7 +63,14 @@
         </div>
       </div>
     }
-    <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
+    @if (status === 'empty') {
+      <div class="calendar-empty">
+        <p class="calendar-empty-title">No events yet</p>
+        <p class="calendar-empty-hint">Birthdays and anniversaries will appear here once people are added.</p>
+      </div>
+    } @else {
+      <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
+    }
     @if (selectedPersonId) {
       <app-person-detail-modal [personId]="selectedPersonId" (closeModal)="closeModal()" (openPerson)="openPersonModal($event)"></app-person-detail-modal>
     }

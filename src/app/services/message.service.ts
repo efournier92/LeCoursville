@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { Message } from 'src/app/models/message';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
@@ -10,8 +10,13 @@ import { RtdbService } from './rtdb.service';
 })
 export class MessageService {
   messagesObservable: Observable<Message[]>;
+  // minimalist: error side-channel instead of erroring the BehaviorSubject,
+  // which would terminate every subscriber permanently; retry re-subscribes.
+  messagesError$: Observable<void>;
 
   private messagesSource: BehaviorSubject<Message[]>;
+  private messagesErrorSource = new Subject<void>();
+  private messagesSub: Subscription | null = null;
 
   constructor(
     private rtdb: RtdbService,
@@ -19,6 +24,7 @@ export class MessageService {
   ) {
     this.messagesSource = new BehaviorSubject([]);
     this.messagesObservable = this.messagesSource.asObservable();
+    this.messagesError$ = this.messagesErrorSource.asObservable();
     this.subscribeToUserObservable();
   }
 
@@ -57,15 +63,22 @@ export class MessageService {
         if (user) {
           this.subscribeToGetMessages();
         }
-      }
+      },
+      () => this.messagesErrorSource.next(),
     );
   }
 
+  retryMessages(): void {
+    this.subscribeToGetMessages();
+  }
+
   private subscribeToGetMessages(): void {
-    this.getMessages().valueChanges().subscribe(
+    this.messagesSub?.unsubscribe();
+    this.messagesSub = this.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
         this.updateMessagesEvent(messages);
-      }
+      },
+      () => this.messagesErrorSource.next(),
     );
   }
 }

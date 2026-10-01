@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CalendarService, Months } from 'src/app/services/calendar.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -24,6 +24,7 @@ export class CalendarComponent implements OnInit {
 
   refresh: Subject<any> = new Subject();
   user: User;
+  status: 'loading' | 'error' | 'ready' | 'empty' = 'loading';
   view = CalendarView.Month;
   months: string[] = Months;
   years: number[];
@@ -39,6 +40,11 @@ export class CalendarComponent implements OnInit {
   datePickerOpen = false;
   pickerDate: Date;
   pickerYear: number;
+
+  private userSub: Subscription | null = null;
+  private eventsSub: Subscription | null = null;
+  private userArrived = false;
+  private eventsArrived = false;
 
   constructor(
     public authService: AuthService,
@@ -71,19 +77,53 @@ export class CalendarComponent implements OnInit {
 
   // SUBSCRIPTIONS
 
+  retry(): void {
+    this.status = 'loading';
+    this.subscribeToUserObservable();
+    this.subscribeToCalendarEventsObservable();
+  }
+
   private subscribeToUserObservable(): void {
-    this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+    this.userSub?.unsubscribe();
+    this.userSub = this.authService.userObservable.subscribe(
+      (user: User) => {
+        this.user = user;
+        if (user?.name) {
+          this.userArrived = true;
+          this.updateStatus();
+        }
+      },
+      () => (this.status = 'error'),
     );
   }
 
+  // The service seeds its BehaviorSubject with [], so a synchronous replay of
+  // an empty list is still the seed, not data.
+  // minimalist: a warm route into a genuinely empty dataset waits for the next
+  // fresh emit; expose a loaded$ on the service if that ever matters.
   private subscribeToCalendarEventsObservable(): void {
-    this.calendarService.calendarEventsObservable.subscribe(
+    this.eventsSub?.unsubscribe();
+    this.eventsArrived = false;
+    let isSeed = true;
+    this.eventsSub = this.calendarService.calendarEventsObservable.subscribe(
       (events: RecurringEvent[]) => {
+        const seedEmpty = isSeed && events.length === 0;
+        isSeed = false;
         this.allEvents = events;
         this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
-      }
+        if (!seedEmpty) {
+          this.eventsArrived = true;
+          this.updateStatus();
+        }
+      },
+      () => (this.status = 'error'),
     );
+  }
+
+  private updateStatus(): void {
+    if (this.userArrived && this.eventsArrived) {
+      this.status = this.allEvents.length > 0 ? 'ready' : 'empty';
+    }
   }
 
   private subscribeToQueryParams(): void {
@@ -108,7 +148,7 @@ export class CalendarComponent implements OnInit {
         this.viewDate = new Date(this.selectedYear, this.months.indexOf(this.viewMonth), 1);
         this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
       }
-    });
+    }, () => (this.status = 'error'));
   }
 
   // PUBLIC METHODS

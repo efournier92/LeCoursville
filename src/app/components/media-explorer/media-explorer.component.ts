@@ -53,6 +53,9 @@ export class MediaExplorerComponent implements OnInit {
         this.getQueryParams();
         this.subscribeToUserObservable();
       },
+      // Page-level error UI lives in app-media-list, which subscribes to
+      // this same stream; nothing in this template renders off its data.
+      () => {},
     );
 
     this.analyticsService.logEvent('component_load_media_explorer', {});
@@ -67,6 +70,9 @@ export class MediaExplorerComponent implements OnInit {
   private subscribeToUserObservable(): void {
     this.authService.userObservable.subscribe(
       (user: User) => (this.user = user),
+      // minimalist: user only feeds analytics ids and the list gate here;
+      // no loading UI keyed off it to recover.
+      () => {},
     );
   }
 
@@ -232,7 +238,7 @@ export class MediaExplorerComponent implements OnInit {
   private getQueryParams() {
     this.activatedRoute.queryParams.subscribe((params) => {
       this.getMediaIdFromQueryParams(params);
-    });
+    }, () => {});
   }
 
   private getMediaIdFromQueryParams(params) {

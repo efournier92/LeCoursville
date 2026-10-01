@@ -31,7 +31,10 @@ export class MediaVideoComponent implements OnInit {
 
   private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => this.user = user,
+      // Template is a static wrapper around app-media-explorer; user only
+      // feeds analytics ids, so there is no blank state to cover.
+      () => {},
     );
   }
 

@@ -50,6 +50,37 @@
 .kenburns-bl-tr { animation-name: kenburns-bl-tr; }
 .kenburns-br-tl { animation-name: kenburns-br-tl; }
 
+.slideshow-loading {
+  width: min(60vw, 480px);
+  height: min(50vh, 300px);
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(255, 255, 255, 0.08);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.slideshow-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+
+  .slideshow-empty-exit {
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 4px 16px;
+    cursor: pointer;
+  }
+}
+
 .slideshow-controls {
   position: fixed;
   bottom: 24px;

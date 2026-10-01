@@ -6,7 +6,12 @@
     </button>
   </app-page-toolbar>
   <div class="chat-container d-flex justify-content-center row">
-    @if (!loading && allItems.length === 0) {
+    @if (error) {
+      <div class="col-lg-11 col-xl-7 mt-4">
+        <app-load-error message="We couldn't load messages." (retry)="retry()"></app-load-error>
+      </div>
+    }
+    @if (!loading && !error && allItems.length === 0) {
       <div class="chat-empty">
         <mat-icon class="chat-empty-icon" aria-hidden="true">forum</mat-icon>
         <p class="chat-empty-title">No messages yet</p>

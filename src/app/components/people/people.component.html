@@ -35,8 +35,12 @@
     </mat-form-field>
   </app-page-toolbar>
 
-  @if (familyGroups.length === 0 && !filterQuery.trim()) {
-    <div class="w-100 skeleton-state">
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load the family tree." (retry)="retry()"></app-load-error>
+  }
+
+  @if (status === 'loading' && !filterQuery.trim()) {
+    <div class="w-100 skeleton-state" aria-busy="true">
       @for (i of skeletonIterations; track i) {
         <div class="skeleton-family">
           <div class="skeleton-header"></div>
@@ -65,6 +69,13 @@
   @if (familyGroups.length === 0 && filterQuery.trim()) {
     <app-no-results-message
       [searchTerm]="filterQuery"
+    ></app-no-results-message>
+  }
+
+  @if (status === 'ready' && familyGroups.length === 0 && !filterQuery.trim()) {
+    <app-no-results-message
+      title="No people yet"
+      hint="The family tree will show up here once people are added."
     ></app-no-results-message>
   }
 

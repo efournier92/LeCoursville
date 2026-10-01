@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
 import { combineLatest, Observable, of } from 'rxjs';
-import { filter, map, take } from 'rxjs/operators';
+import { catchError, filter, map, take, timeout } from 'rxjs/operators';
 import { FeatureFlagsService } from './feature-flags.service';
 
 @Injectable({
@@ -40,6 +40,13 @@ export class FeatureFlagGuard  {
         return this.router.createUrlTree(['/feature-disabled'], {
           queryParams: { feature: featureId }
         });
+      }),
+      timeout(10_000),
+      catchError(() => {
+        // Fail open like feature-flags.service.ts: a hung route is worse
+        // than an unflagged one.
+        console.warn(`FeatureFlagGuard: flags not ready after 10s, failing open for '${featureId}'`);
+        return of(true);
       }),
     );
   }

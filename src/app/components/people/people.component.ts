@@ -49,8 +49,11 @@ export class PeopleComponent implements OnInit, OnDestroy {
   filterQuery = '';
   selectedFamily = '';
   selectedPersonId: string | null = null;
+  status: 'loading' | 'error' | 'ready' = 'loading';
   private subscription: Subscription | null = null;
   private clanSubscription: Subscription | null = null;
+  private peopleArrived = false;
+  private clansArrived = false;
   private peopleMap: Map<string, Person> = new Map();
   private clansMap: Map<string, Clan> = new Map();
   private clansByIdMap: Map<string, Clan> = new Map();
@@ -65,33 +68,76 @@ export class PeopleComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscription = this.peopleService.people$.subscribe(
-      (people: Person[]) => {
-        this.allPeople = people;
-        this.peopleMap = new Map(this.allPeople.map(p => [p.id, p]));
-        this.applyFilter();
-      }
-    );
-
-    this.clanSubscription = this.clanService.clans$.subscribe(
-      (clans: Clan[]) => {
-        this.clansMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
-        this.clansByIdMap = new Map(clans.map(c => [c.id, c]));
-        this.applyFilter();
-      }
-    );
+    this.subscribePeople();
+    this.subscribeClans();
 
     this.route.queryParamMap.subscribe(queryParams => {
       this.selectedFamily = queryParams.get('clan') || '';
       this.filterQuery = queryParams.get('filter') || '';
       this.selectedPersonId = queryParams.get('selected') || null;
       this.applyFilter();
-    });
+    }, () => (this.status = 'error'));
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.clanSubscription?.unsubscribe();
+  }
+
+  retry(): void {
+    this.status = 'loading';
+    this.subscribePeople();
+    this.subscribeClans();
+  }
+
+  // The services seed BehaviorSubjects with [], so a synchronous replay of an
+  // empty list is still the seed, not data.
+  // minimalist: a warm route into a genuinely empty dataset waits for the next
+  // fresh emit; expose a loaded$ on the services if that ever matters.
+  private subscribePeople(): void {
+    this.peopleArrived = false;
+    this.subscription?.unsubscribe();
+    let isSeed = true;
+    this.subscription = this.peopleService.people$.subscribe(
+      (people: Person[]) => {
+        const seedEmpty = isSeed && people.length === 0;
+        isSeed = false;
+        this.allPeople = people;
+        this.peopleMap = new Map(this.allPeople.map(p => [p.id, p]));
+        this.applyFilter();
+        if (!seedEmpty) {
+          this.peopleArrived = true;
+          this.updateStatus();
+        }
+      },
+      () => (this.status = 'error'),
+    );
+  }
+
+  private subscribeClans(): void {
+    this.clansArrived = false;
+    this.clanSubscription?.unsubscribe();
+    let isSeed = true;
+    this.clanSubscription = this.clanService.clans$.subscribe(
+      (clans: Clan[]) => {
+        const seedEmpty = isSeed && clans.length === 0;
+        isSeed = false;
+        this.clansMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
+        this.clansByIdMap = new Map(clans.map(c => [c.id, c]));
+        this.applyFilter();
+        if (!seedEmpty) {
+          this.clansArrived = true;
+          this.updateStatus();
+        }
+      },
+      () => (this.status = 'error'),
+    );
+  }
+
+  private updateStatus(): void {
+    if (this.peopleArrived && this.clansArrived) {
+      this.status = 'ready';
+    }
   }
 
   onFilterChange(query: string): void {

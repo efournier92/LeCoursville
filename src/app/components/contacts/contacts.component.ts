@@ -22,8 +22,12 @@ export class ContactsComponent implements OnInit, OnDestroy {
   clans: Clan[] = [];
   selectedPersonId: string | null = null;
   skeletonIterations = [1, 2, 3, 4, 5, 6];
+  status: 'loading' | 'error' | 'ready' = 'loading';
 
-  private subscriptions: Subscription[] = [];
+  private contactsSub: Subscription | null = null;
+  private clansSub: Subscription | null = null;
+  private contactsArrived = false;
+  private clansArrived = false;
 
   constructor(
     private contactsFromPeopleService: ContactsFromPeopleService,
@@ -35,17 +39,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.clanService.clans$.subscribe(clans => {
-        this.clans = clans.sort((a, b) => (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name));
-      })
-    );
-
-    this.subscriptions.push(
-      this.contactsFromPeopleService.contacts$.subscribe(cards => {
-        this.applyFilters(cards);
-      })
-    );
+    this.subscribeData();
 
     this.route.queryParamMap.subscribe(queryParams => {
       this.searchTerm = queryParams.get('filter') || '';
@@ -54,14 +48,59 @@ export class ContactsComponent implements OnInit, OnDestroy {
       // Re-trigger filter after query params update
       this.contactsFromPeopleService.contacts$.subscribe(cards => {
         this.applyFilters(cards);
-      }).add(() => {});
-    });
+      }, () => (this.status = 'error')).add(() => {});
+    }, () => (this.status = 'error'));
 
     this.analyticsService.logEvent("component_load_contacts", {});
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.contactsSub?.unsubscribe();
+    this.clansSub?.unsubscribe();
+  }
+
+  retry(): void {
+    this.subscribeData();
+  }
+
+  // The services seed BehaviorSubjects with [], so a synchronous replay of an
+  // empty list is still the seed, not data.
+  // minimalist: a warm route into a genuinely empty dataset waits for the next
+  // fresh emit; expose a loaded$ on the services if that ever matters.
+  private subscribeData(): void {
+    this.status = 'loading';
+    this.contactsArrived = false;
+    this.clansArrived = false;
+    this.clansSub?.unsubscribe();
+    this.contactsSub?.unsubscribe();
+
+    let clansSeed = true;
+    this.clansSub = this.clanService.clans$.subscribe(clans => {
+      const seedEmpty = clansSeed && clans.length === 0;
+      clansSeed = false;
+      this.clans = clans.sort((a, b) => (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name));
+      if (!seedEmpty) {
+        this.clansArrived = true;
+        this.updateStatus();
+      }
+    }, () => (this.status = 'error'));
+
+    let contactsSeed = true;
+    this.contactsSub = this.contactsFromPeopleService.contacts$.subscribe(cards => {
+      const seedEmpty = contactsSeed && cards.length === 0;
+      contactsSeed = false;
+      this.applyFilters(cards);
+      if (!seedEmpty) {
+        this.contactsArrived = true;
+        this.updateStatus();
+      }
+    }, () => (this.status = 'error'));
+  }
+
+  private updateStatus(): void {
+    if (this.contactsArrived && this.clansArrived) {
+      this.status = 'ready';
+    }
   }
 
   openPersonDetail(personId: string): void {
@@ -106,7 +145,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   private applyFiltersFromParams(): void {
     this.contactsFromPeopleService.contacts$.subscribe(cards => {
       this.applyFilters(cards);
-    }).add(() => {});
+    }, () => (this.status = 'error')).add(() => {});
   }
 
   clearClanFilter(): void {

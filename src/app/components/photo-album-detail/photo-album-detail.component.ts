@@ -26,7 +26,7 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
   photos: Photo[] = [];
   searchTerm = '';
   sortType: 'recent' | 'yearTaken' = 'recent';
-  showSpinner = true;
+  status: 'loading' | 'error' | 'ready' = 'loading';
   skeletonIterations = [1, 2, 3, 4, 5, 6];
 
   private openedFromQuery = false;
@@ -43,24 +43,43 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
 
   ngOnInit(): void {
     this.albumId = this.route.snapshot.paramMap.get('albumId') || '';
+    this.subscribeToData();
+  }
 
+  private subscribeToData(): void {
     this.subscriptions.push(
       this.photoAlbumsService.getAlbum(this.albumId).subscribe(album => {
         this.album = album;
-      }),
+      }, () => this.onLoadError()),
     );
 
     this.subscriptions.push(
       this.photosService.getPhotosByAlbum(this.albumId).subscribe(photos => {
         this.photos = photos || [];
-        this.showSpinner = false;
+        if (this.status === 'loading') {
+          this.status = 'ready';
+        }
         const targetId = this.route.snapshot.queryParamMap.get('photo');
         if (targetId && !this.openedFromQuery) {
           this.openedFromQuery = true;
           setTimeout(() => this.openPhotoSwipe(targetId), 0);
         }
-      }),
+      }, () => this.onLoadError()),
     );
+  }
+
+  private onLoadError(): void {
+    // Whichever stream errors first wins; later emits must not clear it.
+    if (this.status === 'loading') {
+      this.status = 'error';
+    }
+  }
+
+  onRetry(): void {
+    this.status = 'loading';
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
+    this.subscribeToData();
   }
 
   ngAfterViewInit(): void {

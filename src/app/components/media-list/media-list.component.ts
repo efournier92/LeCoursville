@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
@@ -29,8 +30,8 @@ export class MediaListComponent implements OnInit, OnChanges {
   filteredMedia: UploadableMedia[];
   sortTypes: string[];
   selectedSortType: string;
-  isLoading = true;
-  private hasLoadedOnce = false;
+  status: 'loading' | 'error' | 'ready' = 'loading';
+  private mediaSubscription: Subscription | null = null;
   skeletonIterations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   constructor(
@@ -71,26 +72,28 @@ export class MediaListComponent implements OnInit, OnChanges {
   private subscribeToUserObservable() {
     this.authService.userObservable.subscribe(
       (user: User) => (this.user = user),
+      // Auth only gates list visibility and analytics ids here; the page
+      // load state is owned by mediaObservable below.
+      () => {},
     );
   }
 
   private subscribeToMediaObservable(): void {
-    this.mediaService.mediaObservable.subscribe((mediaList) => {
+    this.mediaSubscription = this.mediaService.mediaObservable.subscribe((mediaList) => {
       this.allMedia = mediaList;
       this.filteredMedia = this.filterMediaByType(
         this.mediaTypesToShow,
         this.allMedia,
       );
       this.filteredMedia = this.sortMedia(this.filteredMedia);
-      // First emit ends the skeleton state even when the list is empty — a
-      // data-less list shows the empty state, not shimmer forever.
-      if (!this.hasLoadedOnce) {
-        this.hasLoadedOnce = true;
-        setTimeout(() => {
-          this.isLoading = false;
-        });
-      }
-    });
+      this.status = 'ready';
+    }, () => this.status = 'error');
+  }
+
+  onRetry(): void {
+    this.status = 'loading';
+    this.mediaSubscription?.unsubscribe();
+    this.subscribeToMediaObservable();
   }
 
   // PUBLIC METHODS

@@ -22,6 +22,8 @@ export class NavbarLinksComponent implements OnInit {
 
   filteredButtons: LinkableButton[] = [];
 
+  flagsReady = false;
+
   constructor(private featureFlagsService: FeatureFlagsService) { }
 
   ngOnInit(): void {
@@ -39,6 +41,9 @@ export class NavbarLinksComponent implements OnInit {
       }
       seen.add(b.link);
       return true;
+    });
+    this.featureFlagsService.flagsReady().subscribe((ready: boolean) => {
+      this.flagsReady = ready;
     });
     this.featureFlagsService.getAllFeatureFlags().subscribe(flagsMap => {
       this.filteredButtons = this.buttons.filter(b => {

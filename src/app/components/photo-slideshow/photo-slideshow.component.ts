@@ -22,6 +22,7 @@ export class PhotoSlideshowComponent implements OnInit, OnDestroy {
   slideDurationMs = 8000;
   isPlaying = true;
   kenBurnsClass = '';
+  status: 'loading' | 'error' | 'ready' = 'loading';
   private photosViewed = 0;
   private intervalHandle: any = null;
   private subscriptions: Subscription[] = [];
@@ -43,17 +44,32 @@ export class PhotoSlideshowComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.loadPhotos();
+  }
+
+  private loadPhotos(): void {
     this.subscriptions.push(
       this.photosService.getPhotosByAlbum(this.albumId).subscribe(photos => {
         this.photos = photos || [];
+        this.status = 'ready';
         this.restart();
         this.analyticsService.logEvent('photo_slideshow_start', {
           albumId: this.albumId,
           durationMs: this.slideDurationMs,
           photoCount: this.shuffled.length,
         });
+      }, () => {
+        this.clearInterval();
+        this.status = 'error';
       }),
     );
+  }
+
+  onRetry(): void {
+    this.status = 'loading';
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
+    this.loadPhotos();
   }
 
   ngOnDestroy(): void {

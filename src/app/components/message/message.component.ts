@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { MessageService } from 'src/app/services/message.service';
 import { User } from 'src/app/models/user';
@@ -22,9 +23,12 @@ export abstract class MessageComponent implements OnInit {
   displayedItems: Message[];
   url: string;
   loading = true;
+  error = false;
   years: number[];
   messageType: string;
   queryParams: Object;
+
+  private messagesSub: Subscription | null = null;
 
   constructor(
     public messageService: MessageService,
@@ -39,6 +43,7 @@ export abstract class MessageComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
+    this.messageService.messagesError$.subscribe(() => this.onError(), () => this.onError());
     this.analyticsService.logEvent(`component_load_${this.messageType}`, {});
   }
 
@@ -48,14 +53,33 @@ export abstract class MessageComponent implements OnInit {
     this.authService.userObservable.subscribe((user: User) => {
       this.user = user;
       this.subscribeMessagesObservable();
-    });
+    }, () => this.onError());
   }
 
   private subscribeMessagesObservable(): void {
-    this.messageService.messagesObservable.subscribe((messages: Message[]) => {
+    this.messagesSub?.unsubscribe();
+    let isSeed = true;
+    this.messagesSub = this.messageService.messagesObservable.subscribe((messages: Message[]) => {
+      // The service BehaviorSubject replays its [] seed synchronously; that is
+      // still loading, not empty.
+      const seedEmpty = isSeed && messages.length === 0;
+      isSeed = false;
+      if (seedEmpty) return;
       this.onMessagesObservableUpdate(messages);
       this.getQueryParams();
-    });
+    }, () => this.onError());
+  }
+
+  retry(): void {
+    this.error = false;
+    this.loading = true;
+    this.messageService.retryMessages();
+    this.subscribeMessagesObservable();
+  }
+
+  private onError(): void {
+    this.error = true;
+    this.loading = false;
   }
 
   // PUBLIC METHODS
@@ -129,6 +153,6 @@ export abstract class MessageComponent implements OnInit {
   getQueryParams() {
     this.activatedRoute.queryParams.subscribe((params) => {
       this.queryParams = params;
-    });
+    }, () => this.onError());
   }
 }

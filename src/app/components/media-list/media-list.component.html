@@ -16,9 +16,10 @@
     </app-page-toolbar>
   }
 
-  @if (isLoading) {
+  @if (status === 'loading') {
     <div
       class="media-skeleton-list"
+      aria-busy="true"
       >
       @for (i of skeletonIterations; track i) {
         <div
@@ -35,7 +36,11 @@
     </div>
   }
 
-  @if (!isLoading) {
+  @if (status === 'error') {
+    <app-load-error message="Couldn't load media." (retry)="onRetry()"></app-load-error>
+  }
+
+  @if (status === 'ready') {
     @for (media of filteredMedia; track media) {
       <div
         class="flex-column media-list-row"
@@ -73,14 +78,14 @@
     }
   }
 
-  @if (!isLoading && filteredMedia.length === 0 && searchQuery.trim()) {
+  @if (status === 'ready' && filteredMedia.length === 0 && searchQuery.trim()) {
     <app-no-results-message
       [searchTerm]="searchQuery"
       noun="media"
     ></app-no-results-message>
   }
 
-  @if (!isLoading && filteredMedia.length === 0 && !searchQuery.trim()) {
+  @if (status === 'ready' && filteredMedia.length === 0 && !searchQuery.trim()) {
     <app-no-results-message
       title="No media yet"
       hint="Music and videos shared by the family will appear here."

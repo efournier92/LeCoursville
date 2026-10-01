@@ -299,3 +299,61 @@
     font-size: 0.8em;
   }
 }
+.calendar-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.calendar-skeleton-pill {
+  height: 36px;
+  width: 180px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-surface-muted) 25%, rgba(45, 90, 39, 0.08) 50%, var(--color-surface-muted) 75%);
+  background-size: 200% 100%;
+  animation: calendar-shimmer 1.5s infinite;
+}
+
+.calendar-skeleton-bar {
+  height: 13px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-surface-muted) 25%, rgba(45, 90, 39, 0.08) 50%, var(--color-surface-muted) 75%);
+  background-size: 200% 100%;
+  animation: calendar-shimmer 1.5s infinite;
+
+  &:nth-child(odd) {
+    width: 82%;
+  }
+
+  &:last-child {
+    width: 60%;
+  }
+}
+
+@keyframes calendar-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.calendar-empty {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.calendar-empty-title {
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.calendar-empty-hint {
+  color: var(--color-ink-2);
+  margin: 0;
+}

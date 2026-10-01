@@ -13,7 +13,8 @@ describe('NavbarLinksComponent', () => {
   let mockFeatureFlagsService: jasmine.SpyObj<FeatureFlagsService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags']);
+    const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags', 'flagsReady']);
+    spy.flagsReady.and.returnValue(of(true));
     spy.getAllFeatureFlags.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({

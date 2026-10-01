@@ -63,6 +63,7 @@ import { ExpressionsComponent } from "./components/expressions/expressions.compo
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
 import { PeopleComponent } from "./components/people/people.component";
+import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.component";
 import { PersonDetailModalComponent } from "./components/person-detail-modal/person-detail-modal.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
@@ -138,6 +139,7 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
         FormsModule,
         MaterialModule,
         // Standalone components used in templates of module-declared components.
+        LvLoadErrorComponent,
         NoResultsMessageComponent,
         PageToolbarComponent,
         PhotoUploadProgressComponent,
