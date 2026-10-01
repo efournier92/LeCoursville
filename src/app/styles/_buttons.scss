@@ -5,7 +5,7 @@
   background: var(--color-brand-success);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -16,7 +16,7 @@
   }
 
   &:disabled {
-    background: #ccc;
+    background: var(--color-ink-3);
     cursor: not-allowed;
   }
 }

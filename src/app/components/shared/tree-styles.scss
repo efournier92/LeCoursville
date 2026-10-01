@@ -21,7 +21,7 @@ $tree-bar-margin: 12px;
 .person-name {
   font-size: 14px;
   font-weight: 400;
-  color: #212121;
+  color: var(--color-ink);
   white-space: nowrap;
 
   &.clickable {
@@ -32,18 +32,18 @@ $tree-bar-margin: 12px;
   }
 
   &.deceased {
-    color: #999;
+    color: var(--color-ink-2);
   }
 
   &.selected {
     font-weight: 700;
-    color: #000;
+    color: var(--color-ink);
   }
 }
 
 .spouse-separator {
   font-size: 13px;
-  color: #999;
+  color: var(--color-ink-2);
   margin: 0 2px;
 }
 
@@ -80,7 +80,7 @@ $tree-bar-margin: 12px;
   .first-gen-person {
     font-size: 14px;
     font-weight: 500;
-    color: #212121;
+    color: var(--color-ink);
     cursor: pointer;
 
     &:hover {
@@ -88,7 +88,7 @@ $tree-bar-margin: 12px;
     }
 
     &.deceased {
-      color: #999;
+      color: var(--color-ink-2);
     }
   }
 }

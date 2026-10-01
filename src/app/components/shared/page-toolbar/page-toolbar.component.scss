@@ -3,67 +3,97 @@
   width: 100%;
 }
 
+// One compact row: page title on the left, tools on the right. Wrap is the
+// responsive behavior (no horizontal scroll) — on narrow screens the tools
+// fall to their own right-aligned line. This is the single reusable pattern
+// for every page's top tooling; pages supply a title (optional) and any
+// combination of filters / toggles / actions via ng-content.
+// Horizontal margins are 0: the host page's container (.page-content or a
+// page-level padding) provides the side breathing room, so the toolbar always
+// spans exactly the same width as the content below it. The bottom margin is
+// the canonical toolbar→content gap.
 .page-toolbar {
-  width: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
-  margin: 16px 16px 0;
-  padding: 10px 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  gap: 8px 16px;
+  margin: 12px 0 20px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
-
-  @media (max-width: 600px) {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    margin: 12px 12px 0;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-frost);
 }
 
-.page-toolbar-row {
-  margin-bottom: 4px;
+// Left cluster: optional leading control (back button) + title. The title
+// ellipsizes when the tools need the room; the tools stay right-aligned.
+.page-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .page-toolbar-title {
-  font-size: 0.875rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #555;
-  padding: 0 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--color-ink);
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
 }
 
 .page-toolbar-content {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
-  flex: 1;
+  gap: 10px;
+  margin-left: auto; // right-aligned: title left, tools right
   min-width: 0;
+}
 
-  @media (max-width: 600px) {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+// Vertical middle alignment is the contract for every toolbar control.
+// ng-content children (form fields, buttons, checkboxes) are not scoped to
+// this component, hence ::ng-deep.
+:host ::ng-deep .mat-mdc-form-field {
+  // Compact field height (M3 density −2: 44px + 10px padding) so the visible
+  // box centers against 40px buttons instead of towering over them.
+  --mat-form-field-container-height: 44px;
+  --mat-form-field-container-vertical-padding: 10px;
+  align-self: center;
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+  // M3 reserves phantom space below the box for hints/errors, which makes the
+  // visible field ride high in a middle-aligned row. Toolbar fields never show
+  // hints, so drop the reserve.
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
   }
 }
 
-.page-toolbar-content:empty {
-  display: none;
+.page-toolbar-content > * {
+  align-self: center;
+}
+
+@media (max-width: 600px) {
+  .page-toolbar {
+    margin: 8px 0 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    gap: 6px 12px;
+  }
+
+  .page-toolbar-title {
+    font-size: 1.1rem;
+  }
+
+  .page-toolbar-content {
+    gap: 8px;
+  }
 }

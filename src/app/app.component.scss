@@ -1,7 +1,14 @@
 .app-container {
-  width: 100vw;
+  // 100% (not 100vw): with the scrollbar lane reserved below, 100vw would
+  // extend under the lane and clip the right gutter.
+  width: 100%;
   overflow-x: hidden;
   background: var(--color-app-bg);
+  // THIS element is the app's real scroll container (overflow-x: hidden
+  // computes overflow-y: auto; verified in-browser: docScrolls=false,
+  // appScrolls=true). The scrollbar lane is reserved here — classic and
+  // overlay scrollbars alike render in the lane, never over content.
+  scrollbar-gutter: stable;
 }
 
 .spacer {

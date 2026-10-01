@@ -1,10 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// LeCoursville — design foundation
+//
+// MODE: system. Neutral gray ground, deep forest green brand, honey accent.
+// Every color, radius, shadow, and font below derives from the tokens on
+// `html`. Component SCSS must consume these tokens, not re-declare hex values.
+// ─────────────────────────────────────────────────────────────────────────────
+
 @use "@angular/material" as mat;
+
+// Framework stylesheets the app's component markup was written against.
+// These bundle at build time (no CDN). They must stay: dozens of templates
+// use Bootstrap grid/responsive utilities directly, the calendar and the
+// photo lightbox render from their base CSS (our overrides below sit on top).
 @import "bootstrap/dist/css/bootstrap.min.css";
-// @import "bootstrap/dist/css/bootstrap-grid.min.css";
-// @import "bootstrap/dist/css/bootstrap-utilities.rtl.min.css";
-// @import "bootstrap/dist/css/bootstrap-utilities.min.css";
 @import "../node_modules/angular-calendar/css/angular-calendar.css";
 @import "photoswipe/dist/photoswipe.css";
+
+// Self-hosted variable font (Google Fonts CDN was flaky — same reason the
+// Material Icons font is local). Inter variable covers wght; it bundles
+// into the app at build time.
+@import "@fontsource-variable/inter/index.css";
 
 // Self-hosted Material Icons font (ligature icon set). The Google Fonts
 // <link> was removed: runtime fetches to fonts.gstatic.com were flaky
@@ -38,8 +53,47 @@
   font-feature-settings: "liga";
 }
 
-// Material 3 theme (Angular Material 18+ token API). Brand green primary,
-// amber tertiary; M3 error palette covers `warn` states.
+// ── Tokens ────────────────────────────────────────────────────────────────────
+html {
+  color-scheme: light;
+
+  // Type — one deliberate face app-wide; --font-display is kept as a separate
+  // role so a characterful display face can be introduced later if wanted.
+  --font-display: "Inter Variable", "Inter", "Segoe UI", sans-serif;
+  --font-body: "Inter Variable", "Inter", "Segoe UI", sans-serif;
+
+  // Color — neutral gray ground, forest green brand, honey accent
+  --color-app-bg: #F3F4F6;          // the gray every page sits on
+  --color-surface: #FFFFFF;         // cards / sheets
+  --color-surface-muted: #EBEDF0;   // subtle gray fill (hover, wells)
+  --color-ink: #232A32;             // primary text
+  --color-ink-2: #5B6470;           // secondary text
+  --color-ink-3: #8A919C;           // meta / captions (large text only)
+  --color-brand-primary: #2D5A27;
+  --color-brand-primary-hover: #3A7033;
+  --color-brand-primary-dark: #245020;
+  // Success/upload semantics alias the brand green — one green language.
+  --color-brand-success: #2D5A27;
+  --color-brand-success-dark: #245020;
+  --color-accent: #A8762D;          // honey — today marker, highlights
+  --color-accent-strong: #9C6B26;   // honey, dark enough for white text
+  --color-error: #B3261E;
+  --color-border: #E1E4E8;          // hairlines on gray
+  --color-link: #245020;            // brand-dark green links
+
+  // Shape
+  --radius-card: 16px;
+  --radius-control: 999px;
+  --radius-input: 14px; // matches the toolbar radius — one rounded language
+  --radius-sm: 8px; // small corners: skeleton bars, thumbnails, chips
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.07);
+  --shadow-pop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.12);
+  --shadow-frost: 0 8px 32px rgba(15, 23, 42, 0.07);
+}
+
+// ── Material 3 theme (Angular Material 18+ token API) ─────────────────────────
+// Brand green primary, amber tertiary; M3 error palette covers `warn` states.
+// Typography is set to the app's own faces so every M3 component inherits them.
 $theme: mat.define-theme(
   (
     color: (
@@ -47,19 +101,35 @@ $theme: mat.define-theme(
       primary: mat.$green-palette,
       tertiary: mat.$orange-palette,
     ),
-    typography: (),
+    typography: (
+      plain-family: var(--font-body),
+      brand-family: var(--font-display),
+    ),
     density: (scale: 0),
   )
 );
 
 html {
-  color-scheme: light;
   @include mat.all-component-themes($theme);
   // M3 drops the color="primary" palette variants for mat-toolbar, so the top
   // nav rendered as plain surface. Restore brand green via toolbar tokens.
   @include mat.toolbar-overrides((
     container-background-color: var(--color-brand-primary),
     container-text-color: #ffffff,
+  ));
+  // M3 derives its neutral "surface" tones from the primary palette, which
+  // tints every overlay (select dropdowns, menus, datepicker, dialogs) with
+  // the green hue. Pin overlay surfaces to clean white.
+  @include mat.select-overrides((panel-background-color: #ffffff));
+  @include mat.menu-overrides((container-color: #ffffff));
+  @include mat.datepicker-overrides((calendar-container-background-color: #ffffff));
+  @include mat.autocomplete-overrides((background-color: #ffffff));
+  @include mat.dialog-overrides((container-color: #ffffff));
+  // M3 fields default to a 4px corner — square against the 14–16px radii of
+  // the toolbar and cards. Round inputs to the same language as the chrome.
+  @include mat.form-field-overrides((
+    filled-container-shape: var(--radius-input),
+    outlined-container-shape: var(--radius-input),
   ));
 }
 
@@ -71,30 +141,76 @@ mat-toolbar {
   }
 }
 
+// Filled buttons are pill-shaped app-wide — one button style per role.
+.mat-mdc-unelevated-button {
+  --mdc-filled-button-container-shape: var(--radius-control);
+}
+.mat-mdc-raised-button {
+  --mdc-protected-button-container-shape: var(--radius-control);
+}
+
+// ── Base ──────────────────────────────────────────────────────────────────────
 html,
 body {
   margin: 0;
   height: 100%;
-  --color-app-bg: #f5f6fa;
-  --color-brand-primary: #2d5a27;
-  --color-brand-primary-hover: #3a7033;
-  --color-brand-primary-dark: #245020;
-  --color-brand-success: #4CAF50;
-  --color-brand-success-dark: #1b5e20;
-  color: #32383f;
+  color: var(--color-ink);
   background-color: var(--color-app-bg);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+// Root stays at the browser standard (16px): everything rem-based (Material
+// M3, Bootstrap, our components) renders at default scale.
 ::selection {
   background: rgba(45, 90, 39, 0.22);
 }
 
-/* Modern focus ring for keyboard users */
+/* Modern focus ring for keyboard users. !important: M3 ships outline:none on
+   .mat-mdc-* controls and its focus indicator renders transparent with the
+   unset opacity token, which would leave keyboard focus invisible. */
 :focus-visible {
-  outline: 2px solid var(--color-brand-primary);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-brand-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* But NOT inside M3 form fields: the field wrapper already draws its own
+   rounded focus ring (primary notched outline). A second square outline
+   around the inner input reads as a broken black box. */
+.mat-mdc-form-field :is(input, textarea, .mat-mdc-select):focus-visible {
+  outline: none !important;
+}
+
+/* Browser autofill paints its own background (dark in browser dark mode),
+   ignoring the app's light scheme — autofilled inputs would render as dark
+   boxes. Force them to the app's surface + ink. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  caret-color: var(--color-ink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Respect reduced-motion: kill decorative animation (skeleton pulse, shimmers,
+   hover lifts) without touching essential transitions (opacity reveals stay). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Refined scrollbars (WebKit/Blink) */
@@ -127,6 +243,49 @@ body {
   -ms-user-select: none;
 }
 
+// ── Shared patterns ───────────────────────────────────────────────────────────
+// Every page consumes these; do not reinvent them per component.
+
+/* Eyebrow / section label */
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-2);
+}
+
+/* Standard white sheet card */
+.surface-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Warm-tinted page ground: every routed page that renders its own background */
+.page-ground {
+  min-height: 100%;
+  background: var(--color-app-bg);
+}
+
+/* Page content column: centered, capped, and side-padded so it shares exactly
+   the same width as the floating page-toolbar above it (the toolbar's own
+   horizontal margins are 0; this padding is the shared breathing room).
+   The toolbar→content gap is owned by the toolbar's bottom margin — pages
+   never re-declare it. */
+.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 24px;
+  min-width: 0;
+
+  @media (max-width: 600px) {
+    padding: 0 16px 16px;
+  }
+}
+
+// ── Calendar (angular-calendar) overrides ─────────────────────────────────────
 .cal-month-view .cal-cell-top {
   min-height: 56px;
   height: 1.8em;
@@ -135,13 +294,16 @@ body {
 }
 
 .cal-month-view .cal-day-cell {
-  min-width: 180px;
+  // 7 cells × 160px + borders ≈ 1128px — fits the 1200px page column
+  // (1168px content box) on desktop; smaller screens pan via the
+  // calendar-view-component scroll container.
+  min-width: 160px;
   min-height: 120px;
 }
 
 @media (max-width: 768px) {
   .cal-month-view .cal-day-cell {
-    min-width: 180px;
+    min-width: 160px;
     min-height: 120px;
   }
 
@@ -158,7 +320,7 @@ body {
   margin-top: 0px;
   margin-right: 5px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-ink-2);
   font-size: 1.1em;
 }
 
@@ -175,21 +337,21 @@ body {
 }
 
 .cal-month-view .cal-day-cell:not(:last-child) {
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--color-border);
 }
 
 .cal-month-view .cal-days {
-  border-top: 1px solid #e2e8f0;
-  border-left: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
 }
 
 .cal-month-view .cal-day-cell {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cal-month-view .cal-days .cal-cell-row {
-  border-bottom-color: #e2e8f0;
+  border-bottom-color: var(--color-border);
 }
 
 app-calendar-cell {
@@ -197,7 +359,10 @@ app-calendar-cell {
 }
 
 .cal-month-view {
-  background-color: #fff;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .cal-month-view .cal-day-number {
@@ -210,19 +375,20 @@ app-calendar-cell {
 
 .cal-month-view .cal-cell-row .cal-cell:hover,
 .cal-month-view .cal-cell.cal-has-events.cal-open {
-  background-color: #f8fafc;
+  background-color: var(--color-surface-muted);
 }
 
 .cal-month-view .cal-cell-row:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-surface-muted);
 }
 
 .cal-month-view .cal-day-cell.cal-in-month.cal-has-events {
   cursor: default;
 }
 
+/* Today = the honey marker: warm accent instead of the stock blue dot */
 .cal-month-view .cal-day-cell.cal-today .cal-day-number {
-  background: #3182ce;
+  background: var(--color-accent-strong);
   color: #fff;
   border-radius: 50%;
   width: 30px;
@@ -237,13 +403,13 @@ app-calendar-cell {
 }
 
 .cal-month-view .cal-day-headers {
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .cal-month-view .cal-day-headers .cal-cell {
   padding: 12px 0;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-ink);
   text-transform: uppercase;
   font-size: 0.8em;
   letter-spacing: 0.03em;
@@ -267,6 +433,7 @@ app-calendar-cell {
   }
 }
 
+// ── Datepicker / calendar pill dropdown ───────────────────────────────────────
 .mat-datepicker-popup .cdk-overlay-panel {
   left: 50% !important;
   transform: translateX(-50%) !important;
@@ -292,9 +459,11 @@ app-calendar-cell {
 
   h2 {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1a202c;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
   }
 }
 
