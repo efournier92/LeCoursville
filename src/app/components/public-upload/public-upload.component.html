@@ -22,7 +22,7 @@
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
         (click)="fileInput.click()">
-        <input #fileInput type="file" multiple (change)="onFileSelect($event)" hidden>
+        <input #fileInput type="file" multiple (change)="onFileSelect($event)" hidden data-testid="upload-file-input">
         <div class="drop-icon"><mat-icon>perm_media</mat-icon></div>
         <p>Click To Select Files</p>
         <p>Or Drag & Drop</p>

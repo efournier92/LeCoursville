@@ -53,17 +53,52 @@ validate_dev_branch() {
   echo "Proceeding..."
 }
 
+run_e2e_gate() {
+  echo "=== Running e2e gate ==="
+  npm run e2e:gate
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo ""
+    echo "E2E gate FAILED. Do not deploy."
+    echo "Artifacts for the fix loop: test-results/e2e-results.json (JSON), playwright-report/index.html (HTML), test-results/ (traces, screenshots, videos)."
+    echo "Start a session and say: fix the e2e gate. Drive the loop in 'Failure fix loop' below; re-run 'npm run e2e:gate' until green, then deploy again."
+    exit $exit_code
+  fi
+  sign_off
+}
+
+sign_off() {
+  if [ ! -t 0 ]; then
+    if [ "$E2E_APPROVED" = "1" ]; then
+      return
+    fi
+    echo "ERROR: non-interactive shell cannot sign off. Re-run interactively or set E2E_APPROVED=1 to approve the gate result."
+    exit 1
+  fi
+  echo ""
+  echo "=== E2E gate PASSED (chromium, webkit, firefox) ==="
+  echo "Review the report: open playwright-report/index.html"
+  printf 'Type "deploy" to approve and continue, anything else to abort: '
+  read -r approval
+  if [ "$approval" != "deploy" ]; then
+    echo "Deploy aborted by user (gate was green; no deploy action ran)."
+    exit 1
+  fi
+}
+
 main() {
   ENV=${1:-prod}
 
   if [ "$ENV" = "prod" ]; then
     validate_prod_branch
+    run_e2e_gate
     build_prod
     tag_build
     deploy_prod
     echo "=== Production deploy complete ==="
   elif [ "$ENV" = "dev" ]; then
     validate_dev_branch
+    run_e2e_gate
     build_dev
     deploy_dev
     echo "=== Dev deploy complete ==="

@@ -1,0 +1,12 @@
+rules_version = '2';
+// Emulator-only rules file: the storage emulator refuses to boot without one.
+// Deliberately open — the gate seeds fixtures and uploads through it, and real
+// production rules live in the Firebase console (out of emulator scope; see
+// design_specs/2026-08-07_e2e_gate.md "Production risks").
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}

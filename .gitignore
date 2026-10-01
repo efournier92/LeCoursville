@@ -41,6 +41,10 @@ yarn-error.log
 testem.log
 /typings
 
+# playwright artifacts
+/playwright-report
+/test-results
+
 # System Files
 .DS_Store
 Thumbs.db
@@ -51,3 +55,7 @@ src/environments/*
 # Tags
 tags
 
+
+# firebase emulator debug logs
+firebase-debug.log
+database-debug.log

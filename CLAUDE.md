@@ -1,5 +1,11 @@
 # LeCoursville
 
+> **E2E coverage is mandatory with every feature.** Read `AGENTS.md` at the
+> repo root: every user-visible change ships with a Playwright spec under
+> `e2e/specs/`, the gate is `npm run e2e:gate` (Chromium + WebKit + Firefox
+> against the Firebase Emulator Suite), and `scripts/deploy.sh` blocks deploys
+> on a red gate plus an explicit human sign-off.
+
 ## Overview
 
 This is a **Firebase-only application** — no backend server. All data storage, authentication, and serving run through Firebase services.
@@ -17,15 +23,15 @@ This is a **Firebase-only application** — no backend server. All data storage,
 
 | Service | Firebase Product | Usage |
 |---|---|---|
-| Auth | FirebaseUI + AngularFireAuth | Email/password sign-in, password reset |
+| Auth | Firebase Auth + AngularFireAuth | Email/password sign-in, password reset |
 | Database | AngularFireDatabase (RTDB) | All persistent data — users, photos, calendar events, contacts, media, uploads |
 | Storage | AngularFireStorage | User-uploaded files (photos, videos, audio) |
 | Analytics | AngularFireAnalytics | User行为 tracking |
 
 ## Authentication
 
-- Uses `firebaseui-angular` for the sign-in widget
-- Auth config at `src/app/auth.config.ts`
+- Email/password sign-in via `signInWithEmailAndPassword` (no FirebaseUI widget)
+- Sign-in form at `src/app/components/auth/auth.component.html`, logic in `src/app/services/auth.service.ts`
 - Firebase Auth handles password reset emails — requires DKIM, SPF, DMARC DNS records for proper deliverability
 
 ## Project Structure
