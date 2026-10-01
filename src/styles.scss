@@ -134,6 +134,56 @@ html {
 }
 
 /* White nav controls on the green toolbar (nav links + menu toggle) */
+
+/* Nav loading skeleton: one ghost button standing in for the white
+   icon+label controls on the brand toolbar (a whole row of placeholders
+   over-promises; a single one reads as "nav pending"). Shared by
+   app.component (auth pending) and navbar-links (flags pending). Same
+   translucent-white fill and pulse cadence the other skeletons use;
+   reduced-motion neutralizes the animation globally. */
+.nav-skeleton {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+}
+
+.nav-skeleton-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.nav-skeleton-label {
+  width: 84px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.22);
+  animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Below lg the real nav collapses to the hamburger; mirror it. */
+.nav-skeleton-burger {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.22);
+  animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes nav-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 mat-toolbar {
   .mat-mdc-button,
   .mat-mdc-icon-button {

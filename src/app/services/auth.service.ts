@@ -21,9 +21,14 @@ import { RtdbService } from "src/app/services/rtdb.service";
 export class AuthService {
   user: User;
   userObservable: Observable<{}>;
+  /** False until Firebase reports the first auth state, so callers can tell
+   *  "auth unresolved" apart from "signed out". */
+  authResolved$: Observable<boolean>;
   hasAlreadyUpdatedUser: boolean;
+  private signedOut = false;
 
   private userSource: BehaviorSubject<{}>;
+  private authResolvedSource: BehaviorSubject<boolean>;
 
   constructor(
     private rtdb: RtdbService,
@@ -33,7 +38,14 @@ export class AuthService {
   ) {
     this.userSource = new BehaviorSubject({});
     this.userObservable = this.userSource.asObservable();
+    this.authResolvedSource = new BehaviorSubject(false);
+    this.authResolved$ = this.authResolvedSource.asObservable();
     this.hasAlreadyUpdatedUser = false;
+    // Warm the RTDB websocket at boot, in parallel with the auth restore.
+    // Without this the first listener (the user record, post-auth) pays the
+    // full TLS + WS handshake serially; every page's first snapshot waits
+    // on that connection. .info/connected is a free server-side value.
+    this.rtdb.object(".info/connected").valueChanges().subscribe();
     this.subscribeToAuthState();
   }
 
@@ -58,6 +70,9 @@ export class AuthService {
     this.rtdb.object<User>(`users/${authData.uid}`).valueChanges().subscribe((user: User) => {
       if (!user) {
         return;
+      }
+      if (!this.authResolvedSource.getValue()) {
+        this.authResolvedSource.next(true);
       }
       this.userSource.next(user);
       this.user = user;
@@ -160,6 +175,18 @@ export class AuthService {
     });
   }
 
+  /** Last session's user from localStorage, for cosmetic instant render.
+   *  NOT an auth check: guards must verify against the RTDB record. */
+  getCachedUser(): User | null {
+    return this.getUserFromLocalStorage() || null;
+  }
+
+  /** True once firebase auth has resolved to "no session". Lets the sign-in
+   *  page drop its cached-session interstitial and show the real form. */
+  isSignedOut(): boolean {
+    return this.signedOut;
+  }
+
   isUserSignedIn(): boolean {
     const user = this.getUserFromLocalStorage();
     return !!user?.id;
@@ -173,9 +200,29 @@ export class AuthService {
   // HELPERS
 
   private subscribeToAuthState(): void {
-    onAuthStateChanged(this.firebase.auth, (authData) =>
-      this.getUser(authData),
-    );
+    onAuthStateChanged(this.firebase.auth, (authData) => {
+      if (!authData) {
+        // Signed out: the outcome is known now, nothing else to wait for.
+        this.signedOut = true;
+        this.authResolvedSource.next(true);
+        return;
+      }
+      this.signedOut = false;
+      // Signed in: stay unresolved until the RTDB user record lands, so the
+      // nav keeps its skeleton instead of flashing a wrong Sign In link.
+      // Safety valve: if the record never arrives (missing users/{uid} node,
+      // dead stream), resolve after 5s rather than skeleton forever. The
+      // admin GUARD stays RTDB-backed either way; authResolved only drives
+      // the nav's cosmetic three-way.
+      if (!this.authResolvedSource.getValue()) {
+        setTimeout(() => {
+          if (!this.authResolvedSource.getValue()) {
+            this.authResolvedSource.next(true);
+          }
+        }, 5000);
+      }
+      this.getUser(authData);
+    });
   }
 
   private getUserFromLocalStorage() {

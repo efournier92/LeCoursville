@@ -162,3 +162,22 @@
     margin-right: 2px;
   }
 }
+
+/* Cached-session interstitial: returning users at "/" see this neutral
+   card while their session is restored, never a flash of the login form.
+   Reuses the global nav-skeleton-pulse keyframes. */
+.auth-card--interstitial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 48px 40px;
+}
+
+.session-interstitial-bar {
+  width: 180px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
+}

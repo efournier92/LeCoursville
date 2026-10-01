@@ -11,14 +11,29 @@
       height="80%"
       />
     <div class="icons-menu d-inline-flex">
-      @if (user?.id) {
+      @if (!authResolved) {
+        <div data-testid="nav-links-skeleton">
+          <div class="nav-skeleton d-none d-lg-flex" aria-hidden="true">
+            <div class="nav-skeleton-item">
+              <div class="nav-skeleton-icon"></div>
+              <div class="nav-skeleton-label"></div>
+            </div>
+          </div>
+          <div class="nav-skeleton-burger d-lg-none" aria-hidden="true"></div>
+        </div>
+      } @else if (!user?.id) {
+        <a
+          mat-button
+          routerLink="/"
+          >
+          Sign In
+        </a>
+      } @else {
         <div
           class="d-none d-lg-block"
           >
           <app-navbar-links [isMenuList]="false"></app-navbar-links>
         </div>
-      }
-      @if (user?.id) {
         <div
           class="d-block d-lg-none"
           >

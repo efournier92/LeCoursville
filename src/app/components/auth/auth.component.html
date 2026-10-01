@@ -1,5 +1,14 @@
 <div class="auth-page">
-  @if (!user?.id) {
+  @if (awaitingSession) {
+    <div class="auth-card auth-card--interstitial" data-testid="session-interstitial" aria-busy="true">
+      <img
+        class="auth-logo"
+        src="./assets/img/logo/L.png"
+        alt="LeCoursville"
+      />
+      <div class="session-interstitial-bar" aria-hidden="true"></div>
+    </div>
+  } @else if (!user?.id) {
     <div class="auth-card auth-card--login">
       <img
         class="auth-logo"

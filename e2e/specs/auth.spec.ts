@@ -18,6 +18,27 @@ test.describe('auth', () => {
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
   });
 
+  test('returning user at the base page never sees the login form', async ({ page }) => {
+    await login(page, 'user');
+    // Hold RTDB so the reload boots with a cached session whose record
+    // cannot land: the sign-in page must hold its interstitial instead of
+    // flashing the login form (or the account card) before redirecting.
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    await page.routeWebSocket(/ws:\/\/[^/]*:9000\/.*/, async ws => {
+      await gate;
+      ws.connectToServer();
+    });
+
+    await page.goto('/');
+    await expect(page.getByTestId('auth-email')).toHaveCount(0);
+    await expect(page.getByTestId('session-interstitial')).toBeVisible();
+
+    release();
+    await expect(page).toHaveURL(/\/calendar/);
+    await expect(page.getByTestId('session-interstitial')).toHaveCount(0);
+  });
+
   test('login failure shows the error banner', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-email').fill(E2E_USERS.admin.email);

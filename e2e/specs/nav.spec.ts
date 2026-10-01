@@ -22,6 +22,31 @@ test.describe('navigation', () => {
     await expect(nav.getByRole('button', { name: 'Chat' })).toHaveCount(0);
   });
 
+  test('cached session renders nav links immediately, never Sign In', async ({ page }) => {
+    await login(page, 'user');
+    // Hold every RTDB websocket so the reload boots with a cached session
+    // whose RTDB user record cannot load: the nav must still render the
+    // links instantly from the localStorage cache.
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => (release = resolve));
+    await page.routeWebSocket(/ws:\/\/[^/]*:9000\/.*/, async ws => {
+      await gate;
+      ws.connectToServer();
+    });
+
+    await page.reload();
+    // Cache-first: navbar-links renders instantly with its flags skeleton;
+    // the auth skeleton and Sign In must never appear for a cached session.
+    await expect(page.getByTestId('nav-flags-skeleton')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign In' })).toHaveCount(0);
+    await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+
+    release();
+    // Flags resolve and the real links render.
+    await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+    await expect(page.getByTestId('nav-flags-skeleton')).toHaveCount(0);
+  });
+
   test('clicking each toolbar link navigates to its route', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');

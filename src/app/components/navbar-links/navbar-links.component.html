@@ -1,4 +1,17 @@
-@if (!isMenuList) {
+@if (!flagsReady) {
+  <div
+    class="nav-skeleton"
+    data-testid="nav-flags-skeleton"
+    aria-hidden="true"
+    >
+    <div class="nav-skeleton-item">
+      <div class="nav-skeleton-icon"></div>
+      <div class="nav-skeleton-label"></div>
+    </div>
+  </div>
+}
+
+@if (flagsReady && !isMenuList) {
   <div
     id="lecoursville-navbar-links"
     class="toolbar-routes-buttons-inline"
@@ -17,7 +30,7 @@
   </div>
 }
 
-@if (isMenuList) {
+@if (flagsReady && isMenuList) {
   <div
     class="toolbar-routes-buttons-inline"
     >
