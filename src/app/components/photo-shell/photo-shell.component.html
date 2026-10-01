@@ -1,5 +1,7 @@
-@if (enablePhotoAlbums) {
-  <app-photo-albums></app-photo-albums>
-} @else {
-  <app-photos-legacy></app-photos-legacy>
-}
+<div class="page-ground page-content">
+  @if (enablePhotoAlbums) {
+    <app-photo-albums></app-photo-albums>
+  } @else {
+    <app-photos-legacy></app-photos-legacy>
+  }
+</div>

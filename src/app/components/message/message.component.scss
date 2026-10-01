@@ -1,6 +1,14 @@
 .message-card-content-container {
   min-height: 155px;
   margin-bottom: 0;
+  // Thread depth drives the indent via a CSS var (set on the element from the
+  // template), so the step can shrink on mobile and deep threads stay readable.
+  --reply-step: 24px;
+  margin-left: calc(var(--reply-depth, 0) * var(--reply-step));
+
+  @media (max-width: 600px) {
+    --reply-step: 12px;
+  }
 }
 
 .message-card-container {
@@ -12,21 +20,24 @@
 }
 
 .message-title {
-  line-height: 1;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-ink);
 }
 
 .message-author-name {
   margin-bottom: 0;
   margin-top: 4px;
+  color: var(--color-ink-2);
 }
 
 .message-timestamp {
-  font-size: 12px;
+  font-size: 0.72rem;
+  color: var(--color-ink-2);
 }
 
 .message-likes-container {
-  color: #81c784;
-  size: 0.8em;
+  color: var(--color-brand-primary);
   font-size: 0.78em;
 }
 
@@ -37,6 +48,7 @@
 .message-button-label {
   font-size: 0.8em;
   margin-right: 0.3em;
+  color: var(--color-ink-2);
 }
 
 .message-controls-divider-vertical {

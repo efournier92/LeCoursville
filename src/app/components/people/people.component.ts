@@ -441,14 +441,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
     return '#e0e0e0';
   }
 
-  getFamilyColorForClanTransparent(clan: string): string {
-    const clanObj = this.clansMap.get(clan.toLowerCase());
-    if (clanObj) {
-      return this.hexToRgba(clanObj.hexColor, 0.6);
-    }
-    return '#e0e0e060';
-  }
-
   getClanDisplayName(clan: string, roots: PersonNode[]): string {
     return clan + "'s Family";
   }

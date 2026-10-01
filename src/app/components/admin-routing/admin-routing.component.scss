@@ -1,6 +1,6 @@
 .admin-tool-header {
-  padding: 0 0 24px 0;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 0 0 20px 0;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 24px;
 
   .tool-nav {
@@ -13,10 +13,10 @@
       align-items: center;
       gap: 6px;
       padding: 8px 16px;
-      border-radius: 8px;
-      background: #f5f6fa;
-      color: #555;
-      font-size: 13px;
+      border-radius: var(--radius-control);
+      background: var(--color-surface-muted);
+      color: var(--color-ink-2);
+      font-size: 0.72rem;
       font-weight: 500;
       transition: all 0.15s ease;
 
@@ -24,7 +24,7 @@
         font-size: 18px;
         width: 18px;
         height: 18px;
-        color: #888;
+        color: var(--color-ink-3);
       }
 
       span {
@@ -32,16 +32,16 @@
       }
 
       &:hover {
-        background: #e8f5e9;
-        color: #1b5e20;
+        background: rgba(45, 90, 39, 0.1);
+        color: var(--color-brand-primary-dark);
       }
 
       &.active-link {
-        background: #1b5e20;
+        background: var(--color-brand-primary);
         color: #fff;
 
         mat-icon {
-          color: #a5d6a7;
+          color: rgba(255, 255, 255, 0.85);
         }
       }
     }

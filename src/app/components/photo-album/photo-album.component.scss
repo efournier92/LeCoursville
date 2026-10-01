@@ -1,7 +1,7 @@
 body {
   padding: 40px;
-  background-image: linear-gradient(#e8f0ff 0%, white 52.08%);
-  color: #0e3481;
+  background-image: linear-gradient(rgba(45, 90, 39, 0.10) 0%, var(--color-surface) 52.08%);
+  color: var(--color-brand-primary-dark);
   min-height: 100vh;
 }
 

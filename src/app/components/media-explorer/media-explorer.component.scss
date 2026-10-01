@@ -1,6 +1,5 @@
 .media-explorer-component {
-  padding: 0;
-  background: var(--color-app-bg);
+  min-width: 0;
 }
 
 .media-component-container {
@@ -20,21 +19,21 @@
 }
 
 .media-explorer-action-button {
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
-  color: #4a5568;
+  color: var(--color-ink-2);
   min-width: 120px;
   height: 36px;
-  border: 1px solid #d0d5dc;
+  border: 1px solid var(--color-border);
 
   &:hover {
-    background: #f7f9fc;
-    border-color: #b8c0cc;
-    color: #2d3748;
+    background: var(--color-surface-muted);
+    border-color: var(--color-border);
+    color: var(--color-ink);
   }
 
   &:active {
-    background: #e8ecf0;
+    background: var(--color-border);
     transform: scale(0.98);
   }
 
@@ -50,6 +49,11 @@
 }
 
 .media-list-container {
-  border-left: 1px solid #eee;
+  border-left: 1px solid var(--color-border);
   padding-left: 0;
+
+  // Full-width state (nothing selected): no left divider against the gutter.
+  &:not(.col-lg-5) {
+    border-left: none;
+  }
 }

@@ -1,22 +1,14 @@
 <div class="admin-families-container">
-  <mat-card class="families-card">
-    <div class="card-header">
-      <div class="header-content">
-        <div>
-          <h2 class="card-title">Families</h2>
-          <p class="card-subtitle">Manage family names and colors</p>
-        </div>
-        <div class="header-actions add-family-btn">
-          @if (!isAdding && !editingFamily && !isCsvPreview) {
-            <button mat-flat-button color="primary" (click)="onAdd()">
-              <mat-icon>add</mat-icon>
-              Add Family
-            </button>
-          }
-        </div>
-      </div>
-    </div>
+  <app-page-toolbar title="Families">
+    @if (!isAdding && !editingFamily && !isCsvPreview) {
+      <button mat-flat-button color="primary" (click)="onAdd()">
+        <mat-icon>add</mat-icon>
+        Add Family
+      </button>
+    }
+  </app-page-toolbar>
 
+  <mat-card class="families-card">
     <mat-card-content>
       <div class="csv-upload-section">
         <div class="upload-area" (click)="csvInput.click()">

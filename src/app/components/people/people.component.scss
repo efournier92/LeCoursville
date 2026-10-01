@@ -1,139 +1,143 @@
 .people-container {
-  width: 100%;
-  background: var(--color-app-bg);
-  padding: 12px;
-}
+  // No width: 100% here — it combined with .page-content's 16px padding
+  // (content-box) to overflow the viewport by 32px, clipping the right edge
+  // of the toolbar and every family card on mobile. Block auto-width fills
+  // the parent's content box correctly.
+  min-width: 0;
 
-.filter-people-form-field,
+  // Indent step per tree level; shrinks on small screens so deep trees fit.
+  --tree-indent: 24px;
+}.filter-people-form-field,
 .family-filter-form-field {
   flex: 0 0 auto;
   width: 160px;
   min-width: 0;
   max-width: 100%;
-}
+}// ── Family card ──────────────────────────────────────────────────────────────
+// Each family is an entry in the family book: a white sheet with a full-height
+// rail in the family's own color. The rail is the identity marker; the tree's
+// generation bars echo the same hue at lower opacity.
+
+.family-group {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 18px 22px 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--family-color, var(--color-brand-primary));
+  }&:hover {
+    box-shadow: var(--shadow-pop);
+  }}.family-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}.family-link {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: color 0.2s;
+}.family-link:hover {
+  color: var(--color-brand-primary);
+}.member-count {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-ink-2);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}// ── Tree ─────────────────────────────────────────────────────────────────────
+// Roots sit in the same column as the family name; every child level indents
+// by --tree-indent. Generation bars are a fixed 2px guide column + 14px gap.
 
 .people-tree {
-  margin-bottom: 16px;
-  max-width: 900px;
-}
-
-.tree-rows {
-  display: flex;
-  overflow: hidden;
-  padding-left: 30px;
-
-  > .generation-bar {
-    align-self: stretch;
-    flex-shrink: 0;
-    margin-right: 12px;
-    width: 2px;
-  }
-
-  > .children-items {
-    flex: 1;
-  }
-}
-
-.tree-row {
+  margin-bottom: 6px;
+}.tree-rows,
+.children-container {
+  max-width: 760px;
+}.tree-rows > .children-items {
+  min-width: 0;
+}.tree-row {
   display: flex;
   align-items: center;
   padding: 0;
-  margin-left: 5px;
   cursor: pointer;
   transition: background-color 0.15s ease;
+  border-radius: 8px;
 
   &:hover {
-    background-color: #f5f5f5;
-  }
-
-  &.root-row {
+    background-color: var(--color-surface-muted);
+  }&.root-row {
     font-weight: 500;
-  }
-}
-
-.generation-bar {
+  }}.generation-bar {
   width: 2px;
   align-self: stretch;
-  margin-right: 12px;
+  margin-right: 14px;
   flex-shrink: 0;
-}
-
-.children-container {
+}.children-container {
   display: flex;
-  padding-left: 25px;
+  padding-left: var(--tree-indent);
 
   > .generation-bar {
     align-self: stretch;
     flex-shrink: 0;
-    margin-right: 12px;
-  }
-
-  > .children-items {
+    margin-right: 14px;
+  }> .children-items {
     flex: 1;
-  }
-}
-
-.person-info {
+    min-width: 0;
+  }}.person-info {
   padding: 0.6em 0;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0;
-}
-
-.person-name {
+  min-width: 0;
+}.person-name {
   font-size: 1rem;
   font-weight: 500;
-  color: #32383f;
+  color: var(--color-ink);
   letter-spacing: 0.015em;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 
   &.clickable:hover {
     text-decoration: underline;
-  }
-
-  &.deceased {
-    color: #959595;
+    text-underline-offset: 3px;
+  }&.deceased {
+    color: var(--color-ink-2);
     font-style: italic;
-  }
-}
-
-.spouse-separator {
-  color: #c0c0c0;
+  }}.spouse-separator {
+  font-size: 0.8em; // pinned small — matches the modal lineage tree (13px)
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-ink-2);
   margin: 0 6px;
   flex-shrink: 0;
-  font-weight: 300;
-}
-
-.family-group {
-  margin-bottom: 24px;
-}
-
-.family-header {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 8px;
-  padding-left: 12px;
-  border-left: 8px solid transparent;
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.member-count {
-  font-size: 0.65em;
-  font-weight: 300;
-  color: #888;
-  font-style: italic;
-}
-
-.first-generation-row {
+}.first-generation-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  padding: 12px 16px 8px 0;
-  color: #32383f;
+  padding: 10px 16px 8px 0;
+  color: var(--color-ink);
 
   .first-gen-person {
     font-size: 1rem;
@@ -145,115 +149,109 @@
     &:hover {
       color: var(--color-brand-primary);
       text-decoration: underline;
-    }
-
-    &.deceased {
-      color: #959595;
+      text-underline-offset: 3px;
+    }&.deceased {
+      color: var(--color-ink-2);
       font-style: italic;
-    }
-  }
-
-  .spouse-separator {
-    color: #c0c0c0;
+    }}.spouse-separator {
+    color: var(--color-ink-2);
     margin: 0 4px;
-  }
-}
-
-.family-link {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.family-link:hover {
-  color: #1976d2;
-}
-
-.empty-state-card {
+  }}.empty-state-card {
   text-align: center;
   padding: 32px;
-  background: #fafafa;
-  border-radius: 4px;
-}
-
-.filter-no-results {
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-card);
+}.filter-no-results {
   text-align: center;
   padding: 48px 32px;
-  color: #666;
+  color: var(--color-ink-2);
   font-size: 1.1em;
 
   p {
     margin: 0;
     font-style: italic;
-  }
-}
+  }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
-  background: var(--color-app-bg);
+  background: transparent;
   border-radius: 4px;
   padding: 16px;
-  max-width: 900px;
   min-height: calc(100vh - 150px);
-}
-
-.skeleton-family {
+}.skeleton-family {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
-}
-
-.skeleton-header {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 18px 22px;
+}.skeleton-header {
   height: 16px;
-  width: 60px;
-  background: #e0e0e0;
+  width: 120px;
+  background: var(--color-surface-muted);
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-tree {
+}.skeleton-tree {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-left: 16px;
-}
-
-.skeleton-row {
+}.skeleton-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
-}
-
-.skeleton-bar {
+}.skeleton-bar {
   height: 14px;
-  background: #e0e0e0;
+  background: var(--color-surface-muted);
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
   width: 16em;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
 
-  &.short { width: 40px; }
-  &.long { width: 80px; }
-}
-
-.skeleton-children {
+  &.short { width: 40px; flex: none; }
+  &.long { width: 80px; flex: none; }
+}.skeleton-children {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-left: 24px;
-  border-left: 2px solid #e0e0e0;
-}
-
-.skeleton-child {
+  border-left: 2px solid var(--color-border);
+}.skeleton-child {
   padding: 8px 0;
 
   &.nested {
     padding-left: 40px;
-    border-left: 2px solid #e0e0e0;
-  }
-}
+    border-left: 2px solid var(--color-border);
+  }}@keyframes pulse {
+  0%, 100% { opacity: 1; }50% { opacity: 0.5; }}// ── Mobile ───────────────────────────────────────────────────────────────────
+// Deep trees and long names on small screens: tighter indent, generous touch
+// targets, no horizontal scroll.
+@media (max-width: 600px) {
+  .people-container {
+    --tree-indent: 16px;
+  }.family-group {
+    padding: 14px 16px 10px;
+    border-radius: 14px;
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
+    &::before {
+      width: 4px;
+    }}.family-link {
+    font-size: 1.15rem;
+  }.member-count {
+    font-size: 0.66rem;
+  }.generation-bar {
+    margin-right: 10px;
+  }.children-container > .generation-bar {
+    margin-right: 10px;
+  }.person-name {
+    font-size: 0.95rem;
+  }.tree-row {
+    padding: 2px 0;
+  }.first-generation-row {
+    padding: 8px 12px 6px 0;
+  }}

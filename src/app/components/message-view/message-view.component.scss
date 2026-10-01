@@ -6,15 +6,18 @@
 
 .message-body {
   white-space: pre-line;
+  color: var(--color-ink);
+  line-height: 1.6;
 }
 
 .massage-attachment-image {
   width: 80%;
   margin-left: 0px;
+  border-radius: 12px;
 }
 
 .message-view-attachment-button {
-  background: #81c784;
+  background: var(--color-brand-primary);
   color: white;
 }
 

@@ -1,3 +1,19 @@
 <div class="no-results-message" [class.centered]="isCentered">
-  <p>Nothing found for "{{ searchTerm }}"</p>
+  <div class="no-results-icon" aria-hidden="true">
+    <mat-icon>search_off</mat-icon>
+  </div>
+  <div class="no-results-copy">
+    <p class="no-results-title">{{ title }}</p>
+    @if (searchTerm) {
+      <p class="no-results-hint">
+        @if (noun) {
+          No {{ noun }} match “{{ searchTerm }}”.
+        } @else {
+          No one matches “{{ searchTerm }}”. Try a first name, a last name, or a family.
+        }
+      </p>
+    } @else {
+      <p class="no-results-hint">{{ hint }}</p>
+    }
+  </div>
 </div>

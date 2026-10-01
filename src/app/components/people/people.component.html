@@ -1,5 +1,5 @@
-<div class="people-container">
-  <app-page-toolbar>
+<div class="people-container page-ground page-content">
+  <app-page-toolbar title="People">
     <mat-form-field class="filter-people-form-field">
       <mat-label>Filter</mat-label>
       <input
@@ -70,8 +70,8 @@
 
   @for (group of familyGroups; track group) {
     <div class="w-100">
-      <div class="family-group">
-        <div class="family-header" [style.border-left-color]="getFamilyColorForClan(group.clan)">
+      <div class="family-group" [style.--family-color]="getFamilyColorForClan(group.clan)">
+        <div class="family-header">
           <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
           @if (group.livingMemberCount > 0) {
             <span class="member-count">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
@@ -97,7 +97,6 @@
           }
           @if (group.roots?.length) {
             <div class="tree-rows">
-              <div class="generation-bar" [style.background-color]="getFamilyColorForClanTransparent(group.clan)"></div>
               <div class="children-items">
                 <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
               </div>

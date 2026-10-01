@@ -1,17 +1,9 @@
 .calendar-component-container {
-  background-color: #fafafa;
-  padding: 1rem 1.5rem 2rem;
-  min-height: 100vh;
-  box-sizing: border-box;
-  overflow-x: hidden;
+  // Chrome contract: page-ground + page-content are applied in the template.
+  // This class only carries calendar-specific bits (none width-affecting).
 }
 
 .calendar-toolbar {
-  background: #fff;
-  border-radius: 12px;
-  padding: 10px 16px;
-  margin: 0 0 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
   width: 100%;
   box-sizing: border-box;
 }
@@ -21,6 +13,7 @@
   align-items: center;
   gap: 16px;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .calendar-toolbar-filters {
@@ -33,7 +26,7 @@
 .calendar-checkbox {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #555;
+  color: var(--color-ink-2);
   margin: 0;
 
   .mat-mdc-checkbox.mat-mdc-checkbox-checked {
@@ -68,7 +61,7 @@
 }
 
 .calendar-print-button:active {
-  background: #1e3d18;
+  background: var(--color-brand-primary-dark);
   transform: scale(0.98);
 }
 
@@ -83,10 +76,10 @@
 .calendar-nav-inner {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 28px;
   padding: 4px 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .calendar-nav-btn {
@@ -98,13 +91,13 @@
   border-radius: 50%;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  color: #4a5568;
+  color: var(--color-ink-2);
   flex-shrink: 0;
 }
 
 .calendar-nav-btn:hover {
-  background-color: rgba(49, 130, 206, 0.1);
-  color: #3182ce;
+  background-color: rgba(45, 90, 39, 0.1);
+  color: var(--color-brand-primary);
 }
 
 .calendar-nav-icon {
@@ -115,8 +108,8 @@
 .calendar-month-year-pill {
   padding: 2px 20px;
   cursor: pointer;
-  border-left: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -132,13 +125,13 @@
 }
 
 .calendar-month-year-pill:hover {
-  background-color: rgba(49, 130, 206, 0.06);
+  background-color: rgba(45, 90, 39, 0.06);
 }
 
 .calendar-month-label {
   font-size: 0.8em;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-ink);
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -147,7 +140,7 @@
 .calendar-year-label {
   font-size: 1.05em;
   font-weight: 600;
-  color: #3182ce;
+  color: var(--color-brand-primary);
   line-height: 1.2;
 }
 
@@ -172,10 +165,10 @@
 }
 
 .calendar-datepicker-panel {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-pop);
   min-width: 280px;
 }
 
@@ -186,13 +179,13 @@
   gap: 16px;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .calendar-datepicker-year {
   font-size: 1.1em;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-ink);
   min-width: 60px;
   text-align: center;
 }
@@ -206,12 +199,12 @@
   border-radius: 50%;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  color: #718096;
+  color: var(--color-ink-2);
 }
 
 .calendar-datepicker-nav:hover {
-  background-color: rgba(49, 130, 206, 0.1);
-  color: #3182ce;
+  background-color: rgba(45, 90, 39, 0.1);
+  color: var(--color-brand-primary);
 }
 
 .calendar-datepicker-nav-icon {
@@ -229,19 +222,19 @@
   text-align: center;
   font-size: 0.85em;
   font-weight: 500;
-  color: #4a5568;
+  color: var(--color-ink-2);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .calendar-datepicker-cell:hover {
-  background-color: rgba(49, 130, 206, 0.08);
-  color: #3182ce;
+  background-color: rgba(45, 90, 39, 0.08);
+  color: var(--color-brand-primary);
 }
 
 .calendar-datepicker-cell.is-selected {
-  background-color: #3182ce;
+  background-color: var(--color-brand-primary);
   color: #fff;
 }
 
@@ -253,15 +246,11 @@
 
 @media (max-width: 600px) {
   .calendar-component-container {
-    padding: 0.5rem 0 2rem;
+    // page-content supplies the gutters (16px on mobile).
   }
 
   .calendar-toolbar {
-    border-radius: 0;
-    padding: 12px 16px;
-    margin: 0;
-    box-shadow: none;
-    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
   }
 
   .calendar-toolbar-row {
@@ -293,7 +282,7 @@
 
   .calendar-view-component {
     margin: 0;
-    width: 100vw;
+    width: 100%;
   }
 
   .calendar-datepicker-panel {

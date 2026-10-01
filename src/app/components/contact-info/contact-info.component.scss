@@ -1,16 +1,12 @@
 .contact-section {
   margin-top: 12px;
   margin-bottom: 4px;
-}
-
-.contact-info {
+}.contact-info {
   &.compact {
     .section-label {
       display: inline;
       margin-right: 8px;
-    }
-
-    .contact-list {
+    }.contact-list {
       display: inline;
       margin: 0;
       padding: 0;
@@ -21,27 +17,18 @@
         &:not(:last-child)::after {
           content: '|';
           margin: 0 8px;
-          color: #ccc;
-        }
-      }
-    }
-
-    .contact-section {
+          color: var(--color-border);
+        }}}.contact-section {
       margin-bottom: 4px;
-    }
-  }
-}
-
-.section-label {
+    }}}.section-label {
   display: block;
-  font-size: 12px;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #888;
+  color: var(--color-ink-2);
   text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: 4px;
-}
-
-.contact-list {
+}.contact-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -52,53 +39,39 @@
     flex-wrap: wrap;
     gap: 8px;
     align-items: baseline;
-  }
-
-  .phone-owner,
+  }.phone-owner,
   .phone-label,
   .email-owner,
   .email-label {
-    color: #999;
+    color: var(--color-ink-2);
     font-size: 0.9em;
     vertical-align: middle;
-  }
-}
-
-.address-value {
+  }}.address-value {
   white-space: pre-line;
-  }
-
-.phone-label,
+  color: var(--color-ink);
+  }.phone-label,
 .email-label,
 .phone-owner,
 .email-owner {
-  color: #999;
+  color: var(--color-ink-2);
   font-size: 0.9em;
   vertical-align: middle;
-}
-
-.phone-number {
-  color: #0066cc;
+}.phone-number {
+  color: var(--color-link);
   cursor: pointer;
   text-decoration: none;
 
   &:hover {
-    color: #004499;
+    color: var(--color-brand-primary-hover);
     text-decoration: underline;
-  }
-}
-
-.email-value {
-  color: #0066cc;
+  }}.email-value {
+  color: var(--color-link);
   cursor: pointer;
   text-decoration: none;
 
   &:hover {
-    color: #004499;
+    color: var(--color-brand-primary-hover);
     text-decoration: underline;
-  }
-}
-
-.email-label {
-  color: #888;
+  }}.email-label {
+  color: var(--color-ink-2);
 }

@@ -1,5 +1,5 @@
-<div class="expressions-component">
-  <app-page-toolbar>
+<div class="expressions-component page-ground page-content">
+  <app-page-toolbar title="Expressions">
     <mat-form-field class="search-field">
       <mat-label>Filter</mat-label>
       <input
@@ -126,5 +126,17 @@
     <app-no-results-message
       [searchTerm]="sortSettings.activeFilterQuery"
     ></app-no-results-message>
+  }
+
+  @if (displayedItems.length === 0 && !sortSettings.activeFilterQuery && !isLoading) {
+    <div class="expressions-empty surface-card">
+      <div class="expressions-empty-icon" aria-hidden="true">
+        <mat-icon>format_quote</mat-icon>
+      </div>
+      <p class="expressions-empty-title">No expressions yet</p>
+      <p class="expressions-empty-hint">
+        Family quotes and wisdom will show up here. Admins can add the first one with Create Expression.
+      </p>
+    </div>
   }
 </div>

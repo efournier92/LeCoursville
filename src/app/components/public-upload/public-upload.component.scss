@@ -1,50 +1,52 @@
 @use '../../styles/buttons' as *;
 
 .upload-container {
+  // Deliberately a narrow form column (public upload is one focused action);
+  // inherits the app-wide font + tokens.
   max-width: 600px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 h1 {
   text-align: center;
-  color: #333;
+  color: var(--color-ink);
   margin-bottom: 8px;
 }
 
 .subtitle {
   text-align: center;
-  color: #666;
+  color: var(--color-ink-2);
   margin-bottom: 32px;
 }
 
 .drop-zone {
-  border: 2px dashed #ccc;
-  border-radius: 16px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-card);
   padding: 60px 40px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover, &.dragging {
-    border-color: #666;
-    background: #f9f9f9;
+    border-color: var(--color-brand-primary);
+    background: var(--color-surface-muted);
   }
 }
 
 .drop-icon {
   font-size: 48px;
   margin-bottom: 16px;
+  color: var(--color-brand-primary);
 }
 
 .drop-zone p {
   margin: 0;
-  color: #333;
+  color: var(--color-ink);
   font-size: 16px;
 
   &:last-child {
-    color: #999;
+    color: var(--color-ink-2);
     font-size: 14px;
   }
 }
@@ -57,7 +59,7 @@ h1 {
 .btn-folder-link {
   background: none;
   border: none;
-  color: #999;
+  color: var(--color-ink-2);
   cursor: pointer;
   font-size: 13px;
   text-decoration: underline;
@@ -65,13 +67,13 @@ h1 {
   font-style: italic;
 
   &:hover {
-    color: #666;
+    color: var(--color-brand-primary);
   }
 }
 
 .drop-zone .hint {
   font-size: 14px;
-  color: #999;
+  color: var(--color-ink-2);
   margin-top: 8px;
 
   a {
@@ -81,63 +83,44 @@ h1 {
   }
 }
 
-.name-input {
+.name-input,
+.event-input {
   margin-bottom: 16px;
 
   label {
     display: block;
     font-size: 12px;
-    color: #666;
+    color: var(--color-ink-2);
     margin-bottom: 6px;
   }
 
   input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     box-sizing: border-box;
+    color: var(--color-ink);
 
     &:focus {
       outline: none;
-      border-color: #666;
+      border-color: var(--color-brand-primary);
+      box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.14);
     }
   }
+}
+
+.event-input {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .file-list {
   margin-top: 24px;
-  background: #f9f9f9;
-  border-radius: 12px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-card);
   padding: 16px;
-}
-
-.event-input {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
-
-  label {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 6px;
-  }
-
-  input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      border-color: #666;
-    }
-  }
 }
 
 .file-header {
@@ -146,23 +129,23 @@ h1 {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 
   span {
     font-weight: 500;
-    color: #333;
+    color: var(--color-ink);
   }
 }
 
 .btn-text {
   background: none;
   border: none;
-  color: #666;
+  color: var(--color-ink-2);
   cursor: pointer;
   font-size: 14px;
 
   &:hover {
-    color: #333;
+    color: var(--color-ink);
   }
 }
 
@@ -171,7 +154,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 
   &:last-of-type {
     border-bottom: none;
@@ -188,7 +171,7 @@ h1 {
 
 .file-icon {
   font-size: 24px;
-  color: #666;
+  color: var(--color-ink-2);
 }
 
 .file-details {
@@ -199,7 +182,7 @@ h1 {
 
 .file-name {
   font-size: 14px;
-  color: #333;
+  color: var(--color-ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -208,7 +191,7 @@ h1 {
 
 .file-size {
   font-size: 12px;
-  color: #999;
+  color: var(--color-ink-2);
 }
 
 .file-status {
@@ -227,7 +210,7 @@ h1 {
   }
 
   &.error {
-    color: #f44336;
+    color: var(--color-error);
   }
 
   &.uploading {
@@ -244,7 +227,7 @@ h1 {
 .progress-bar {
   width: 60px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--color-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -259,12 +242,12 @@ h1 {
   background: none;
   border: none;
   font-size: 20px;
-  color: #999;
+  color: var(--color-ink-3);
   cursor: pointer;
   padding: 0 4px;
 
   &:hover {
-    color: #333;
+    color: var(--color-ink);
   }
 }
 
@@ -279,7 +262,7 @@ h1 {
   .error-icon {
     width: 80px;
     height: 80px;
-    background: #c62828;
+    background: var(--color-error);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -295,30 +278,30 @@ h1 {
   }
 
   h2 {
-    color: #c62828;
+    color: var(--color-error);
     margin-bottom: 8px;
   }
 
   .sorry-line {
     font-size: 16px;
-    color: #999;
+    color: var(--color-ink-2);
     margin-bottom: 24px;
   }
 
   p {
-    color: #666;
+    color: var(--color-ink-2);
     margin-bottom: 24px;
   }
 
   .hint {
     font-size: 14px;
-    color: #999;
+    color: var(--color-ink-2);
     margin-bottom: 8px;
   }
 
   .support-hint {
     font-size: 14px;
-    color: #999;
+    color: var(--color-ink-2);
     margin-bottom: 24px;
     font-style: italic;
   }
@@ -347,18 +330,18 @@ h1 {
   }
 
   h2 {
-    color: #333;
+    color: var(--color-ink);
     margin-bottom: 8px;
   }
 
   p {
-    color: #666;
+    color: var(--color-ink-2);
     margin-bottom: 24px;
   }
 
   .hint {
     font-size: 14px;
-    color: #999;
+    color: var(--color-ink-2);
     margin-bottom: 24px;
   }
 }

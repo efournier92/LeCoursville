@@ -1,1 +1,53 @@
-@use "src/app/components/message/message.component.scss" as *;
+.chat-component {
+  min-width: 0;
+}
+
+.chat-container {
+  padding: 0;
+  margin: 0; // kill Bootstrap .row negative side margins — page-content owns the gutters
+}
+
+// Message cards are white sheets like every other card; the bootstrap column
+// classes control the centered column, the tokens control the look.
+.message-card-container.mat-mdc-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+
+  &.mat-mdc-card-outlined {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+.chat-empty {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 64px 24px;
+}
+
+.chat-empty-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  color: var(--color-ink-3);
+}
+
+.chat-empty-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.chat-empty-hint {
+  margin: 0 0 12px;
+  color: var(--color-ink-2);
+}
+

@@ -11,7 +11,13 @@
 }
 
 .upload-card-success {
-  background: #81C784;
+  background: var(--color-brand-primary);
+  color: #fff;
+
+  .photo-upload-link,
+  .upload-success-message {
+    color: #fff;
+  }
 }
 
 .upload-success-container {

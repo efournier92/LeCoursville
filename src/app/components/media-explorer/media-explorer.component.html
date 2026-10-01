@@ -1,4 +1,16 @@
-<div class="media-explorer-component justify-content-center">
+<div class="media-explorer-component page-ground page-content">
+  <app-page-toolbar [title]="title">
+    <mat-form-field class="media-list-filters-input" appearance="outline">
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        name="media-explorer-filter"
+        (input)="onSearchInputChange($event)"
+        [(ngModel)]="searchQuery"
+        />
+    </mat-form-field>
+  </app-page-toolbar>
+
   <div class="row">
     @if (selectedMedia?.id) {
       <div
@@ -45,11 +57,11 @@
           <div
             class="media-component-container document-component-container"
             >
-            <app-doc-viewer-drive-iframe
+            <app-doc-viewer-ngx-extended
               [doc]="selectedMedia"
               [events]="eventsSubject.asObservable()"
               >
-            </app-doc-viewer-drive-iframe>
+            </app-doc-viewer-ngx-extended>
           </div>
         }
         @if (isPhotoAlbum(selectedMedia)) {
@@ -73,7 +85,7 @@
       </div>
     }
 
-    <div class="media-list-container col-lg-5">
+    <div class="media-list-container col-12" [class.col-lg-5]="selectedMedia?.id">
       <!-- TODO: Move to app-media-list -->
       @if (selectedMedia?.id && !user?.id) {
         <div
@@ -94,6 +106,7 @@
         <app-media-list
           [mediaTypesToShow]="mediaTypesToShow"
           [isAdminMode]="false"
+          [searchQuery]="searchQuery"
           (mediaClickEvent)="onMediaSelect($event)"
         ></app-media-list>
       }

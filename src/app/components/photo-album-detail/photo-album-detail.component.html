@@ -1,32 +1,28 @@
-<header class="gallery-bar">
-  <div class="gallery-bar-left">
-    <button class="gallery-back-btn" routerLink="/photos" aria-label="Back to albums" matTooltip="Back to albums">
-      <mat-icon aria-hidden="true">arrow_back</mat-icon>
-    </button>
-    <h1 class="gallery-title gallery-title--ellipsis">{{ album?.title || 'Album' }}</h1>
+<div class="page-ground page-content">
+  <app-page-toolbar [title]="album?.title || 'Album'">
+  <button class="gallery-back-btn" page-toolbar-left routerLink="/photos" aria-label="Back to albums" matTooltip="Back to albums">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+  </button>
+  <div class="gallery-search" role="search">
+    <mat-icon class="gallery-search-icon" aria-hidden="true">search</mat-icon>
+    <input class="gallery-search-input"
+      type="text"
+      placeholder="Search photos"
+      aria-label="Search photos"
+      [(ngModel)]="searchTerm" />
+    @if (searchTerm) {
+      <button class="gallery-search-clear" aria-label="Clear search" (click)="searchTerm = ''">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    }
   </div>
-  <div class="gallery-bar-actions">
-    <div class="gallery-search" role="search">
-      <mat-icon class="gallery-search-icon" aria-hidden="true">search</mat-icon>
-      <input class="gallery-search-input"
-        type="text"
-        placeholder="Search photos"
-        aria-label="Search photos"
-        [(ngModel)]="searchTerm" />
-      @if (searchTerm) {
-        <button class="gallery-search-clear" aria-label="Clear search" (click)="searchTerm = ''">
-          <mat-icon aria-hidden="true">close</mat-icon>
-        </button>
-      }
-    </div>
-    <button class="gallery-slideshow-btn"
-      [disabled]="photos.length === 0"
-      (click)="onStartSlideshow()">
-      <mat-icon aria-hidden="true">play_arrow</mat-icon>
-      Slideshow
-    </button>
-  </div>
-</header>
+  <button class="gallery-slideshow-btn"
+    [disabled]="photos.length === 0"
+    (click)="onStartSlideshow()">
+    <mat-icon aria-hidden="true">play_arrow</mat-icon>
+    Slideshow
+  </button>
+</app-page-toolbar>
 
 @if (!showSpinner) {
   <div class="photo-grid">
@@ -54,29 +50,37 @@
         }
       </div>
     }
-    @if (getFilteredPhotos().length === 0) {
-      <app-no-results-message [searchTerm]="searchTerm"></app-no-results-message>
+    @if (getFilteredPhotos().length === 0 && searchTerm) {
+      <app-no-results-message [searchTerm]="searchTerm" noun="photos"></app-no-results-message>
+    }
+    @if (getFilteredPhotos().length === 0 && !searchTerm) {
+      <app-no-results-message
+        title="No photos yet"
+        hint="Photos added to this album will appear here."
+        [isCentered]="true"
+      ></app-no-results-message>
     }
   </div>
 } @else {
   <div class="photos-skeleton-grid">
     @for (_ of skeletonIterations; track _) {
       <div class="photos-skeleton-card">
-        <div class="skeleton-photo-image shimmer"></div>
+        <div class="skeleton-photo-image"></div>
       </div>
     }
   </div>
 }
 
-<div class="pswp-gallery" [id]="'gallery-' + albumId" style="display: none;">
-  @for (photo of photos; track photo; let i = $index) {
-    <a
-      [href]="photo.url"
-      [attr.data-pswp-width]="1600"
-      [attr.data-pswp-height]="1600"
-      [attr.data-cropped]="true"
-      target="_blank" rel="noopener">
-      <img [src]="photo.url" [alt]="photo.info || ''" />
-    </a>
-  }
+  <div class="pswp-gallery" [id]="'gallery-' + albumId" style="display: none;">
+    @for (photo of photos; track photo; let i = $index) {
+      <a
+        [href]="photo.url"
+        [attr.data-pswp-width]="1600"
+        [attr.data-pswp-height]="1600"
+        [attr.data-cropped]="true"
+        target="_blank" rel="noopener">
+        <img [src]="photo.url" [alt]="photo.info || ''" />
+      </a>
+    }
+  </div>
 </div>

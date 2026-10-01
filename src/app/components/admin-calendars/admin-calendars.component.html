@@ -1,21 +1,14 @@
 <div class="admin-calendars-container">
-  <mat-card class="calendars-card">
-    <div class="card-header">
-      <div class="header-content">
-        <div class="header-text">
-          <h2 class="card-title">Calendars</h2>
-        </div>
-        <div class="header-actions">
-          @if (!isAdding && !editingCalendar) {
-            <button mat-flat-button color="primary" (click)="onAdd()">
-              <mat-icon>add</mat-icon>
-              Add Calendar
-            </button>
-          }
-        </div>
-      </div>
-    </div>
+  <app-page-toolbar title="Calendars">
+    @if (!isAdding && !editingCalendar) {
+      <button mat-flat-button color="primary" (click)="onAdd()">
+        <mat-icon>add</mat-icon>
+        Add Calendar
+      </button>
+    }
+  </app-page-toolbar>
 
+  <mat-card class="calendars-card">
     <mat-card-content>
       @if (calendars.length > 0) {
         <div class="calendars-list">

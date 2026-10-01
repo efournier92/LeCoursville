@@ -20,13 +20,15 @@ import { PromptModalService } from 'src/app/services/prompt-modal.service';
 })
 export class MediaExplorerComponent implements OnInit {
   @Input() mediaTypesToShow: string;
-  
+  @Input() title = 'Media';
+
   user: User;
   // allMedia: UploadableMedia[] = [];
   loadedMedia: UploadableMedia[];
   selectedMedia: UploadableMedia;
   eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
   isLoading: boolean;
+  searchQuery = '';
 
   constructor(
     private authService: AuthService,
@@ -69,6 +71,13 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   // PUBLIC
+
+  onSearchInputChange(event: any): void {
+    this.analyticsService.logEvent('media_list_search', {
+      query: this.searchQuery,
+      userId: this.user?.id,
+    });
+  }
 
   onMediaSelect(media: UploadableMedia): void {
     this.isLoading = true;

@@ -1,6 +1,6 @@
 <div
   class="row mb-4 message-card-content-container"
-  [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
+  [style.--reply-depth]="message.replyLevel"
   >
   <div class="col-2 col-md-1 message-tools-container">
     <div class="mb-3 message-button">
@@ -16,7 +16,7 @@
             class="unselectable"
             aria-hidden="true"
             [ngStyle]="{
-              color: highlights.like === true ? '#FF9800' : '#F44336'
+              color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
             }"
           >favorite_border</mat-icon>
           <mat-menu #menu="matMenu">
@@ -38,7 +38,7 @@
             <strong
               class="unselectable message-likes-container"
             [ngStyle]="{
-              color: highlights.like === true ? '#FF9800' : '#F44336'
+              color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
             }"
               >
               {{ getLikes() }}
@@ -48,13 +48,13 @@
       </div>
       <span
         class="message-button-label d-flex justify-content-center"
-        [ngStyle]="{ color: highlights.like === true ? '#FF9800' : '#F44336' }"
+        [ngStyle]="{ color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)' }"
         >Like</span
         >
       </div>
       <div
         class="mb-3 message-button"
-        [ngStyle]="{ color: highlights.reply === true ? '#FF9800' : '#F44336' }"
+        [ngStyle]="{ color: highlights.reply === true ? 'var(--color-accent)' : 'var(--color-error)' }"
         >
         <div
           class="d-flex flex-row justify-content-center"
@@ -73,7 +73,7 @@
           ) {
           <div
             class="message-button"
-            [ngStyle]="{ color: highlights.edit === true ? '#FF9800' : '#F44336' }"
+            [ngStyle]="{ color: highlights.edit === true ? 'var(--color-accent)' : 'var(--color-error)' }"
             >
             <div
               class="d-flex flex-row justify-content-center"

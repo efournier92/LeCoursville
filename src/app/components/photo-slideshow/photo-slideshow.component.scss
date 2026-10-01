@@ -72,3 +72,10 @@
   min-width: 60px;
   text-align: center;
 }
+
+// Respect reduced-motion: no Ken Burns drift, show the photo statically.
+@media (prefers-reduced-motion: reduce) {
+  .slideshow-image {
+    animation: none !important;
+  }
+}

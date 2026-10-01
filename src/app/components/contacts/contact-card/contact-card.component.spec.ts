@@ -108,10 +108,10 @@ describe('ContactCardComponent', () => {
       expect(component.getClanColor()).toBe('#FF0000');
     });
 
-    it('returns fallback #cccccc when clan is null', () => {
+    it('returns fallback brand green when clan is null', () => {
       component.contactCard = createContactCard({ clan: null });
       fixture.detectChanges();
-      expect(component.getClanColor()).toBe('#cccccc');
+      expect(component.getClanColor()).toBe('#2D5A27');
     });
   });
 

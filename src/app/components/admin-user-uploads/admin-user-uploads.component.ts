@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ import { PhotoAlbum } from '../../models/photo-album';
 import { PhotoAlbumPickerDialogComponent } from '../photo-album-picker-dialog/photo-album-picker-dialog.component';
 import { AnalyticsService } from '../../services/analytics.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { PageToolbarComponent } from '../shared/page-toolbar/page-toolbar.component';
 
 interface StorageFolder {
   name: string;
@@ -43,11 +44,12 @@ interface StorageFile {
     imports: [
         CommonModule,
         FormsModule,
-        MatButtonToggleModule,
+        MatButtonModule,
         MatCardModule,
         MatDialogModule,
         MatIconModule,
         MatTooltipModule,
+        PageToolbarComponent,
     ]
 })
 export class AdminUserUploadsComponent implements OnInit, OnDestroy {
@@ -56,6 +58,8 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   processingIds = new Set<string>();
   previewUpload: UserUpload | null = null;
   filterStatus: 'pending' | 'all' | 'browser' = 'pending';
+  @ViewChild('previewDialog') previewDialog!: TemplateRef<any>;
+  private previewDialogRef: MatDialogRef<unknown> | null = null;
 
   // Storage Browser tab
   storageBrowserTab: 'list' | 'files' = 'list';
@@ -94,6 +98,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.previewDialogRef?.close();
     this.subscriptions.forEach(s => s.unsubscribe());
   }
 
@@ -172,14 +177,33 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   onPreview(upload: UserUpload): void {
     this.previewUpload = upload;
+    this.previewDialogRef = this.dialog.open(this.previewDialog, {
+      width: 'min(92vw, 720px)',
+      panelClass: 'upload-preview-dialog',
+    });
   }
 
-  closePreview(): void {
-    this.previewUpload = null;
+  closePreviewDialog(): void {
+    this.previewDialogRef?.close();
+    this.previewDialogRef = null;
+  }
+
+  setFilter(status: 'pending' | 'all'): void {
+    this.filterStatus = status;
+  }
+
+  backToReview(): void {
+    this.filterStatus = 'pending';
+    this.storageBrowserTab = 'list';
+    this.currentFolderFiles = [];
   }
 
   isProcessing(id: string): boolean {
     return this.processingIds.has(id);
+  }
+
+  getUploaderName(upload: UserUpload): string {
+    return upload.uploader?.name || upload.uploader?.email || '';
   }
 
   formatFileSize(bytes: number): string {
@@ -347,13 +371,5 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     } finally {
       this.zipDownloadingFolder = null;
     }
-  }
-
-  getFolderIcon(folder: StorageFolder): string {
-    return folder.section === 'userUploads' ? 'hourglass_empty' : 'check_circle';
-  }
-
-  getSectionIcon(section: 'userUploads' | 'photos'): string {
-    return section === 'userUploads' ? 'hourglass_empty' : 'check_circle';
   }
 }

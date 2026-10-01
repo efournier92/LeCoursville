@@ -5,8 +5,8 @@
 }
 
 .calendars-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 
   .card-header {
     padding: 16px 24px 0;
@@ -38,19 +38,19 @@
 
 // Calendars List
 .calendars-list {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 
   .calendar-header-row {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background: #fafafa;
-    border-bottom: 1px solid #e0e0e0;
+    background: var(--color-surface-muted);
+    border-bottom: 1px solid var(--color-border);
     font-size: 12px;
     font-weight: 500;
-    color: #666;
+    color: var(--color-ink-2);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 
@@ -72,7 +72,7 @@
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border);
     transition: background-color 0.15s;
 
     &:last-child {
@@ -80,7 +80,7 @@
     }
 
     &:hover {
-      background-color: #fafafa;
+      background-color: var(--color-surface-muted);
     }
 
     .calendar-year {
@@ -92,7 +92,7 @@
     .calendar-url {
       flex: 1;
       font-size: 13px;
-      color: #666;
+      color: var(--color-ink-2);
       font-family: monospace;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -123,7 +123,7 @@
   flex-direction: column;
   align-items: center;
   padding: 48px 24px;
-  color: #999;
+  color: var(--color-ink-2);
 
   mat-icon {
     font-size: 48px;
@@ -143,8 +143,8 @@
   margin-top: 24px;
 
   .form-card {
-    border-radius: 8px;
-    background: #fafafa;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-muted);
 
     mat-card-content {
       padding: 24px;
@@ -166,7 +166,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #f44336;
+    color: var(--color-error);
     font-size: 13px;
     margin-bottom: 16px;
 

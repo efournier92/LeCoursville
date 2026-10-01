@@ -9,13 +9,13 @@
 }
 
 .media-upload-success-messages {
-  color: #00c853;
+  color: var(--color-brand-primary);
   font-size: 0.8em;
   margin-bottom: 0.8em;
 }
 
 .media-upload-error-messages {
-  color: #d50000;
+  color: var(--color-error);
   font-size: 0.8em;
   margin-bottom: 0.8em;
 }

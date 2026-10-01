@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
@@ -14,19 +14,23 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class MediaListComponent implements OnInit {
+export class MediaListComponent implements OnInit, OnChanges {
   @Input() mediaTypesToShow: string[];
   @Input() isAdminMode = false;
+  /** External search term — set by the hosting page toolbar (non-admin mode).
+   *  The list re-filters whenever it changes. In admin mode the internal
+   *  toolbar binds to the same property. */
+  @Input() searchQuery = '';
 
   @Output() mediaClickEvent = new EventEmitter<UploadableMedia>();
 
   user: User;
   allMedia: UploadableMedia[] = [];
   filteredMedia: UploadableMedia[];
-  searchQuery: string;
   sortTypes: string[];
   selectedSortType: string;
   isLoading = true;
+  private hasLoadedOnce = false;
   skeletonIterations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   constructor(
@@ -42,9 +46,24 @@ export class MediaListComponent implements OnInit {
     this.subscribeToUserObservable();
     this.subscribeToMediaObservable();
     this.initializeList();
-    this.searchQuery = '';
     this.sortTypes = ['Date Added', 'Date Recorded'];
     this.selectedSortType = this.sortTypes[1];
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Non-admin mode: the hosting page toolbar owns the search box and passes
+    // the term here; re-filter on every change.
+    if (changes['searchQuery'] && !this.isAdminMode) {
+      this.filteredMedia = this.filterMediaByType(
+        this.mediaTypesToShow,
+        this.allMedia,
+      );
+      this.filteredMedia = this.mediaService.filterByQuery(
+        this.searchQuery,
+        this.filteredMedia,
+      );
+      this.filteredMedia = this.sortMedia(this.filteredMedia);
+    }
   }
 
   // SUBSCRIPTIONS
@@ -63,15 +82,13 @@ export class MediaListComponent implements OnInit {
         this.allMedia,
       );
       this.filteredMedia = this.sortMedia(this.filteredMedia);
-      setTimeout(() => {
-        if (this.filteredMedia && this.filteredMedia.length > 0) {
+      // First emit ends the skeleton state even when the list is empty — a
+      // data-less list shows the empty state, not shimmer forever.
+      if (!this.hasLoadedOnce) {
+        this.hasLoadedOnce = true;
+        setTimeout(() => {
           this.isLoading = false;
-        }
-      });
-      function randomDate(start, end) {
-        return new Date(
-          start.getTime() + Math.random() * (end.getTime() - start.getTime()),
-        );
+        });
       }
     });
   }

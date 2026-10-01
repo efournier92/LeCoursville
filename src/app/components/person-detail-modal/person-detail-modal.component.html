@@ -2,7 +2,7 @@
   @if (person) {
     <div class="modal-content">
       <div class="modal-header">
-        <div class="clan-color-bar" [style.background-color]="getClanForPerson(person.clanId)?.hexColor || '#e0e0e0'"></div>
+        <div class="clan-color-bar" [style.background-color]="getClanForPerson(person.clanId)?.hexColor || '#2D5A27'"></div>
         <div class="name-block">
           <h2>{{ getDisplayName() }}</h2>
           @if (person.name.firstPreferred && person.name.firstPreferred !== person.name.firstGiven) {

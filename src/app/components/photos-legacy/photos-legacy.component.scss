@@ -1,8 +1,6 @@
 .photos-component-container {
-  max-width: 1200px;
-  margin: 16px auto 0;
-  padding: 16px;
-  background: var(--color-app-bg);
+  min-width: 0;
+  background: transparent;
 }
 
 .photos-container {
@@ -45,14 +43,14 @@
 .photos-sort-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #555;
+  color: var(--color-ink-2);
   margin-right: 4px;
 }
 
 .photos-sort-btn {
-  border-radius: 8px;
-  background: #f1f5f9;
-  color: #4a5568;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  color: var(--color-ink-2);
   height: 32px;
   padding: 0 12px;
   font-size: 0.8rem;
@@ -62,8 +60,8 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: #e2e8f0;
-    color: #2d3748;
+    background: var(--color-border);
+    color: var(--color-ink);
   }
 
   &.active {
@@ -128,7 +126,7 @@
       width: 20px;
       height: 20px;
       line-height: 20px;
-      color: #5a5a5a;
+      color: var(--color-ink-2);
       transition: color 0.15s ease;
     }
 
@@ -214,7 +212,7 @@ input[type="file"] {
 
 .photo-edit-checkbox-label {
   font-size: 0.875rem;
-  color: #555;
+  color: var(--color-ink-2);
 }
 
 .photo-edit-actions {
@@ -237,7 +235,7 @@ input[type="file"] {
       width: 20px;
       height: 20px;
       line-height: 20px;
-      color: #5a5a5a;
+      color: var(--color-ink-2);
       transition: color 0.15s ease;
     }
 
@@ -273,9 +271,9 @@ input[type="file"] {
 .skeleton-image {
   width: 100%;
   height: 350px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: var(--color-surface-muted);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .skeleton-photo-info {
@@ -285,9 +283,9 @@ input[type="file"] {
 .skeleton-photo-line {
   height: 14px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: var(--color-surface-muted);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: pulse 1.5s ease-in-out infinite;
   margin-bottom: 10px;
 
   &.short {
@@ -305,11 +303,7 @@ input[type="file"] {
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

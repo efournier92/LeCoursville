@@ -13,7 +13,7 @@
   // viewport size.
   background:
     radial-gradient(900px 420px at 50% -8%, rgba(45, 90, 39, 0.12), transparent 65%),
-    linear-gradient(180deg, #eef3eb 0%, var(--color-app-bg) 48%);
+    linear-gradient(180deg, rgba(45, 90, 39, 0.08) 0%, var(--color-app-bg) 48%);
 
   @media (max-width: 480px) {
     padding: 20px 12px 40px;
@@ -30,12 +30,12 @@
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   border: 1px solid rgba(255, 255, 255, 0.75);
   box-shadow:
-    0 18px 50px rgba(15, 23, 42, 0.08),
+    0 18px 50px rgba(15, 23, 42, 0.07),
     0 2px 6px rgba(15, 23, 42, 0.04);
 
   // Solid fallback for browsers without backdrop-filter support.
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    background: #ffffff;
+    background: var(--color-surface);
   }
 
   @media (max-width: 480px) {
@@ -72,18 +72,20 @@
 
 .auth-title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   text-align: center;
-  color: #1a202c;
+  color: var(--color-ink);
 }
 
 .auth-subtitle {
   margin: 6px 0 26px;
   text-align: center;
   font-size: 0.9rem;
-  color: #8a94a3;
+  color: var(--color-ink-2);
 }
 
 .auth-field {
@@ -112,7 +114,7 @@
 
 .auth-banner--error {
   background: rgba(220, 38, 38, 0.08);
-  color: #b91c1c;
+  color: var(--color-error);
 }
 
 .auth-banner--info {
@@ -134,7 +136,7 @@
 .auth-reset {
   display: block;
   margin: 14px auto 0;
-  color: #6b7280;
+  color: var(--color-ink-2);
   font-size: 0.875rem;
 
   &:hover {

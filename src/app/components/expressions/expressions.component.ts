@@ -17,6 +17,7 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
   headerQuoteText: string = ExpressionConstants.HeaderQuoteText;
   headerAttributionText: string = ExpressionConstants.HeaderAttributionText;
   isLoading: boolean = true;
+  private hasLoadedOnce: boolean = false;
   messageType: string = MessageConstants.Types.Expression;
   sortSettings: SortSettingsForExpressions = new SortSettingsForExpressions();
 
@@ -58,8 +59,10 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
       MessageConstants.Types.Expression,
     );
 
-    if (expressions.length) {
-      // Hide initial sorting process from UI
+    // First emit ends the skeleton state even when the list is empty —
+    // a data-less list must show an empty state, not shimmer forever.
+    if (!this.hasLoadedOnce) {
+      this.hasLoadedOnce = true;
       setTimeout(() => {
         this.isLoading = false;
       }, 500);

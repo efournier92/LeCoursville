@@ -69,7 +69,7 @@ export class ContactCardComponent implements OnDestroy {
   }
 
   getClanColor(): string {
-    return this.contactCard?.clan?.hexColor || '#cccccc';
+    return this.contactCard?.clan?.hexColor || '#2D5A27';
   }
 
   hasEmails(): boolean {

@@ -1,23 +1,17 @@
+// Expression card row: sits inside the .expression-card-wrapper surface card.
+// The brand rail on the left is this card's signature — same language as the
+// family cards on People.
 .expression-card {
   display: flex;
   align-items: stretch;
   padding: 0;
-  border-bottom: 1px solid #f0f0f0;
-  transition: box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.12);
-
-    .expression-actions {
-      opacity: 1;
-    }
-  }
 }
 
 .expression-content {
   flex: 1;
   padding: 20px 24px;
   border-left: 4px solid var(--color-brand-primary);
+  min-width: 0;
 }
 
 .expression-header {
@@ -37,19 +31,19 @@
   font-style: italic;
   font-size: 1.2em;
   font-weight: 600;
-  color: #1e3c1a;
+  color: var(--color-ink);
   margin: 0;
 }
 
 .expression-attribution {
   font-size: 0.9em;
-  color: #6b8e6b;
+  color: var(--color-ink-2);
   font-style: italic;
 }
 
 .expression-body {
   font-size: 0.95em;
-  color: #444;
+  color: var(--color-ink);
   line-height: 1.6;
   margin-bottom: 14px;
   padding-left: 2px;
@@ -64,13 +58,13 @@
 
 .expression-author {
   font-size: 0.8em;
-  color: #999;
+  color: var(--color-ink-2);
   font-weight: 500;
 }
 
 .expression-image {
   max-width: 200px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin-top: 8px;
 }
 
@@ -79,7 +73,7 @@
   align-items: center;
   gap: 4px;
   font-size: 0.8em;
-  color: #757575;
+  color: var(--color-ink-2);
   text-decoration: none;
 
   mat-icon {
@@ -89,20 +83,28 @@
   }
 
   &:hover {
-      }
+    color: var(--color-brand-primary);
+  }
 }
 
 .expression-actions {
+  // Revealed on hover (pointer users) and on keyboard focus — never invisible
+  // to touch/keyboard users.
   opacity: 0;
   transition: opacity 0.15s;
 
   button {
-    color: #9e9e9e;
+    color: var(--color-ink-2);
 
     &:hover {
-      color: #616161;
+      color: var(--color-brand-primary);
     }
   }
+}
+
+.expression-card:hover .expression-actions,
+.expression-card:focus-within .expression-actions {
+  opacity: 1;
 }
 
 .expression-deleted {
@@ -110,7 +112,7 @@
 
   .deleted-text {
     font-size: 0.9em;
-    color: #999;
+    color: var(--color-ink-2);
     font-style: italic;
   }
 }

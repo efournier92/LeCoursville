@@ -3,68 +3,48 @@
   font-weight: 500;
   margin-bottom: 3px;
   margin-left: 1px;
-}
-
-.calendar-cell-event-container {
+}.calendar-cell-event-container {
   display: flex;
   align-items: flex-start;
   margin-bottom: 3px;
-  background: #fafbfc;
-  border-radius: 6px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
   padding: 6px 8px;
   border-left: 4px solid;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-}
-
-.border-birth {
-  border-left-color: #3182ce;
-}
-
-.border-anniv {
-  border-left-color: #e53e3e;
-}
-
-.birthday-color {
-  color: #3182ce;
-}
-
-.anniversary-color {
-  color: #e53e3e;
-}
-
-.calendar-years-since-container {
+}.border-birth {
+  border-left-color: var(--color-brand-primary);
+}.border-anniv {
+  border-left-color: var(--color-accent-strong);
+}.birthday-color {
+  color: var(--color-brand-primary);
+}.anniversary-color {
+  color: var(--color-accent-strong);
+}.calendar-years-since-container {
   line-height: 1.2em;
   min-width: 1.6em;
   text-align: right;
   margin-right: 8px;
-}
-
-.calendar-years-since {
+}.calendar-years-since {
   font-size: 0.95em;
   opacity: 0.85;
   font-weight: 600;
-}
-
-.calendar-event-title-container {
+}.calendar-event-title-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   flex: 1;
   min-width: 0;
   line-height: 1.2em;
-}
-
-.is-anniversary {
+}.is-anniversary {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-}
-
-.event-title-link,
+}.event-title-link,
 .event-title-spouse-link {
-  color: #2d3748;
+  color: var(--color-ink);
   cursor: pointer;
   font-weight: 600;
   font-size: 1em;
@@ -74,40 +54,30 @@
   border-radius: 4px;
   text-align: left;
   line-height: 1.1;
-}
-
-.event-title-link:hover,
+}.event-title-link:hover,
 .event-title-spouse-link:hover {
-  color: #3182ce;
+  color: var(--color-brand-primary);
   text-decoration: underline;
-}
-
-.event-ampersand-row {
+}.event-ampersand-row {
   display: block;
-  color: #a0aec0;
+  color: var(--color-ink-2);
   user-select: none;
   font-size: 0.75em;
   line-height: 1;
   padding: 0;
   text-align: left;
-}
-
-.anniv-first-line {
+}.anniv-first-line {
   display: flex;
   align-items: center;
   gap: 4px;
   width: 100%;
   text-align: left;
-}
-
-.event-ampersand-inline {
-  color: #a0aec0;
+}.event-ampersand-inline {
+  color: var(--color-ink-2);
   user-select: none;
   font-size: 0.85em;
   font-weight: 400;
   flex-shrink: 0;
-}
-
-.event-not-living {
+}.event-not-living {
   opacity: 0.55;
 }
