@@ -12,7 +12,7 @@
     @if (!isSaving) {
       <div
         class="row mb-4 message-card-content-container"
-        [ngStyle]="{ 'margin-left.px': message.replyLevel * 25 }"
+        [style.--reply-depth]="message.replyLevel"
         >
         <div class="col-2 col-md-1 message-tools-container">
           <div class="d-flex justify-content-center flex-column mt-2">
@@ -20,7 +20,7 @@
               <div
                 class="mb-3 message-button"
           [ngStyle]="{
-            color: highlights.trash === true ? '#FF9800' : '#F44336'
+            color: highlights.trash === true ? 'var(--color-accent)' : 'var(--color-error)'
           }"
                 >
                 @if (!message.isDeleted) {
@@ -58,7 +58,7 @@
                 <div
                   class="mb-3 message-button chat-edit-button-cancel"
           [ngStyle]="{
-            color: highlights.cancel === true ? '#FF9800' : '#F44336'
+            color: highlights.cancel === true ? 'var(--color-accent)' : 'var(--color-error)'
           }"
                   >
                   <div
@@ -75,8 +75,9 @@
                   </div>
                   <div
                     class="mb-3 message-button chat-edit-button-send"
+                    data-testid="chat-send"
           [ngStyle]="{
-            color: highlights.send === true ? '#FF9800' : '#F44336'
+            color: highlights.send === true ? 'var(--color-accent)' : 'var(--color-error)'
           }"
                     >
                     <div
@@ -95,7 +96,7 @@
                       <div
                         class="mb-3 chat-edit-button-sticky"
           [ngStyle]="{
-            color: highlights.sticky === true ? '#FF9800' : '#F44336'
+            color: highlights.sticky === true ? 'var(--color-accent)' : 'var(--color-error)'
           }"
                         >
                         <div
@@ -148,6 +149,7 @@
                           cdkTextareaAutosize
                           #autosize="cdkTextareaAutosize"
                           #input
+                          data-testid="chat-message-input"
                           [(ngModel)]="message.body"
                         ></textarea>
                       </mat-form-field>

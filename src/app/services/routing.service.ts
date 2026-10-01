@@ -31,7 +31,12 @@ export class RoutingService {
   }
 
   IsRootRoute() {
-    return this.router.url === '/';
+    // Use the browser path, not router.url: while an async route guard is
+    // pending, router.url still shows the previous route, which made the
+    // post-login redirect in app.component fire on ANY in-flight navigation
+    // (e.g. reloading /admin bounced to /calendar). The address bar always
+    // reflects the real target route.
+    return window.location.pathname === '/';
   }
 
   NavigateToRoute(route: string) {

@@ -1,4 +1,6 @@
 <div class="admin-features-container">
+  <app-page-toolbar title="Features"></app-page-toolbar>
+
   <mat-card class="promoted-route-card">
     <mat-card-header>
       <mat-card-title>Promoted Route</mat-card-title>
@@ -33,7 +35,8 @@
             <mat-checkbox
               [checked]="isEnabled(feature.id)"
               (change)="onToggle(feature.id, $event.checked)"
-              color="primary">
+              color="primary"
+              [attr.data-testid]="'feature-toggle-' + feature.id">
             </mat-checkbox>
             <span class="feature-label">{{ feature.label }}</span>
             <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">

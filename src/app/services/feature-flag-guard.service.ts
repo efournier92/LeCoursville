@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { combineLatest, Observable, of } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 import { FeatureFlagsService } from './feature-flags.service';
 
 @Injectable({
@@ -20,20 +21,26 @@ export class FeatureFlagGuard  {
       return of(true);
     }
 
-    return new Observable<boolean | UrlTree>(observer => {
-      this.featureFlagsService.getAllFeatureFlags().subscribe(flagsMap => {
-        const flag = flagsMap[featureId];
+    // Wait for the first real RTDB flags snapshot: the flags subject starts
+    // empty, so deciding on its first emission would let every disabled
+    // feature through on a fresh page load (same race the photo-albums guard
+    // already hardens against with flagsReady()).
+    return combineLatest([
+      this.featureFlagsService.getAllFeatureFlags(),
+      this.featureFlagsService.flagsReady(),
+    ]).pipe(
+      filter(([, ready]) => ready),
+      take(1),
+      map(([flags]) => {
+        const flag = flags[featureId];
 
         if (flag === null || flag === undefined || flag.enabled === true) {
-          observer.next(true);
-        } else {
-          const urlTree = this.router.createUrlTree(['/feature-disabled'], {
-            queryParams: { feature: featureId }
-          });
-          observer.next(urlTree);
+          return true;
         }
-        observer.complete();
-      });
-    });
+        return this.router.createUrlTree(['/feature-disabled'], {
+          queryParams: { feature: featureId }
+        });
+      }),
+    );
   }
 }

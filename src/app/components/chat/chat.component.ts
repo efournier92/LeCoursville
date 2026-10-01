@@ -37,5 +37,6 @@ export class ChatComponent extends MessageComponent implements OnInit {
     messages = this.filterRelevantMessages(messages);
     this.allItems = messages.sort(this.compareMessagesByTimestamp);
     this.bumpStickies();
+    this.loading = false;
   }
 }

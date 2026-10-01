@@ -88,6 +88,12 @@ export class AuthService {
       return;
     }
 
+    // Guard FIRST: Firebase dispatches the local-cache write event
+    // synchronously inside update(), so the re-entrant listener callback runs
+    // before the line below would execute. Setting the flag before the write
+    // is the only way to stop the update→emit→update loop.
+    this.hasAlreadyUpdatedUser = true;
+
     existingUser.dateLastActive = new Date();
 
     if (!existingUser) {
@@ -95,8 +101,6 @@ export class AuthService {
     } else {
       this.updateUser(existingUser);
     }
-
-    this.hasAlreadyUpdatedUser = true;
   }
 
   onSignIn(authData: any): void {
@@ -105,7 +109,17 @@ export class AuthService {
     if (!authUser?.uid) {
       return;
     }
+    // Guard: updateUser() writes back to the very path this listener watches,
+    // and Firebase dispatches the local-cache event synchronously inside
+    // update(). The flag must be set BEFORE the write — otherwise the
+    // re-entrant callback beats it (Maximum call stack size exceeded).
+    let handled = false;
     this.rtdb.object<User>(`users/${authUser?.uid}`).valueChanges().subscribe((existingUser: User) => {
+      if (handled) {
+        return;
+      }
+      handled = true;
+
       if (!existingUser) {
         this.createUser(authData, existingUser);
         return;

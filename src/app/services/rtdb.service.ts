@@ -42,12 +42,12 @@ export class RtdbObjectRef<T> {
     });
   }
 
-  async set(value: unknown): Promise<void> {
-    await set(ref(this.db, this.path), value);
-  }
-
   async update(value: object): Promise<void> {
     await update(ref(this.db, this.path), value as Record<string, unknown>);
+  }
+
+  async set(value: unknown): Promise<void> {
+    await set(ref(this.db, this.path), value);
   }
 
   async remove(): Promise<void> {

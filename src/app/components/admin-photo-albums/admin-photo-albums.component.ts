@@ -181,7 +181,10 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   }
 
   private filterImageFiles(files: File[]): File[] {
-    return files.filter(f => f.type.startsWith('image/'));
+    // Firefox folder picks can arrive with an empty MIME type; fall back to
+    // the file extension so the upload flow works cross-browser.
+    const imageExt = /\.(png|jpe?g|gif|webp|avif|bmp|heic|tiff?)$/i;
+    return files.filter(f => f.type.startsWith('image/') || (!f.type && imageExt.test(f.name)));
   }
 
   private openUploadDialog(files: File[]): void {

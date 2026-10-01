@@ -72,11 +72,16 @@ export abstract class MessageEditComponent implements OnInit {
   // TODO: Abstract large methods to smaller service methods
 
   saveMessage(newMessage: Message): void {
+    // ponytail: re-entry guard — isSaving is reused from the photo-upload spinner;
+    // the template already hides the form when true, so the dialog-open window is covered.
+    if (this.isSaving) { return; }
+    this.isSaving = true;
     const dialogRef = this.promptModal.openDialog(
       "Are You Sure?",
       "Do you want to post this message to LeCoursville?",
     );
     dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
+      this.isSaving = false;
       if (confirmedAction) {
         if (this.photoUpload && !this.message.isReply) {
           this.saveMessageWithPhoto(newMessage);
