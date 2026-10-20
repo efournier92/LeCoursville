@@ -51,6 +51,12 @@
         </a>
       </li>
       <li routerLinkActive="active">
+        <a routerLink="/admin/recovery" (click)="closeSidenav()">
+          <mat-icon>lock_reset</mat-icon>
+          <span>Recovery</span>
+        </a>
+      </li>
+      <li routerLinkActive="active">
         <a routerLink="/admin/features" (click)="closeSidenav()">
           <mat-icon>toggle_on</mat-icon>
           <span>Features</span>

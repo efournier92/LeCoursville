@@ -4,6 +4,13 @@ import {
   signOut as firebaseSignOut,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  linkWithPopup,
+  GoogleAuthProvider,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   User as FirebaseUser,
 } from "firebase/auth";
 import { MatDialogRef } from "@angular/material/dialog";
@@ -13,6 +20,7 @@ import { RoutingService } from "src/app/services/routing.service";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { PromptModalService } from "src/app/services/prompt-modal.service";
 import { FirebaseService } from "src/app/services/firebase.service";
+import { CloudFunctionsService } from "src/app/services/cloud-functions.service";
 import { RtdbService } from "src/app/services/rtdb.service";
 
 @Injectable({
@@ -24,15 +32,20 @@ export class AuthService {
   /** False until Firebase reports the first auth state, so callers can tell
    *  "auth unresolved" apart from "signed out". */
   authResolved$: Observable<boolean>;
+  /** Redirect sign-in errors land here after the full reload; the sign-in UI
+   *  maps them exactly as it maps popup errors. Null until one occurs. */
+  redirectError$: Observable<string | null>;
   hasAlreadyUpdatedUser: boolean;
   private signedOut = false;
 
   private userSource: BehaviorSubject<{}>;
   private authResolvedSource: BehaviorSubject<boolean>;
+  private redirectErrorSource: BehaviorSubject<string | null>;
 
   constructor(
     private rtdb: RtdbService,
     private firebase: FirebaseService,
+    private cloudFunctions: CloudFunctionsService,
     private routingService: RoutingService,
     private promptModal: PromptModalService,
   ) {
@@ -40,6 +53,8 @@ export class AuthService {
     this.userObservable = this.userSource.asObservable();
     this.authResolvedSource = new BehaviorSubject(false);
     this.authResolved$ = this.authResolvedSource.asObservable();
+    this.redirectErrorSource = new BehaviorSubject<string | null>(null);
+    this.redirectError$ = this.redirectErrorSource.asObservable();
     this.hasAlreadyUpdatedUser = false;
     // Warm the RTDB websocket at boot, in parallel with the auth restore.
     // Without this the first listener (the user record, post-auth) pays the
@@ -47,6 +62,7 @@ export class AuthService {
     // on that connection. .info/connected is a free server-side value.
     this.rtdb.object(".info/connected").valueChanges().subscribe();
     this.subscribeToAuthState();
+    this.resolveRedirectResult();
   }
 
   // PUBLIC METHODS
@@ -57,9 +73,64 @@ export class AuthService {
     return cred.user;
   }
 
-  /** Native password reset email (replaces FirebaseUI's reset link). */
+  /** Native password reset email (replaces FirebaseUI's reset link). Prefers
+   *  the requestPasswordReset callable; if it is unavailable (cold deploy,
+   *  network, callable missing) falls back to the direct Firebase send. */
   async sendPasswordReset(email: string): Promise<void> {
-    await sendPasswordResetEmail(this.firebase.auth, email);
+    try {
+      await this.cloudFunctions.requestPasswordReset(email);
+    } catch (error) {
+      // Only a transport failure may retry through Firebase directly. Any
+      // other callable error kept propagating, so a differing response cannot
+      // become an account-existence oracle.
+      if (!this.isTransportFailure(error)) {
+        throw error;
+      }
+      try {
+        await sendPasswordResetEmail(this.firebase.auth, email, {
+          url: this.cloudFunctions.appActionUrl(),
+          handleCodeInApp: true,
+        });
+      } catch (fallbackError) {
+        // The caller shows the same generic info banner either way.
+        if ((fallbackError as { code?: string })?.code === "auth/user-not-found") {
+          return;
+        }
+        throw fallbackError;
+      }
+    }
+  }
+
+  async verifyResetCode(code: string): Promise<string> {
+    return verifyPasswordResetCode(this.firebase.auth, code);
+  }
+
+  async confirmReset(code: string, newPassword: string): Promise<void> {
+    await confirmPasswordReset(this.firebase.auth, code, newPassword);
+  }
+
+  async signInWithGoogle(): Promise<FirebaseUser> {
+    const provider = new GoogleAuthProvider();
+    if (this.isMobileInAppBrowser()) {
+      return this.redirectToGoogle(provider);
+    }
+    try {
+      const cred = await signInWithPopup(this.firebase.auth, provider);
+      return cred.user;
+    } catch (error) {
+      if ((error as { code?: string })?.code !== "auth/popup-blocked") {
+        throw error;
+      }
+      return this.redirectToGoogle(provider);
+    }
+  }
+
+  async linkGoogle(): Promise<FirebaseUser> {
+    if (!this.firebase.auth.currentUser) {
+      throw new Error("Cannot link Google: no user is signed in.");
+    }
+    const cred = await linkWithPopup(this.firebase.auth.currentUser, new GoogleAuthProvider());
+    return cred.user;
   }
 
   getUser(authData: any): void {
@@ -223,6 +294,38 @@ export class AuthService {
       }
       this.getUser(authData);
     });
+  }
+
+  /** signInWithRedirect returns to the app in a fresh load; the credential
+   *  only arrives here, so route it through the same onSignIn path as a popup. */
+  private async resolveRedirectResult(): Promise<void> {
+    try {
+      const cred = await getRedirectResult(this.firebase.auth);
+      if (cred?.user) {
+        this.onSignIn({ authResult: { user: cred.user } });
+      }
+    } catch (error) {
+      // The sign-in UI maps any error; boot must not be blocked by it.
+      this.redirectErrorSource.next((error as { code?: string })?.code || "auth/unknown");
+    }
+  }
+
+  /** Navigates away; the returned promise stays pending until the reload. */
+  private redirectToGoogle(provider: GoogleAuthProvider): Promise<FirebaseUser> {
+    return signInWithRedirect(this.firebase.auth, provider).then(
+      () => new Promise<FirebaseUser>(() => {}),
+    );
+  }
+
+  private isMobileInAppBrowser(): boolean {
+    return /FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|; wv\)|WhatsApp/i.test(
+      navigator.userAgent,
+    );
+  }
+
+  private isTransportFailure(error: unknown): boolean {
+    const code = (error as { code?: string })?.code;
+    return code === "functions/unavailable" || code === "functions/deadline-exceeded";
   }
 
   private getUserFromLocalStorage() {

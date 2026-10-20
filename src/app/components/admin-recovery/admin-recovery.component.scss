@@ -1,0 +1,154 @@
+.admin-recovery-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.region-card {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+}
+
+.recovery-row {
+  display: flex;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.recovery-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.recovery-email {
+  font-weight: 500;
+}
+
+.recovery-meta,
+.recovery-age,
+.generated-emailed {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+}
+
+.recovery-meta.no-contact {
+  color: var(--color-error);
+}
+
+.recovery-message {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.recovery-actions {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.reason-field {
+  width: 100%;
+}
+
+.generated-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.generated-link {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.recipient-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.add-recipient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.audit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.audit-actor,
+.audit-action {
+  font-weight: 500;
+}
+
+.account-row,
+.activity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.account-name,
+.activity-kind {
+  font-weight: 500;
+}
+
+.account-email,
+.account-roles,
+.account-age,
+.activity-actor,
+.activity-time {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.recovery-status {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.row-error {
+  color: var(--color-error);
+  font-size: 13px;
+}
+
+.empty {
+  color: rgba(0, 0, 0, 0.6);
+}

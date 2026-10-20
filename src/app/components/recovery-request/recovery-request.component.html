@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>Request account recovery</h2>
+<mat-dialog-content>
+  @if (!submitted) {
+    <p class="recovery-intro">
+      Tell us who you are. A LeCoursville administrator will review your request
+      and contact you using the details you give us to confirm it is really you.
+    </p>
+    <mat-form-field appearance="outline" class="recovery-field">
+      <mat-label>Email on the account</mat-label>
+      <input matInput type="email" name="recoveryEmail" [(ngModel)]="email"
+        autocomplete="email" required data-testid="recovery-email" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="recovery-field">
+      <mat-label>Full name</mat-label>
+      <input matInput name="recoveryName" [(ngModel)]="name"
+        maxlength="100" required data-testid="recovery-name" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="recovery-field">
+      <mat-label>Another email or phone, optional</mat-label>
+      <input matInput name="recoveryAlternateContact" [(ngModel)]="alternateContact"
+        maxlength="320" data-testid="recovery-alt-contact" />
+      <mat-hint>We will use this if your LeCoursville email is not working.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="recovery-field">
+      <mat-label>Message, optional</mat-label>
+      <textarea matInput name="recoveryMessage" [(ngModel)]="message"
+        rows="3" maxlength="500" data-testid="recovery-message"></textarea>
+    </mat-form-field>
+    @if (error) {
+      <div class="recovery-banner" role="alert" data-testid="recovery-error">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+  } @else {
+    <div class="recovery-confirmation" role="status" data-testid="recovery-confirmation">
+      <mat-icon aria-hidden="true">check_circle_outline</mat-icon>
+      <p>Thank you. An administrator will review your request and follow up using the details you gave us.</p>
+    </div>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (!submitted) {
+    <button mat-button type="button" (click)="onClose()">Cancel</button>
+    <button mat-flat-button color="primary" type="button"
+      [disabled]="loading" (click)="onSubmit()" data-testid="recovery-submit">
+      {{ loading ? 'Sending…' : 'Submit request' }}
+    </button>
+  } @else {
+    <button mat-flat-button color="primary" type="button" (click)="onClose()">Close</button>
+  }
+</mat-dialog-actions>

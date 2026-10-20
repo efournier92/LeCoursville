@@ -1,0 +1,170 @@
+<div class="admin-recovery-container">
+  <app-page-toolbar title="Recovery"></app-page-toolbar>
+
+  <mat-card class="region-card">
+    <mat-card-header>
+      <mat-card-title>Recent Account Creations</mat-card-title>
+      <mat-card-subtitle>Every new account, newest first</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="account-list" data-testid="admin-account-creations">
+        @for (account of accountCreations; track account.id) {
+          <div class="account-row">
+            <span class="account-name">{{ account.name }}</span>
+            <span class="account-email">{{ account.email }}</span>
+            <span class="account-roles">{{ rolesLabel(account) }}</span>
+            <span class="account-age">{{ accountAge(account) }}</span>
+          </div>
+        } @empty {
+          <p class="empty">No accounts.</p>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="region-card">
+    <mat-card-header>
+      <mat-card-title>Recent Recovery Activity</mat-card-title>
+      <mat-card-subtitle>Alerts and privileged actions, newest first</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="activity-list" data-testid="admin-recovery-activity">
+        @for (item of activity; track $index) {
+          <div class="activity-row">
+            <span class="activity-kind">{{ item.kind }}</span>
+            <span class="activity-actor">{{ item.actor }}</span>
+            <span class="activity-time">{{ formatTimestamp(item.createdAt) }}</span>
+          </div>
+        } @empty {
+          <p class="empty">No recovery activity.</p>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="region-card">
+    <mat-card-header>
+      <mat-card-title>Recovery Requests</mat-card-title>
+      <mat-card-subtitle>Requests from users who cannot get back in</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="recovery-list" data-testid="admin-recovery-list">
+        @for (request of visibleRequests; track request.id) {
+          <div class="recovery-row">
+            <div class="recovery-details">
+              <div class="recovery-email">{{ request.email }}</div>
+              <div class="recovery-meta">{{ request.name }}</div>
+              <div class="recovery-meta" [class.no-contact]="!request.alternateContact">
+                {{ request.alternateContact || 'No alternate contact' }}
+              </div>
+              @if (request.message) {
+                <div class="recovery-message">{{ request.message }}</div>
+              }
+              <div class="recovery-meta">
+                Status: <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
+              </div>
+              <div class="recovery-age">{{ age(request.createdAt) }}</div>
+            </div>
+            <div class="recovery-actions">
+              <mat-form-field class="reason-field">
+                <mat-label>Reason</mat-label>
+                <input matInput data-testid="admin-recovery-reason" [(ngModel)]="reasons[request.id]" />
+              </mat-form-field>
+              <button
+                mat-flat-button
+                color="primary"
+                data-testid="admin-recovery-generate"
+                [disabled]="generating[request.id] || !canGenerate(request)"
+                (click)="generate(request)">
+                Generate reset link
+              </button>
+              <button
+                mat-button
+                data-testid="admin-recovery-close"
+                [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
+                (click)="markClosed(request)">
+                Mark closed
+              </button>
+              @if (generated[request.id]; as result) {
+                <div class="generated-result">
+                  <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
+                  <button mat-button data-testid="admin-recovery-copy" (click)="copyLink(result.link)">Copy</button>
+                  <span class="generated-emailed">
+                    {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; relay the link yourself.' }}
+                  </span>
+                </div>
+              }
+              @if (errors[request.id]) {
+                <div class="row-error">{{ errors[request.id] }}</div>
+              }
+            </div>
+          </div>
+        } @empty {
+          <p class="empty">No recovery requests.</p>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="region-card">
+    <mat-card-header>
+      <mat-card-title>Alert Recipients</mat-card-title>
+      <mat-card-subtitle>Addresses that receive recovery alerts</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="recipient-list" data-testid="admin-recipients">
+        @for (recipient of recipients; track recipient) {
+          <div class="recipient-row">
+            <span>{{ recipient }}</span>
+            <button
+              mat-icon-button
+              color="warn"
+              data-testid="admin-recipient-remove"
+              [disabled]="recipientsBusy"
+              aria-label="Remove recipient"
+              (click)="removeRecipient(recipient)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        } @empty {
+          <p class="empty">No recipients configured.</p>
+        }
+      </div>
+      <div class="add-recipient">
+        <mat-form-field>
+          <mat-label>Add recipient</mat-label>
+          <input matInput type="email" data-testid="admin-recipient-email" [(ngModel)]="newRecipient" (keyup.enter)="addRecipient()" />
+        </mat-form-field>
+        <button mat-flat-button color="primary" data-testid="admin-recipient-add" [disabled]="recipientsBusy" (click)="addRecipient()">
+          Add
+        </button>
+      </div>
+      @if (recipientsError) {
+        <div class="row-error">{{ recipientsError }}</div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="region-card">
+    <mat-card-header>
+      <mat-card-title>Audit Trail</mat-card-title>
+      <mat-card-subtitle>Every privileged recovery action</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="audit-list" data-testid="admin-audit-list">
+        @for (entry of audit; track entry.id || $index) {
+          <div class="audit-row">
+            <span class="audit-actor">{{ auditActor(entry) }}</span>
+            <span class="audit-action">{{ entry.action }}</span>
+            <span class="audit-target">{{ entry.targetEmail }}</span>
+            <span class="audit-request">{{ entry.requestId }}</span>
+            <span class="audit-reason">{{ entry.reason }}</span>
+            <span class="audit-time">{{ formatTimestamp(entry.createdAt) }}</span>
+          </div>
+        } @empty {
+          <p class="empty">No audit entries.</p>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

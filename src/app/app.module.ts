@@ -18,6 +18,7 @@ import { AdminComponent } from "src/app/components/admin/admin.component";
 import { AdminUsersComponent } from "src/app/components/admin-users/admin-users.component";
 import { AdminMediaComponent } from "src/app/components/admin-media/admin-media.component";
 import { AppComponent } from "src/app/app.component";
+import { AuthActionComponent } from "src/app/components/auth-action/auth-action.component";
 import { AuthComponent } from "src/app/components/auth/auth.component";
 import { CalendarCellComponent } from "src/app/components/calendar-cell/calendar-cell.component";
 import { CalendarComponent } from "src/app/components/calendar/calendar.component";
@@ -28,6 +29,7 @@ import { ChatComponent } from "src/app/components/chat/chat.component";
 import { ChatEditComponent } from "src/app/components/chat-edit/chat-edit.component";
 import { ChatViewComponent } from "src/app/components/chat-view/chat-view.component";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
+import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
 import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
 import { ContactEditComponent } from "src/app/components/contacts/contact-edit/contact-edit.component";
 import { ContactViewComponent } from "src/app/components/contacts/contact-view/contact-view.component";
@@ -71,6 +73,7 @@ import { PersonTreeComponent } from "./components/shared/person-tree/person-tree
 import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
 import { AdminFamiliesComponent } from "./components/admin-families/admin-families.component";
 import { AdminCalendarsComponent } from "./components/admin-calendars/admin-calendars.component";
+import { AdminRecoveryComponent } from "./components/admin-recovery/admin-recovery.component";
 
 @NgModule({ declarations: [
         AdminComponent,
@@ -126,6 +129,9 @@ import { AdminCalendarsComponent } from "./components/admin-calendars/admin-cale
         AdminPeopleImportComponent,
         AdminFamiliesComponent,
         AdminCalendarsComponent,
+        AdminRecoveryComponent,
+        AuthActionComponent,
+        RecoveryRequestComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     bootstrap: [AppComponent],

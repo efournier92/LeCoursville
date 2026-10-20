@@ -1,0 +1,81 @@
+<div class="auth-action-page">
+  <div class="auth-action-card">
+    <img class="auth-action-logo" src="./assets/img/logo/L.png" alt="LeCoursville" />
+
+    @if (invalidLink) {
+      <div data-testid="auth-action-invalid">
+        <h1 class="auth-action-title">Link not valid</h1>
+        <p class="auth-action-text">
+          This link is missing the information needed to reset your password.
+          Request a new reset link from the sign-in page.
+        </p>
+        <a mat-flat-button color="primary" routerLink="/">Go to sign in</a>
+      </div>
+    } @else if (neutralNotice) {
+      <h1 class="auth-action-title">Link opened</h1>
+      <p class="auth-action-text">
+        There is nothing to do on this page. Continue to sign in.
+      </p>
+      <a mat-flat-button color="primary" routerLink="/">Go to sign in</a>
+    } @else if (userDisabled) {
+      <h1 class="auth-action-title">Account disabled</h1>
+      <div class="auth-action-banner auth-action-banner--error" role="alert" data-testid="auth-action-error">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>This account is disabled. Contact an administrator for help.</span>
+      </div>
+      <a mat-button routerLink="/">Back to sign in</a>
+    } @else if (success) {
+      <div class="auth-action-success" data-testid="auth-action-success">
+        <mat-icon class="auth-action-success-icon" aria-hidden="true">check_circle_outline</mat-icon>
+        <h1 class="auth-action-title">Password updated</h1>
+        <p class="auth-action-text">
+          Your password has been changed. Sign in with your new password.
+        </p>
+        <a mat-flat-button color="primary" routerLink="/">Go to sign in</a>
+      </div>
+    } @else if (loading) {
+      <div class="auth-action-loading" aria-busy="true">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p class="auth-action-text">Checking your link…</p>
+      </div>
+    } @else if (verified) {
+      <h1 class="auth-action-title">Choose a new password</h1>
+      <p class="auth-action-text">For {{ email }}</p>
+      <form class="auth-action-form" (ngSubmit)="onSubmit()" novalidate data-testid="auth-action-form">
+        <mat-form-field appearance="outline" class="auth-action-field">
+          <mat-icon matPrefix aria-hidden="true">lock</mat-icon>
+          <mat-label>New password</mat-label>
+          <input matInput type="password" name="newPassword" [(ngModel)]="newPassword"
+            autocomplete="new-password" minlength="6" required data-testid="auth-action-password" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="auth-action-field">
+          <mat-icon matPrefix aria-hidden="true">lock</mat-icon>
+          <mat-label>Confirm new password</mat-label>
+          <input matInput type="password" name="confirmPassword" [(ngModel)]="confirmPassword"
+            autocomplete="new-password" minlength="6" required data-testid="auth-action-password-confirm" />
+        </mat-form-field>
+        <p class="auth-action-hint">At least 6 characters.</p>
+        @if (error) {
+          <div class="auth-action-banner auth-action-banner--error" role="alert" data-testid="auth-action-error">
+            <mat-icon aria-hidden="true">error_outline</mat-icon>
+            <span>{{ error }}</span>
+          </div>
+        }
+        <button mat-flat-button color="primary" type="submit" class="auth-action-submit"
+          [disabled]="submitting" data-testid="auth-action-submit">
+          {{ submitting ? 'Updating…' : 'Update password' }}
+        </button>
+        @if (linkError) {
+          <a mat-button routerLink="/" class="auth-action-resend" data-testid="auth-action-resend">Send a new link</a>
+        }
+      </form>
+    } @else {
+      <h1 class="auth-action-title">Reset link problem</h1>
+      <div class="auth-action-banner auth-action-banner--error" role="alert" data-testid="auth-action-error">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+      <a mat-flat-button color="primary" routerLink="/" data-testid="auth-action-resend">Send a new link</a>
+    }
+  </div>
+</div>

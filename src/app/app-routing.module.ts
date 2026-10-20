@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { AuthActionComponent } from 'src/app/components/auth-action/auth-action.component';
 import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { ContactsComponent } from 'src/app/components/contacts/contacts.component';
@@ -27,6 +28,7 @@ import { AdminCalendarsComponent } from './components/admin-calendars/admin-cale
 import { PublicUploadComponent } from './components/public-upload/public-upload.component';
 import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
 import { AdminPhotoAlbumsComponent } from './components/admin-photo-albums/admin-photo-albums.component';
+import { AdminRecoveryComponent } from './components/admin-recovery/admin-recovery.component';
 
 const routes: Routes =
   [
@@ -146,6 +148,10 @@ const routes: Routes =
           component: AdminUserUploadsComponent,
         },
         {
+          path: 'recovery',
+          component: AdminRecoveryComponent,
+        },
+        {
           path: '',
           redirectTo: 'users',
           pathMatch: 'full'
@@ -160,6 +166,10 @@ const routes: Routes =
     {
       path: 'upload',
       component: PublicUploadComponent,
+    },
+    {
+      path: 'auth/action',
+      component: AuthActionComponent,
     },
     {
       path: '**',

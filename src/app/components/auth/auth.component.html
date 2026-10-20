@@ -18,6 +18,11 @@
       <h1 class="auth-title">Sign in</h1>
       <p class="auth-subtitle">Welcome back to LeCoursville</p>
       <form (ngSubmit)="onSignIn()" novalidate>
+        <button mat-stroked-button type="button" class="auth-google"
+          (click)="onGoogleSignIn()" [disabled]="loading" data-testid="auth-google">
+          Continue with Google
+        </button>
+        <div class="auth-divider" aria-hidden="true"><span>or</span></div>
         <mat-form-field appearance="outline" class="auth-field">
           <mat-icon matPrefix aria-hidden="true">person</mat-icon>
           <mat-label>Email</mat-label>
@@ -37,7 +42,7 @@
           </div>
         }
         @if (info) {
-          <div class="auth-banner auth-banner--info" role="status">
+          <div class="auth-banner auth-banner--info" role="status" data-testid="auth-reset-info">
             <mat-icon aria-hidden="true">check_circle_outline</mat-icon>
             <span>{{ info }}</span>
           </div>
@@ -46,10 +51,20 @@
           class="auth-submit" [disabled]="loading" data-testid="auth-submit">
           {{ loading ? 'Signing in…' : 'Sign in' }}
         </button>
-        <button mat-button type="button" class="auth-reset"
-          (click)="onForgotPassword()">
-          Forgot password?
-        </button>
+        <div class="auth-help">
+          <button mat-button type="button" class="auth-forgot"
+            [disabled]="sendingReset" (click)="onForgotPassword()" data-testid="auth-forgot">
+            {{ sendingReset ? 'Sending…' : 'Forgot password?' }}
+          </button>
+        </div>
+        <div class="auth-escalation">
+          <span class="auth-escalation-label">Tried a reset and still locked out?</span>
+          <button mat-stroked-button type="button" class="auth-get-help"
+            (click)="onRecoveryOpen()" data-testid="auth-recovery-open">
+            <mat-icon aria-hidden="true">support_agent</mat-icon>
+            Get help signing in
+          </button>
+        </div>
       </form>
     </div>
   } @else {

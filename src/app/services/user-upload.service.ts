@@ -7,7 +7,8 @@ import {
   uploadBytes,
   uploadBytesResumable,
 } from 'firebase/storage';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { UserUpload, UploaderInfo } from '../models/user-upload';
 import { Photo } from '../models/photo';
 import { AnalyticsService } from './analytics.service';
@@ -21,8 +22,7 @@ import { FireUploadTask } from './fire-upload-task';
 })
 export class UserUploadService {
   private userUploadsRef = 'userUploads';
-  private allUploadsSource: BehaviorSubject<UserUpload[]> = new BehaviorSubject([]);
-  allUploads$: Observable<UserUpload[]> = this.allUploadsSource.asObservable();
+  allUploads$: Observable<UserUpload[]>;
 
   constructor(
     private firebase: FirebaseService,
@@ -30,10 +30,10 @@ export class UserUploadService {
     private analytics: AnalyticsService,
     private photoAlbumsService: PhotoAlbumsService,
   ) {
-    // Keep `allUploads$` live for consumers (admin-user-uploads list).
-    this.rtdb.list<UserUpload>(this.userUploadsRef).valueChanges().subscribe(uploads => {
-      this.allUploadsSource.next(uploads || []);
-    });
+    // Lazy and shared: userUploads is admin-only, so anonymous upload pages must never trigger this read.
+    this.allUploads$ = this.rtdb.list<UserUpload>(this.userUploadsRef).valueChanges().pipe(
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
   }
 
   getPendingUploads() {

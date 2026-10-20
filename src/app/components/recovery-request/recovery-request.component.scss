@@ -1,0 +1,54 @@
+.recovery-intro {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
+.recovery-field {
+  display: block;
+  width: 100%;
+}
+
+.recovery-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-error);
+  font-size: 0.85rem;
+  line-height: 1.4;
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.recovery-confirmation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  text-align: center;
+  color: var(--color-brand-primary);
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+}

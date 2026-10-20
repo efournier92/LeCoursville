@@ -1,9 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { AuthService } from "src/app/services/auth.service";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
-import { filter } from "rxjs/operators";
+import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
+import { filter, take } from "rxjs/operators";
 
 @Component({
     selector: "app-auth",
@@ -18,6 +20,7 @@ export class AuthComponent implements OnInit {
   email = "";
   password = "";
   loading = false;
+  sendingReset = false;
   error = "";
   info = "";
   // True while a cached session is being restored: the page holds a neutral
@@ -28,7 +31,8 @@ export class AuthComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private routingService: RoutingService,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private dialog: MatDialog
   ) {}
 
   // LIFECYCLE HOOKS
@@ -45,6 +49,14 @@ export class AuthComponent implements OnInit {
       }
     });
     this.subscribeToUserObservable();
+    // A Google redirect returns on a fresh load, so its failure is only
+    // knowable here — surface it through the popup path's mapping.
+    this.authService.redirectError$.pipe(
+      filter((code: string | null) => !!code),
+      take(1),
+    ).subscribe((code: string) => {
+      this.error = this.mapAuthError(code);
+    });
     this.analyticsService.logEvent("component_load_auth", {});
   }
 
@@ -83,19 +95,55 @@ export class AuthComponent implements OnInit {
     }
   }
 
-  async onForgotPassword(): Promise<void> {
-    if (!this.email.trim()) {
-      this.error = "Enter your email first, then click the reset link.";
-      return;
-    }
+  async onGoogleSignIn(): Promise<void> {
+    this.loading = true;
     this.error = "";
     this.info = "";
     try {
-      await this.authService.sendPasswordReset(this.email.trim());
-      this.info = "Password reset email sent — check your inbox.";
+      const fbUser = await this.authService.signInWithGoogle();
+      this.analyticsService.logEvent("auth_sign_in_google", { userId: fbUser.uid });
+      this.authService.onSignIn({ authResult: { user: fbUser } });
     } catch (e: any) {
       this.error = this.mapAuthError(e?.code || "");
+    } finally {
+      this.loading = false;
     }
+  }
+
+  async onForgotPassword(): Promise<void> {
+    if (!this.email.trim()) {
+      this.error = "Enter your email first.";
+      return;
+    }
+    if (this.sendingReset) {
+      return;
+    }
+    this.sendingReset = true;
+    this.error = "";
+    this.info = "";
+    this.analyticsService.logEvent("auth_forgot_clicked", {});
+    try {
+      await this.authService.sendPasswordReset(this.email.trim());
+      this.info =
+        "If an account exists for that email, we sent a reset link. It can take a few minutes — check your spam or junk folder.";
+      this.analyticsService.logEvent("auth_reset_sent", {});
+    } catch (e: any) {
+      this.error = this.mapAuthError(e?.code || "");
+      this.analyticsService.logEvent("auth_reset_failed", {
+        reason: e?.code || "unknown",
+      });
+    } finally {
+      this.sendingReset = false;
+    }
+  }
+
+  onRecoveryOpen(): void {
+    this.analyticsService.logEvent("recovery_opened", { source: "sign_in" });
+    this.dialog.open(RecoveryRequestComponent, {
+      width: "480px",
+      maxWidth: "95vw",
+      data: { email: this.email.trim(), name: this.user?.name ?? "" },
+    });
   }
 
   onSignOutButtonClick(): void {
@@ -126,6 +174,18 @@ export class AuthComponent implements OnInit {
         return "Too many attempts — try again in a minute.";
       case "auth/network-request-failed":
         return "Network error — check your connection.";
+      case "auth/invalid-action-code":
+        return "That reset link is invalid. Request a new one.";
+      case "auth/expired-action-code":
+        return "That reset link has expired. Request a new one.";
+      case "auth/account-exists-with-different-credential":
+        return "An account already exists for this email. Sign in with your email and password, then connect Google from your account page.";
+      case "auth/popup-blocked":
+        return "Your browser blocked the Google sign-in popup. Allow popups and try again.";
+      case "auth/popup-closed-by-user":
+        return "Google sign-in was cancelled.";
+      case "auth/operation-not-allowed":
+        return "Google sign-in is not available right now.";
       default:
         return "Sign-in failed. Try again.";
     }

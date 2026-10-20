@@ -3,6 +3,7 @@ import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
 import { getDatabase, Database, connectDatabaseEmulator } from 'firebase/database';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
 import { environment } from 'src/environments/environment';
 
@@ -33,6 +34,7 @@ export class FirebaseService {
   readonly auth: Auth;
   readonly db: Database;
   readonly storage: FirebaseStorage;
+  readonly functions: Functions;
   analytics: Analytics | null = null;
 
   constructor() {
@@ -42,10 +44,12 @@ export class FirebaseService {
     this.auth = getAuth(this.app);
     this.db = getDatabase(this.app);
     this.storage = getStorage(this.app);
+    this.functions = getFunctions(this.app, 'us-central1');
     if (useEmulators && env.emulator) {
       connectAuthEmulator(this.auth, env.emulator.auth, { disableWarnings: true });
       connectDatabaseEmulator(this.db, env.emulator.database.host, env.emulator.database.port);
       connectStorageEmulator(this.storage, env.emulator.storage.host, env.emulator.storage.port);
+      connectFunctionsEmulator(this.functions, '127.0.0.1', 5001);
     }
     if (typeof window !== 'undefined' && !useEmulators) {
       // Analytics is optional at runtime (e.g. unsupported webviews); resolve
