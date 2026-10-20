@@ -1,0 +1,61 @@
+{
+  "rules": {
+    "calendarEvents": {
+    	".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true"
+    },
+    "calendars": {
+			".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/super').exists() === true",
+    },
+    "contacts": {
+			".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true",
+    },
+    "messages": {
+      ".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/user').exists() === true"
+    },
+    "photos": {
+      ".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true",
+    },
+    "videos": {
+      ".read": "root.child('users').child(auth.uid).child('roles/user').exists() === true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true",
+    },
+    "media": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true",
+    },
+    "users": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/super').exists() === true",
+      "$uid": {
+      	".read": "$uid === auth.uid",
+      	".write": "$uid === auth.uid"
+   		}
+    },
+    "features": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true",
+    },
+    "promotedRoute": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true"
+    },
+    "clans": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true"
+    },
+    "people": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true"
+    },
+    "addresses": {
+      ".read": "true",
+      ".write": "root.child('users').child(auth.uid).child('roles/admin').exists() === true"
+    },
+  }
+}
+
