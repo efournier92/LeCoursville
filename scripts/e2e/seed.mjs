@@ -29,6 +29,7 @@ const USERS = [
   { email: 'admin@e2e.local', name: 'Admin User', roles: { user: true, admin: true } },
   { email: 'user@e2e.local', name: 'Regular User', roles: { user: true } },
   { email: 'other@e2e.local', name: 'Other User', roles: { user: true } },
+  { email: 'staff@e2e.local', name: 'Staff Admin', roles: { user: true, admin: true } },
   // Sparse user for the loading-contract empty-state spec. Contacts and albums
   // are global nodes, so "zero data" is induced and restored by that spec.
   { email: 'sparse@e2e.local', name: 'Sparse User', roles: { user: true } },
@@ -137,6 +138,7 @@ async function main() {
   const adminUid = localIds['admin@e2e.local'];
   const userUid = localIds['user@e2e.local'];
   const otherUid = localIds['other@e2e.local'];
+  const staffUid = localIds['staff@e2e.local'];
   const sparseUid = localIds['sparse@e2e.local'];
 
   // Person D: 3 months before today (must NOT appear in the current month view).
@@ -298,6 +300,7 @@ async function main() {
       [adminUid]: { id: adminUid, name: 'Admin User', email: 'admin@e2e.local', roles: { user: true, admin: true, super: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
       [userUid]: { id: userUid, name: 'Regular User', email: 'user@e2e.local', roles: { user: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
       [otherUid]: { id: otherUid, name: 'Other User', email: 'other@e2e.local', roles: { user: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
+      [staffUid]: { id: staffUid, name: 'Staff Admin', email: 'staff@e2e.local', roles: { user: true, admin: true, super: false }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
       [sparseUid]: { id: sparseUid, name: 'Sparse User', email: 'sparse@e2e.local', roles: { user: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
     },
     features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: id !== 'chat', updatedAt: now }])),

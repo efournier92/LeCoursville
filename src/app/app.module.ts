@@ -52,7 +52,6 @@ import { VideoPlayerDriveIframeComponent } from "src/app/components/video-player
 import { VideoPlayerVideogularComponent } from "src/app/components/video-player-videogular/video-player-videogular.component";
 import { DocViewerNgxExtendedComponent } from "src/app/components/doc-viewer-ngx-extended/doc-viewer-ngx-extended.component";
 import { AdminMediaUploadAudioAlbumComponent } from "src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component";
-import { AdminRoutingComponent } from "./components/admin-routing/admin-routing.component";
 import { UserViewComponent } from "./components/user-view/user-view.component";
 import { UserEditComponent } from "./components/user-edit/user-edit.component";
 import { MediaAudioComponent } from "src/app/components/media-audio/media-audio.component";
@@ -111,7 +110,6 @@ import { AdminRecoveryComponent } from "./components/admin-recovery/admin-recove
         VideoPlayerVideogularComponent,
         DocViewerNgxExtendedComponent,
         AdminMediaUploadAudioAlbumComponent,
-        AdminRoutingComponent,
         AdminFeaturesComponent,
         FeatureDisabledComponent,
         UserViewComponent,

@@ -36,6 +36,28 @@
     }
   }
 
+  .sidebar-group {
+    padding-top: 4px;
+
+    &:last-of-type .sidebar-nav {
+      flex: 1;
+    }
+
+    .sidebar-nav {
+      flex: none;
+      padding: 4px 8px 8px;
+    }
+
+    .sidebar-group-label {
+      margin: 10px 12px 2px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-ink-2);
+    }
+  }
+
   .sidebar-nav {
     list-style: none;
     margin: 0;
@@ -78,7 +100,8 @@
         }
       }
 
-      &.active a {
+      &.active a,
+      a.active {
         color: var(--color-brand-primary-dark);
         background: rgba(45, 90, 39, 0.08);
         border-left-color: var(--color-brand-primary);

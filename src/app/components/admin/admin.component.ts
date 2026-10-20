@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { ADMIN_NAV_GROUPS, AdminNavGroup, AdminNavItem, visibleAdminNav } from 'src/app/admin/admin-nav';
 
 @Component({
     selector: 'app-admin',
@@ -15,7 +16,7 @@ import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 export class AdminComponent implements OnInit {
   user: User;
   version: string;
-  showPhotoAlbumsNav = false;
+  navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null);
 
   constructor(
     private authService: AuthService,
@@ -28,8 +29,15 @@ export class AdminComponent implements OnInit {
     this.subscribeToUserObservable();
     this.setVersion();
     this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
-      this.showPhotoAlbumsNav = !!flags['enablePhotoAlbums']?.enabled;
+      this.navGroups = this.buildNavGroups(flags);
     });
+  }
+
+  private buildNavGroups(flags: Record<string, { enabled?: boolean } | undefined> | null) {
+    return ADMIN_NAV_GROUPS.map(name => ({
+      name,
+      items: visibleAdminNav(flags).filter(item => item.group === name),
+    }));
   }
 
   private subscribeToUserObservable(): void {

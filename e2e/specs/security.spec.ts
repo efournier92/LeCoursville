@@ -204,6 +204,28 @@ test.describe('security', () => {
     await expect(page).toHaveURL(/\/calendar/);
   });
 
+  test('non-super admin cannot reach any admin route by URL', async ({ page }) => {
+    await login(page, 'staff');
+    const routes = [
+      '/admin',
+      '/admin/users',
+      '/admin/features',
+      '/admin/recovery',
+      '/admin/families',
+      '/admin/people',
+      '/admin/calendars',
+      '/admin/media',
+      '/admin/photo-albums',
+      '/admin/uploads',
+    ];
+    for (const route of routes) {
+      await page.goto(route);
+      await expect(page).not.toHaveURL(/\/admin/);
+      await expect(page.locator('app-admin')).toHaveCount(0);
+      await expect(page.getByTestId('admin-nav')).toHaveCount(0);
+    }
+  });
+
   test('tampered callable input is rejected', async () => {
     const res = await fetch(
       'http://127.0.0.1:5001/lecoursville-dev/us-central1/requestPasswordReset',

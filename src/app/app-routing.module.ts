@@ -29,6 +29,8 @@ import { PublicUploadComponent } from './components/public-upload/public-upload.
 import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
 import { AdminPhotoAlbumsComponent } from './components/admin-photo-albums/admin-photo-albums.component';
 import { AdminRecoveryComponent } from './components/admin-recovery/admin-recovery.component';
+import { SuperAdminGuard } from './services/super-admin.guard';
+import { ADMIN_ROUTE } from './admin/admin-nav';
 
 const routes: Routes =
   [
@@ -111,44 +113,44 @@ const routes: Routes =
     {
       path: 'admin',
       component: AdminComponent,
-      canActivate: [AuthAdminGuardService],
+      canActivate: [AuthAdminGuardService, SuperAdminGuard],
       children: [
         {
-          path: 'media',
+          path: ADMIN_ROUTE.media,
           component: AdminMediaComponent,
         },
         {
-          path: 'photo-albums',
+          path: ADMIN_ROUTE.photoAlbums,
           component: AdminPhotoAlbumsComponent,
           canActivate: [PhotoAlbumsFeatureGuard],
           data: { fallbackUrl: '/admin' },
         },
         {
-          path: 'users',
+          path: ADMIN_ROUTE.users,
           component: AdminUsersComponent,
         },
         {
-          path: 'features',
+          path: ADMIN_ROUTE.features,
           component: AdminFeaturesComponent,
         },
         {
-          path: 'people',
+          path: ADMIN_ROUTE.people,
           component: AdminPeopleImportComponent,
         },
         {
-          path: 'families',
+          path: ADMIN_ROUTE.families,
           component: AdminFamiliesComponent,
         },
         {
-          path: 'calendars',
+          path: ADMIN_ROUTE.calendars,
           component: AdminCalendarsComponent,
         },
         {
-          path: 'uploads',
+          path: ADMIN_ROUTE.uploads,
           component: AdminUserUploadsComponent,
         },
         {
-          path: 'recovery',
+          path: ADMIN_ROUTE.recovery,
           component: AdminRecoveryComponent,
         },
         {

@@ -43,9 +43,12 @@ export class RoutingService {
     this.router.navigate([route]);
   }
 
+  getPromotedRoute(): string {
+    return this.promotedRouteSubject.getValue() || environment.promotedRoute || '/';
+  }
+
   NavigateToPromotedRoute() {
-    const route = this.promotedRouteSubject.getValue() || environment.promotedRoute || '/';
-    this.NavigateToRoute(route);
+    this.NavigateToRoute(this.getPromotedRoute());
   }
 
   NavigateToSignIn() {
@@ -116,7 +119,7 @@ export class RoutingService {
   }
 
   NavigateToAdminCalendar() {
-    this.NavigateToRoute('/admin/calendar');
+    this.NavigateToRoute('/admin/calendars');
   }
 
   NavigateToAdminFeatures() {

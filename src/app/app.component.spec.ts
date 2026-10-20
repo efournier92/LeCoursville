@@ -28,4 +28,14 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('mat-toolbar')).toBeTruthy();
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
+
+  it('isSuperAdmin is true only for supers', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.user = { id: 'u1', roles: { user: true, admin: true, super: false } } as any;
+    expect(app.isSuperAdmin()).toBe(false);
+    app.user = { id: 'u2', roles: { user: true, super: true } } as any;
+    expect(app.isSuperAdmin()).toBe(true);
+    app.user = undefined;
+    expect(app.isSuperAdmin()).toBe(false);
+  });
 });

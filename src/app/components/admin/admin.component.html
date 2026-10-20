@@ -1,68 +1,25 @@
 <div class="admin-layout">
-  <nav class="admin-sidebar" [class.admin-sidebar-open]="isSidenavOpen | async">
+  <nav class="admin-sidebar" [class.admin-sidebar-open]="isSidenavOpen | async" aria-label="Admin sections" data-testid="admin-nav">
     <div class="sidebar-header">
       <a routerLink="/admin" class="logo-link">
         <h1>Admin</h1>
       </a>
     </div>
-    <ul class="sidebar-nav">
-      <li routerLinkActive="active">
-        <a routerLink="/admin/users" (click)="closeSidenav()">
-          <mat-icon>people</mat-icon>
-          <span>Users</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/families" (click)="closeSidenav()">
-          <mat-icon>groups</mat-icon>
-          <span>Families</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/people" (click)="closeSidenav()">
-          <mat-icon>person_add</mat-icon>
-          <span>People</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/calendars" (click)="closeSidenav()">
-          <mat-icon>calendar_month</mat-icon>
-          <span>Calendars</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/media" (click)="closeSidenav()">
-          <mat-icon>perm_media</mat-icon>
-          <span>Media</span>
-        </a>
-      </li>
-      @if (showPhotoAlbumsNav) {
-        <li routerLinkActive="active">
-          <a routerLink="/admin/photo-albums" (click)="closeSidenav()">
-            <mat-icon>photo_library</mat-icon>
-            <span>Photo Albums</span>
-          </a>
-        </li>
-      }
-      <li routerLinkActive="active">
-        <a routerLink="/admin/uploads" (click)="closeSidenav()">
-          <mat-icon>upload_file</mat-icon>
-          <span>Uploads</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/recovery" (click)="closeSidenav()">
-          <mat-icon>lock_reset</mat-icon>
-          <span>Recovery</span>
-        </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/admin/features" (click)="closeSidenav()">
-          <mat-icon>toggle_on</mat-icon>
-          <span>Features</span>
-        </a>
-      </li>
-    </ul>
+    @for (group of navGroups; track group.name) {
+      <div class="sidebar-group" [attr.data-testid]="'admin-nav-group-' + group.name.toLowerCase()">
+        <p class="sidebar-group-label">{{ group.name }}</p>
+        <ul class="sidebar-nav">
+          @for (item of group.items; track item.key) {
+            <li>
+              <a [routerLink]="item.path" [attr.data-testid]="'admin-nav-link-' + item.key" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="closeSidenav()">
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
     <div class="sidebar-footer">
       <span class="version">v{{ version }}</span>
     </div>

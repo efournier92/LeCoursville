@@ -76,12 +76,12 @@ export class AppComponent implements OnInit {
     return user.id && user.roles.user;
   }
 
-  isAdminOrSuper(): boolean {
-    return this.user?.roles?.admin || this.user?.roles?.super;
+  isSuperAdmin(): boolean {
+    return this.user?.roles?.super === true;
   }
 
   onLogoClick(): void {
-    this.routingService.handleLogoNavigation(this.isAdminOrSuper());
+    this.routingService.handleLogoNavigation(this.isSuperAdmin());
   }
 
   onMenuClick(): void {
@@ -89,6 +89,6 @@ export class AppComponent implements OnInit {
   }
 
   shouldShowSidenavToggle(): boolean {
-    return this.isAdminOrSuper() && this.routingService.isOnAdminRoute();
+    return this.isSuperAdmin() && this.routingService.isOnAdminRoute();
   }
 }
