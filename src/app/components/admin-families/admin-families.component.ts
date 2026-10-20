@@ -1,6 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Family } from 'src/app/models/family';
 import { FamilyService } from 'src/app/services/family.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
+import { paginate, Page } from 'src/app/admin/pagination';
 
 interface ParsedFamily {
   id: string;
@@ -10,6 +13,8 @@ interface ParsedFamily {
   errors: string[];
 }
 
+type FamiliesState = 'loading' | 'ready' | 'error';
+
 @Component({
     selector: 'app-admin-families',
     templateUrl: './admin-families.component.html',
@@ -17,7 +22,7 @@ interface ParsedFamily {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AdminFamiliesComponent implements OnInit {
+export class AdminFamiliesComponent implements OnInit, OnDestroy {
   families: Family[] = [];
   editingFamily: Family | null = null;
   isAdding = false;
@@ -28,13 +33,89 @@ export class AdminFamiliesComponent implements OnInit {
   isCsvPreview = false;
   selectedFileName: string | null = null;
 
-  constructor(private familyService: FamilyService) {}
+  state: FamiliesState = 'loading';
+  readonly pageSize = 10;
+  familyPage = 1;
+  csvPage = 1;
+
+  private familiesSubscription?: Subscription;
+
+  constructor(
+    private familyService: FamilyService,
+    private confirmDialog: ConfirmDialogService,
+  ) {}
 
   ngOnInit(): void {
-    this.familyService.families$.subscribe(families => {
-      this.families = families;
+    this.loadFamilies();
+  }
+
+  ngOnDestroy(): void {
+    this.familiesSubscription?.unsubscribe();
+  }
+
+  // PAGE STATE
+
+  get familyPageData(): Page<Family> {
+    return paginate(this.families, this.familyPage, this.pageSize);
+  }
+
+  get csvPageData(): Page<ParsedFamily> {
+    return paginate(this.csvPreview, this.csvPage, this.pageSize);
+  }
+
+  get familyShowingRange(): string {
+    return this.showingRange(this.familyPageData);
+  }
+
+  get csvShowingRange(): string {
+    return this.showingRange(this.csvPageData);
+  }
+
+  retry(): void {
+    this.loadFamilies();
+  }
+
+  previousFamilyPage(): void {
+    this.familyPage = Math.max(1, this.familyPage - 1);
+  }
+
+  nextFamilyPage(): void {
+    this.familyPage = Math.min(this.familyPageData.pageCount, this.familyPage + 1);
+  }
+
+  previousCsvPage(): void {
+    this.csvPage = Math.max(1, this.csvPage - 1);
+  }
+
+  nextCsvPage(): void {
+    this.csvPage = Math.min(this.csvPageData.pageCount, this.csvPage + 1);
+  }
+
+  private loadFamilies(): void {
+    this.familiesSubscription?.unsubscribe();
+    this.state = 'loading';
+    this.familiesSubscription = this.familyService.families$.subscribe({
+      next: (families: Family[]) => {
+        this.families = families || [];
+        this.familyPage = Math.min(this.familyPage, this.familyPageData.pageCount);
+        this.state = 'ready';
+      },
+      error: () => {
+        this.state = 'error';
+      },
     });
   }
+
+  private showingRange(page: Page<unknown>): string {
+    if (page.total === 0) {
+      return 'Showing 0 of 0';
+    }
+    const start = (page.page - 1) * this.pageSize + 1;
+    const end = start + page.items.length - 1;
+    return `Showing ${start}-${end} of ${page.total}`;
+  }
+
+  // FAMILY FORM
 
   onAdd(): void {
     this.isAdding = true;
@@ -50,8 +131,17 @@ export class AdminFamiliesComponent implements OnInit {
     this.formError = '';
   }
 
-  onDelete(id: string): void {
-    this.familyService.deleteFamily(id);
+  async onDelete(family: Family): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete family?',
+      message: `Delete family ${family.name}? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    await this.familyService.deleteFamily(family.id);
   }
 
   onSave(): void {
@@ -102,6 +192,8 @@ export class AdminFamiliesComponent implements OnInit {
     this.formError = '';
   }
 
+  // CSV IMPORT
+
   onCsvFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || !input.files[0]) return;
@@ -119,6 +211,7 @@ export class AdminFamiliesComponent implements OnInit {
   private parseCsv(rawCsv: string): void {
     this.csvErrors = [];
     this.csvPreview = [];
+    this.csvPage = 1;
 
     const lines = rawCsv.trim().split('\n');
     if (lines.length < 2) {
@@ -224,9 +317,7 @@ export class AdminFamiliesComponent implements OnInit {
       this.familyService.saveFamily(family);
     }
 
-    this.csvPreview = [];
-    this.csvErrors = [];
-    this.isCsvPreview = false;
+    this.onCsvCancel();
   }
 
   onCsvCancel(): void {
@@ -234,5 +325,6 @@ export class AdminFamiliesComponent implements OnInit {
     this.csvErrors = [];
     this.isCsvPreview = false;
     this.selectedFileName = null;
+    this.csvPage = 1;
   }
 }

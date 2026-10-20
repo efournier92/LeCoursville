@@ -1,5 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Calendar } from 'src/app/models/calendar';
+import { Page, paginate } from 'src/app/admin/pagination';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
 @Component({
@@ -9,19 +12,54 @@ import { RtdbService } from 'src/app/services/rtdb.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AdminCalendarsComponent implements OnInit {
+export class AdminCalendarsComponent implements OnInit, OnDestroy {
   calendars: Calendar[] = [];
   editingCalendar: Calendar | null = null;
   isAdding = false;
   formData = { year: '', url: '' };
   formError = '';
+  loading = true;
+  loadError = '';
+  page = 1;
 
-  constructor(private rtdb: RtdbService) {}
+  private calendarsSub?: Subscription;
+
+  constructor(
+    private rtdb: RtdbService,
+    private confirmDialog: ConfirmDialogService,
+  ) {}
 
   ngOnInit(): void {
-    this.rtdb.list<Calendar>('calendars').valueChanges().subscribe(calendars => {
-      this.calendars = calendars.sort((a, b) => parseInt(a.year) - parseInt(b.year));
+    this.loadCalendars();
+  }
+
+  ngOnDestroy(): void {
+    this.calendarsSub?.unsubscribe();
+  }
+
+  get pageData(): Page<Calendar> {
+    return paginate(this.calendars, this.page);
+  }
+
+  loadCalendars(): void {
+    this.loading = true;
+    this.loadError = '';
+    this.calendarsSub?.unsubscribe();
+    this.calendarsSub = this.rtdb.list<Calendar>('calendars').valueChanges().subscribe({
+      next: calendars => {
+        this.calendars = [...calendars].sort((a, b) => parseInt(a.year) - parseInt(b.year));
+        this.page = paginate(this.calendars, this.page).page;
+        this.loading = false;
+      },
+      error: () => {
+        this.loadError = 'Could not load calendars.';
+        this.loading = false;
+      },
     });
+  }
+
+  goToPage(page: number): void {
+    this.page = page;
   }
 
   onAdd(): void {
@@ -38,8 +76,17 @@ export class AdminCalendarsComponent implements OnInit {
     this.formError = '';
   }
 
-  onDelete(calendar: Calendar): void {
-    this.rtdb.object(`/calendars/${calendar.id}`).remove();
+  async onDelete(calendar: Calendar): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete calendar?',
+      message: `Delete the ${calendar.year} calendar PDF mapping? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    await this.rtdb.object(`/calendars/${calendar.id}`).remove();
   }
 
   onSave(): void {

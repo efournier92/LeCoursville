@@ -1,13 +1,14 @@
 <app-page-toolbar title="Photo Albums">
   <mat-form-field>
-    <input matInput placeholder="Search albums" [(ngModel)]="searchTerm" />
+    <input matInput placeholder="Search albums" [ngModel]="searchTerm"
+      (ngModelChange)="onSearchChange($event)" aria-label="Search albums" />
   </mat-form-field>
   <button mat-button [matMenuTriggerFor]="sortMenu">
     Sort: {{ sortType === 'recent' ? 'Recent' : 'Title' }}
   </button>
   <mat-menu #sortMenu>
-    <button mat-menu-item (click)="sortType='recent'">Recent</button>
-    <button mat-menu-item (click)="sortType='title'">Title (A–Z)</button>
+    <button mat-menu-item (click)="onSortChange('recent')">Recent</button>
+    <button mat-menu-item (click)="onSortChange('title')">Title (A–Z)</button>
   </mat-menu>
   <button mat-stroked-button (click)="onCreateEmptyAlbum()">
     <mat-icon>add</mat-icon> New Album
@@ -45,11 +46,23 @@
 }
 
 <!-- Album grid -->
-@if (!selectedAlbum) {
-  <div class="admin-album-grid container-fluid">
-    @for (album of getFilteredAlbums(); track album) {
+@if (status === 'loading') {
+  <div class="admin-album-grid" aria-busy="true">
+    @for (i of skeletonIterations; track i) {
+      <div class="album-skeleton">
+        <div class="skeleton-cover"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    }
+  </div>
+} @else if (status === 'error') {
+  <app-load-error message="Couldn't load albums." (retry)="onRetry()"></app-load-error>
+} @else if (!selectedAlbum) {
+  <div class="admin-album-grid">
+    @for (album of pageData.items; track album) {
       <mat-card
-        class="admin-album-card mat-elevation-z6 col-12 col-sm-6 col-md-4 col-lg-3"
+        class="admin-album-card"
         (click)="openAlbumPhotos(album)">
         <div class="album-cover">
           @if (getCoverUrl(album)) {
@@ -79,10 +92,27 @@
         </mat-card-actions>
       </mat-card>
     }
-    @if (getFilteredAlbums().length === 0) {
-      <app-no-results-message [searchTerm]="searchTerm"></app-no-results-message>
+    @if (pageData.total === 0 && searchTerm) {
+      <app-no-results-message [searchTerm]="searchTerm" noun="albums"></app-no-results-message>
+    }
+    @if (pageData.total === 0 && !searchTerm) {
+      <app-no-results-message
+        title="No albums yet"
+        hint="Create an album or upload a folder to get started."
+        [isCentered]="true">
+      </app-no-results-message>
     }
   </div>
+  @if (pageData.total > 0) {
+    <div class="admin-pagination">
+      <span>{{ pageData.total }} album{{ pageData.total === 1 ? '' : 's' }}</span>
+      <div class="pager">
+        <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Previous</button>
+        <span>Page {{ pageData.page }} of {{ pageData.pageCount }}</span>
+        <button mat-button [disabled]="pageData.page >= pageData.pageCount" (click)="nextPage()">Next</button>
+      </div>
+    </div>
+  }
 }
 
 <!-- Drill-in: per-photo management for one album -->

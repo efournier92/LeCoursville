@@ -415,6 +415,10 @@ test.describe('account recovery', () => {
     const row = page.locator('.recipient-row', { hasText: added });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recipient-remove').click();
+    await page
+      .locator('mat-dialog-container')
+      .getByRole('button', { name: 'Remove', exact: true })
+      .click();
     await expect(page.locator('.recipient-row', { hasText: added })).toHaveCount(0);
 
     const restored = await readDb<string[]>('config/adminAlertRecipients');

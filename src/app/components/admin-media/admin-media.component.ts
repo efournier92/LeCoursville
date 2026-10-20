@@ -36,7 +36,13 @@ export class AdminMediaComponent implements OnInit {
 
   // PUBLIC METHODS
 
-  // TODO: Remove redundant methods below 
+  dismissSuccess(message: string): void {
+    this.successMessages = (this.successMessages || []).filter(m => m !== message);
+  }
+
+  dismissError(message: string): void {
+    this.errorMessages = (this.errorMessages || []).filter(m => m !== message);
+  }
 
   inputFileChangeEvent(files: any): void {
     this.clearMessages();

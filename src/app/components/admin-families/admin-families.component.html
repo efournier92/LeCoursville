@@ -40,27 +40,36 @@
               }
             </div>
           }
-          <div class="table-wrapper">
-            <table class="preview-table">
-              <thead>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Hex</th>
+                <th>Color</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (family of csvPageData.items; track family) {
                 <tr>
-                  <th>Name</th>
-                  <th>ID</th>
-                  <th>Hex</th>
-                  <th>Color</th>
+                  <td data-label="Name" class="bold">{{ family.name }}</td>
+                  <td data-label="ID" class="mono">{{ family.id }}</td>
+                  <td data-label="Hex" class="mono">{{ family.hexColor }}</td>
+                  <td data-label="Color"><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (family of csvPreview; track family) {
-                  <tr>
-                    <td class="bold">{{ family.name }}</td>
-                    <td class="mono">{{ family.id }}</td>
-                    <td class="mono">{{ family.hexColor }}</td>
-                    <td><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+              }
+            </tbody>
+          </table>
+          <div class="admin-pagination">
+            <span>{{ csvShowingRange }}</span>
+            <div class="pager admin-pager">
+              <button mat-button type="button" [disabled]="csvPage <= 1" (click)="previousCsvPage()">
+                Prev
+              </button>
+              <button mat-button type="button" [disabled]="csvPage >= csvPageData.pageCount" (click)="nextCsvPage()">
+                Next
+              </button>
+            </div>
           </div>
           <div class="csv-actions">
             <button mat-button (click)="onCsvCancel()">Cancel</button>
@@ -72,37 +81,90 @@
         </div>
       }
 
-      @if (families.length > 0 && !isCsvPreview) {
-        <div class="families-list">
-          <div class="family-header-row">
-            <span class="col-color">Color</span>
-            <span class="col-name">Name</span>
-            <span class="col-hex">Hex</span>
-            <span class="col-actions">Actions</span>
+      @if (!isCsvPreview) {
+        @if (state === 'loading') {
+          <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading families">
+            <div></div>
+            <div></div>
+            <div></div>
           </div>
-          @for (family of families; track family) {
-            <div class="family-row">
-              <div class="color-swatch" [style.background-color]="family.hexColor"></div>
-              <span class="family-name">{{ family.name }}</span>
-              <span class="family-hex">{{ family.hexColor }}</span>
-              <div class="family-actions">
-                <button mat-icon-button color="primary" (click)="onEdit(family)" matTooltip="Edit">
-                  <mat-icon>edit</mat-icon>
+        }
+
+        @if (state === 'error') {
+          <app-load-error
+            message="We couldn't load the family list."
+            (retry)="retry()"
+            />
+        }
+
+        @if (state === 'ready') {
+          @if (families.length === 0) {
+            <app-no-results-message
+              title="No families yet"
+              hint="Add your first family or upload a CSV."
+              />
+          } @else {
+            <table class="admin-table families-table">
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Name</th>
+                  <th>Hex</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (family of familyPageData.items; track family.id) {
+                  <tr>
+                    <td data-label="Color">
+                      <div class="color-swatch" [style.background-color]="family.hexColor"></div>
+                    </td>
+                    <td data-label="Name" class="family-name">{{ family.name }}</td>
+                    <td data-label="Hex" class="family-hex">{{ family.hexColor }}</td>
+                    <td data-label="Actions">
+                      <div class="family-actions">
+                        <button
+                          mat-icon-button
+                          color="primary"
+                          [attr.aria-label]="'Edit ' + family.name"
+                          (click)="onEdit(family)"
+                          matTooltip="Edit"
+                          >
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                          mat-icon-button
+                          color="warn"
+                          [attr.aria-label]="'Delete ' + family.name"
+                          (click)="onDelete(family)"
+                          matTooltip="Delete"
+                          >
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="admin-pagination">
+              <span>{{ familyShowingRange }}</span>
+              <div class="pager admin-pager">
+                <button mat-button type="button" [disabled]="familyPage <= 1" (click)="previousFamilyPage()">
+                  Prev
                 </button>
-                <button mat-icon-button color="warn" (click)="onDelete(family.id)" matTooltip="Delete">
-                  <mat-icon>delete</mat-icon>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="familyPage >= familyPageData.pageCount"
+                  (click)="nextFamilyPage()"
+                  >
+                  Next
                 </button>
               </div>
             </div>
           }
-        </div>
-      }
-
-      @if (families.length === 0 && !isCsvPreview) {
-        <div class="empty-state">
-          <mat-icon>group_off</mat-icon>
-          <p>No families found. Add your first family or upload a CSV.</p>
-        </div>
+        }
       }
 
       @if (isAdding || editingFamily) {
@@ -130,7 +192,7 @@
                   </div>
                 </div>
                 @if (formError) {
-                  <div class="form-error">
+                  <div class="form-error" role="alert">
                     <mat-icon>error_outline</mat-icon>
                     {{ formError }}
                   </div>

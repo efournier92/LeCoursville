@@ -3,19 +3,24 @@
   <p class="upload-dialog-summary">
     Detected <strong>{{ data.fileCount }}</strong> image{{ data.fileCount === 1 ? '' : 's' }} in the picked folder.
   </p>
-  <mat-form-field class="album-title-field">
+  <mat-form-field class="album-title-field"
+    [class.mat-form-field-invalid]="showRequiredError()">
     <mat-label>Album title</mat-label>
-    <input matInput [(ngModel)]="title" required maxlength="80" [disabled]="isUploading" />
+    <input matInput [(ngModel)]="title" required maxlength="80" [disabled]="isUploading"
+      (blur)="onBlur()" />
   </mat-form-field>
+  @if (showRequiredError()) {
+    <p class="upload-dialog-error" role="alert">Album title is required.</p>
+  }
   @if (data.fileCount === 0) {
-    <p class="upload-dialog-warning">
+    <p class="upload-dialog-warning" role="alert">
       No image files were detected. Pick a folder that contains photos.
     </p>
   }
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()" [disabled]="isUploading">Cancel</button>
-  <button mat-flat-button color="primary" [disabled]="!isValid()" (click)="onStart()">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isUploading">Cancel</button>
+  <button mat-flat-button color="primary" type="button" [disabled]="!isValid()" (click)="onStart()">
     {{ isUploading ? 'Uploading...' : 'Start Upload' }}
   </button>
 </mat-dialog-actions>

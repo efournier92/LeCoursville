@@ -14,12 +14,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
 import { PhotoAlbum } from 'src/app/models/photo-album';
+import { paginate, Page } from 'src/app/admin/pagination';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
+import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotoAlbumsService } from 'src/app/services/photo-albums.service';
 import { PhotosService, PhotoUpload } from 'src/app/services/photos.service';
-import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import {
   AdminPhotoAlbumUploadDialogComponent,
@@ -46,6 +48,7 @@ import { PhotoAlbumEditDialogComponent } from '../photo-album-edit-dialog/photo-
     MatProgressSpinnerModule,
     MatTooltipModule,
     NoResultsMessageComponent,
+    LvLoadErrorComponent,
     PageToolbarComponent,
     PhotoUploadProgressComponent
 ]
@@ -58,6 +61,10 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   photoCounts: { [albumId: string]: number } = {};
   searchTerm = '';
   sortType: 'recent' | 'title' = 'recent';
+  status: 'loading' | 'error' | 'ready' = 'loading';
+  page = 1;
+  readonly pageSize = 12;
+  skeletonIterations = [1, 2, 3, 4, 5, 6];
 
   editingAlbumId: string | null = null;
   editingTitle = '';
@@ -80,17 +87,12 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
     private photoAlbumsService: PhotoAlbumsService,
     private photosService: PhotosService,
     private dialog: MatDialog,
-    private promptModal: PromptModalService,
+    private confirmDialog: ConfirmDialogService,
     private analyticsService: AnalyticsService,
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.photoAlbumsService.albums$.subscribe(albums => {
-        this.albums = albums || [];
-        this.recomputePhotoCounts();
-      }),
-    );
+    this.loadAlbums();
 
     this.subscriptions.push(
       this.photosService.nonMessagePhotos$.subscribe(photos => {
@@ -102,6 +104,36 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  private loadAlbums(): void {
+    this.subscriptions.push(
+      this.photoAlbumsService.albums$.subscribe(albums => {
+        // null is the service's not-yet-loaded seed; only a real snapshot
+        // (even an empty one) resolves the page.
+        if (albums === null) {
+          return;
+        }
+        this.albums = albums || [];
+        this.recomputePhotoCounts();
+        this.status = 'ready';
+      }, () => {
+        this.status = 'error';
+      }),
+    );
+  }
+
+  onRetry(): void {
+    this.status = 'loading';
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
+    this.loadAlbums();
+    this.subscriptions.push(
+      this.photosService.nonMessagePhotos$.subscribe(photos => {
+        this.photos = photos || [];
+        this.recomputePhotoCounts();
+      }),
+    );
   }
 
   private recomputePhotoCounts(): void {
@@ -126,6 +158,28 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
       result = [...result].sort((a, b) => b.updatedAt - a.updatedAt);
     }
     return result;
+  }
+
+  get pageData(): Page<PhotoAlbum> {
+    return paginate(this.getFilteredAlbums(), this.page, this.pageSize);
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+    this.page = 1;
+  }
+
+  onSortChange(sort: 'recent' | 'title'): void {
+    this.sortType = sort;
+    this.page = 1;
+  }
+
+  nextPage(): void {
+    this.page = Math.min(this.page + 1, this.pageData.pageCount);
+  }
+
+  prevPage(): void {
+    this.page = Math.max(this.page - 1, 1);
   }
 
   getPhotoCount(album: PhotoAlbum): number {
@@ -341,19 +395,25 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
     this.editDraft = null;
   }
 
-  onDeletePhoto(photo: Photo): void {
-    const dialogRef = this.promptModal.openDialog('Are You Sure?', 'Do you want to delete this photo from LeCoursville?');
-    dialogRef.afterClosed().subscribe(async (confirmed: boolean) => {
-      if (!confirmed || !this.selectedAlbum) {
-        return;
-      }
-      const wasCover = this.selectedAlbum.coverPhotoId === photo.id;
-      this.photosService.deletePhoto(photo);
-      if (wasCover) {
-        await this.photosService.setAlbumCover(this.selectedAlbum.id, null);
-      }
-      await this.photoAlbumsService.updateAlbum(this.selectedAlbum.id, {});
+  async onDeletePhoto(photo: Photo): Promise<void> {
+    if (!this.selectedAlbum) {
+      return;
+    }
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete photo?',
+      message: `Delete ${photo.info ? `“${photo.info}”` : 'this photo'} from “${this.selectedAlbum.title}”? This cannot be undone.`,
+      confirmLabel: 'Delete photo',
+      destructive: true,
     });
+    if (!confirmed || !this.selectedAlbum) {
+      return;
+    }
+    const wasCover = this.selectedAlbum.coverPhotoId === photo.id;
+    this.photosService.deletePhoto(photo);
+    if (wasCover) {
+      await this.photosService.setAlbumCover(this.selectedAlbum.id, null);
+    }
+    await this.photoAlbumsService.updateAlbum(this.selectedAlbum.id, {});
   }
 
   onSetAsCover(photo: Photo): void {
@@ -363,21 +423,23 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
     this.photosService.setAlbumCover(this.selectedAlbum.id, photo.id);
   }
 
-  onDeleteAlbum(album: PhotoAlbum): void {
+  async onDeleteAlbum(album: PhotoAlbum): Promise<void> {
     const photoCount = this.getPhotoCount(album);
-    const message = `Delete album '${album.title}' and its ${photoCount} photos? This cannot be undone.`;
-    const dialogRef = this.promptModal.openDialog('Are You Sure?', message);
-    dialogRef.afterClosed().subscribe(async (confirmed: boolean) => {
-      if (!confirmed) {
-        return;
-      }
-      const photoIds = this.photos.filter(p => p.albumId === album.id).map(p => p.id);
-      await this.photoAlbumsService.deleteAlbumCascade(album.id, photoIds);
-      this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: photoIds.length });
-      if (this.selectedAlbum?.id === album.id) {
-        this.closeAlbumPhotos();
-      }
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete album?',
+      message: `Delete “${album.title}” and its ${photoCount} photo${photoCount === 1 ? '' : 's'}? This cannot be undone.`,
+      confirmLabel: 'Delete album',
+      destructive: true,
     });
+    if (!confirmed) {
+      return;
+    }
+    const photoIds = this.photos.filter(p => p.albumId === album.id).map(p => p.id);
+    await this.photoAlbumsService.deleteAlbumCascade(album.id, photoIds);
+    this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: photoIds.length });
+    if (this.selectedAlbum?.id === album.id) {
+      this.closeAlbumPhotos();
+    }
   }
 
   private collectFilesFromDataTransfer(items: DataTransferItemList, cb: (files: File[]) => void): void {

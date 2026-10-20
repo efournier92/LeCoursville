@@ -32,3 +32,19 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
 - Shell height is `calc(100vh - 64px)` so only the content region scrolls.
 - 600px and 991.98px breakpoints verified; 44px rows at 390px.
 - Unit: 67 files, 234 tests green. Chromium admin spec: 15 tests green.
+
+## Phase 3: Page-By-Page Pass
+
+- Shared primitives: `ConfirmDialogService` (cancel focused, destructive
+  variant), `paginate()` helper, and `admin-data.scss` (responsive table that
+  becomes `data-label` cards below 600px, pagination bar, skeleton rows).
+- Users, Families, People import, Calendars, Media, Photo Albums, Uploads,
+  Recovery, Features: toolbar, responsive tables/grids, pagination where lists
+  grow, explicit loading/empty/error states, and shared confirmation on every
+  destructive action.
+- Missing unit specs added: families, calendars, people import, uploads,
+  recovery, photo albums, album upload dialog.
+- New e2e files: `admin-people.spec.ts`, `admin-content.spec.ts`,
+  `admin-system.spec.ts`.
+- `account-recovery.spec.ts` updated for the new remove-recipient confirmation.
+- Unit: 76 files, 304 tests green. Chromium full suite: 122 tests green.

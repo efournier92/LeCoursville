@@ -17,6 +17,10 @@ import { PhotoAlbum } from '../../models/photo-album';
 import { PhotoAlbumPickerDialogComponent } from '../photo-album-picker-dialog/photo-album-picker-dialog.component';
 import { AnalyticsService } from '../../services/analytics.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { paginate, Page } from '../../admin/pagination';
+import { LvLoadErrorComponent } from '../load-error/load-error.component';
+import { NoResultsMessageComponent } from '../no-results-message/no-results-message.component';
 import { PageToolbarComponent } from '../shared/page-toolbar/page-toolbar.component';
 
 interface StorageFolder {
@@ -49,6 +53,8 @@ interface StorageFile {
         MatDialogModule,
         MatIconModule,
         MatTooltipModule,
+        LvLoadErrorComponent,
+        NoResultsMessageComponent,
         PageToolbarComponent,
     ]
 })
@@ -58,8 +64,13 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   processingIds = new Set<string>();
   previewUpload: UserUpload | null = null;
   filterStatus: 'pending' | 'all' | 'browser' = 'pending';
+  uploadsLoading = true;
+  uploadsError: string | null = null;
+  page = 1;
+  readonly pageSize = 10;
   @ViewChild('previewDialog') previewDialog!: TemplateRef<any>;
   private previewDialogRef: MatDialogRef<unknown> | null = null;
+  private uploadsSubscription: Subscription | null = null;
 
   // Storage Browser tab
   storageBrowserTab: 'list' | 'files' = 'list';
@@ -82,14 +93,11 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private analyticsService: AnalyticsService,
     private featureFlagsService: FeatureFlagsService,
+    private confirmDialog: ConfirmDialogService,
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.userUploadService.allUploads$.subscribe(uploads => {
-        this.allUploads = uploads || [];
-      }),
-    );
+    this.loadUploads();
     this.subscriptions.push(
       this.photoAlbumsService.albums$.subscribe(albums => {
         this.allAlbums = albums || [];
@@ -99,7 +107,29 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.previewDialogRef?.close();
+    this.uploadsSubscription?.unsubscribe();
     this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  private loadUploads(): void {
+    this.uploadsLoading = true;
+    this.uploadsError = null;
+    this.uploadsSubscription?.unsubscribe();
+    this.uploadsSubscription = this.userUploadService.allUploads$.subscribe({
+      next: uploads => {
+        this.allUploads = uploads || [];
+        this.uploadsLoading = false;
+      },
+      error: () => {
+        this.uploadsLoading = false;
+        this.uploadsError = 'Couldn’t load uploads.';
+      },
+    });
+  }
+
+  onRetryUploads(): void {
+    this.page = 1;
+    this.loadUploads();
   }
 
   get filteredUploads(): UserUpload[] {
@@ -107,6 +137,18 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       return this.allUploads.filter(u => u.status === 'pending');
     }
     return this.allUploads;
+  }
+
+  get pageData(): Page<UserUpload> {
+    return paginate(this.filteredUploads, this.page, this.pageSize);
+  }
+
+  nextPage(): void {
+    this.page = Math.min(this.page + 1, this.pageData.pageCount);
+  }
+
+  prevPage(): void {
+    this.page = Math.max(this.page - 1, 1);
   }
 
   get pendingCount(): number {
@@ -165,6 +207,15 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   async onReject(upload: UserUpload): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Reject upload?',
+      message: `Reject “${upload.fileName}” from ${this.getUploaderName(upload) || 'this guest'}? The file will be removed from the review queue.`,
+      confirmLabel: 'Reject upload',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
     this.processingIds.add(upload.id);
     try {
       await this.userUploadService.rejectUpload(upload);
@@ -190,6 +241,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   setFilter(status: 'pending' | 'all'): void {
     this.filterStatus = status;
+    this.page = 1;
   }
 
   backToReview(): void {

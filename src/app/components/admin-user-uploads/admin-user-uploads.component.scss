@@ -1,5 +1,6 @@
 // Segmented filter pills live in the page-toolbar (shared gallery-bar pattern).
 @use '../shared/gallery-bar';
+@use 'src/app/styles/admin-data' as *;
 
 // The admin shell (.admin-content) already pads the page: the toolbar and the
 // sheet below must share exactly the same width (toolbar-flush contract).
@@ -17,86 +18,33 @@
 }
 
 // ── Review queue ──────────────────────────────────────────────────────────────
-.uploads-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.upload-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  transition: box-shadow 150ms ease;
-
-  &:hover {
-    box-shadow: var(--shadow-card);
-  }
-}
-
-.upload-thumbnail {
-  width: 72px;
-  height: 72px;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  background: var(--color-surface-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img, video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.upload-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.upload-filename {
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--color-ink);
-  margin-bottom: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.upload-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  row-gap: 4px;
-  font-size: 0.75rem;
-  color: var(--color-ink-2);
-
-  span + span::before {
-    content: '·';
-    margin: 0 8px;
-    color: var(--color-ink-3); // decorative separator, non-text
-  }
-
-  .uploader-meta {
-    display: inline-flex;
+.uploads-table {
+  .upload-thumbnail {
+    width: 56px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface-muted);
+    display: flex;
     align-items: center;
-    gap: 3px;
+    justify-content: center;
 
-    mat-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: var(--color-ink-2);
+    img, video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+  }
+
+  .upload-filename {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
   }
 }
 
@@ -108,7 +56,7 @@
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 999px;
-  margin-top: 6px;
+  white-space: nowrap;
 
   &.pending {
     background: rgba(156, 107, 38, 0.12);
@@ -142,7 +90,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+  justify-content: flex-end;
 }
 
 .upload-actions .mat-mdc-icon-button {
@@ -238,36 +186,6 @@
     background: var(--color-surface-muted);
     padding: 2px 6px;
     border-radius: 6px;
-  }
-}
-
-.browser-loading,
-.browser-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 48px 24px;
-  color: var(--color-ink-2);
-
-  mat-icon {
-    font-size: 40px;
-    width: 40px;
-    height: 40px;
-    margin-bottom: 12px;
-    color: var(--color-ink-3); // non-text glyph
-  }
-
-  p {
-    margin: 0 0 8px;
-    font-size: 0.9rem;
-  }
-}
-
-.browser-error {
-  color: var(--color-error);
-
-  mat-icon {
-    color: var(--color-error);
   }
 }
 
@@ -528,17 +446,12 @@
 }
 
 @media (max-width: 600px) {
-  .uploads-body {
+  .uploads-card .uploads-body {
     padding: 12px;
   }
 
-  .upload-row {
-    gap: 12px;
-    padding: 10px;
-  }
-
-  .upload-thumbnail {
-    width: 56px;
+  .uploads-table .upload-thumbnail {
+    width: 72px;
     height: 56px;
   }
 

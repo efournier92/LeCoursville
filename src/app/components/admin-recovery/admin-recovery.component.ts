@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { Page, paginate } from 'src/app/admin/pagination';
 import { CloudFunctionsService } from 'src/app/services/cloud-functions.service';
-import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
 interface RecoveryRequest {
@@ -84,28 +85,25 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   audit: RecoveryAuditEntry[] = [];
   accountCreations: AccountUser[] = [];
   alerts: AdminAlert[] = [];
+  requestsLoading = true;
+  requestsLoadError = '';
+  recipientsLoading = true;
+  recipientsLoadError = '';
+  recipientPage = 1;
 
   private subscriptions: Subscription[] = [];
+  private requestsSub?: Subscription;
+  private recipientsSub?: Subscription;
 
   constructor(
     private rtdb: RtdbService,
     private cloudFunctions: CloudFunctionsService,
-    private promptModal: PromptModalService,
+    private confirmDialog: ConfirmDialogService,
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.rtdb.list<RecoveryRequest>('recoveryRequests').valueChanges().subscribe(requests => {
-        this.requests = requests.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      }),
-    );
-    this.subscriptions.push(
-      this.rtdb.object<unknown>('config/adminAlertRecipients')
-        .valueChanges()
-        .subscribe(value => {
-          this.recipients = this.normalizeRecipients(value);
-        }),
-    );
+    this.loadRequests();
+    this.loadRecipients();
     this.subscriptions.push(
       this.rtdb.list<RecoveryAuditEntry>('recoveryAudit').valueChanges().subscribe(entries => {
         this.audit = entries.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -127,6 +125,50 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.requestsSub?.unsubscribe();
+    this.recipientsSub?.unsubscribe();
+  }
+
+  get recipientPageData(): Page<string> {
+    return paginate(this.recipients, this.recipientPage);
+  }
+
+  loadRequests(): void {
+    this.requestsLoading = true;
+    this.requestsLoadError = '';
+    this.requestsSub?.unsubscribe();
+    this.requestsSub = this.rtdb.list<RecoveryRequest>('recoveryRequests').valueChanges().subscribe({
+      next: requests => {
+        this.requests = [...requests].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        this.requestsLoading = false;
+      },
+      error: () => {
+        this.requestsLoadError = 'Could not load recovery requests.';
+        this.requestsLoading = false;
+      },
+    });
+  }
+
+  loadRecipients(): void {
+    this.recipientsLoading = true;
+    this.recipientsLoadError = '';
+    this.recipientsSub?.unsubscribe();
+    this.recipientsSub = this.rtdb.object<unknown>('config/adminAlertRecipients')
+      .valueChanges()
+      .subscribe({
+        next: value => {
+          this.recipients = this.normalizeRecipients(value);
+          this.recipientsLoading = false;
+        },
+        error: () => {
+          this.recipientsLoadError = 'Could not load alert recipients.';
+          this.recipientsLoading = false;
+        },
+      });
+  }
+
+  goToRecipientPage(page: number): void {
+    this.recipientPage = page;
   }
 
   /**
@@ -209,19 +251,20 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     }
   }
 
-  markClosed(request: RecoveryRequest): void {
+  async markClosed(request: RecoveryRequest): Promise<void> {
     if (this.closing[request.id]) {
       return;
     }
-    const dialogRef = this.promptModal.openDialog(
-      'Mark Request Closed?',
-      'Do you want to close this request without generating a reset link?',
-    );
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        this.confirmClose(request);
-      }
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Mark Request Closed?',
+      message: `Close the recovery request for ${request.email} without generating a reset link?`,
+      confirmLabel: 'Yes',
+      cancelLabel: 'Cancel',
+      destructive: true,
     });
+    if (confirmed) {
+      await this.confirmClose(request);
+    }
   }
 
   private async confirmClose(request: RecoveryRequest): Promise<void> {
@@ -261,8 +304,17 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     this.saveRecipients([...this.recipients, email]);
   }
 
-  removeRecipient(email: string): void {
-    this.saveRecipients(this.recipients.filter(recipient => recipient !== email));
+  async removeRecipient(email: string): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Remove recipient?',
+      message: `Remove ${email} from the recovery alert recipients? They will stop receiving recovery alerts.`,
+      confirmLabel: 'Remove',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    await this.saveRecipients(this.recipients.filter(recipient => recipient !== email));
   }
 
   age(createdAt: number): string {

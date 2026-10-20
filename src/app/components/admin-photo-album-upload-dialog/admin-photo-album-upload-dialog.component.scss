@@ -8,7 +8,8 @@
   color: var(--color-ink-2);
 }
 
-.upload-dialog-warning {
+.upload-dialog-warning,
+.upload-dialog-error {
   color: var(--color-error);
   font-size: 0.875rem;
   margin-top: 8px;

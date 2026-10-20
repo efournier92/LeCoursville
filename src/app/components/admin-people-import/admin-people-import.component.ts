@@ -1,12 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { PageEvent as PageEvent } from '@angular/material/paginator';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
 import { Clan } from 'src/app/models/clan';
 import { Person, PersonDate, Email, Phone } from 'src/app/models/person';
 import { Address } from 'src/app/models/address';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { paginate, Page } from 'src/app/admin/pagination';
 
 interface ParsedPerson {
   person: Person;
@@ -29,13 +27,14 @@ export class AdminPeopleImportComponent implements OnInit {
   lastImportTimestamp: string | null = null;
   isImporting = false;
   importResult: ImportResult | null = null;
+  importError: string | null = null;
   selectedFileName: string | null = null;
+  hasParsedFile = false;
   private clansByNameMap: Map<string, Clan> = new Map();
 
   // Pagination
-  previewPageSize = 20;
-  previewPageIndex = 0;
-  previewPageSizeOptions = [20, 50, 100];
+  readonly previewPageSize = 10;
+  previewPage = 1;
 
   constructor(
     private peopleService: PeopleService,
@@ -52,6 +51,10 @@ export class AdminPeopleImportComponent implements OnInit {
     this.validationErrors = [];
     this.validationWarnings = [];
     this.parsedPeople = [];
+    this.importPreview = null;
+    this.importError = null;
+    this.hasParsedFile = true;
+    this.previewPage = 1;
 
     const lines = rawCsv.trim().split('\n');
     if (lines.length < 2) {
@@ -409,24 +412,35 @@ export class AdminPeopleImportComponent implements OnInit {
   }
 
   confirmImport(): void {
-    if (this.parsedPeople.length === 0) return;
+    if (this.parsedPeople.length === 0 || this.isImporting) return;
 
     this.isImporting = true;
+    this.importError = null;
     const people = this.parsedPeople.map(p => p.person);
 
-    this.peopleService.importPeople(people).pipe(
-      catchError(err => {
+    this.peopleService.importPeople(people).subscribe({
+      next: result => {
         this.isImporting = false;
-        this.validationErrors.push('Import failed: ' + err.message);
-        return of({ created: 0, updated: 0, inactive: 0, conflicts: [] });
-      })
-    ).subscribe(result => {
-      this.isImporting = false;
-      this.importResult = result;
-      this.lastImportTimestamp = new Date().toLocaleString();
-      this.parsedPeople = [];
-      this.importPreview = null;
+        this.importResult = result;
+        this.lastImportTimestamp = new Date().toLocaleString();
+        this.parsedPeople = [];
+        this.importPreview = null;
+        this.hasParsedFile = false;
+        this.previewPage = 1;
+      },
+      error: err => {
+        this.isImporting = false;
+        this.importError = 'Import failed: ' + (err?.message || 'Unknown error');
+      },
     });
+  }
+
+  cancelImport(): void {
+    this.parsedPeople = [];
+    this.importPreview = null;
+    this.importError = null;
+    this.hasParsedFile = false;
+    this.previewPage = 1;
   }
 
   onFileSelected(event: Event): void {
@@ -453,14 +467,26 @@ export class AdminPeopleImportComponent implements OnInit {
     return `${anniversaryDate.month}/${anniversaryDate.day}/${anniversaryDate.year}`;
   }
 
-  onPreviewPage(event: PageEvent): void {
-    this.previewPageIndex = event.pageIndex;
-    this.previewPageSize = event.pageSize;
+  get previewPageData(): Page<ParsedPerson> {
+    return paginate(this.parsedPeople, this.previewPage, this.previewPageSize);
   }
 
-  getPagedParsedPeople(): ParsedPerson[] {
-    const start = this.previewPageIndex * this.previewPageSize;
-    return this.parsedPeople.slice(start, start + this.previewPageSize);
+  get previewShowingRange(): string {
+    const page = this.previewPageData;
+    if (page.total === 0) {
+      return 'Showing 0 of 0';
+    }
+    const start = (page.page - 1) * this.previewPageSize + 1;
+    const end = start + page.items.length - 1;
+    return `Showing ${start}-${end} of ${page.total}`;
+  }
+
+  previousPreviewPage(): void {
+    this.previewPage = Math.max(1, this.previewPage - 1);
+  }
+
+  nextPreviewPage(): void {
+    this.previewPage = Math.min(this.previewPageData.pageCount, this.previewPage + 1);
   }
 
   getAddressStreet(person: Person): string {

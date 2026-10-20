@@ -8,37 +8,62 @@
     }
   </app-page-toolbar>
 
+  <p class="admin-muted calendars-intro">
+    Map each year to the calendar PDF that visitors download. Add or edit a year below.
+  </p>
+
   <mat-card class="calendars-card">
     <mat-card-content>
-      @if (calendars.length > 0) {
-        <div class="calendars-list">
-          <div class="calendar-header-row">
-            <span class="col-year">Year</span>
-            <span class="col-url">URL</span>
-            <span class="col-actions">Actions</span>
-          </div>
-          @for (calendar of calendars; track calendar) {
-            <div class="calendar-row">
-              <span class="calendar-year">{{ calendar.year }}</span>
-              <span class="calendar-url">{{ calendar.url }}</span>
-              <div class="calendar-actions">
-                <button mat-icon-button color="primary" (click)="onEdit(calendar)" matTooltip="Edit">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="onDelete(calendar)" matTooltip="Delete">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </div>
+      @if (loading) {
+        <div class="admin-skeleton-rows" data-testid="calendars-loading" aria-hidden="true">
+          @for (row of [1, 2, 3]; track row) {
+            <span></span>
           }
         </div>
-      }
+      } @else if (loadError) {
+        <app-load-error [message]="loadError" (retry)="loadCalendars()" />
+      } @else if (calendars.length === 0) {
+        <app-no-results-message
+          title="No calendars yet"
+          hint="Add a calendar PDF mapping to get started."
+          noun="calendars" />
+      } @else {
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>URL</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (calendar of pageData.items; track calendar.id) {
+              <tr>
+                <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
+                <td data-label="URL" class="calendar-url">{{ calendar.url }}</td>
+                <td data-label="" class="calendar-actions">
+                  <button mat-icon-button color="primary" aria-label="Edit" matTooltip="Edit" (click)="onEdit(calendar)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" aria-label="Delete" matTooltip="Delete" (click)="onDelete(calendar)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
 
-      @if (calendars.length === 0 && !isAdding) {
-        <div class="empty-state">
-          <mat-icon>calendar_today</mat-icon>
-          <p>No calendars found. Add your first calendar PDF mapping.</p>
-        </div>
+        @if (pageData.pageCount > 1) {
+          <div class="admin-pagination">
+            <span>{{ pageData.total }} calendars</span>
+            <div class="pager">
+              <button mat-button type="button" [disabled]="pageData.page === 1" (click)="goToPage(pageData.page - 1)">Previous</button>
+              <span class="admin-muted">Page {{ pageData.page }} of {{ pageData.pageCount }}</span>
+              <button mat-button type="button" [disabled]="pageData.page === pageData.pageCount" (click)="goToPage(pageData.page + 1)">Next</button>
+            </div>
+          </div>
+        }
       }
 
       @if (isAdding || editingCalendar) {
@@ -56,7 +81,7 @@
                   <input matInput [(ngModel)]="formData.url" name="url" required />
                 </mat-form-field>
                 @if (formError) {
-                  <div class="form-error">
+                  <div class="form-error" role="alert">
                     <mat-icon>error_outline</mat-icon>
                     {{ formError }}
                   </div>

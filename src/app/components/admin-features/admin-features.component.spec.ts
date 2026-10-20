@@ -4,7 +4,7 @@ import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 describe('AdminFeaturesComponent', () => {
   let component: AdminFeaturesComponent;
@@ -12,9 +12,15 @@ describe('AdminFeaturesComponent', () => {
   let mockFeatureFlagsService: jasmine.SpyObj<FeatureFlagsService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('FeatureFlagsService', ['getAllFeatureFlags', 'setFeatureFlag', 'getPromotedRoute']);
+    const spy = jasmine.createSpyObj('FeatureFlagsService', [
+      'getAllFeatureFlags',
+      'setFeatureFlag',
+      'getPromotedRoute',
+      'flagsReady',
+    ]);
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
+    spy.flagsReady.and.returnValue(of(true));
 
     await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
@@ -44,6 +50,57 @@ describe('AdminFeaturesComponent', () => {
     const items = fixture.nativeElement.querySelectorAll('.feature-row');
     expect(items.length).toBe(component.featureDefs.length);
     expect(items.length).toBeGreaterThan(0);
+  });
+
+  it('renders the three surface group labels', () => {
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('.feature-group-label') as NodeListOf<HTMLElement>,
+    ).map((el) => el.textContent?.trim());
+    expect(labels).toEqual(['People', 'Content', 'System']);
+  });
+
+  it('shows a loading skeleton until the flags arrive', () => {
+    fixture.destroy();
+    const ready$ = new Subject<boolean>();
+    const flags$ = new Subject<Record<string, never>>();
+    mockFeatureFlagsService.flagsReady.and.returnValue(ready$);
+    mockFeatureFlagsService.getAllFeatureFlags.and.returnValue(flags$);
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="features-loading"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(0);
+
+    ready$.next(true);
+    flags$.next({});
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="features-loading"]')).toBeFalsy();
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
+  });
+
+  it('shows a retryable error and recovers after retrying', () => {
+    fixture.destroy();
+    let attempt = 0;
+    mockFeatureFlagsService.getAllFeatureFlags.and.callFake(() => {
+      attempt += 1;
+      return attempt === 1
+        ? throwError(() => new Error('offline'))
+        : of({});
+    });
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.loadError).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-load-error')).toBeTruthy();
+
+    component.retry();
+    fixture.detectChanges();
+
+    expect(component.loadError).toBe('');
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
   });
 
   it('isEnabled() returns true when Firebase flag is null (default ON)', () => {

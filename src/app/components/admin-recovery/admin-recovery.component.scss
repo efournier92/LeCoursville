@@ -1,7 +1,13 @@
+@use 'src/app/styles/admin-data' as *;
+
 .admin-recovery-container {
   padding: 20px;
   max-width: 900px;
   margin: 0 auto;
+}
+
+.recovery-intro {
+  margin: 0 0 12px;
 }
 
 .region-card {
@@ -12,30 +18,15 @@
   }
 }
 
-.recovery-row {
-  display: flex;
-  gap: 24px;
-  padding: 16px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.recovery-details {
-  flex: 1;
-  min-width: 0;
-}
-
 .recovery-email {
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
 .recovery-meta,
 .recovery-age,
 .generated-emailed {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-ink-2);
   font-size: 13px;
 }
 
@@ -50,8 +41,10 @@
 }
 
 .recovery-actions {
-  flex: 1;
-  min-width: 0;
+  min-width: 260px;
+}
+
+.recovery-actions-inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -75,16 +68,9 @@
   font-size: 12px;
 }
 
-.recipient-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-
-  &:last-child {
-    border-bottom: none;
-  }
+.recipient-actions {
+  text-align: right;
+  white-space: nowrap;
 }
 
 .add-recipient {
@@ -99,7 +85,7 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
 
   &:last-child {
@@ -118,7 +104,7 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
 
   &:last-child {
@@ -136,7 +122,7 @@
 .account-age,
 .activity-actor,
 .activity-time {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-ink-2);
 }
 
 .recovery-status {
@@ -150,5 +136,28 @@
 }
 
 .empty {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-ink-2);
+}
+
+@media (max-width: 600px) {
+  .admin-recovery-container {
+    padding: 12px;
+  }
+
+  .recovery-actions {
+    min-width: 0;
+  }
+
+  .recovery-actions-inner {
+    width: 100%;
+  }
+
+  .recipient-actions {
+    text-align: left;
+  }
+
+  .add-recipient {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

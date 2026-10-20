@@ -1,6 +1,10 @@
 <div class="admin-recovery-container">
   <app-page-toolbar title="Recovery"></app-page-toolbar>
 
+  <p class="admin-muted recovery-intro">
+    Help people locked out of their account, review recent activity, and choose who receives recovery alerts.
+  </p>
+
   <mat-card class="region-card">
     <mat-card-header>
       <mat-card-title>Recent Account Creations</mat-card-title>
@@ -47,62 +51,89 @@
       <mat-card-title>Recovery Requests</mat-card-title>
       <mat-card-subtitle>Requests from users who cannot get back in</mat-card-subtitle>
     </mat-card-header>
-    <mat-card-content>
-      <div class="recovery-list" data-testid="admin-recovery-list">
-        @for (request of visibleRequests; track request.id) {
-          <div class="recovery-row">
-            <div class="recovery-details">
-              <div class="recovery-email">{{ request.email }}</div>
-              <div class="recovery-meta">{{ request.name }}</div>
-              <div class="recovery-meta" [class.no-contact]="!request.alternateContact">
-                {{ request.alternateContact || 'No alternate contact' }}
-              </div>
-              @if (request.message) {
-                <div class="recovery-message">{{ request.message }}</div>
-              }
-              <div class="recovery-meta">
-                Status: <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
-              </div>
-              <div class="recovery-age">{{ age(request.createdAt) }}</div>
-            </div>
-            <div class="recovery-actions">
-              <mat-form-field class="reason-field">
-                <mat-label>Reason</mat-label>
-                <input matInput data-testid="admin-recovery-reason" [(ngModel)]="reasons[request.id]" />
-              </mat-form-field>
-              <button
-                mat-flat-button
-                color="primary"
-                data-testid="admin-recovery-generate"
-                [disabled]="generating[request.id] || !canGenerate(request)"
-                (click)="generate(request)">
-                Generate reset link
-              </button>
-              <button
-                mat-button
-                data-testid="admin-recovery-close"
-                [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
-                (click)="markClosed(request)">
-                Mark closed
-              </button>
-              @if (generated[request.id]; as result) {
-                <div class="generated-result">
-                  <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
-                  <button mat-button data-testid="admin-recovery-copy" (click)="copyLink(result.link)">Copy</button>
-                  <span class="generated-emailed">
-                    {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; relay the link yourself.' }}
-                  </span>
-                </div>
-              }
-              @if (errors[request.id]) {
-                <div class="row-error">{{ errors[request.id] }}</div>
-              }
-            </div>
-          </div>
-        } @empty {
-          <p class="empty">No recovery requests.</p>
-        }
-      </div>
+    <mat-card-content data-testid="admin-recovery-list">
+      @if (requestsLoading) {
+        <div class="admin-skeleton-rows" data-testid="admin-recovery-loading" aria-hidden="true">
+          @for (row of [1, 2, 3]; track row) {
+            <span></span>
+          }
+        </div>
+      } @else if (requestsLoadError) {
+        <app-load-error [message]="requestsLoadError" (retry)="loadRequests()" />
+      } @else if (visibleRequests.length === 0) {
+        <app-no-results-message
+          title="No recovery requests"
+          hint="Requests from people who cannot sign in will appear here."
+          noun="requests" />
+      } @else {
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Status</th>
+              <th>Received</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (request of visibleRequests; track request.id) {
+              <tr class="recovery-row">
+                <td data-label="Requester">
+                  <div class="recovery-email">{{ request.email }}</div>
+                  <div class="recovery-meta">{{ request.name }}</div>
+                  <div class="recovery-meta" [class.no-contact]="!request.alternateContact">
+                    {{ request.alternateContact || 'No alternate contact' }}
+                  </div>
+                  @if (request.message) {
+                    <div class="recovery-message">{{ request.message }}</div>
+                  }
+                </td>
+                <td data-label="Status">
+                  <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
+                </td>
+                <td data-label="Received">
+                  <span class="recovery-age">{{ age(request.createdAt) }}</span>
+                </td>
+                <td data-label="" class="recovery-actions">
+                  <div class="recovery-actions-inner">
+                    <mat-form-field class="reason-field">
+                      <mat-label>Reason</mat-label>
+                      <input matInput data-testid="admin-recovery-reason" [(ngModel)]="reasons[request.id]" />
+                    </mat-form-field>
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      data-testid="admin-recovery-generate"
+                      [disabled]="generating[request.id] || !canGenerate(request)"
+                      (click)="generate(request)">
+                      Generate reset link
+                    </button>
+                    <button
+                      mat-button
+                      data-testid="admin-recovery-close"
+                      [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
+                      (click)="markClosed(request)">
+                      Mark closed
+                    </button>
+                    @if (generated[request.id]; as result) {
+                      <div class="generated-result">
+                        <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
+                        <button mat-button data-testid="admin-recovery-copy" (click)="copyLink(result.link)">Copy</button>
+                        <span class="generated-emailed">
+                          {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; relay the link yourself.' }}
+                        </span>
+                      </div>
+                    }
+                    @if (errors[request.id]) {
+                      <div class="row-error">{{ errors[request.id] }}</div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </mat-card-content>
   </mat-card>
 
@@ -111,36 +142,70 @@
       <mat-card-title>Alert Recipients</mat-card-title>
       <mat-card-subtitle>Addresses that receive recovery alerts</mat-card-subtitle>
     </mat-card-header>
-    <mat-card-content>
-      <div class="recipient-list" data-testid="admin-recipients">
-        @for (recipient of recipients; track recipient) {
-          <div class="recipient-row">
-            <span>{{ recipient }}</span>
-            <button
-              mat-icon-button
-              color="warn"
-              data-testid="admin-recipient-remove"
-              [disabled]="recipientsBusy"
-              aria-label="Remove recipient"
-              (click)="removeRecipient(recipient)">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-        } @empty {
+    <mat-card-content data-testid="admin-recipients">
+      @if (recipientsLoading) {
+        <div class="admin-skeleton-rows" data-testid="admin-recipients-loading" aria-hidden="true">
+          @for (row of [1, 2]; track row) {
+            <span></span>
+          }
+        </div>
+      } @else if (recipientsLoadError) {
+        <app-load-error [message]="recipientsLoadError" (retry)="loadRecipients()" />
+      } @else {
+        @if (recipients.length === 0) {
           <p class="empty">No recipients configured.</p>
+        } @else {
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th aria-label="Actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (recipient of recipientPageData.items; track recipient) {
+                <tr class="recipient-row">
+                  <td data-label="Email">{{ recipient }}</td>
+                  <td data-label="" class="recipient-actions">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      data-testid="admin-recipient-remove"
+                      [disabled]="recipientsBusy"
+                      aria-label="Remove recipient"
+                      (click)="removeRecipient(recipient)">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          @if (recipientPageData.pageCount > 1) {
+            <div class="admin-pagination">
+              <span>{{ recipientPageData.total }} recipients</span>
+              <div class="pager">
+                <button mat-button type="button" [disabled]="recipientPageData.page === 1" (click)="goToRecipientPage(recipientPageData.page - 1)">Previous</button>
+                <span class="admin-muted">Page {{ recipientPageData.page }} of {{ recipientPageData.pageCount }}</span>
+                <button mat-button type="button" [disabled]="recipientPageData.page === recipientPageData.pageCount" (click)="goToRecipientPage(recipientPageData.page + 1)">Next</button>
+              </div>
+            </div>
+          }
         }
-      </div>
-      <div class="add-recipient">
-        <mat-form-field>
-          <mat-label>Add recipient</mat-label>
-          <input matInput type="email" data-testid="admin-recipient-email" [(ngModel)]="newRecipient" (keyup.enter)="addRecipient()" />
-        </mat-form-field>
-        <button mat-flat-button color="primary" data-testid="admin-recipient-add" [disabled]="recipientsBusy" (click)="addRecipient()">
-          Add
-        </button>
-      </div>
-      @if (recipientsError) {
-        <div class="row-error">{{ recipientsError }}</div>
+
+        <div class="add-recipient">
+          <mat-form-field>
+            <mat-label>Add recipient</mat-label>
+            <input matInput type="email" data-testid="admin-recipient-email" [(ngModel)]="newRecipient" (keyup.enter)="addRecipient()" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" data-testid="admin-recipient-add" [disabled]="recipientsBusy" (click)="addRecipient()">
+            Add
+          </button>
+        </div>
+        @if (recipientsError) {
+          <div class="row-error" role="alert">{{ recipientsError }}</div>
+        }
       }
     </mat-card-content>
   </mat-card>

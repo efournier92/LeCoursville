@@ -1,3 +1,5 @@
+@use 'src/app/styles/admin-data' as *;
+
 .upload-drop-zone {
   margin: 16px;
   padding: 32px;
@@ -51,14 +53,84 @@
 }
 
 .admin-album-grid {
-  padding: 16px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
 }
 
 .admin-album-card {
-  margin-bottom: 16px;
-  cursor: default;
+  margin: 0;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  mat-card-content {
+    padding: 8px 10px 4px;
+  }
+
+  mat-card-actions {
+    padding: 0 4px 4px;
+    min-height: 0;
+  }
+}
+
+.album-skeleton {
+  padding: 10px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  .skeleton-cover {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+
+  .skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+
+  .skeleton-line.short {
+    width: 45%;
+  }
+
+  .skeleton-cover,
+  .skeleton-line {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-muted) 25%,
+      var(--color-border) 50%,
+      var(--color-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: admin-shimmer 1.4s linear infinite;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .admin-album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-album-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .album-title {
+    font-size: 0.9rem;
+  }
+
+  .album-cover-placeholder {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .album-cover {

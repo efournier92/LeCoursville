@@ -29,6 +29,7 @@ import { ChatComponent } from "src/app/components/chat/chat.component";
 import { ChatEditComponent } from "src/app/components/chat-edit/chat-edit.component";
 import { ChatViewComponent } from "src/app/components/chat-view/chat-view.component";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
+import { ConfirmDialogComponent } from "src/app/components/confirm-dialog/confirm-dialog.component";
 import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
 import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
 import { ContactEditComponent } from "src/app/components/contacts/contact-edit/contact-edit.component";
@@ -89,6 +90,7 @@ import { AdminRecoveryComponent } from "./components/admin-recovery/admin-recove
         ChatEditComponent,
         ChatViewComponent,
         PromptModalComponent,
+        ConfirmDialogComponent,
         ContactCardComponent,
         ContactEditComponent,
         ContactViewComponent,

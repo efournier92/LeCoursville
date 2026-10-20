@@ -34,6 +34,7 @@ export type AdminPhotoAlbumUploadDialogResult =
 export class AdminPhotoAlbumUploadDialogComponent {
   title: string;
   isUploading = false;
+  touched = false;
 
   constructor(
     public dialogRef: MatDialogRef<AdminPhotoAlbumUploadDialogComponent, AdminPhotoAlbumUploadDialogResult>,
@@ -44,6 +45,14 @@ export class AdminPhotoAlbumUploadDialogComponent {
 
   isValid(): boolean {
     return !this.isUploading && !!this.title.trim();
+  }
+
+  showRequiredError(): boolean {
+    return this.touched && !this.title.trim();
+  }
+
+  onBlur(): void {
+    this.touched = true;
   }
 
   onCancel(): void {

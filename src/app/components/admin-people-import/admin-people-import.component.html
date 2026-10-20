@@ -9,7 +9,7 @@
         <span class="upload-text">Click to select CSV file</span>
         <span class="upload-hint">or drag and drop</span>
       </div>
-      <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" hidden />
+      <input #fileInput type="file" accept=".csv" data-testid="import-file" (change)="onFileSelected($event)" hidden />
       @if (selectedFileName) {
         <div class="file-info">
           <mat-icon>description</mat-icon>
@@ -18,6 +18,15 @@
       }
     </mat-card-content>
   </mat-card>
+
+  @if (importError) {
+    <div class="validation-section">
+      <app-load-error
+        [message]="importError"
+        (retry)="confirmImport()"
+        />
+    </div>
+  }
 
   @if (validationErrors.length > 0) {
     <div class="validation-section">
@@ -59,7 +68,7 @@
 
   @if (importPreview) {
     <div class="preview-section">
-      <mat-card class="preview-card">
+      <mat-card class="preview-card" [attr.aria-busy]="isImporting">
         <mat-card-header>
           <mat-card-title>Import Preview</mat-card-title>
         </mat-card-header>
@@ -91,67 +100,91 @@
               <h4>Parsed People</h4>
               <span class="count-badge">{{ parsedPeople.length }} records</span>
             </div>
-            <div class="table-wrapper">
-              <table class="preview-table">
-                <thead>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th class="col-id">ID</th>
+                  <th>First Given</th>
+                  <th>First Preferred</th>
+                  <th>Maiden</th>
+                  <th>Last</th>
+                  <th>Suffix</th>
+                  <th>Birthday</th>
+                  <th>Anniversary</th>
+                  <th>Spouse</th>
+                  <th>Gen</th>
+                  <th>Living</th>
+                  <th>Direct</th>
+                  <th>Street</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Zip</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (parsed of previewPageData.items; track parsed) {
                   <tr>
-                    <th class="col-id">ID</th>
-                    <th>First Given</th>
-                    <th>First Preferred</th>
-                    <th>Maiden</th>
-                    <th>Last</th>
-                    <th>Suffix</th>
-                    <th>Birthday</th>
-                    <th>Anniversary</th>
-                    <th>Spouse</th>
-                    <th>Gen</th>
-                    <th>Living</th>
-                    <th>Direct</th>
-                    <th>Street</th>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Zip</th>
+                    <td data-label="ID" class="mono id-cell">{{ parsed.person.id }}</td>
+                    <td data-label="First Given">{{ parsed.person.name.firstGiven || '-' }}</td>
+                    <td data-label="First Preferred">{{ parsed.person.name.firstPreferred || '-' }}</td>
+                    <td data-label="Maiden">{{ parsed.person.name.maiden || '-' }}</td>
+                    <td data-label="Last" class="bold">{{ parsed.person.name.last || '-' }}</td>
+                    <td data-label="Suffix">{{ parsed.person.name.suffix || '-' }}</td>
+                    <td data-label="Birthday" class="mono small">{{ formatBirthday(parsed.person.birthday) }}</td>
+                    <td data-label="Anniversary" class="mono small">{{ formatAnniversary(parsed.person.anniversaryDate) }}</td>
+                    <td data-label="Spouse" class="mono small">{{ parsed.person.spouseId || '-' }}</td>
+                    <td data-label="Gen" class="center">{{ parsed.person.generationNumber }}</td>
+                    <td data-label="Living" class="center">{{ parsed.person.isLiving ? 'Y' : 'N' }}</td>
+                    <td data-label="Direct" class="center">{{ parsed.person.directDescendent ? 'Y' : 'N' }}</td>
+                    <td data-label="Street">{{ getAddressStreet(parsed.person) }}</td>
+                    <td data-label="City">{{ getAddressCity(parsed.person) }}</td>
+                    <td data-label="State">{{ getAddressState(parsed.person) }}</td>
+                    <td data-label="Zip">{{ getAddressZip(parsed.person) }}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  @for (parsed of getPagedParsedPeople(); track parsed) {
-                    <tr>
-                      <td class="mono id-cell">{{ parsed.person.id }}</td>
-                      <td>{{ parsed.person.name.firstGiven || '-' }}</td>
-                      <td>{{ parsed.person.name.firstPreferred || '-' }}</td>
-                      <td>{{ parsed.person.name.maiden || '-' }}</td>
-                      <td class="bold">{{ parsed.person.name.last || '-' }}</td>
-                      <td>{{ parsed.person.name.suffix || '-' }}</td>
-                      <td class="mono small">{{ formatBirthday(parsed.person.birthday) }}</td>
-                      <td class="mono small">{{ formatAnniversary(parsed.person.anniversaryDate) }}</td>
-                      <td class="mono small">{{ parsed.person.spouseId || '-' }}</td>
-                      <td class="center">{{ parsed.person.generationNumber }}</td>
-                      <td class="center">{{ parsed.person.isLiving ? 'Y' : 'N' }}</td>
-                      <td class="center">{{ parsed.person.directDescendent ? 'Y' : 'N' }}</td>
-                      <td>{{ getAddressStreet(parsed.person) }}</td>
-                      <td>{{ getAddressCity(parsed.person) }}</td>
-                      <td>{{ getAddressState(parsed.person) }}</td>
-                      <td>{{ getAddressZip(parsed.person) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-              <mat-paginator
-                class="preview-paginator"
-                [length]="parsedPeople.length"
-                [pageSize]="previewPageSize"
-                [pageSizeOptions]="previewPageSizeOptions"
-                [pageIndex]="previewPageIndex"
-                (page)="onPreviewPage($event)"
-              ></mat-paginator>
-            </div>
+                }
+              </tbody>
+            </table>
+            @if (parsedPeople.length > previewPageSize) {
+              <div class="admin-pagination">
+                <span>{{ previewShowingRange }}</span>
+                <div class="pager admin-pager">
+                  <button mat-button type="button" [disabled]="previewPage <= 1" (click)="previousPreviewPage()">
+                    Prev
+                  </button>
+                  <button
+                    mat-button
+                    type="button"
+                    [disabled]="previewPage >= previewPageData.pageCount"
+                    (click)="nextPreviewPage()"
+                    >
+                    Next
+                  </button>
+                </div>
+              </div>
+            }
           </div>
+          @if (isImporting) {
+            <div class="import-progress" role="status" data-testid="import-progress">
+              Importing {{ parsedPeople.length }} people. Please wait.
+            </div>
+          }
           <div class="action-buttons">
-            <button mat-button (click)="parsedPeople = []; importPreview = null" [disabled]="isImporting">
+            <button
+              mat-button
+              data-testid="import-cancel"
+              (click)="cancelImport()"
+              [disabled]="isImporting"
+              >
               <mat-icon>close</mat-icon>
               Cancel
             </button>
-            <button mat-flat-button color="primary" (click)="confirmImport()" [disabled]="isImporting">
+            <button
+              mat-flat-button
+              color="primary"
+              data-testid="import-confirm"
+              (click)="confirmImport()"
+              [disabled]="isImporting"
+              >
               <mat-icon>check</mat-icon>
               {{ isImporting ? 'Importing...' : 'Confirm Import' }}
             </button>
@@ -159,6 +192,13 @@
         </mat-card-content>
       </mat-card>
     </div>
+  }
+
+  @if (hasParsedFile && !importPreview && parsedPeople.length === 0 && !importResult) {
+    <app-no-results-message
+      title="No people to import"
+      hint="The file didn't contain any valid rows."
+      />
   }
 
   @if (importResult) {

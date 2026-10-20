@@ -1,6 +1,10 @@
 <div class="admin-features-container">
   <app-page-toolbar title="Features"></app-page-toolbar>
 
+  <p class="admin-muted features-intro">
+    Choose what appears in the app. Toggles save immediately; the promoted route picks the page people land on after signing in.
+  </p>
+
   <mat-card class="promoted-route-card">
     <mat-card-header>
       <mat-card-title>Promoted Route</mat-card-title>
@@ -29,22 +33,37 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div class="feature-list">
-        @for (feature of featureDefs; track feature) {
-          <div class="feature-row">
-            <mat-checkbox
-              [checked]="isEnabled(feature.id)"
-              (change)="onToggle(feature.id, $event.checked)"
-              color="primary"
-              [attr.data-testid]="'feature-toggle-' + feature.id">
-            </mat-checkbox>
-            <span class="feature-label">{{ feature.label }}</span>
-            <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
-              {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
-            </span>
-          </div>
+      @if (loading) {
+        <div class="admin-skeleton-rows" data-testid="features-loading" aria-hidden="true">
+          @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track row) {
+            <span></span>
+          }
+        </div>
+      } @else if (loadError) {
+        <app-load-error [message]="loadError" (retry)="retry()" />
+      } @else {
+        @for (group of featureGroups; track group.label) {
+          <section class="feature-group">
+            <h3 class="feature-group-label">{{ group.label }}</h3>
+            <div class="feature-list">
+              @for (feature of group.features; track feature) {
+                <div class="feature-row">
+                  <mat-checkbox
+                    [checked]="isEnabled(feature.id)"
+                    (change)="onToggle(feature.id, $event.checked)"
+                    color="primary"
+                    [attr.data-testid]="'feature-toggle-' + feature.id">
+                  </mat-checkbox>
+                  <span class="feature-label">{{ feature.label }}</span>
+                  <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
+                    {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </section>
         }
-      </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>
