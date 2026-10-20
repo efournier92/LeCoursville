@@ -21,3 +21,14 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
 - Seed adds `staff@e2e.local` (admin, not super). E2E proves the grouped nav,
   the index redirect, the staff redirect, and a full direct-URL sweep.
 - Unit: 67 files, 231 tests green. Chromium: 106 tests green.
+
+## Phase 2: Admin Shell
+
+- Skip link (first tab stop, real focus move without a router navigation),
+  grouped sidebar with `aria-current`, `aria-busy` skeleton until flags load.
+- Mobile drawer: hidden from tab order when closed, focus moves to the first
+  link on open, Tab wraps inside the drawer, Escape closes and returns focus to
+  the toolbar toggle.
+- Shell height is `calc(100vh - 64px)` so only the content region scrolls.
+- 600px and 991.98px breakpoints verified; 44px rows at 390px.
+- Unit: 67 files, 234 tests green. Chromium admin spec: 15 tests green.

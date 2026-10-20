@@ -1,4 +1,7 @@
 <body class="app-container">
+  @if (shouldShowSidenavToggle()) {
+    <a class="app-skip-link" href="#admin-content" data-testid="admin-skip-link" (click)="onSkipToContent($event)">Skip to admin content</a>
+  }
   <mat-toolbar
     class="d-inline-flex mat-elevation-z8 justify-content-between"
     color="primary"
@@ -40,6 +43,10 @@
           @if (shouldShowSidenavToggle()) {
             <button
               mat-icon-button
+              data-testid="nav-menu-toggle"
+              aria-controls="admin-sidebar"
+              [attr.aria-expanded]="sidenavOpen$ | async"
+              aria-label="Open admin navigation"
               (click)="onMenuClick()"
               >
               <mat-icon>menu</mat-icon>

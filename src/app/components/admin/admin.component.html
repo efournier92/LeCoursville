@@ -1,23 +1,31 @@
 <div class="admin-layout">
-  <nav class="admin-sidebar" [class.admin-sidebar-open]="isSidenavOpen | async" aria-label="Admin sections" data-testid="admin-nav">
+  <nav class="admin-sidebar" id="admin-sidebar" [class.admin-sidebar-open]="sidenavOpen" [attr.aria-busy]="!isNavReady" aria-label="Admin sections" data-testid="admin-nav">
     <div class="sidebar-header">
       <a routerLink="/admin" class="logo-link">
         <h1>Admin</h1>
       </a>
     </div>
-    @for (group of navGroups; track group.name) {
-      <div class="sidebar-group" [attr.data-testid]="'admin-nav-group-' + group.name.toLowerCase()">
-        <p class="sidebar-group-label">{{ group.name }}</p>
-        <ul class="sidebar-nav">
-          @for (item of group.items; track item.key) {
-            <li>
-              <a [routerLink]="item.path" [attr.data-testid]="'admin-nav-link-' + item.key" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="closeSidenav()">
-                <mat-icon>{{ item.icon }}</mat-icon>
-                <span>{{ item.label }}</span>
-              </a>
-            </li>
-          }
-        </ul>
+    @if (isNavReady) {
+      @for (group of navGroups; track group.name) {
+        <div class="sidebar-group" [attr.data-testid]="'admin-nav-group-' + group.name.toLowerCase()">
+          <p class="sidebar-group-label">{{ group.name }}</p>
+          <ul class="sidebar-nav">
+            @for (item of group.items; track item.key) {
+              <li>
+                <a [routerLink]="item.path" [attr.data-testid]="'admin-nav-link-' + item.key" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="closeSidenav()">
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    } @else {
+      <div class="admin-nav-skeleton" aria-hidden="true">
+        @for (row of [0, 1, 2, 3, 4, 5, 6, 7]; track row) {
+          <div class="skeleton-row"></div>
+        }
       </div>
     }
     <div class="sidebar-footer">
@@ -25,11 +33,11 @@
     </div>
   </nav>
 
-  @if (isSidenavOpen | async) {
+  @if (sidenavOpen) {
     <div class="admin-sidebar-backdrop" (click)="closeSidenav()"></div>
   }
 
-  <main class="admin-content">
+  <main class="admin-content" id="admin-content" tabindex="-1">
     <router-outlet></router-outlet>
   </main>
 </div>

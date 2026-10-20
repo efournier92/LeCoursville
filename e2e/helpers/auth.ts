@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 export const E2E_USERS = {
   admin: { email: 'admin@e2e.local', password: 'E2e-pass-2026' },
@@ -18,9 +18,10 @@ export async function login(page: Page, who: 'admin' | 'user' | 'other' | 'spars
   await page.getByTestId('auth-email').fill(creds.email);
   await page.getByTestId('auth-password').fill(creds.password);
   await page.getByTestId('auth-submit').click();
-  // Successful sign-in navigates to the promoted route; wait for the toolbar
-  // links to appear (user record + flags must load before that).
-  await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+  // Successful sign-in navigates to the promoted route. Wait on the address
+  // bar, not the desktop-only toolbar links: at mobile widths those links are
+  // display:none, so the old wait hung on a phone-sized viewport.
+  await page.waitForFunction(() => location.pathname !== '/', null, { timeout: 30000 });
 }
 
 /** Signs out through the real UI (confirm dialog included). */

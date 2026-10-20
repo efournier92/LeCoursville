@@ -20,6 +20,10 @@ export class AppComponent implements OnInit {
   // firebase-auth restore time — that gap flashed a wrong Sign In link).
   authResolved = false;
 
+  get sidenavOpen$() {
+    return this.routingService.sidenavOpen$;
+  }
+
   constructor(
     private authService: AuthService,
     private versionService: VersionService,
@@ -86,6 +90,15 @@ export class AppComponent implements OnInit {
 
   onMenuClick(): void {
     this.routingService.toggleSidenav();
+  }
+
+  onSkipToContent(event: Event): void {
+    // A bare hash href would be treated as a router navigation; move focus
+    // and scroll directly instead.
+    event.preventDefault();
+    const target = document.getElementById('admin-content');
+    target?.focus();
+    target?.scrollIntoView({ block: 'start' });
   }
 
   shouldShowSidenavToggle(): boolean {

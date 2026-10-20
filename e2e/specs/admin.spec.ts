@@ -48,6 +48,52 @@ test.describe('admin', () => {
     await expect(page).toHaveURL(/\/admin\/users$/);
   });
 
+  test('desktop shell keeps one scroll container and shows the version', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toBeVisible();
+    await expect(page.getByTestId('nav-menu-toggle')).toBeHidden();
+    await expect(page.locator('.sidebar-footer .version')).toHaveText(/^v\d+\.\d+\.\d+/);
+    const overflow = await page.locator('.app-container').evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(overflow.scrollHeight).toBeLessThanOrEqual(overflow.clientHeight + 1);
+  });
+
+  test('skip link is the first tab stop and focuses the admin content', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(page.getByTestId('admin-skip-link')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#admin-content')).toBeFocused();
+  });
+
+  test('mobile drawer opens, traps focus, closes with Escape, and navigates', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const nav = page.getByTestId('admin-nav');
+    const toggle = page.getByTestId('nav-menu-toggle');
+    await expect(nav).not.toBeVisible();
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(nav).toBeVisible();
+    await expect(page.getByTestId('admin-nav-link-families')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.getByTestId('admin-nav-link-recovery')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(nav).not.toBeVisible();
+    await expect(toggle).toBeFocused();
+    await toggle.click();
+    await page.getByTestId('admin-nav-link-features').click();
+    await expect(page).toHaveURL(/\/admin\/features$/);
+    await expect(nav).not.toBeVisible();
+  });
+
   test('non-super admin is redirected out of admin', async ({ page }) => {
     await login(page, 'staff');
     await page.goto('/admin/users');

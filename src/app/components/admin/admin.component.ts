@@ -1,4 +1,5 @@
-import { Component, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
@@ -13,16 +14,20 @@ import { ADMIN_NAV_GROUPS, AdminNavGroup, AdminNavItem, visibleAdminNav } from '
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AdminComponent implements OnInit {
+export class AdminComponent implements OnInit, OnDestroy {
   user: User;
   version: string;
+  isNavReady = false;
   navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null);
+  sidenavOpen = false;
+  private sidenavSub: Subscription;
 
   constructor(
     private authService: AuthService,
     private versionService: VersionService,
     private routingService: RoutingService,
     private featureFlagsService: FeatureFlagsService,
+    private cdr: ChangeDetectorRef,
   ) { }
 
   ngOnInit(): void {
@@ -30,7 +35,13 @@ export class AdminComponent implements OnInit {
     this.setVersion();
     this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
       this.navGroups = this.buildNavGroups(flags);
+      this.isNavReady = true;
     });
+    this.sidenavSub = this.routingService.sidenavOpen$.subscribe(open => this.onSidenavChange(open));
+  }
+
+  ngOnDestroy(): void {
+    this.sidenavSub?.unsubscribe();
   }
 
   private buildNavGroups(flags: Record<string, { enabled?: boolean } | undefined> | null) {
@@ -62,10 +73,50 @@ export class AdminComponent implements OnInit {
     this.routingService.closeSidenav();
   }
 
+  private onSidenavChange(open: boolean): void {
+    this.sidenavOpen = open;
+    if (open && window.innerWidth < 992) {
+      // Apply the open class before focusing: a link inside a
+      // visibility:hidden drawer cannot take focus.
+      this.cdr.detectChanges();
+      document.querySelector<HTMLElement>('[data-testid^="admin-nav-link-"]')?.focus();
+    } else if (!open && document.activeElement?.closest('.admin-sidebar')) {
+      this.focusMenuToggle();
+    }
+  }
+
+  private focusMenuToggle(): void {
+    document.querySelector<HTMLElement>('[data-testid="nav-menu-toggle"]')?.focus();
+  }
+
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
+      const wasOpen = this.sidenavOpen;
       this.routingService.closeSidenav();
+      if (wasOpen) {
+        this.focusMenuToggle();
+      }
+      return;
+    }
+    if (event.key !== 'Tab' || !this.sidenavOpen || window.innerWidth >= 992) {
+      return;
+    }
+    if (!(event.target as HTMLElement)?.closest('.admin-sidebar')) {
+      return;
+    }
+    const links = Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="admin-nav-link-"]'));
+    if (!links.length) {
+      return;
+    }
+    const first = links[0];
+    const last = links[links.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   }
 }

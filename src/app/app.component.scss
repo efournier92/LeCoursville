@@ -11,6 +11,26 @@
   scrollbar-gutter: stable;
 }
 
+.app-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 1100;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-brand-primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+
+  &:focus-visible {
+    top: 8px;
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
 .spacer {
   flex: 1 1 auto;
 }
