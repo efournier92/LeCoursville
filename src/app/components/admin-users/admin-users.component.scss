@@ -3,6 +3,10 @@
 .admin-users-component-container {
   flex: 1;
   min-width: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 24px;
 }
 
 .admin-user-card-container {
@@ -13,6 +17,22 @@
 
   > * {
     min-width: 0;
+  }
+}
+
+// Label and direction toggle read as one control: let both shrink to their
+// content so the caret sits beside the label instead of at the far edge.
+.admin-users-sort-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0;
+
+  button {
+    min-width: 0;
+  }
+
+  button + button {
+    padding: 0 4px;
   }
 }
 

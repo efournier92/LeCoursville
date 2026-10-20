@@ -3,9 +3,6 @@
     class="user-card mat-elevation-z6"
     >
     <form>
-      @if (isAdminMode) {
-        <div class="user-edit-id-top">{{ userOnCard.id }}</div>
-      }
       <mat-form-field class="user-edit-form-field w-100">
         <mat-label>Name</mat-label>
         <input
@@ -59,12 +56,15 @@
           </mat-checkbox>
         </div>
       }
+      @if (isAdminMode) {
+        <div class="user-edit-id-caption">{{ userOnCard.id }}</div>
+      }
     </form>
     <mat-card-footer class="user-card-footer-actions m-0 mt-4">
       @if (!isAdminMode) {
         <button
-          mat-flat-button
-          class="admin-form-action-button admin-form-action-button-upload col m-2"
+          mat-button
+          class="admin-form-action-button admin-form-action-button-cancel col m-2"
           color="accent"
           (click)="onCancelEdit()"
           >
@@ -81,7 +81,7 @@
       </button>
       @if (userSignedIn?.roles?.super) {
         <button
-          mat-flat-button
+          mat-stroked-button
           class="admin-form-action-button admin-form-action-button-delete col m-2"
           color="warn"
           (click)="onDeleteUser(userOnCard)"

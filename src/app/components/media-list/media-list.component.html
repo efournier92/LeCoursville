@@ -1,6 +1,14 @@
-<div class="media-list-container row">
+<div class="media-list-container row" [class.media-list-admin]="isAdminMode">
   @if (isAdminMode) {
     <app-page-toolbar>
+      <div page-toolbar-left class="media-list-heading">
+        <span class="media-list-title">Library</span>
+        @if (status === 'ready') {
+          <span class="media-list-count">
+            {{ filteredMedia?.length || 0 }} item{{ (filteredMedia?.length || 0) === 1 ? '' : 's' }}
+          </span>
+        }
+      </div>
       <mat-form-field
         class="media-list-filters-input"
         appearance="outline"

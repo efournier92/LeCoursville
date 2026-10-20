@@ -1,8 +1,8 @@
 <div class="admin-features-container">
   <app-page-toolbar title="Features"></app-page-toolbar>
 
-  <p class="admin-muted features-intro">
-    Choose what appears in the app. Toggles save immediately; the promoted route picks the page people land on after signing in.
+  <p class="admin-intro features-intro">
+    Choose what appears in the app. Changes save immediately; the promoted route picks the page people land on after signing in.
   </p>
 
   <mat-card class="promoted-route-card">
@@ -55,9 +55,6 @@
                     [attr.data-testid]="'feature-toggle-' + feature.id">
                   </mat-checkbox>
                   <span class="feature-label">{{ feature.label }}</span>
-                  <span class="feature-status" [class.enabled]="isEnabled(feature.id)" [class.disabled]="!isEnabled(feature.id)">
-                    {{ isEnabled(feature.id) ? 'ON' : 'OFF' }}
-                  </span>
                 </div>
               }
             </div>

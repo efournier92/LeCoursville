@@ -34,25 +34,12 @@
   text-overflow: ellipsis;
 }
 
-.user-edit-id-subtitle {
-  width: 100%;
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.5);
-  font-style: italic;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-edit-id-top {
-  text-align: left;
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.5);
-  font-style: italic;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 8px;
+.user-edit-id-caption {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-style: normal;
+  color: var(--color-ink-3);
+  overflow-wrap: anywhere;
 }
 
 .user-roles-container {
@@ -71,6 +58,23 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.user-card-footer-actions .admin-form-action-button-cancel {
+  --mat-button-text-label-text-color: var(--color-accent-strong);
+  --mat-button-text-state-layer-color: var(--color-accent-strong);
+  color: var(--color-accent-strong);
+}
+
+.user-card-footer-actions .admin-form-action-button-delete {
+  --mat-button-outlined-label-text-color: var(--color-error);
+  --mat-button-outlined-outline-color: var(--color-error);
+  --mat-button-outlined-state-layer-color: var(--color-error);
+  color: var(--color-error);
 }
 
 .user-card-footer-actions {

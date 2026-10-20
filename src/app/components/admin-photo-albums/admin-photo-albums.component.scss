@@ -1,11 +1,11 @@
 @use 'src/app/styles/admin-data' as *;
 
 .upload-drop-zone {
-  margin: 16px;
+  margin: 0 0 16px;
   padding: 32px;
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-card);
-  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-ink-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,9 +20,10 @@
 }
 
 .drop-zone-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
+  padding: 12px;
+  box-sizing: content-box;
   color: var(--color-brand-primary);
 }
 
@@ -32,7 +33,7 @@
 }
 
 .active-uploads {
-  margin: 16px;
+  margin: 0 0 16px;
   padding: 16px;
   background: var(--color-surface);
   border-radius: var(--radius-card);
@@ -65,6 +66,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 
   mat-card-content {
     padding: 8px 10px 4px;
@@ -167,11 +171,12 @@
 }
 
 .album-edit-form-section {
-  margin: 16px;
+  margin: 0 0 16px;
 }
 
 .album-edit-card {
   padding: 16px;
+  background: var(--color-surface);
 
   mat-form-field {
     width: 100%;
@@ -179,8 +184,19 @@
   }
 }
 
+// Fields sit on white sheets, so they need their own white fill and hairline to
+// stay readable against the toolbar frost and card surface.
+:host ::ng-deep .mat-mdc-form-field {
+  --mat-form-field-outlined-outline-color: var(--color-border);
+
+  .mat-mdc-text-field-wrapper {
+    background: var(--color-surface);
+    border-radius: var(--radius-input);
+  }
+}
+
 .album-photos-panel {
-  margin: 16px;
+  margin: 0 0 16px;
   padding: 16px;
   background: var(--color-surface);
   border-radius: var(--radius-card);
@@ -218,6 +234,9 @@
 .admin-photo-card {
   margin-bottom: 16px;
   cursor: default;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
 
   .photo-card-image-wrap {
     aspect-ratio: 1 / 1;
@@ -253,6 +272,14 @@
   .photo-edit-field {
     flex: 1;
     min-width: 140px;
+    --mat-form-field-container-height: 44px;
+    --mat-form-field-container-vertical-padding: 10px;
+    --mat-form-field-outlined-outline-color: var(--color-border);
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background: var(--color-surface);
+      border-radius: var(--radius-input);
+    }
   }
 
   .photo-edit-field--full {
@@ -268,5 +295,40 @@
 
   .year-field {
     max-width: 120px;
+  }
+}
+
+.album-delete-btn {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.admin-photo-albums-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  // Search takes its own row; secondary actions share one 8px-gap row and the
+  // primary action closes the stack full width.
+  :host .albums-toolbar ::ng-deep .page-toolbar-content {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .album-search-field {
+    flex: 1 0 100%;
+  }
+
+  .album-upload-btn {
+    order: 3;
+    flex: 1 0 100%;
   }
 }

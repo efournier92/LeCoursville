@@ -8,7 +8,7 @@
     }
   </app-page-toolbar>
 
-  <p class="admin-muted calendars-intro">
+  <p class="admin-intro calendars-intro">
     Map each year to the calendar PDF that visitors download. Add or edit a year below.
   </p>
 
@@ -40,7 +40,7 @@
             @for (calendar of pageData.items; track calendar.id) {
               <tr>
                 <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
-                <td data-label="URL" class="calendar-url">{{ calendar.url }}</td>
+                <td data-label="URL" class="calendar-url-cell calendar-url">{{ calendar.url }}</td>
                 <td data-label="" class="calendar-actions">
                   <button mat-icon-button color="primary" aria-label="Edit" matTooltip="Edit" (click)="onEdit(calendar)">
                     <mat-icon>edit</mat-icon>

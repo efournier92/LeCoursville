@@ -1,3 +1,5 @@
+@use 'src/app/styles/admin-data' as *;
+
 .media-upload-radio-group {
   display: flex;
   flex-direction: column;
@@ -45,6 +47,13 @@
   width: 100%;
 }
 
+.admin-media-component-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 24px;
+}
+
 :host {
   display: block;
   overflow-x: hidden;
@@ -55,9 +64,12 @@
   overflow: hidden;
 
   // Dense tab header: 40px labels, tight padding, no extra divider gap.
+  // The strip is the form card's own header: full content width, surface fill,
+  // flush against the card below (the panel content contributes no gap).
   ::ng-deep .mat-mdc-tab-header {
     --mat-tab-header-label-text-size: 0.85rem;
     --mat-tab-header-label-text-weight: 600;
+    background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
   }
 
@@ -67,13 +79,13 @@
   }
 
   ::ng-deep .mat-mdc-tab-body-content {
-    padding-top: 8px;
+    padding-top: 0;
   }
 }
 
 @media (max-width: 600px) {
   .admin-media-component-container {
-    padding: 0;
+    padding: 0 0 24px;
     overflow-x: hidden;
   }
 

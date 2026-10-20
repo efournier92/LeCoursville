@@ -1,29 +1,38 @@
 @use 'src/app/styles/admin-data' as *;
 
 .admin-features-container {
-  padding: 20px;
-  max-width: 600px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding-bottom: 24px;
 }
 
-.features-intro {
-  margin: 0 0 16px;
-}
-
-.promoted-route-card {
-  margin-bottom: 24px;
+.promoted-route-card,
+.features-card {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 
   mat-card-header {
     margin-bottom: 16px;
   }
 
   mat-card-title {
-    font-size: 20px;
-    font-weight: 500;
+    color: var(--color-ink);
   }
 
   mat-card-subtitle {
+    font-size: 0.875rem;
+    font-weight: 400;
     color: var(--color-ink-2);
+  }
+}
+
+.promoted-route-card {
+  margin-bottom: 24px;
+
+  mat-card-title {
+    font-size: 20px;
+    font-weight: 600;
   }
 
   .promoted-route-input {
@@ -33,17 +42,9 @@
 }
 
 .features-card {
-  mat-card-header {
-    margin-bottom: 16px;
-  }
-
   mat-card-title {
-    font-size: 24px;
-    font-weight: 500;
-  }
-
-  mat-card-subtitle {
-    color: var(--color-ink-2);
+    font-size: 20px;
+    font-weight: 600;
   }
 }
 
@@ -91,26 +92,5 @@
     margin-left: 16px;
     font-size: 15px;
     font-weight: 500;
-  }
-
-  .feature-status {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    min-width: 40px;
-    text-align: center;
-
-    &.enabled {
-      background-color: rgba(45, 90, 39, 0.12);
-      color: var(--color-brand-primary);
-    }
-
-    &.disabled {
-      background-color: rgba(179, 38, 30, 0.10);
-      color: var(--color-error);
-    }
   }
 }

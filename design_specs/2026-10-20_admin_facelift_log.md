@@ -48,3 +48,12 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
   `admin-system.spec.ts`.
 - `account-recovery.spec.ts` updated for the new remove-recipient confirmation.
 - Unit: 76 files, 304 tests green. Chromium full suite: 122 tests green.
+
+## Phase 4: Visual Critique Loop
+
+- Three critique rounds plus a targeted fix-verification pass over full-page
+  renders at 1440x900 and 390x844.
+- Final verdict: CONVERGED, no high-severity findings; four leftover mediums
+  fixed and re-verified.
+- Ledger: `design_specs/2026-10-20_admin_facelift_critique.md`.
+- Final render set: `/tmp/af-shots6/` (not committed).

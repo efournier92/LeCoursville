@@ -6,6 +6,15 @@
   color: var(--color-ink-2);
 }
 
+// One-line helper directly under a page toolbar; never body-weight or muted-size.
+.admin-intro {
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;

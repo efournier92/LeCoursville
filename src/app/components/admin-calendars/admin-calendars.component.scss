@@ -1,17 +1,15 @@
 @use 'src/app/styles/admin-data' as *;
 
 .admin-calendars-container {
-  padding: 24px;
-  max-width: 900px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-}
-
-.calendars-intro {
-  margin: 0 0 12px;
+  padding-bottom: 24px;
 }
 
 .calendars-card {
   border-radius: var(--radius-card);
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
 
   mat-card-content {
@@ -41,12 +39,25 @@
   white-space: nowrap;
 }
 
+// Below the mobile card breakpoint the URL gets its own full-width line.
+.admin-table td.calendar-url-cell {
+  @media (max-width: 600px) {
+    display: block;
+
+    &::before {
+      display: block;
+      margin-bottom: 2px;
+    }
+  }
+}
+
 .form-section {
   margin-top: 24px;
 
   .form-card {
     border-radius: var(--radius-sm);
-    background: var(--color-surface-muted);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
 
     mat-card-content {
       padding: 24px;
@@ -88,10 +99,6 @@
 }
 
 @media (max-width: 600px) {
-  .admin-calendars-container {
-    padding: 12px;
-  }
-
   .calendars-card mat-card-content {
     padding: 12px 16px 16px;
   }
@@ -100,6 +107,7 @@
     max-width: 100%;
     white-space: normal;
     overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .calendar-actions {

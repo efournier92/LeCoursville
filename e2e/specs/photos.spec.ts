@@ -50,10 +50,15 @@ test.describe('photos', () => {
     await expect(page.getByText('E2E Album One').first()).toBeVisible();
     const imgs = page.locator('.photo-tile img');
     await expect(imgs).toHaveCount(2);
-    const widths = await imgs.evaluateAll((els) => els.map((e) => (e as HTMLImageElement).naturalWidth));
-    for (const w of widths) {
-      expect(w).toBeGreaterThan(0);
-    }
+    // Images can still be decoding when they become visible; poll the decoded
+    // width instead of sampling once.
+    await expect
+      .poll(async () =>
+        (await imgs.evaluateAll((els) => els.map((e) => (e as HTMLImageElement).naturalWidth))).every(
+          (w) => w > 0,
+        ),
+      )
+      .toBe(true);
   });
 
   test('slideshow renders and next/prev advance the image', async ({ page }) => {

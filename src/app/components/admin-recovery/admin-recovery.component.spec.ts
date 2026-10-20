@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Observable, of, Subject, throwError } from 'rxjs';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
-import { AdminRecoveryComponent } from './admin-recovery.component';
+import { AdminRecoveryComponent, formatAbsoluteTimestamp } from './admin-recovery.component';
 import { CloudFunctionsService } from 'src/app/services/cloud-functions.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
@@ -94,6 +94,17 @@ describe('AdminRecoveryComponent', () => {
 
     expect(fixture.nativeElement.querySelectorAll('.recovery-row').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain(request.email);
+  });
+
+  it('formats absolute timestamps as YYYY-MM-DD HH:mm', () => {
+    const timestamp = new Date(2026, 0, 2, 3, 4, 5).getTime();
+
+    expect(formatAbsoluteTimestamp(timestamp)).toBe('2026-01-02 03:04');
+    expect(component.formatTimestamp(timestamp)).toBe('2026-01-02 03:04');
+  });
+
+  it('renders an empty string for a missing timestamp', () => {
+    expect(formatAbsoluteTimestamp(0)).toBe('');
   });
 
   it('does not remove a recipient when cancelled', async () => {

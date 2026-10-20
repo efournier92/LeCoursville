@@ -13,8 +13,39 @@
   gap: 12px;
 }
 
+// Admin media surfaces share the page content edge on desktop: Bootstrap's row
+// gutters would inset the list 24px from the upload card above it.
+@media (min-width: 576px) {
+  .media-list-container.media-list-admin {
+    padding: 0;
+  }
+
+  .media-list-admin > * {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .media-list-row {
   gap: 12px;
+}
+
+.media-list-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.media-list-title {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.media-list-count {
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
 }
 
 @media (max-width: 575.98px) {

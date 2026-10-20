@@ -1,6 +1,6 @@
 @if (user?.roles?.admin) {
   <div
-    class="w-100 d-flex flex-column align-items-center"
+    class="w-100 d-flex flex-column"
     >
     <mat-card class="w-100 mat-elevation-z6">
       <form class="admin-media-upload-upload-form">
@@ -23,7 +23,7 @@
             />
         </mat-form-field>
         <mat-form-field class="admin-upload-input">
-          <mat-label class="optional-field">Date</mat-label>
+          <mat-label>Date</mat-label>
           <input
             type="text"
             matInput
@@ -32,7 +32,7 @@
             />
         </mat-form-field>
         <mat-form-field class="admin-upload-input">
-          <mat-label class="optional-field">ID</mat-label>
+          <mat-label>ID</mat-label>
           <input
             type="text"
             matInput
@@ -66,8 +66,7 @@
               }
             </button>
             <button
-              mat-flat-button
-              color="accent"
+              mat-stroked-button
               class="admin-form-action-button admin-form-action-button-cancel w-100"
               (click)="onCancelSelectedMedia(video)"
               >
@@ -75,8 +74,7 @@
             </button>
             @if (video.id) {
               <button
-                mat-flat-button
-                color="warn"
+                mat-stroked-button
                 class="admin-form-action-button admin-form-action-button-delete w-100"
                 (click)="onDeleteSelectedMedia(video)"
                 >

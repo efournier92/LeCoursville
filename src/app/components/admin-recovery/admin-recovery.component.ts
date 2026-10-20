@@ -58,6 +58,17 @@ const ACTIVITY_ACTIONS = [
 ];
 const ALERT_ACTIVITY_TYPES = ['recovery_request', 'rate_limit_breach'];
 
+/** Absolute timestamps read `YYYY-MM-DD HH:mm` so audit and activity align. */
+export function formatAbsoluteTimestamp(createdAt: number): string {
+  if (!createdAt) {
+    return '';
+  }
+  const date = new Date(createdAt);
+  const pad = (value: number): string => String(value).padStart(2, '0');
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${day} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 interface GeneratedResult {
   link: string;
   emailed: boolean;
@@ -336,7 +347,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   }
 
   formatTimestamp(createdAt: number): string {
-    return createdAt ? new Date(createdAt).toLocaleString() : '';
+    return formatAbsoluteTimestamp(createdAt);
   }
 
   auditActor(entry: RecoveryAuditEntry): string {

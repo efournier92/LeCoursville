@@ -1,6 +1,12 @@
 .album-title-field {
   width: 100%;
   min-width: 320px;
+  --mat-form-field-outlined-outline-color: var(--color-border);
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background: var(--color-surface);
+    border-radius: var(--radius-input);
+  }
 }
 
 .upload-dialog-summary {
