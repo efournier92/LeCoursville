@@ -10,6 +10,9 @@ import { Page } from '@playwright/test';
  *    iframe teardown) — not app bugs.
  *  - drive.google.com failures: the seeded video entry renders a Drive iframe
  *    shell; the gate is offline and aborts those on purpose (video.spec).
+ *  - Auth emulator host (:9099): the invalid/used reset-code path returns a 400
+ *    from the emulator, which the SDK logs as a console error; expected, and
+ *    scoping to the emulator host keeps application errors visible.
  */
 
 export interface ConsoleCollector {
@@ -23,6 +26,7 @@ const ALLOWLIST = [
   /ERR_ABORTED/,
   /drive\.google\.com/,
   /net::/,
+  /(?:127\.0\.0\.1|localhost):9099\//,
 ];
 
 export function isAllowed(message: string): boolean {
@@ -34,7 +38,8 @@ export function collectConsoleErrors(page: Page): ConsoleCollector {
 
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
-      errors.push(`console.error: ${msg.text()}`);
+      const url = msg.location()?.url;
+      errors.push(url ? `console.error: ${msg.text()} @ ${url}` : `console.error: ${msg.text()}`);
     }
   });
   page.on('pageerror', (err) => {

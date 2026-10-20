@@ -3,20 +3,25 @@
  * E2E seed: resets and populates the Firebase Emulator Suite with
  * deterministic data. Runs INSIDE `firebase emulators:exec` (all emulators up).
  *
- * Zero runtime dependencies: uses global fetch + Node Buffer only.
+ * RTDB and Auth writes go through the Admin SDK, which bypasses security
+ * rules (the emulator now enforces database.rules.json). The Admin SDK reads
+ * the emulator hosts from the environment `firebase emulators:exec` sets.
  *
  * Usage: node scripts/e2e/seed.mjs
  */
 
-const AUTH_PORT = 9099;
-const DB_PORT = 9000;
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+// Resolve the Admin SDK from the functions package so no root dependency is added.
+const admin = require('../../functions/node_modules/firebase-admin');
+
 const STORAGE_PORT = 9199;
 const BUCKET = 'lecoursville-dev.appspot.com';
-// The app's RTDB SDK connects with the namespace taken from the
-// firebaseConfig.databaseURL host (lecoursville-dev-default-rtdb). The
-// emulator keeps namespaces separate, so writes MUST target that same
-// namespace or the app reads an empty database.
-const DB = `http://localhost:${DB_PORT}/.json?ns=lecoursville-dev-default-rtdb`;
+
+admin.initializeApp({
+  projectId: 'lecoursville-dev',
+  databaseURL: 'https://lecoursville-dev-default-rtdb.firebaseio.com',
+});
 
 const PASSWORD = 'E2e-pass-2026';
 
@@ -34,45 +39,14 @@ const FEATURE_IDS = [
   'photos', 'enablePhotoAlbums', 'expressions', 'chat',
 ];
 
-async function fetchJson(url, options = {}, errorLabel = url) {
-  const res = await fetch(url, options);
-  if (!res.ok) {
-    let body = '';
-    try { body = await res.text(); } catch {}
-    throw new Error(`${errorLabel} -> HTTP ${res.status}: ${body.slice(0, 300)}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-}
-
-async function signUpOrIn(email) {
-  const body = { email, password: PASSWORD, returnSecureToken: true };
-  // The auth emulator REST endpoint requires a key query param; any value works.
-  const base = `http://localhost:${AUTH_PORT}/identitytoolkit.googleapis.com/v1`;
+async function ensureUser(email, name) {
   try {
-    const data = await fetchJson(
-      `${base}/accounts:signUp?key=emulator`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      },
-      `signUp ${email}`,
-    );
-    return data.localId;
+    const user = await admin.auth().createUser({ email, password: PASSWORD, displayName: name });
+    return user.uid;
   } catch (err) {
-    // EMAIL_EXISTS -> fetch the existing localId via signInWithPassword.
-    if (String(err.message).includes('EMAIL_EXISTS')) {
-      const data = await fetchJson(
-        `${base}/accounts:signInWithPassword?key=emulator`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        },
-        `signIn ${email}`,
-      );
-      return data.localId;
+    if (err.code === 'auth/email-already-exists') {
+      const user = await admin.auth().getUserByEmail(email);
+      return user.uid;
     }
     throw err;
   }
@@ -141,14 +115,14 @@ async function main() {
   const startedAt = Date.now();
   const out = [];
 
-  // 1. Reset RTDB.
-  await fetchJson(DB, { method: 'DELETE' }, 'RTDB reset');
+  // 1. Reset RTDB (Admin SDK bypasses rules; clears server-only nodes too).
+  await admin.database().ref().set(null);
   out.push('RTDB reset');
 
   // 2. Auth users.
   const localIds = {};
   for (const u of USERS) {
-    localIds[u.email] = await signUpOrIn(u.email);
+    localIds[u.email] = await ensureUser(u.email, u.name);
   }
   out.push(`auth users: ${USERS.length}`);
 
@@ -328,6 +302,10 @@ async function main() {
     },
     features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: id !== 'chat', updatedAt: now }])),
     promotedRoute: { route: '/calendar', updatedAt: now },
+    config: {
+      // RTDB keys cannot contain ".", so recipients are array values, not keys.
+      adminAlertRecipients: ['admin@e2e.local'],
+    },
     contacts: {
       'contact-1': { id: 'contact-1', name: 'Legacy Contact One', addresses: [], family: '', emails: [], phones: [], isEditable: true },
       'contact-2': { id: 'contact-2', name: 'Legacy Contact Two', addresses: [], family: '', emails: [], phones: [], isEditable: true },
@@ -363,11 +341,8 @@ async function main() {
     },
   };
 
-  await fetchJson(DB, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tree),
-  }, 'seed tree PUT');
+  // JSON round-trip keeps Date values as the ISO strings the old REST PUT wrote.
+  await admin.database().ref().set(JSON.parse(JSON.stringify(tree)));
   out.push('seed tree PUT');
 
   // 4. Hosting fixtures (the hosting emulator serves dist/lecoursville/browser).
@@ -380,28 +355,38 @@ async function main() {
   fs.writeFileSync(path.join(fixtureDir, 'fixture.pdf'), pdfBytes());
   out.push('hosting fixtures: fixture.png, fixture.wav, fixture.pdf');
 
-  // 5. Storage uploads (photo fixtures, 2 per album).
-  for (let i = 1; i <= 2; i++) {
-    for (let j = 1; j <= 2; j++) {
-      const name = `photos%2Falbum-${i}%2Fphoto${j}.png`;
-      const url = `http://localhost:${STORAGE_PORT}/v0/b/${BUCKET}/o?uploadType=media&name=${name}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'image/png' },
-        body: pngBytes(),
-      });
-      if (!res.ok) {
-        throw new Error(`storage upload ${name} -> HTTP ${res.status}`);
+  // 5. Storage uploads (photo fixtures, 2 per album). The storage emulator is
+  // only present when the caller's `--only` list includes it; skip otherwise so
+  // an RTDB-only seed run does not fail on an unreachable port.
+  if (process.env.FIREBASE_STORAGE_EMULATOR_HOST) {
+    for (let i = 1; i <= 2; i++) {
+      for (let j = 1; j <= 2; j++) {
+        const name = `photos%2Falbum-${i}%2Fphoto${j}.png`;
+        const url = `http://localhost:${STORAGE_PORT}/v0/b/${BUCKET}/o?uploadType=media&name=${name}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/png' },
+          body: pngBytes(),
+        });
+        if (!res.ok) {
+          throw new Error(`storage upload ${name} -> HTTP ${res.status}`);
+        }
       }
     }
+    out.push('storage uploads: 4 photos');
+  } else {
+    out.push('storage uploads: skipped (storage emulator not running)');
   }
-  out.push('storage uploads: 4 photos');
 
   const elapsed = Date.now() - startedAt;
   console.log(`[seed] OK in ${elapsed}ms`);
   console.log(`[seed] users: ${USERS.map(u => u.email).join(', ')}`);
   console.log(`[seed] nodes: ${Object.keys(tree).join(', ')}`);
   out.forEach(l => console.log(`[seed] ${l}`));
+
+  // Close the Admin SDK's RTDB connection so this process can exit; otherwise
+  // the open socket keeps the event loop alive and `emulators:exec` hangs.
+  await admin.app().delete();
 }
 
 main().catch((err) => {

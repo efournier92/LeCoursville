@@ -1,5 +1,6 @@
 import { test, expect, Page } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import type { Locator } from '@playwright/test';
 
 // Per-route content selectors come straight from each component template.
@@ -20,25 +21,6 @@ const ROUTES: { route: string; url?: RegExp; content: (page: Page) => Locator }[
     content: (p) => p.locator('.disabled-card').getByText('Feature Disabled'),
   },
 ];
-
-const RTDB_BASE = 'http://localhost:9000';
-const RTDB_NS = 'lecoursville-dev-default-rtdb';
-const rtdbUrl = (path: string) => `${RTDB_BASE}/${path}.json?ns=${RTDB_NS}`;
-
-async function rtdbGet(path: string): Promise<unknown> {
-  const res = await fetch(rtdbUrl(path));
-  if (!res.ok) throw new Error(`rtdb GET ${path} -> ${res.status}`);
-  return res.json();
-}
-
-async function rtdbPut(path: string, value: unknown): Promise<void> {
-  const res = await fetch(rtdbUrl(path), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(value ?? null),
-  });
-  if (!res.ok) throw new Error(`rtdb PUT ${path} -> ${res.status}`);
-}
 
 test.describe('loading contract', () => {
   test.afterEach(async ({ collector }) => {
@@ -77,8 +59,8 @@ test.describe('loading contract', () => {
     // so a sparse login alone cannot see an empty page: the empty dataset is
     // induced by nulling the global nodes and restored in finally (workers=1,
     // so no concurrent spec can observe the gap).
-    const people = await rtdbGet('people');
-    const albums = await rtdbGet('photoAlbums');
+    const people = await readDb('people');
+    const albums = await readDb('photoAlbums');
     try {
       await login(page, 'sparse');
       // Warm both routes with data first: contacts skips the service's empty
@@ -86,18 +68,18 @@ test.describe('loading contract', () => {
       // by design. A warm stream re-emits [] and flips to the empty-state.
       await page.goto('/contacts');
       await expect(page.locator('.contacts-grid')).toBeVisible();
-      await rtdbPut('people', null);
+      await deleteDb('people');
       await expect(page.getByText('No contacts yet')).toBeVisible();
       await expect(page.locator('.contacts-skeleton-grid')).toHaveCount(0);
 
       await page.goto('/photos');
       await expect(page.locator('.album-tile-title', { hasText: 'E2E Album One' })).toBeVisible();
-      await rtdbPut('photoAlbums', null);
+      await deleteDb('photoAlbums');
       await expect(page.getByText('No albums yet')).toBeVisible();
       await expect(page.getByTestId('albums-skeleton')).toHaveCount(0);
     } finally {
-      await rtdbPut('people', people);
-      await rtdbPut('photoAlbums', albums);
+      await writeDb('people', people);
+      await writeDb('photoAlbums', albums);
     }
   });
 

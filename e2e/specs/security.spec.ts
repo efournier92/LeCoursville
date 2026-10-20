@@ -1,6 +1,25 @@
 import { test, expect } from '../helpers/fixture';
-import { login, logout } from '../helpers/auth';
+import { createHash } from 'crypto';
+import { login, logout, E2E_USERS } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
+import { deleteDb, findOutboundEmails, readDb, writeDb } from '../helpers/admin-db';
+
+// Matches environment.e2e.ts; the emulator accepts it directly.
+const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
+
+/** Signs in over the emulator REST API and returns the ID token for callable auth. */
+async function idToken(email: string, password: string): Promise<string> {
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, returnSecureToken: true }),
+    },
+  );
+  const body = await res.json();
+  return body.idToken as string;
+}
 
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
@@ -106,5 +125,171 @@ test.describe('security', () => {
       (u) => !u.includes('drive.google.com') && !u.includes('apis.google.com'),
     );
     expect(unexpected).toEqual([]);
+  });
+
+  test('no enumeration: reset banner is identical for known and unknown emails', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('auth-email').fill('user@e2e.local');
+    await page.getByTestId('auth-forgot').click();
+    const knownBanner = page.getByTestId('auth-reset-info');
+    await expect(knownBanner).toBeVisible();
+    const knownText = ((await knownBanner.textContent()) ?? '').trim();
+    await expect(page.getByTestId('auth-error')).toHaveCount(0);
+
+    await page.goto('/');
+    await page.getByTestId('auth-email').fill('nobody-security-e2e@e2e.local');
+    await page.getByTestId('auth-forgot').click();
+    const unknownBanner = page.getByTestId('auth-reset-info');
+    await expect(unknownBanner).toBeVisible();
+    const unknownText = ((await unknownBanner.textContent()) ?? '').trim();
+    await expect(page.getByTestId('auth-error')).toHaveCount(0);
+
+    expect(unknownText).toBe(knownText);
+
+    for (const email of ['user@e2e.local', 'nobody-security-e2e@e2e.local']) {
+      for (const mail of await findOutboundEmails('password_reset', { to: email })) {
+        await deleteDb(`outboundEmails/${mail.key}`);
+      }
+    }
+  });
+
+  test('server-only nodes reject unauthenticated RTDB reads', async () => {
+    for (const node of ['recoveryRequests', 'adminAlerts']) {
+      const res = await fetch(`http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb`);
+      expect(res.status).not.toBe(200);
+    }
+  });
+
+  test('rules: an authenticated user cannot rewrite their own roles/user', async () => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const uid = Object.entries(users).find(
+      ([, value]) => value?.email === E2E_USERS.user.email,
+    )?.[0];
+    expect(uid).toBeTruthy();
+
+    const res = await fetch(
+      `http://localhost:9000/users/${uid}/roles/user.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+      { method: 'PUT', body: 'false' },
+    );
+    expect(res.status).not.toBe(200);
+    expect(await readDb<boolean>(`users/${uid}/roles/user`)).toBe(true);
+  });
+
+  test('rules: an authenticated user can still update their own profile fields', async () => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const uid = Object.entries(users).find(
+      ([, value]) => value?.email === E2E_USERS.user.email,
+    )?.[0];
+    const original = await readDb<string>(`users/${uid}/name`);
+
+    try {
+      const res = await fetch(
+        `http://localhost:9000/users/${uid}/name.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+        { method: 'PUT', body: JSON.stringify('E2E Renamed') },
+      );
+      expect(res.ok).toBe(true);
+      expect(await readDb<string>(`users/${uid}/name`)).toBe('E2E Renamed');
+    } finally {
+      await writeDb(`users/${uid}/name`, original);
+    }
+  });
+
+  test('non-admin cannot open /admin/recovery', async ({ page }) => {
+    await login(page, 'user');
+    await page.goto('/admin/recovery');
+    await expect(page).not.toHaveURL(/\/admin/);
+    await expect(page.getByTestId('admin-recovery-list')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/calendar/);
+  });
+
+  test('tampered callable input is rejected', async () => {
+    const res = await fetch(
+      'http://127.0.0.1:5001/lecoursville-dev/us-central1/requestPasswordReset',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: { email: 'not-an-email', continueUrl: 'http://localhost:5000/auth/action' },
+        }),
+      },
+    );
+    expect(res.ok).toBe(false);
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(res.status).toBeLessThan(500);
+    const body = await res.json().catch(() => null);
+    expect(body?.error).toBeTruthy();
+  });
+
+  test('non-admin callable invocation of adminGenerateResetLink is rejected', async () => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const res = await fetch(
+      'http://127.0.0.1:5001/lecoursville-dev/us-central1/adminGenerateResetLink',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          data: {
+            requestId: 'non-admin-probe',
+            email: E2E_USERS.user.email,
+            reason: 'probe',
+            continueUrl: 'http://localhost:5000/auth/action',
+          },
+        }),
+      },
+    );
+    expect(res.status).toBe(403);
+    const body = await res.json().catch(() => null);
+    expect(body?.error?.status).toBe('PERMISSION_DENIED');
+  });
+
+  test('recovery request rate limit caps writes but keeps the generic response', async () => {
+    const email = 'rate-limit-security-e2e@e2e.local';
+    const hash = createHash('sha256').update(email).digest('hex').slice(0, 32);
+    try {
+      for (let i = 0; i < 4; i++) {
+        const res = await fetch(
+          'http://127.0.0.1:5001/lecoursville-dev/us-central1/submitRecoveryRequest',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { email, name: `Rate Limit ${i}` } }),
+          },
+        );
+        expect(res.status).toBe(200);
+        const body = await res.json();
+        expect(body?.result?.ok).toBe(true);
+      }
+
+      const all = (await readDb<Record<string, any>>('recoveryRequests')) ?? {};
+      const mine = Object.entries(all).filter(([, value]) => value?.email === email);
+      expect(mine.length).toBe(3);
+
+      // Let the alert trigger finish writing before restoring state.
+      await expect
+        .poll(async () => {
+          const alerts = (await readDb<Record<string, any>>('adminAlerts')) ?? {};
+          return Object.values(alerts).filter((value) => value?.data?.email === email).length;
+        }, { timeout: 15000 })
+        .toBe(3);
+
+      for (const [key] of mine) {
+        await deleteDb(`recoveryRequests/${key}`);
+      }
+      const alerts = (await readDb<Record<string, any>>('adminAlerts')) ?? {};
+      for (const [key, value] of Object.entries(alerts)) {
+        if (value?.data?.email === email) {
+          await deleteDb(`adminAlerts/${key}`);
+        }
+      }
+      for (const mail of await findOutboundEmails('admin_alert')) {
+        if ((mail.text ?? '').includes(email)) {
+          await deleteDb(`outboundEmails/${mail.key}`);
+        }
+      }
+    } finally {
+      await deleteDb(`rateLimits/recoveryRequests/${hash}`);
+    }
   });
 });
