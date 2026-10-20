@@ -36,7 +36,7 @@ Playwright matrix (Chromium + WebKit + Firefox). Fast local iteration:
 
 ```bash
 npx ng build --configuration=e2e
-firebase emulators:exec --project lecoursville-dev --only auth,database,storage,hosting \
+firebase emulators:exec --project lecoursville-dev --only auth,database,storage,hosting,functions \
   "node scripts/e2e/seed.mjs && npx playwright test --project=chromium"
 ```
 

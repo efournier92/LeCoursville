@@ -4,21 +4,22 @@ set -e
 # Deploy LeCoursville
 # Usage: ./deploy.sh <prod|dev>
 
-# Hosting is the ONLY Firebase target this repo deploys. Never use a bare
-# `firebase deploy` here: firebase.json also wires `storage.rules` for the
-# storage emulator, and that file is deliberately open (`allow read, write:
-# if true`) so the e2e gate can seed fixtures. A bare deploy ships it and
-# overwrites the real rules in the Firebase console with an open bucket.
+# Hosting and functions are the ONLY Firebase targets this repo deploys.
+# Never use a bare `firebase deploy` here: firebase.json also wires
+# `storage.rules` for the storage emulator, and that file is deliberately open
+# (`allow read, write: if true`) so the e2e gate can seed fixtures. A bare
+# deploy ships it and overwrites the real rules in the Firebase console with an
+# open bucket.
 deploy_prod() {
   echo "Deploying to production..."
   firebase use lecoursville
-  firebase deploy --only hosting
+  firebase deploy --only hosting,functions
 }
 
 deploy_dev() {
   echo "Deploying to dev..."
   firebase use lecoursville-dev
-  firebase deploy --only hosting
+  firebase deploy --only hosting,functions
 }
 
 build_prod() {
@@ -146,8 +147,8 @@ main() {
     run_e2e_gate
     build_prod
     validate_bundle_config prod
-    tag_build
     deploy_prod
+    tag_build
     echo "=== Production deploy complete ==="
   elif [ "$ENV" = "dev" ]; then
     validate_dev_branch

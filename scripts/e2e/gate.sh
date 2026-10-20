@@ -9,11 +9,15 @@ set -e
 echo "=== Building e2e bundle ==="
 npx ng build --configuration=e2e
 
+echo "=== Building functions ==="
+npm --prefix functions install --no-audit --no-fund
+npm --prefix functions run build
+
 echo "=== Starting emulators + seeding + running Playwright ==="
 # One fresh seed per browser project: the RTDB emulator state persists across
 # projects in a single `playwright test` run, and mutation tests (chat edits,
 # uploads, created records) would otherwise bleed into the next project's
 # assertions. Re-seeding keeps every project deterministic.
 firebase emulators:exec --project lecoursville-dev \
-  --only auth,database,storage,hosting \
+  --only auth,database,storage,hosting,functions \
   "node scripts/e2e/seed.mjs && npx playwright test --project=chromium && node scripts/e2e/seed.mjs && npx playwright test --project=webkit && node scripts/e2e/seed.mjs && npx playwright test --project=firefox"
