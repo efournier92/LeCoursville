@@ -52,14 +52,14 @@
             <div class="feature-list">
               @for (feature of group.features; track feature) {
                 <div class="feature-row">
-                  <mat-checkbox
+                  <mat-slide-toggle
                     [id]="'feature-id-' + feature.id"
                     [checked]="isEnabled(feature.id)"
                     (change)="onToggle(feature.id, $event.checked)"
                     color="primary"
                     [attr.data-testid]="'feature-toggle-' + feature.id">
                     <span class="feature-label">{{ feature.label }}</span>
-                  </mat-checkbox>
+                  </mat-slide-toggle>
                 </div>
               }
             </div>

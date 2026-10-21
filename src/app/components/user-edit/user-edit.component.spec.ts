@@ -22,12 +22,20 @@ describe('UserEditComponent', () => {
   let component: UserEditComponent;
   let fixture: ComponentFixture<UserEditComponent>;
   let user$: BehaviorSubject<any>;
-  let adminService: { updateUser: ReturnType<typeof vi.fn>; deleteUser: ReturnType<typeof vi.fn> };
+  let adminService: {
+    updateUser: ReturnType<typeof vi.fn>;
+    deleteUser: ReturnType<typeof vi.fn>;
+    addRoleAudit: ReturnType<typeof vi.fn>;
+  };
   let confirmDialog: { confirm: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     user$ = new BehaviorSubject<any>({ id: 'admin-1', roles: { user: true, admin: true, super: true } });
-    adminService = { updateUser: vi.fn(), deleteUser: vi.fn() };
+    adminService = {
+      updateUser: vi.fn(() => Promise.resolve()),
+      deleteUser: vi.fn(),
+      addRoleAudit: vi.fn(() => Promise.resolve()),
+    };
     confirmDialog = { confirm: vi.fn(() => Promise.resolve(false)) };
 
     await TestBed.configureTestingModule({
@@ -103,6 +111,7 @@ describe('UserEditComponent', () => {
     expect(component.formUser.name).toBe('Ada Lovelace');
     expect(component.formUser.email).toBe('ada@example.test');
     expect(component.formUser.roles.admin).toBe(false);
+    expect(adminService.addRoleAudit).not.toHaveBeenCalled();
   });
 
   it('restores the working copy when a privilege confirm is declined', async () => {
@@ -117,6 +126,58 @@ describe('UserEditComponent', () => {
     expect(component.userOnCard.roles.admin).toBe(false);
     expect(component.formUser.name).toBe('Ada Lovelace');
     expect(component.formUser.roles.admin).toBe(false);
+    expect(adminService.addRoleAudit).not.toHaveBeenCalled();
+  });
+
+  it('writes one role-audit row after a successful role change', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.ngOnInit();
+    confirmDialog.confirm.mockResolvedValue(true);
+    user.roles.admin = true;
+
+    await component.onSaveUser(user);
+
+    expect(adminService.updateUser).toHaveBeenCalledWith(user);
+    expect(adminService.addRoleAudit).toHaveBeenCalledTimes(1);
+    expect(adminService.addRoleAudit).toHaveBeenCalledWith({
+      actorId: 'admin-1',
+      targetId: 'user-1',
+      targetEmail: 'ada@example.test',
+      before: { admin: false, super: false },
+      after: { admin: true, super: false },
+      at: expect.any(Number),
+    });
+  });
+
+  it('records a super grant with admin implied in the audit row', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.ngOnInit();
+    confirmDialog.confirm.mockResolvedValue(true);
+    user.roles.super = true;
+
+    await component.onSaveUser(user);
+
+    expect(adminService.addRoleAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        before: { admin: false, super: false },
+        after: { admin: true, super: true },
+      }),
+    );
+  });
+
+  it('does not write an audit row when the user save fails', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.ngOnInit();
+    confirmDialog.confirm.mockResolvedValue(true);
+    adminService.updateUser.mockRejectedValueOnce(new Error('write failed'));
+    user.roles.admin = true;
+
+    await expect(component.onSaveUser(user)).rejects.toThrow('write failed');
+
+    expect(adminService.addRoleAudit).not.toHaveBeenCalled();
   });
 
   it('commits the working copy to the input user on a confirmed save', async () => {
@@ -157,6 +218,7 @@ describe('UserEditComponent', () => {
 
     expect(confirmDialog.confirm).not.toHaveBeenCalled();
     expect(adminService.updateUser).toHaveBeenCalledWith(user);
+    expect(adminService.addRoleAudit).not.toHaveBeenCalled();
   });
 
   it('resets the role baseline when the card is reused for a new user', async () => {

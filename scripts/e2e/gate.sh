@@ -9,6 +9,9 @@ set -e
 echo "=== Building e2e bundle ==="
 npx ng build --configuration=e2e
 
+echo "=== Unit tests ==="
+CI=true npm test -- --watch=false
+
 echo "=== Building functions ==="
 npm --prefix functions install --no-audit --no-fund
 npm --prefix functions run build

@@ -4,6 +4,15 @@ import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { RtdbService } from './rtdb.service';
 
+export interface RoleAuditRecord {
+  actorId: string;
+  targetId: string;
+  targetEmail: string;
+  before: { admin: boolean; super: boolean };
+  after: { admin: boolean; super: boolean };
+  at: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -37,8 +46,13 @@ export class AdminService {
     this.allUsersSource.next(users);
   }
 
-  updateUser(user: User): void {
-    this.rtdb.object(`users/${user.id}`).update(user as any);
+  updateUser(user: User): Promise<void> {
+    return this.rtdb.object(`users/${user.id}`).update(user as any);
+  }
+
+  addRoleAudit(record: RoleAuditRecord): Promise<void> {
+    const id = this.rtdb.createPushId();
+    return this.rtdb.object(`roleAudit/${id}`).set(record);
   }
 
   deleteUser(user: User): void {

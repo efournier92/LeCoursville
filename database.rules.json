@@ -38,11 +38,11 @@
     },
     "features": {
       ".read": "true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
     "promotedRoute": {
       ".read": "true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
     "clans": {
       ".read": "true",
@@ -73,22 +73,26 @@
       }
     },
     "recoveryRequests": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": false
     },
     "adminAlerts": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": false
     },
     "recoveryAudit": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": false
     },
     "config": {
       "adminAlertRecipients": {
-        ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+        ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
         ".write": false
       }
+    },
+    "roleAudit": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
     "rateLimits": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",

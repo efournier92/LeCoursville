@@ -88,12 +88,14 @@
     background-color: var(--color-surface-muted);
   }
 
-  &:focus-within {
+  // The switch button lives in the slide toggle's view, so the ring is driven
+  // from the row host.
+  &:has(button[role='switch']:focus-visible) {
     outline: 2px solid var(--color-brand-primary);
     outline-offset: -2px;
   }
 
-  .mat-checkbox {
+  mat-slide-toggle {
     flex-shrink: 0;
   }
 

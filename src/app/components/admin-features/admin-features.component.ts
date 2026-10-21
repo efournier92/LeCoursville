@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy, QueryList, ViewChildren } from '@angular/core';
-import { MatCheckbox } from '@angular/material/checkbox';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { Subscription } from 'rxjs';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { FeatureFlag } from 'src/app/models/feature-flag';
@@ -39,8 +39,8 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
   loadError = '';
   toggleError = '';
   // One-way [checked] bindings only repaint when the value changes, so a failed
-  // write is pushed back through the live checkbox instances.
-  @ViewChildren(MatCheckbox) private checkboxes?: QueryList<MatCheckbox>;
+  // write is pushed back through the live toggle instances.
+  @ViewChildren(MatSlideToggle) private toggles?: QueryList<MatSlideToggle>;
 
   private readySub?: Subscription;
   private flagsSub?: Subscription;
@@ -95,13 +95,13 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     } catch {
       const label = FEATURES.find(feature => feature.id === featureId)?.label || featureId;
       this.toggleError = `Couldn’t save “${label}”. The toggle was reverted.`;
-      const checkbox = this.checkboxes?.find(item => item.id === `feature-id-${featureId}`);
-      if (checkbox) {
+      const toggle = this.toggles?.find(item => item.id === `feature-id-${featureId}`);
+      if (toggle) {
         // The click already left the control showing the failed value; flip the
         // binding once so the restore to `stored` is a visible change.
-        checkbox.checked = !stored;
+        toggle.checked = !stored;
         this.changeDetector.detectChanges();
-        checkbox.checked = stored;
+        toggle.checked = stored;
         this.changeDetector.detectChanges();
       }
     }

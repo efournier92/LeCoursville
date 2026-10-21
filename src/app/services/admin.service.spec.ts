@@ -9,12 +9,14 @@ describe('AdminService', () => {
   let rtdbSpy: jasmine.SpyObj<RtdbService>;
 
   beforeEach(() => {
-    rtdbSpy = jasmine.createSpyObj('RtdbService', ['object', 'list']);
+    rtdbSpy = jasmine.createSpyObj('RtdbService', ['object', 'list', 'createPushId']);
     rtdbSpy.list.and.returnValue({ valueChanges: () => of([{ id: 'u1', name: 'Ada' }]) });
+    rtdbSpy.createPushId.and.returnValue('push-1');
     rtdbSpy.object.and.returnValue({
       valueChanges: () => of(null),
       update: jasmine.createSpy('update'),
       remove: jasmine.createSpy('remove'),
+      set: jasmine.createSpy('set').and.returnValue(Promise.resolve()),
     });
 
     TestBed.configureTestingModule({
@@ -48,6 +50,23 @@ describe('AdminService', () => {
     service.updateUser(user as any);
     expect(rtdbSpy.object).toHaveBeenCalledWith('users/u1');
     expect(rtdbSpy.object('users/u1').update).toHaveBeenCalledWith(user);
+  });
+
+  it('addRoleAudit writes one record under a fresh push id', async () => {
+    const record = {
+      actorId: 'admin-1',
+      targetId: 'u1',
+      targetEmail: 'ada@example.test',
+      before: { admin: false, super: false },
+      after: { admin: true, super: false },
+      at: 1700000000000,
+    };
+
+    await service.addRoleAudit(record);
+
+    expect(rtdbSpy.createPushId).toHaveBeenCalled();
+    expect(rtdbSpy.object).toHaveBeenCalledWith('roleAudit/push-1');
+    expect(rtdbSpy.object('roleAudit/push-1').set).toHaveBeenCalledWith(record);
   });
 
   it('deleteUser removes the RTDB user record', () => {

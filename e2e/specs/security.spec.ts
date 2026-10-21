@@ -316,4 +316,88 @@ test.describe('security', () => {
       await deleteDb(`rateLimits/recoveryRequests/${hash}`);
     }
   });
+
+  test('rules: staff admin cannot mutate features or promotedRoute', async () => {
+    const token = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
+    const featureBefore = await readDb('features/chat');
+    const routeBefore = await readDb('promotedRoute');
+
+    const featureRes = await fetch(
+      `http://localhost:9000/features/chat.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+      { method: 'PUT', body: JSON.stringify({ enabled: true, updatedAt: Date.now() }) },
+    );
+    expect(featureRes.status).not.toBe(200);
+    expect(await readDb('features/chat')).toEqual(featureBefore);
+
+    const routeRes = await fetch(
+      `http://localhost:9000/promotedRoute.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ route: '/chat', updatedAt: Date.now() }),
+      },
+    );
+    expect(routeRes.status).not.toBe(200);
+    expect(await readDb('promotedRoute')).toEqual(routeBefore);
+  });
+
+  test('rules: super-only nodes reject staff reads and allow super reads', async () => {
+    const staffToken = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
+    const superToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+    const nodes = [
+      'recoveryRequests',
+      'adminAlerts',
+      'recoveryAudit',
+      'config/adminAlertRecipients',
+    ];
+
+    for (const node of nodes) {
+      const staffRes = await fetch(
+        `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb&auth=${staffToken}`,
+      );
+      expect(staffRes.status).not.toBe(200);
+
+      const superRes = await fetch(
+        `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`,
+      );
+      expect(superRes.status).toBe(200);
+    }
+  });
+
+  test('rules: roleAudit is super-write and super-read only', async () => {
+    const staffToken = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
+    const superToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+    const id = `security-probe-${Date.now()}`;
+    const record = {
+      actorId: 'probe-actor',
+      targetId: 'probe-target',
+      targetEmail: 'probe@e2e.local',
+      before: { admin: false, super: false },
+      after: { admin: true, super: false },
+      at: Date.now(),
+    };
+
+    try {
+      const staffRes = await fetch(
+        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${staffToken}`,
+        { method: 'PUT', body: JSON.stringify(record) },
+      );
+      expect(staffRes.status).not.toBe(200);
+      expect(await readDb(`roleAudit/${id}`)).toBeNull();
+
+      const superWrite = await fetch(
+        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`,
+        { method: 'PUT', body: JSON.stringify(record) },
+      );
+      expect(superWrite.ok).toBe(true);
+      expect(await readDb(`roleAudit/${id}`)).toEqual(record);
+
+      const superRead = await fetch(
+        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`,
+      );
+      expect(superRead.status).toBe(200);
+      expect(await superRead.json()).toEqual(record);
+    } finally {
+      await deleteDb(`roleAudit/${id}`);
+    }
+  });
 });

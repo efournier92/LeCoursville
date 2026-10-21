@@ -196,24 +196,24 @@ test.describe('admin', () => {
     for (const id of ids) {
       await expect(page.getByTestId(`feature-toggle-${id}`)).toBeVisible();
     }
-    await expect(page.getByTestId('feature-toggle-chat').locator('input[type="checkbox"]')).not.toBeChecked();
-    await expect(page.getByTestId('feature-toggle-contacts').locator('input[type="checkbox"]')).toBeChecked();
-    await expect(page.getByTestId('feature-toggle-enablePhotoAlbums').locator('input[type="checkbox"]')).toBeChecked();
+    await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('feature-toggle-enablePhotoAlbums').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
   });
 
   test('features page: toggle chat ON then OFF restores state', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
     const chatToggle = page.getByTestId('feature-toggle-chat');
-    const chatInput = chatToggle.locator('input[type="checkbox"]');
-    await expect(chatInput).not.toBeChecked();
+    const chatSwitch = chatToggle.locator('button[role="switch"]');
+    await expect(chatSwitch).toHaveAttribute('aria-checked', 'false');
     try {
-      await chatToggle.click();
-      await expect(chatInput).toBeChecked();
+      await chatSwitch.click();
+      await expect(chatSwitch).toHaveAttribute('aria-checked', 'true');
     } finally {
       await setFeatureFlag(page, 'chat', false);
     }
-    await expect(chatInput).not.toBeChecked();
+    await expect(chatSwitch).toHaveAttribute('aria-checked', 'false');
   });
 
   test('families page lists the 2 seeded families', async ({ page }) => {

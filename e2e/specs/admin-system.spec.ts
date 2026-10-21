@@ -65,8 +65,8 @@ test.describe('admin system surfaces', () => {
       await expect(page.getByRole('heading', { name: label, exact: true })).toBeVisible();
     }
 
-    await expect(page.getByTestId('feature-toggle-chat').locator('input[type="checkbox"]')).not.toBeChecked();
-    await expect(page.getByTestId('feature-toggle-contacts').locator('input[type="checkbox"]')).toBeChecked();
+    await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
   });
 
   test('recovery: requests render a row or empty state, and close asks before mutating', async ({ page }) => {

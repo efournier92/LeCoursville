@@ -33,7 +33,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
   { route: '/admin/uploads', content: (p) => p.getByText("You're all caught up") },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
-  { route: '/admin/features', content: (p) => p.locator('mat-checkbox').first() },
+  { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
 ];
 
 test.describe('loading contract', () => {

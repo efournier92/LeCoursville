@@ -72,10 +72,10 @@ the end of the run.
 
 - Question: should the nine feature flags become Material switches?
 - Options: keep checkboxes with corrected copy; convert to switches.
-- Verdict: `UNCERTAIN`. The copy now says "Changes save immediately", which
-  removes the semantic mismatch; a switch conversion would change testids and
-  the seeded order for a visual gain.
-- Default applied: keep checkboxes.
+- Decision: convert to Material switches (user answer, 2026-10-20).
+- Verdict: `CERTAIN`, user decision.
+- Applied: nine `mat-slide-toggle` controls with the same testids; specs use
+  `aria-checked` instead of checkbox state.
 - Files: `admin-features/`.
 - Revisit cost: low; one template change plus testid updates.
 
@@ -94,9 +94,10 @@ the end of the run.
 - Question: should `database.rules.json` gate `features`, `promotedRoute`, and
   recovery nodes on `roles/super`?
 - Options: tighten the rules; accept client-side gating.
-- Verdict: `UNCERTAIN`. Rules are outside the change boundary. A plain admin
-  with an SDK handle can bypass the super-only UI for exactly these nodes.
-- Default applied: none; the UI enforces super-only, rules unchanged.
+- Decision: tighten the rules (user answer, 2026-10-20).
+- Verdict: `CERTAIN`, user decision.
+- Applied: `features`, `promotedRoute`, recovery reads, and `roleAudit` require
+  `roles/super`; security spec proves staff denial by REST.
 - Files: `database.rules.json`.
 - Revisit cost: medium; a rules change plus an emulator rules test.
 
@@ -104,9 +105,10 @@ the end of the run.
 
 - Question: should privilege grants and revokes write an audit record?
 - Options: add a `recoveryAudit`-style trail; defer.
-- Verdict: `UNCERTAIN`. The confirmation is in place; the trail needs a new
-  rules-gated node or a callable.
-- Default applied: confirmation only.
+- Decision: add the audit trail (user answer, 2026-10-20).
+- Verdict: `CERTAIN`, user decision.
+- Applied: role changes write `roleAudit/{pushId}` with actor, target, before,
+  and after roles; super-only read/write in rules.
 - Files: `user-edit/`, `database.rules.json`, `functions/`.
 - Revisit cost: medium.
 
@@ -114,9 +116,9 @@ the end of the run.
 
 - Question: should the album/photo cascade be a server transaction?
 - Options: accept a retryable partial failure; move to a functions callable.
-- Verdict: `UNCERTAIN`. The UI now surfaces failures and keeps state, but a
-  mid-cascade failure can strand photos.
-- Default applied: accept, with a visible error and retry.
+- Decision: keep the retryable cascade (user answer, 2026-10-20).
+- Verdict: `CERTAIN`, user decision.
+- Applied: visible error and retry; atomicity deferred.
 - Files: `services/photo-albums.service.ts`, `functions/`.
 - Revisit cost: high; a callable plus rules and tests.
 
@@ -125,8 +127,9 @@ the end of the run.
 - Question: should `scripts/e2e/gate.sh` run `CI=true npm test` before the
   emulator matrix?
 - Options: add it; keep unit tests as a manual step.
-- Verdict: `UNCERTAIN`. The script is outside the stated change boundary and a
-  deploy-path change affects every release.
-- Default applied: unit tests run in this session only; the gate is unchanged.
+- Decision: add the unit step (user answer, 2026-10-20).
+- Verdict: `CERTAIN`, user decision.
+- Applied: `scripts/e2e/gate.sh` runs `CI=true npm test -- --watch=false`
+  before the functions build.
 - Files: `scripts/e2e/gate.sh`.
 - Revisit cost: low; one line.

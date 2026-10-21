@@ -6,7 +6,7 @@ import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { FEATURES } from 'src/app/config/feature-config';
 import { of, Subject, throwError } from 'rxjs';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 describe('AdminFeaturesComponent', () => {
   let component: AdminFeaturesComponent;
@@ -25,7 +25,7 @@ describe('AdminFeaturesComponent', () => {
     spy.flagsReady.and.returnValue(of(true));
 
     await TestBed.configureTestingModule({
-      imports: [AppModule, TestSharedModule, MatCheckboxModule],
+      imports: [AppModule, TestSharedModule, MatSlideToggleModule],
       declarations: [AdminFeaturesComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
@@ -54,15 +54,15 @@ describe('AdminFeaturesComponent', () => {
     expect(items.length).toBeGreaterThan(0);
   });
 
-  it('gives every feature checkbox an accessible name', () => {
-    const boxes = Array.from(
-      fixture.nativeElement.querySelectorAll('mat-checkbox') as NodeListOf<HTMLElement>,
+  it('gives every feature toggle an accessible name', () => {
+    const toggles = Array.from(
+      fixture.nativeElement.querySelectorAll('mat-slide-toggle') as NodeListOf<HTMLElement>,
     );
 
-    expect(boxes.length).toBe(FEATURES.length);
-    // The visible label is projected into the checkbox, so it is the control's
+    expect(toggles.length).toBe(FEATURES.length);
+    // The visible label sits inside the toggle, so it is the control's
     // accessible name (Material renders it as the mdc-label content).
-    boxes.forEach(box => expect(box.textContent?.trim()).toBeTruthy());
+    toggles.forEach(toggle => expect(toggle.textContent?.trim()).toBeTruthy());
   });
 
   it('renders the three surface group labels', () => {
@@ -136,22 +136,22 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('music', true);
   });
 
-  it('clicking a checkbox calls onToggle() with the new boolean value', () => {
+  it('clicking a toggle calls onToggle() with the new boolean value', () => {
     component.onToggle('videos', false);
     expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('videos', false);
   });
 
-  it('reverts the checkbox and shows an error when the write is rejected', async () => {
+  it('reverts the toggle and shows an error when the write is rejected', async () => {
     component.flagsMap = { music: { enabled: true, updatedAt: Date.now() } };
     fixture.detectChanges();
     mockFeatureFlagsService.setFeatureFlag.and.callFake(() => Promise.reject(new Error('offline')));
 
-    const input = fixture.nativeElement.querySelector(
-      '[data-testid="feature-toggle-music"] input',
-    ) as HTMLInputElement;
-    expect(input.checked).toBe(true);
+    const switchButton = fixture.nativeElement.querySelector(
+      '[data-testid="feature-toggle-music"] button[role="switch"]',
+    ) as HTMLButtonElement;
+    expect(switchButton.getAttribute('aria-checked')).toBe('true');
 
-    input.click();
+    switchButton.click();
     fixture.detectChanges();
     await fixture.whenStable();
     await Promise.resolve();
@@ -160,9 +160,9 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('music', false);
     expect(component.isEnabled('music')).toBe(true);
     const reverted = fixture.nativeElement.querySelector(
-      '[data-testid="feature-toggle-music"] input',
-    ) as HTMLInputElement;
-    expect(reverted.checked).toBe(true);
+      '[data-testid="feature-toggle-music"] button[role="switch"]',
+    ) as HTMLButtonElement;
+    expect(reverted.getAttribute('aria-checked')).toBe('true');
     expect(
       fixture.nativeElement.querySelector('[data-testid="features-toggle-error"]'),
     ).not.toBeNull();

@@ -52,8 +52,8 @@ export class UserEditComponent implements OnInit, OnChanges {
 
   // PUBLIC METHODS
 
-  updateUser(user: User): void {
-    this.adminService.updateUser(user);
+  updateUser(user: User): Promise<void> {
+    return this.adminService.updateUser(user);
   }
 
   isSuperUser(): boolean {
@@ -92,7 +92,14 @@ export class UserEditComponent implements OnInit, OnChanges {
       }
     }
     this.commitToInput(user);
-    this.updateUser(user);
+    await this.updateUser(user);
+    if (changes.messages.length > 0) {
+      await this.recordRoleChange(user);
+      this.originalRoles = {
+        admin: user.roles?.admin === true,
+        super: user.roles?.super === true,
+      };
+    }
     if (this.isAdminMode) {
       this.emitCancelEditEvent();
     }
@@ -152,6 +159,20 @@ export class UserEditComponent implements OnInit, OnChanges {
 
   private displayName(user: User): string {
     return user?.name?.trim() || user?.email || 'this user';
+  }
+
+  private recordRoleChange(user: User): Promise<void> {
+    return this.adminService.addRoleAudit({
+      actorId: this.userSignedIn?.id,
+      targetId: user.id,
+      targetEmail: user.email,
+      before: { ...this.originalRoles },
+      after: {
+        admin: user.roles?.admin === true,
+        super: user.roles?.super === true,
+      },
+      at: Date.now(),
+    });
   }
 
   private async deleteUser(user: User): Promise<void> {

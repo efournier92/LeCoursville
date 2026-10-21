@@ -9,9 +9,10 @@ export async function setFeatureFlag(page: Page, featureId: string, on: boolean)
   await page.goto('/admin/features');
   const toggle = page.getByTestId(`feature-toggle-${featureId}`);
   await expect(toggle).toBeVisible();
-  const input = toggle.locator('input[type="checkbox"]');
-  if ((await input.isChecked()) !== on) {
-    await toggle.click();
+  const switchButton = toggle.locator('button[role="switch"]');
+  const isOn = (await switchButton.getAttribute('aria-checked')) === 'true';
+  if (isOn !== on) {
+    await switchButton.click();
   }
-  await expect(input).toBeChecked({ checked: on });
+  await expect(switchButton).toHaveAttribute('aria-checked', on ? 'true' : 'false');
 }
