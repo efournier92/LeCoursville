@@ -10,6 +10,7 @@ import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 export class RoutingService {
   private promotedRouteSubject = new BehaviorSubject<string | null>(null);
   private sidenavOpenSubject = new BehaviorSubject<boolean>(false);
+  private invalidPromotedRouteWarned = false;
   sidenavOpen$ = this.sidenavOpenSubject.asObservable();
 
   constructor(
@@ -44,7 +45,22 @@ export class RoutingService {
   }
 
   getPromotedRoute(): string {
-    return this.promotedRouteSubject.getValue() || environment.promotedRoute || '/';
+    const route = this.promotedRouteSubject.getValue();
+    if (route && route !== '/' && !route.startsWith('/admin')) {
+      return route;
+    }
+    if (route !== null && route !== undefined) {
+      this.warnInvalidPromotedRoute(route);
+    }
+    return environment.promotedRoute || '/calendar';
+  }
+
+  private warnInvalidPromotedRoute(route: string): void {
+    if (this.invalidPromotedRouteWarned) {
+      return;
+    }
+    this.invalidPromotedRouteWarned = true;
+    console.warn(`Ignoring invalid promoted route "${route}"; falling back to ${environment.promotedRoute || '/calendar'}.`);
   }
 
   NavigateToPromotedRoute() {

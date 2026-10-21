@@ -23,6 +23,36 @@ test.describe('admin system surfaces', () => {
     await expect(row).toBeVisible();
   });
 
+  test('calendars: a throwaway calendar is deleted after confirming, and the record is cleaned up', async ({ page }) => {
+    const id = 'e2e-cal-1999';
+    const year = '1999';
+    const original = {
+      id,
+      year,
+      url: 'https://example.test/e2e-1999.pdf',
+      path: '',
+    };
+    await writeDb(`calendars/${id}`, original);
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/calendars');
+      const row = page.locator('.admin-table tbody tr').filter({ hasText: year });
+      await expect(row).toBeVisible();
+
+      await row.getByRole('button', { name: 'Delete' }).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('Delete calendar?');
+      await expect(dialog).toContainText(year);
+      await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+
+      await expect(row).toHaveCount(0);
+      await expect.poll(async () => readDb(`calendars/${id}`)).toBeNull();
+    } finally {
+      await deleteDb(`calendars/${id}`);
+    }
+  });
+
   test('features: nine grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
@@ -75,6 +105,56 @@ test.describe('admin system surfaces', () => {
       await expect(row).toBeVisible();
     } finally {
       await deleteDb(`recoveryRequests/${key}`);
+    }
+  });
+
+  test('recovery: closing an open request through the dialog marks it closed, then restores the DB', async ({ page }) => {
+    const key = `e2e-close-${Date.now()}`;
+    const email = `${key}@e2e.local`;
+    await writeDb(`recoveryRequests/${key}`, {
+      id: key,
+      email,
+      name: 'Recovery Close E2E',
+      status: 'open',
+      createdAt: Date.now(),
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/recovery');
+
+      const row = page
+        .getByTestId('admin-recovery-list')
+        .locator('.recovery-row')
+        .filter({ hasText: email });
+      await expect(row).toBeVisible();
+      await expect(row.getByTestId('admin-recovery-status')).toHaveText('open');
+
+      await row.getByTestId('admin-recovery-close').click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('Mark Request Closed?');
+      await dialog.getByRole('button', { name: 'Yes' }).click();
+
+      await expect(row.getByTestId('admin-recovery-status')).toHaveText('closed', {
+        timeout: 15000,
+      });
+      await expect
+        .poll(async () => (await readDb<{ status?: string }>(`recoveryRequests/${key}`))?.status)
+        .toBe('closed');
+      await expect
+        .poll(async () => {
+          const audit = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+          return Object.values(audit).filter((entry) => entry?.requestId === key).length;
+        }, { timeout: 15000 })
+        .toBeGreaterThan(0);
+    } finally {
+      await deleteDb(`recoveryRequests/${key}`);
+      const audit = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+      for (const [id, entry] of Object.entries(audit)) {
+        if (entry?.requestId === key) {
+          await deleteDb(`recoveryAudit/${id}`);
+        }
+      }
     }
   });
 

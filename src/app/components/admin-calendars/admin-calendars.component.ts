@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Calendar } from 'src/app/models/calendar';
-import { Page, paginate } from 'src/app/admin/pagination';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
 
@@ -18,9 +17,9 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
   isAdding = false;
   formData = { year: '', url: '' };
   formError = '';
+  actionError = '';
   loading = true;
   loadError = '';
-  page = 1;
 
   private calendarsSub?: Subscription;
 
@@ -37,10 +36,6 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.calendarsSub?.unsubscribe();
   }
 
-  get pageData(): Page<Calendar> {
-    return paginate(this.calendars, this.page);
-  }
-
   loadCalendars(): void {
     this.loading = true;
     this.loadError = '';
@@ -48,7 +43,6 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.calendarsSub = this.rtdb.list<Calendar>('calendars').valueChanges().subscribe({
       next: calendars => {
         this.calendars = [...calendars].sort((a, b) => parseInt(a.year) - parseInt(b.year));
-        this.page = paginate(this.calendars, this.page).page;
         this.loading = false;
       },
       error: () => {
@@ -56,10 +50,6 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
     });
-  }
-
-  goToPage(page: number): void {
-    this.page = page;
   }
 
   onAdd(): void {
@@ -86,10 +76,15 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     if (!confirmed) {
       return;
     }
-    await this.rtdb.object(`/calendars/${calendar.id}`).remove();
+    this.actionError = '';
+    try {
+      await this.rtdb.object(`/calendars/${calendar.id}`).remove();
+    } catch (error) {
+      this.actionError = this.writeFailure('delete the calendar', error);
+    }
   }
 
-  onSave(): void {
+  async onSave(): Promise<void> {
     const year = this.formData.year.trim();
     const url = this.formData.url.trim();
 
@@ -107,13 +102,20 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     }
 
     this.formError = '';
+    this.actionError = '';
 
-    if (this.isAdding) {
-      const id = `cal-${year}`;
-      const calendar: Calendar = { id, year, url, path: '' };
-      this.rtdb.object(`/calendars/${id}`).set(calendar).then(() => this.onCancel());
-    } else if (this.editingCalendar) {
-      this.rtdb.object(`/calendars/${this.editingCalendar.id}`).update({ year, url }).then(() => this.onCancel());
+    try {
+      if (this.isAdding) {
+        const id = `cal-${year}`;
+        const calendar: Calendar = { id, year, url, path: '' };
+        await this.rtdb.object(`/calendars/${id}`).set(calendar);
+        this.onCancel();
+      } else if (this.editingCalendar) {
+        await this.rtdb.object(`/calendars/${this.editingCalendar.id}`).update({ year, url });
+        this.onCancel();
+      }
+    } catch (error) {
+      this.actionError = this.writeFailure('save the calendar', error);
     }
   }
 
@@ -122,5 +124,10 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.editingCalendar = null;
     this.formData = { year: '', url: '' };
     this.formError = '';
+  }
+
+  private writeFailure(action: string, error: unknown): string {
+    const message = (error as Error)?.message || 'Unknown error';
+    return `Could not ${action}: ${message}`;
   }
 }

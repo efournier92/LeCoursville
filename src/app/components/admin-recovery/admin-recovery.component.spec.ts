@@ -21,6 +21,9 @@ describe('AdminRecoveryComponent', () => {
   let component: AdminRecoveryComponent;
   let requestsStream: Observable<RecoveryRequest[]>;
   let recipientsStream: Observable<unknown>;
+  let auditStream: Observable<any[]>;
+  let accountsStream: Observable<any[]>;
+  let alertsStream: Observable<any[]>;
   let rtdb: RtdbService;
   let cloudFunctions: jasmine.SpyObj<CloudFunctionsService>;
   let confirmSpy: jasmine.Spy;
@@ -37,11 +40,20 @@ describe('AdminRecoveryComponent', () => {
   beforeEach(async () => {
     requestsStream = new Subject<RecoveryRequest[]>();
     recipientsStream = of(['admin@example.test', 'backup@example.test']);
+    auditStream = of([]);
+    accountsStream = of([]);
+    alertsStream = of([]);
     confirmSpy = jasmine.createSpy('confirm').and.returnValue(Promise.resolve(false));
 
     rtdb = {
       list: (path: string) => ({
-        valueChanges: () => (path === 'recoveryRequests' ? requestsStream : of([])),
+        valueChanges: () => {
+          if (path === 'recoveryRequests') return requestsStream;
+          if (path === 'recoveryAudit') return auditStream;
+          if (path === 'users') return accountsStream;
+          if (path === 'adminAlerts') return alertsStream;
+          return of([]);
+        },
       }),
       object: (path: string) => ({
         valueChanges: () => (path === 'config/adminAlertRecipients' ? recipientsStream : of(null)),
@@ -159,6 +171,45 @@ describe('AdminRecoveryComponent', () => {
     expect(cloudFunctions.closeRecoveryRequest).not.toHaveBeenCalled();
   });
 
+  it('asks before generating a reset link and names the account', async () => {
+    fixture.detectChanges();
+    component.reasons[request.id] = 'locked out';
+    confirmSpy.and.returnValue(Promise.resolve(false));
+
+    await component.generate(request);
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({ message: jasmine.stringMatching('locked-out@example.test') }),
+    );
+    expect(cloudFunctions.adminGenerateResetLink).not.toHaveBeenCalled();
+
+    confirmSpy.and.returnValue(Promise.resolve(true));
+    cloudFunctions.adminGenerateResetLink.and.returnValue(
+      Promise.resolve({ data: { link: 'https://example.test/reset', emailed: false } }),
+    );
+    await component.generate(request);
+
+    expect(cloudFunctions.adminGenerateResetLink).toHaveBeenCalledWith({
+      requestId: request.id,
+      email: request.email,
+      reason: 'locked out',
+    });
+  });
+
+  it('shows a retryable error instead of empty when secondary streams fail', () => {
+    auditStream = throwError(() => new Error('offline'));
+    accountsStream = throwError(() => new Error('offline'));
+    alertsStream = throwError(() => new Error('offline'));
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.auditLoadError).toBeTruthy();
+    expect(component.accountsLoadError).toBeTruthy();
+    expect(component.alertsLoadError).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('app-load-error').length).toBe(3);
+  });
+
   it('shows an error state and recovers when retried', () => {
     requestsStream = throwError(() => new Error('offline'));
     fixture.detectChanges();
@@ -174,17 +225,14 @@ describe('AdminRecoveryComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.recovery-row').length).toBe(1);
   });
 
-  it('paginates recipients at 10', () => {
+  it('renders every recipient in the bounded list', () => {
     const many = Array.from({ length: 12 }, (_, i) => `person${i}@example.test`);
     recipientsStream = of(many);
     fixture = TestBed.createComponent(AdminRecoveryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(component.recipientPageData.items.length).toBe(10);
-    expect(component.recipientPageData.pageCount).toBe(2);
-
-    component.goToRecipientPage(2);
-    expect(component.recipientPageData.items.length).toBe(2);
+    expect(component.recipients.length).toBe(12);
+    expect(fixture.nativeElement.querySelectorAll('.recipient-row').length).toBe(12);
   });
 });

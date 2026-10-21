@@ -11,18 +11,22 @@
       <mat-card-subtitle>Every new account, newest first</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="account-list" data-testid="admin-account-creations">
-        @for (account of accountCreations; track account.id) {
-          <div class="account-row">
-            <span class="account-name" data-label="Name">{{ account.name }}</span>
-            <span class="account-email" data-label="Email">{{ account.email }}</span>
-            <span class="account-roles" data-label="Roles">{{ rolesLabel(account) }}</span>
-            <span class="account-age" data-label="Age">{{ accountAge(account) }}</span>
-          </div>
-        } @empty {
-          <p class="empty">No accounts.</p>
-        }
-      </div>
+      @if (accountsLoadError) {
+        <app-load-error [message]="accountsLoadError" (retry)="loadAccounts()" />
+      } @else {
+        <div class="account-list" data-testid="admin-account-creations">
+          @for (account of accountCreations; track account.id) {
+            <div class="account-row">
+              <span class="account-name" data-label="Name">{{ account.name }}</span>
+              <span class="account-email" data-label="Email">{{ account.email }}</span>
+              <span class="account-roles" data-label="Roles">{{ rolesLabel(account) }}</span>
+              <span class="account-age" data-label="Age">{{ accountAge(account) }}</span>
+            </div>
+          } @empty {
+            <p class="empty">No accounts.</p>
+          }
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 
@@ -32,21 +36,25 @@
       <mat-card-subtitle>Alerts and privileged actions, newest first</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="activity-list" data-testid="admin-recovery-activity">
-        @for (item of activity; track $index) {
-          <div class="activity-row">
-            <span class="activity-kind" data-label="Kind">{{ item.kind }}</span>
-            <span class="activity-actor" data-label="Actor">{{ item.actor }}</span>
-            <span class="activity-time" data-label="Time">{{ formatTimestamp(item.createdAt) }}</span>
-          </div>
-        } @empty {
-          <app-no-results-message
-            title="No recovery activity"
-            hint="Alerts and privileged actions will appear here."
-            [isCentered]="true"
-            />
-        }
-      </div>
+      @if (activityLoadError) {
+        <app-load-error [message]="activityLoadError" (retry)="retryActivity()" />
+      } @else {
+        <div class="activity-list" data-testid="admin-recovery-activity">
+          @for (item of activity; track $index) {
+            <div class="activity-row">
+              <span class="activity-kind" data-label="Kind">{{ item.kind }}</span>
+              <span class="activity-actor" data-label="Actor">{{ item.actor }}</span>
+              <span class="activity-time" data-label="Time">{{ formatTimestamp(item.createdAt) }}</span>
+            </div>
+          } @empty {
+            <app-no-results-message
+              title="No recovery activity"
+              hint="Alerts and privileged actions will appear here."
+              [isCentered]="true"
+              />
+          }
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 
@@ -130,7 +138,7 @@
                       </div>
                     }
                     @if (errors[request.id]) {
-                      <div class="row-error">{{ errors[request.id] }}</div>
+                      <div class="row-error" role="alert">{{ errors[request.id] }}</div>
                     }
                   </div>
                 </td>
@@ -168,7 +176,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (recipient of recipientPageData.items; track recipient) {
+              @for (recipient of recipients; track recipient) {
                 <tr class="recipient-row">
                   <td data-label="Email">{{ recipient }}</td>
                   <td data-label="" class="recipient-actions">
@@ -186,17 +194,6 @@
               }
             </tbody>
           </table>
-
-          @if (recipientPageData.pageCount > 1) {
-            <div class="admin-pagination">
-              <span>{{ recipientPageData.total }} recipients</span>
-              <div class="pager">
-                <button mat-button type="button" [disabled]="recipientPageData.page === 1" (click)="goToRecipientPage(recipientPageData.page - 1)">Previous</button>
-                <span class="admin-muted">Page {{ recipientPageData.page }} of {{ recipientPageData.pageCount }}</span>
-                <button mat-button type="button" [disabled]="recipientPageData.page === recipientPageData.pageCount" (click)="goToRecipientPage(recipientPageData.page + 1)">Next</button>
-              </div>
-            </div>
-          }
         }
 
         <div class="add-recipient">
@@ -221,24 +218,28 @@
       <mat-card-subtitle>Every privileged recovery action</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="audit-list" data-testid="admin-audit-list">
-        @for (entry of audit; track entry.id || $index) {
-          <div class="audit-row">
-            <span class="audit-actor" data-label="Actor">{{ auditActor(entry) }}</span>
-            <span class="audit-action" data-label="Action">{{ entry.action }}</span>
-            <span class="audit-target" data-label="Target">{{ entry.targetEmail }}</span>
-            <span class="audit-request" data-label="Request">{{ entry.requestId }}</span>
-            <span class="audit-reason" data-label="Reason">{{ entry.reason }}</span>
-            <span class="audit-time" data-label="Time">{{ formatTimestamp(entry.createdAt) }}</span>
-          </div>
-        } @empty {
-          <app-no-results-message
-            title="No audit entries"
-            hint="Privileged recovery actions will appear here."
-            [isCentered]="true"
-            />
-        }
-      </div>
+      @if (auditLoadError) {
+        <app-load-error [message]="auditLoadError" (retry)="loadAudit()" />
+      } @else {
+        <div class="audit-list" data-testid="admin-audit-list">
+          @for (entry of audit; track entry.id || $index) {
+            <div class="audit-row">
+              <span class="audit-actor" data-label="Actor">{{ auditActor(entry) }}</span>
+              <span class="audit-action" data-label="Action">{{ entry.action }}</span>
+              <span class="audit-target" data-label="Target">{{ entry.targetEmail }}</span>
+              <span class="audit-request" data-label="Request">{{ entry.requestId }}</span>
+              <span class="audit-reason" data-label="Reason">{{ entry.reason }}</span>
+              <span class="audit-time" data-label="Time">{{ formatTimestamp(entry.createdAt) }}</span>
+            </div>
+          } @empty {
+            <app-no-results-message
+              title="No audit entries"
+              hint="Privileged recovery actions will appear here."
+              [isCentered]="true"
+              />
+          }
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>

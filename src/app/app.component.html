@@ -35,7 +35,7 @@
         <div
           class="d-none d-lg-block"
           >
-          <app-navbar-links [isMenuList]="false"></app-navbar-links>
+          <app-navbar-links [isMenuList]="false" [isSuperUser]="isSuperAdmin()"></app-navbar-links>
         </div>
         <div
           class="d-block d-lg-none"
@@ -63,7 +63,7 @@
               #menu="matMenu"
               class="toolbar-routes-menu"
               >
-              <app-navbar-links [isMenuList]="true"></app-navbar-links>
+              <app-navbar-links [isMenuList]="true" [isSuperUser]="isSuperAdmin()"></app-navbar-links>
             </mat-menu>
           }
         </div>

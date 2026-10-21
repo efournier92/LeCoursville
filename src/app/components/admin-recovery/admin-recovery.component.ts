@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Page, paginate } from 'src/app/admin/pagination';
 import { CloudFunctionsService } from 'src/app/services/cloud-functions.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
@@ -100,11 +99,15 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   requestsLoadError = '';
   recipientsLoading = true;
   recipientsLoadError = '';
-  recipientPage = 1;
+  auditLoadError = '';
+  accountsLoadError = '';
+  alertsLoadError = '';
 
-  private subscriptions: Subscription[] = [];
   private requestsSub?: Subscription;
   private recipientsSub?: Subscription;
+  private auditSub?: Subscription;
+  private accountsSub?: Subscription;
+  private alertsSub?: Subscription;
 
   constructor(
     private rtdb: RtdbService,
@@ -115,33 +118,17 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadRequests();
     this.loadRecipients();
-    this.subscriptions.push(
-      this.rtdb.list<RecoveryAuditEntry>('recoveryAudit').valueChanges().subscribe(entries => {
-        this.audit = entries.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      }),
-    );
-    this.subscriptions.push(
-      this.rtdb.list<AccountUser>('users').valueChanges().subscribe(users => {
-        this.accountCreations = [...users]
-          .sort((a, b) => this.registeredAt(b) - this.registeredAt(a))
-          .slice(0, 20);
-      }),
-    );
-    this.subscriptions.push(
-      this.rtdb.list<AdminAlert>('adminAlerts').valueChanges().subscribe(alerts => {
-        this.alerts = alerts;
-      }),
-    );
+    this.loadAudit();
+    this.loadAccounts();
+    this.loadAlerts();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
     this.requestsSub?.unsubscribe();
     this.recipientsSub?.unsubscribe();
-  }
-
-  get recipientPageData(): Page<string> {
-    return paginate(this.recipients, this.recipientPage);
+    this.auditSub?.unsubscribe();
+    this.accountsSub?.unsubscribe();
+    this.alertsSub?.unsubscribe();
   }
 
   loadRequests(): void {
@@ -178,8 +165,54 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
       });
   }
 
-  goToRecipientPage(page: number): void {
-    this.recipientPage = page;
+  loadAudit(): void {
+    this.auditLoadError = '';
+    this.auditSub?.unsubscribe();
+    this.auditSub = this.rtdb.list<RecoveryAuditEntry>('recoveryAudit').valueChanges().subscribe({
+      next: entries => {
+        this.audit = [...entries].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      },
+      error: () => {
+        this.auditLoadError = 'Could not load the audit trail.';
+      },
+    });
+  }
+
+  loadAccounts(): void {
+    this.accountsLoadError = '';
+    this.accountsSub?.unsubscribe();
+    this.accountsSub = this.rtdb.list<AccountUser>('users').valueChanges().subscribe({
+      next: users => {
+        this.accountCreations = [...users]
+          .sort((a, b) => this.registeredAt(b) - this.registeredAt(a))
+          .slice(0, 20);
+      },
+      error: () => {
+        this.accountsLoadError = 'Could not load recent account creations.';
+      },
+    });
+  }
+
+  loadAlerts(): void {
+    this.alertsLoadError = '';
+    this.alertsSub?.unsubscribe();
+    this.alertsSub = this.rtdb.list<AdminAlert>('adminAlerts').valueChanges().subscribe({
+      next: alerts => {
+        this.alerts = alerts;
+      },
+      error: () => {
+        this.alertsLoadError = 'Could not load recent recovery activity.';
+      },
+    });
+  }
+
+  get activityLoadError(): string {
+    return this.alertsLoadError || this.auditLoadError;
+  }
+
+  retryActivity(): void {
+    this.loadAudit();
+    this.loadAlerts();
   }
 
   /**
@@ -244,6 +277,17 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     }
     const reason = (this.reasons[request.id] || '').trim();
     if (!reason) {
+      return;
+    }
+    const account = request.name && request.name !== request.email
+      ? `${request.name} (${request.email})`
+      : request.email;
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Generate reset link?',
+      message: `Generate a password reset link for ${account}?`,
+      confirmLabel: 'Generate',
+    });
+    if (!confirmed) {
       return;
     }
     this.generating[request.id] = true;

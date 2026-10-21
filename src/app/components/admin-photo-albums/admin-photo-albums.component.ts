@@ -80,8 +80,12 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   private firstUploadedPhotoId: string | null = null;
 
   isDragOver = false;
+  actionError: string | null = null;
+  photosLoadError = false;
+  isDeletingAlbum = false;
 
   private subscriptions: Subscription[] = [];
+  private albumPhotosSubscription: Subscription | null = null;
 
   constructor(
     private photoAlbumsService: PhotoAlbumsService,
@@ -93,25 +97,26 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAlbums();
-
-    this.subscriptions.push(
-      this.photosService.nonMessagePhotos$.subscribe(photos => {
-        this.photos = photos || [];
-        this.recomputePhotoCounts();
-      }),
-    );
+    this.subscribeToPhotos();
   }
 
   ngOnDestroy(): void {
+    this.albumPhotosSubscription?.unsubscribe();
     this.subscriptions.forEach(s => s.unsubscribe());
   }
 
   private loadAlbums(): void {
     this.subscriptions.push(
+      this.photoAlbumsService.error$.subscribe(hasError => {
+        if (hasError) {
+          this.status = 'error';
+        }
+      }),
       this.photoAlbumsService.albums$.subscribe(albums => {
         // null is the service's not-yet-loaded seed; only a real snapshot
-        // (even an empty one) resolves the page.
-        if (albums === null) {
+        // (even an empty one) resolves the page. The error signal owns the
+        // failure state, so ignore the settled [] that follows it.
+        if (albums === null || this.status === 'error') {
           return;
         }
         this.albums = albums || [];
@@ -127,11 +132,24 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
     this.status = 'loading';
     this.subscriptions.forEach(s => s.unsubscribe());
     this.subscriptions = [];
+    this.photoAlbumsService.reload();
     this.loadAlbums();
+    this.subscribeToPhotos();
+  }
+
+  private subscribeToPhotos(): void {
+    this.photosLoadError = false;
     this.subscriptions.push(
-      this.photosService.nonMessagePhotos$.subscribe(photos => {
-        this.photos = photos || [];
-        this.recomputePhotoCounts();
+      this.photosService.nonMessagePhotos$.subscribe({
+        next: photos => {
+          this.photos = photos || [];
+          this.photosLoadError = false;
+          this.recomputePhotoCounts();
+        },
+        error: () => {
+          this.photosLoadError = true;
+          this.actionError = 'Couldn’t load photos, so album deletion is disabled to avoid orphaning them.';
+        },
       }),
     );
   }
@@ -257,13 +275,19 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
       if (!result || result.action !== 'start') {
         return;
       }
-      const album = await this.photoAlbumsService.createAlbum(result.title);
-      this.currentUploadAlbumId = album.id;
-      this.firstUploadedPhotoId = null;
-      this.analyticsService.logEvent('photo_album_create', { albumId: album.id, title: album.title });
-      for (const file of files) {
-        const upload = this.photosService.uploadPhotoToAlbum(file, album.id);
-        this.activeUploads.push({ upload, file });
+      this.actionError = null;
+      try {
+        const album = await this.photoAlbumsService.createAlbum(result.title);
+        this.currentUploadAlbumId = album.id;
+        this.firstUploadedPhotoId = null;
+        this.analyticsService.logEvent('photo_album_create', { albumId: album.id, title: album.title });
+        for (const file of files) {
+          const upload = this.photosService.uploadPhotoToAlbum(file, album.id);
+          this.activeUploads.push({ upload, file });
+        }
+      } catch {
+        // Keep the picked files and the page error visible so the admin can retry.
+        this.actionError = `Couldn’t start the upload for “${result.title}”. Please try again.`;
       }
     });
   }
@@ -353,22 +377,43 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   }
 
   openAlbumPhotos(album: PhotoAlbum): void {
+    this.albumPhotosSubscription?.unsubscribe();
     this.selectedAlbum = album;
     this.selectedAlbumPhotos = [];
     this.editingPhotoId = null;
     this.editDraft = null;
-    this.subscriptions.push(
-      this.photosService.getPhotosByAlbum(album.id).subscribe(photos => {
+    this.albumPhotosSubscription = this.photosService.getPhotosByAlbum(album.id).subscribe({
+      next: photos => {
+        if (this.selectedAlbum?.id !== album.id) {
+          return;
+        }
         this.selectedAlbumPhotos = photos || [];
-      }),
-    );
+      },
+      error: () => {
+        if (this.selectedAlbum?.id === album.id) {
+          this.actionError = `Couldn’t load photos for “${album.title}”.`;
+        }
+      },
+    });
   }
 
   closeAlbumPhotos(): void {
+    this.albumPhotosSubscription?.unsubscribe();
+    this.albumPhotosSubscription = null;
     this.selectedAlbum = null;
     this.selectedAlbumPhotos = [];
     this.editingPhotoId = null;
     this.editDraft = null;
+  }
+
+  onAlbumCardKeydown(event: KeyboardEvent, album: PhotoAlbum): void {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openAlbumPhotos(album);
+    }
   }
 
   isEditingPhoto(photo: Photo): boolean {
@@ -424,6 +469,14 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   }
 
   async onDeleteAlbum(album: PhotoAlbum): Promise<void> {
+    if (this.isDeletingAlbum) {
+      return;
+    }
+    this.actionError = null;
+    if (this.photosLoadError) {
+      this.actionError = `Couldn’t load photos, so “${album.title}” was not deleted; its photos would be orphaned. Reload and try again.`;
+      return;
+    }
     const photoCount = this.getPhotoCount(album);
     const confirmed = await this.confirmDialog.confirm({
       title: 'Delete album?',
@@ -431,14 +484,22 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
       confirmLabel: 'Delete album',
       destructive: true,
     });
-    if (!confirmed) {
+    if (!confirmed || this.isDeletingAlbum) {
       return;
     }
+    this.isDeletingAlbum = true;
     const photoIds = this.photos.filter(p => p.albumId === album.id).map(p => p.id);
-    await this.photoAlbumsService.deleteAlbumCascade(album.id, photoIds);
-    this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: photoIds.length });
-    if (this.selectedAlbum?.id === album.id) {
-      this.closeAlbumPhotos();
+    try {
+      await this.photoAlbumsService.deleteAlbumCascade(album.id, photoIds);
+      this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: photoIds.length });
+      // Only drop the drill-in panel once the cascade actually succeeded.
+      if (this.selectedAlbum?.id === album.id) {
+        this.closeAlbumPhotos();
+      }
+    } catch {
+      this.actionError = `Couldn’t delete “${album.title}”. Please try again.`;
+    } finally {
+      this.isDeletingAlbum = false;
     }
   }
 

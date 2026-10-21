@@ -1,6 +1,9 @@
 import { test, expect } from '../helpers/fixture';
 import { login, E2E_USERS } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
+import { readDb, writeDb } from '../helpers/admin-db';
+
+test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin', () => {
   test('users page lists the seeded users', async ({ page }) => {
@@ -13,6 +16,60 @@ test.describe('admin', () => {
     expect(names).toEqual(
       expect.arrayContaining(['Admin User', 'Regular User', 'Other User', 'Staff Admin', 'Sparse User']),
     );
+  });
+
+  test('super admin sees the Admin link in the navbar', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const navbar = page.locator('#lecoursville-navbar-links');
+    await expect(navbar).toBeVisible();
+    const adminLink = navbar.getByTestId('nav-admin-link');
+    await expect(adminLink).toBeVisible();
+    await expect(adminLink).toContainText('Admin');
+    await adminLink.click();
+    await expect(page).toHaveURL(/\/admin\/users$/);
+  });
+
+  test('staff admin does not see the Admin link in the navbar', async ({ page }) => {
+    await login(page, 'staff');
+    await page.goto('/calendar');
+    const navbar = page.locator('#lecoursville-navbar-links');
+    await expect(navbar).toBeVisible();
+    await expect(navbar.getByTestId('nav-admin-link')).toHaveCount(0);
+  });
+
+  test('user edit: a role change prompts for confirmation, and cancel writes nothing', async ({ page }) => {
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const entry = Object.entries(users).find(([, user]) => user?.email === 'user@e2e.local');
+    expect(entry).toBeTruthy();
+    const uid = entry![0];
+
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const emailInputs = page.locator('input[name="user-email"]');
+    await expect(emailInputs).toHaveCount(5, { timeout: 20000 });
+    const emails = await emailInputs.evaluateAll((elements) =>
+      elements.map((element) => (element as HTMLInputElement).value),
+    );
+    const index = emails.indexOf('user@e2e.local');
+    expect(index).toBeGreaterThanOrEqual(0);
+    const card = page.locator('app-user-edit').nth(index);
+    await expect(card).toBeVisible();
+    const before = await readDb(`users/${uid}`);
+
+    try {
+      await card.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await card.getByRole('button', { name: 'Save' }).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('Change access?');
+      await expect(dialog).toContainText('Give Regular User admin access?');
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await expect(dialog).toHaveCount(0);
+
+      expect(await readDb(`users/${uid}`)).toEqual(before);
+    } finally {
+      await writeDb(`users/${uid}`, before);
+    }
   });
 
   test('super admin sees the full grouped admin nav', async ({ page }) => {
@@ -83,6 +140,10 @@ test.describe('admin', () => {
     await toggle.click();
     await expect(nav).toBeVisible();
     await expect(page.getByTestId('admin-nav-link-families')).toBeFocused();
+    // The trap now includes the sidebar logo, so one Shift+Tab lands there and
+    // the next wraps to the last item.
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('.sidebar-header .logo-link')).toBeFocused();
     await page.keyboard.press('Shift+Tab');
     await expect(page.getByTestId('admin-nav-link-recovery')).toBeFocused();
     await page.keyboard.press('Escape');
@@ -143,9 +204,12 @@ test.describe('admin', () => {
     const chatToggle = page.getByTestId('feature-toggle-chat');
     const chatInput = chatToggle.locator('input[type="checkbox"]');
     await expect(chatInput).not.toBeChecked();
-    await chatToggle.click();
-    await expect(chatInput).toBeChecked();
-    await chatToggle.click();
+    try {
+      await chatToggle.click();
+      await expect(chatInput).toBeChecked();
+    } finally {
+      await setFeatureFlag(page, 'chat', false);
+    }
     await expect(chatInput).not.toBeChecked();
   });
 

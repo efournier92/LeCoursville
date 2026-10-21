@@ -4,7 +4,7 @@
 
   <mat-card class="import-card">
     <mat-card-content>
-      <div class="upload-area" (click)="fileInput.click()">
+      <button type="button" class="upload-area" (click)="fileInput.click()">
         <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
           <path d="M12 13v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -12,7 +12,7 @@
         </svg>
         <span class="upload-text">Click to select CSV file</span>
         <span class="upload-hint">or drag and drop</span>
-      </div>
+      </button>
       <input #fileInput type="file" accept=".csv" data-testid="import-file" (change)="onFileSelected($event)" hidden />
       @if (selectedFileName) {
         <div class="file-info">
@@ -77,6 +77,9 @@
           <mat-card-title>Import Preview</mat-card-title>
         </mat-card-header>
         <mat-card-content>
+          @if (skippedMissingId > 0) {
+            <p class="preview-skipped" data-testid="import-skipped">{{ skippedSummary }}</p>
+          }
           <div class="preview-stats">
             <div class="stat">
               <span class="stat-value">{{ importPreview.total }}</span>
@@ -187,7 +190,7 @@
               color="primary"
               data-testid="import-confirm"
               (click)="confirmImport()"
-              [disabled]="isImporting"
+              [disabled]="isImporting || validationErrors.length > 0"
               >
               <mat-icon>check</mat-icon>
               {{ isImporting ? 'Importing...' : 'Confirm Import' }}
@@ -199,6 +202,9 @@
   }
 
   @if (hasParsedFile && !importPreview && parsedPeople.length === 0 && !importResult) {
+    @if (skippedMissingId > 0) {
+      <p class="preview-skipped" role="status">{{ skippedSummary }}</p>
+    }
     <app-no-results-message
       title="No people to import"
       hint="The file didn't contain any valid rows."

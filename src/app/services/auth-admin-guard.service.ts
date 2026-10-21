@@ -28,7 +28,7 @@ export class AuthAdminGuardService  {
       // bouncing to sign-in so the user sees loading, not a redirect.
       timeout(5000),
       map((user: any) => {
-        if (user?.roles?.admin === true) {
+        if (user?.roles?.admin === true || user?.roles?.super === true) {
           return true;
         }
         this.routingService.NavigateToSignIn();

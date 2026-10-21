@@ -10,10 +10,18 @@ import {
   providedIn: "root",
 })
 export class ConfirmDialogService {
+  private pending: Promise<boolean> | null = null;
+
   constructor(private dialog: MatDialog) {}
 
   public confirm(data: ConfirmDialogData): Promise<boolean> {
-    return firstValueFrom(
+    // A second action while a dialog is open must not inherit the first
+    // dialog's answer (it may be about different data), so deny it instead of
+    // joining the in-flight promise. The open dialog still owns its own answer.
+    if (this.pending) {
+      return Promise.resolve(false);
+    }
+    this.pending = firstValueFrom(
       this.dialog
         .open(ConfirmDialogComponent, {
           data,
@@ -22,6 +30,9 @@ export class ConfirmDialogService {
         })
         .afterClosed()
         .pipe(map((result) => result === true)),
-    );
+    ).finally(() => {
+      this.pending = null;
+    });
+    return this.pending;
   }
 }

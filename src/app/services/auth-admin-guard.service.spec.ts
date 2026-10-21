@@ -36,6 +36,13 @@ describe('AuthAdminGuardService', () => {
     expect(routingSpy.NavigateToSignIn).not.toHaveBeenCalled();
   });
 
+  it('canActivate allows supers through even without the admin flag', async () => {
+    const result = firstValueFrom(service.canActivate());
+    user$.next({ id: 'u3', roles: { super: true } });
+    expect(await result).toBe(true);
+    expect(routingSpy.NavigateToSignIn).not.toHaveBeenCalled();
+  });
+
   it('canActivate redirects non-admin users to sign-in', async () => {
     const result = firstValueFrom(service.canActivate());
     user$.next({ id: 'u2', roles: { user: true } });

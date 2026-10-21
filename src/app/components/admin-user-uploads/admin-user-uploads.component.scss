@@ -21,6 +21,28 @@
   }
 }
 
+// C-21: the shared segmented control is 32px; this filter targets 44px.
+.gallery-segmented-btn {
+  height: 44px;
+}
+
+.action-error {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  background: rgba(179, 38, 30, 0.08);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+.list-capped-note {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  color: var(--color-ink-2);
+}
+
 // ── Review queue ──────────────────────────────────────────────────────────────
 .uploads-table {
   .upload-thumbnail {
@@ -64,7 +86,7 @@
 
   &.pending {
     background: rgba(156, 107, 38, 0.12);
-    color: var(--color-accent-strong);
+    color: var(--color-ink);
     .status-dot { background: var(--color-accent-strong); }
   }
 
@@ -294,6 +316,11 @@
 
   &:hover {
     background: var(--color-surface-muted);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: -2px;
   }
 
   .folder-icon {

@@ -17,6 +17,21 @@
   }
 }
 
+.write-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--color-error);
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 // CSV Upload Section
 .csv-upload-section {
   display: flex;
@@ -37,6 +52,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     cursor: pointer;
     padding: 16px;
 

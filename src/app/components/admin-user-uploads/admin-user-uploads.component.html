@@ -5,12 +5,14 @@
         <button
           class="gallery-segmented-btn"
           [class.active]="filterStatus === 'pending'"
+          [attr.aria-pressed]="filterStatus === 'pending'"
           (click)="setFilter('pending')">
           Pending ({{ pendingCount }})
         </button>
         <button
           class="gallery-segmented-btn"
           [class.active]="filterStatus === 'all'"
+          [attr.aria-pressed]="filterStatus === 'all'"
           (click)="setFilter('all')">
           All ({{ allUploads.length }})
         </button>
@@ -29,6 +31,9 @@
 
   <mat-card class="uploads-card">
     <div class="uploads-body">
+      @if (pageError) {
+        <div class="action-error" role="alert">{{ pageError }}</div>
+      }
       <!-- Review queue (Pending / All) -->
       @if (filterStatus !== 'browser' && uploadsLoading) {
         <div class="admin-skeleton-rows admin-state" aria-busy="true">
@@ -151,6 +156,9 @@
       <!-- Storage Browser: folder list -->
       @if (filterStatus === 'browser' && storageBrowserTab === 'list') {
         <div class="storage-browser">
+          @if (zipNotice) {
+            <p class="list-capped-note" role="status">{{ zipNotice }}</p>
+          }
           @if (isLoadingFolders) {
             <div class="admin-skeleton-rows admin-state" aria-busy="true">
               @for (row of [1, 2, 3, 4]; track row) {
@@ -171,14 +179,20 @@
               </div>
               <div class="folder-list">
                 @for (folder of pendingFolders; track folder) {
-                  <div class="folder-row" (click)="onFolderClick(folder)">
+                  <div class="folder-row"
+                    role="button"
+                    tabindex="0"
+                    [attr.aria-label]="'Open folder ' + folder.name"
+                    (click)="onFolderClick(folder)"
+                    (keydown)="onFolderRowKeydown($event, folder)">
                     <mat-icon class="folder-icon">folder</mat-icon>
                     <div class="folder-info">
                       <div class="folder-name">{{ folder.name }}</div>
-                      <div class="folder-meta">{{ folder.fileCount }} files</div>
+                      <div class="folder-meta">{{ folder.fileCount === null ? '? files' : folder.fileCount + ' files' }}</div>
                     </div>
                     <button mat-icon-button
                       matTooltip="Download as ZIP"
+                      [attr.aria-label]="'Download ' + folder.name + ' as ZIP'"
                       [disabled]="zipDownloadingFolder === folder.name"
                       (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
                       @if (zipDownloadingFolder !== folder.name) {
@@ -191,6 +205,9 @@
                   </div>
                 }
               </div>
+              @if (pendingFoldersCapped) {
+                <p class="list-capped-note">Showing first {{ pendingFolders.length }} folders.</p>
+              }
             </div>
           }
           @if (!isLoadingFolders && approvedFolders.length > 0) {
@@ -203,14 +220,20 @@
               </div>
               <div class="folder-list">
                 @for (folder of approvedFolders; track folder) {
-                  <div class="folder-row" (click)="onFolderClick(folder)">
+                  <div class="folder-row"
+                    role="button"
+                    tabindex="0"
+                    [attr.aria-label]="'Open folder ' + folder.name"
+                    (click)="onFolderClick(folder)"
+                    (keydown)="onFolderRowKeydown($event, folder)">
                     <mat-icon class="folder-icon">folder</mat-icon>
                     <div class="folder-info">
                       <div class="folder-name">{{ folder.name }}</div>
-                      <div class="folder-meta">{{ folder.fileCount }} files</div>
+                      <div class="folder-meta">{{ folder.fileCount === null ? '? files' : folder.fileCount + ' files' }}</div>
                     </div>
                     <button mat-icon-button
                       matTooltip="Download as ZIP"
+                      [attr.aria-label]="'Download ' + folder.name + ' as ZIP'"
                       [disabled]="zipDownloadingFolder === folder.name"
                       (click)="downloadFolderAsZip(folder); $event.stopPropagation()">
                       @if (zipDownloadingFolder !== folder.name) {
@@ -223,6 +246,9 @@
                   </div>
                 }
               </div>
+              @if (approvedFoldersCapped) {
+                <p class="list-capped-note">Showing first {{ approvedFolders.length }} folders.</p>
+              }
             </div>
           }
           @if (!isLoadingFolders && pendingFolders.length === 0 && approvedFolders.length === 0 && !folderError) {
@@ -245,7 +271,17 @@
             </button>
             <span class="breadcrumb-path" [matTooltip]="breadcrumbPath">{{ breadcrumbPath }}</span>
           </div>
-          @if (currentFolderFiles.length > 0) {
+          @if (isLoadingFiles) {
+            <div class="admin-skeleton-rows admin-state" aria-busy="true">
+              @for (row of [1, 2, 3, 4]; track row) {
+                <span></span>
+              }
+            </div>
+          }
+          @if (!isLoadingFiles && filesError) {
+            <app-load-error [message]="filesError" (retry)="retryLoadFiles()"></app-load-error>
+          }
+          @if (!isLoadingFiles && !filesError && currentFolderFiles.length > 0) {
             <div class="files-grid">
               @for (file of currentFolderFiles; track file) {
                 <div class="file-card">
@@ -262,8 +298,11 @@
                 </div>
               }
             </div>
+            @if (currentFolderFilesCapped) {
+              <p class="list-capped-note">Showing first {{ currentFolderFiles.length }} files.</p>
+            }
           }
-          @if (currentFolderFiles.length === 0) {
+          @if (!isLoadingFiles && !filesError && currentFolderFiles.length === 0) {
             <div class="empty-state">
               <mat-icon>folder_open</mat-icon>
               <h3>This folder is empty</h3>

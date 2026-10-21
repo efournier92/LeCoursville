@@ -8,17 +8,24 @@
     }
   </app-page-toolbar>
 
+  @if (actionError) {
+    <div class="write-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      {{ actionError }}
+    </div>
+  }
+
   <mat-card class="families-card">
     <mat-card-content>
       <div class="csv-upload-section">
-        <div class="upload-area" (click)="csvInput.click()">
+        <button type="button" class="upload-area" (click)="csvInput.click()">
           <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
             <path d="M12 13v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="m8 17 4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span>Upload CSV</span>
-        </div>
+        </button>
         <input #csvInput type="file" accept=".csv" (change)="onCsvFileSelected($event)" hidden />
         @if (!selectedFileName) {
           <span class="upload-hint">Supports Name, ID, Color_Hex columns</span>
@@ -35,7 +42,7 @@
             <span class="csv-count">{{ csvPreview.length }}</span>
           </div>
           @if (csvErrors.length > 0) {
-            <div class="csv-errors">
+            <div class="csv-errors" role="alert">
               @for (error of csvErrors; track error) {
                 <div class="error-item">
                   <mat-icon>error_outline</mat-icon>
@@ -44,6 +51,13 @@
               }
             </div>
           }
+          @if (importError) {
+            <div class="import-error write-error" role="alert">
+              <mat-icon>error_outline</mat-icon>
+              {{ importError }}
+            </div>
+          }
+          @if (csvPreview.length > 0) {
           <table class="admin-table">
             <thead>
               <tr>
@@ -79,9 +93,10 @@
             <button mat-button (click)="onCsvCancel()">Cancel</button>
             <button mat-flat-button color="primary" (click)="onCsvConfirm()" [disabled]="csvErrors.length > 0">
               <mat-icon>check</mat-icon>
-              Import {{ csvPreview.length }} Family
+              Import {{ validCsvCount }} {{ validCsvCount === 1 ? 'family' : 'families' }}
             </button>
           </div>
+          }
         </div>
       }
 

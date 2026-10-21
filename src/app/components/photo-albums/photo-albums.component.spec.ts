@@ -12,10 +12,12 @@ describe('PhotoAlbumsComponent', () => {
   let component: PhotoAlbumsComponent;
   let fixture: ComponentFixture<PhotoAlbumsComponent>;
   let albums$: Subject<PhotoAlbum[] | null>;
+  let albumsError$: Subject<boolean>;
   let photos$: Subject<any[]>;
 
   beforeEach(async () => {
     albums$ = new Subject();
+    albumsError$ = new Subject();
     photos$ = new Subject();
     await TestBed.configureTestingModule({
       declarations: [PhotoAlbumsComponent],
@@ -24,7 +26,14 @@ describe('PhotoAlbumsComponent', () => {
         // Getter so onRetry()'s resubscribe can be handed a live stream:
         // a Subject that errored is terminal and would fail the retry test
         // for the wrong reason.
-        { provide: PhotoAlbumsService, useValue: { get albums$() { return albums$.asObservable(); } } },
+        {
+          provide: PhotoAlbumsService,
+          useValue: {
+            get albums$() { return albums$.asObservable(); },
+            get error$() { return albumsError$.asObservable(); },
+            reload: jasmine.createSpy('reload'),
+          },
+        },
         { provide: PhotosService, useValue: { nonMessagePhotos$: photos$.asObservable() } },
         { provide: AnalyticsService, useValue: { logEvent: () => {} } },
         { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },

@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy, QueryList, ViewChildren } from '@angular/core';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { Subscription } from 'rxjs';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { FeatureFlag } from 'src/app/models/feature-flag';
@@ -26,7 +27,6 @@ const FEATURE_GROUPS: { label: string; ids: string[] }[] = [
 })
 export class AdminFeaturesComponent implements OnInit, OnDestroy {
   flagsMap: Record<string, FeatureFlag | null> = {};
-  featureDefs: FeatureConfig[] = FEATURES;
   featureGroups: FeatureGroup[] = FEATURE_GROUPS.map(group => ({
     label: group.label,
     features: group.ids
@@ -37,12 +37,19 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
   featureOptions = FEATURES;
   loading = true;
   loadError = '';
+  toggleError = '';
+  // One-way [checked] bindings only repaint when the value changes, so a failed
+  // write is pushed back through the live checkbox instances.
+  @ViewChildren(MatCheckbox) private checkboxes?: QueryList<MatCheckbox>;
 
   private readySub?: Subscription;
   private flagsSub?: Subscription;
   private promotedSub?: Subscription;
 
-  constructor(private featureFlagsService: FeatureFlagsService) { }
+  constructor(
+    private featureFlagsService: FeatureFlagsService,
+    private changeDetector: ChangeDetectorRef,
+  ) { }
 
   ngOnInit(): void {
     this.readySub = this.featureFlagsService.flagsReady().subscribe(ready => {
@@ -80,8 +87,24 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     return flag.enabled === true;
   }
 
-  onToggle(featureId: string, enabled: boolean): void {
-    this.featureFlagsService.setFeatureFlag(featureId, enabled);
+  async onToggle(featureId: string, enabled: boolean): Promise<void> {
+    this.toggleError = '';
+    const stored = this.isEnabled(featureId);
+    try {
+      await this.featureFlagsService.setFeatureFlag(featureId, enabled);
+    } catch {
+      const label = FEATURES.find(feature => feature.id === featureId)?.label || featureId;
+      this.toggleError = `Couldn’t save “${label}”. The toggle was reverted.`;
+      const checkbox = this.checkboxes?.find(item => item.id === `feature-id-${featureId}`);
+      if (checkbox) {
+        // The click already left the control showing the failed value; flip the
+        // binding once so the restore to `stored` is a visible change.
+        checkbox.checked = !stored;
+        this.changeDetector.detectChanges();
+        checkbox.checked = stored;
+        this.changeDetector.detectChanges();
+      }
+    }
   }
 
   onPromotedRouteChange(route: string): void {

@@ -22,6 +22,20 @@ const ROUTES: { route: string; url?: RegExp; content: (page: Page) => Locator }[
   },
 ];
 
+// Admin routes use the same ready-state rule under the admin shell. Each
+// locator exists only after that page's data state resolves.
+const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
+  { route: '/admin/users', content: (p) => p.locator('app-user-edit').first() },
+  { route: '/admin/families', content: (p) => p.locator('.admin-table').first() },
+  { route: '/admin/people', content: (p) => p.locator('.import-card') },
+  { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
+  { route: '/admin/media', content: (p) => p.locator('mat-tab-group') },
+  { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
+  { route: '/admin/uploads', content: (p) => p.getByText("You're all caught up") },
+  { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
+  { route: '/admin/features', content: (p) => p.locator('mat-checkbox').first() },
+];
+
 test.describe('loading contract', () => {
   test.afterEach(async ({ collector }) => {
     collector.assertClean();
@@ -89,5 +103,29 @@ test.describe('loading contract', () => {
     await expect(page.locator('mat-toolbar').getByText('Sign In')).toBeVisible();
     await login(page, 'admin');
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+  });
+
+  test('every admin route renders content, never a blank body', async ({ page }) => {
+    await login(page, 'admin');
+    for (const { route, content } of ADMIN_ROUTES) {
+      await page.goto(route);
+      // The admin shell must paint within 1s of the load event: no unbounded spinner.
+      await expect(page.locator('.admin-content')).toBeVisible({ timeout: 1000 });
+      await expect(page.locator('app-page-toolbar').first()).toBeVisible();
+      await expect(content(page)).toBeVisible();
+      await expect(page.locator('app-load-error:visible')).toHaveCount(0);
+    }
+  });
+
+  test('admin skeleton resolves under reload stress', async ({ page }) => {
+    await login(page, 'admin');
+    for (const { route, content } of ADMIN_ROUTES) {
+      await page.goto(route);
+      await page.reload();
+      await page.reload();
+      await page.reload();
+      await expect(content(page)).toBeVisible();
+      await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+    }
   });
 });

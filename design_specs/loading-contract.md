@@ -9,7 +9,9 @@ Rapid refresh can strand any page in skeleton state. Root causes, from the loadi
 - Chat, expressions, photo-albums, and media-list dismiss skeletons with a `setTimeout(500)` after first emit; if the first emit errors, dismissal never runs.
 - Top-nav links render only `@if (user?.id)`: while Firebase auth resolves (the mash-refresh window), the toolbar shows but the nav area is blank.
 
-## Contract (all non-admin routes)
+## Contract (all routes, including the nine admin routes)
+
+The nine admin routes are in scope: `/admin/users`, `/admin/families`, `/admin/people`, `/admin/calendars`, `/admin/media`, `/admin/photo-albums`, `/admin/uploads`, `/admin/recovery`, `/admin/features`.
 
 Each page's primary data load has exactly one of four states, rendered explicitly:
 
@@ -39,7 +41,18 @@ Rules:
 
 ## Out of scope
 
-- Admin routes, SSR, resolvers, global loading watchdogs, retry backoff. `minimalist:` ceiling: if the e2e stress suite still finds hangs after error callbacks exist, revisit a watchdog then.
+- SSR, resolvers, global loading watchdogs, retry backoff. `minimalist:` ceiling: if the e2e stress suite still finds hangs after error callbacks exist, revisit a watchdog then.
+
+## Admin Routes
+
+The four states above are enforced per admin page, against the seeded emulator data:
+
+- `loading`: `.admin-skeleton-rows` with `aria-busy="true"` while the page stream is pending.
+- `error`: `app-load-error` with a "Try again" button that resubscribes.
+- `empty`: `app-no-results-message` with a page-specific title and hint.
+- `ready`: the page's own content (`.admin-table`, `app-user-edit`, `.admin-album-card`, `.import-card`, `mat-tab-group`, `mat-checkbox`).
+
+Admin shell rule: the `.admin-content` region paints within 1s of the load event and never shows an unbounded spinner. A second or later reload must resolve content and leave no visible `.admin-skeleton-rows`.
 
 ## E2E coverage (mandatory per AGENTS.md)
 
@@ -49,5 +62,7 @@ New `e2e/specs/loading.spec.ts`, fixture-based (console-error collector), determ
 2. Reload stress: per route, three rapid reloads, then settle: content renders, zero console errors.
 3. Empty-state: seeded sparse user with no contacts/photos sees the empty-state message, not the skeleton.
 4. Nav: after fresh load + login, links visible without a blank-links window in between (toolbar assertion covers chrome; links assertion covers resolution).
+5. Per admin route: `.admin-content` and the page toolbar visible within 1s; the route's ready content visible; no `app-load-error`.
+6. Admin reload stress: per route, three rapid reloads, then ready content and no visible `.admin-skeleton-rows`.
 
 Seed extensions go in `scripts/e2e/seed.mjs`, never hand-edited emulator state.

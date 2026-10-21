@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { MediaConstants } from 'src/app/constants/media-constants';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-admin-media-upload-audio-album',
@@ -19,11 +20,13 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   user: User;
   folderName: string;
   tracksString: string;
+  deleteError: string | null = null;
 
   constructor(
     private authService: AuthService,
     private mediaService: MediaService,
     private audioAlbumUploadService: AudioAlbumUploadService,
+    private confirmDialog: ConfirmDialogService,
   ) { }
 
   // LIFECYCLE EVENTS
@@ -44,7 +47,7 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   // PUBLIC METHODS
 
   isUserAdmin(): boolean {
-    return this.user?.roles?.admin;
+    return !!(this.user?.roles?.admin || this.user?.roles?.super);
   }
 
   onMediaSelect(album: AudioAlbum): void {
@@ -59,9 +62,21 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.resetSelectedMedia();
   }
 
-  onDeleteSelectedMedia(media: UploadableMedia): void {
-    this.mediaService.deleteMedia(media);
-    this.resetSelectedMedia();
+  async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete album?',
+      message: `Delete “${media.title || media.folderName || 'this album'}”? This cannot be undone.`,
+      confirmLabel: 'Delete album',
+      destructive: true,
+    });
+    if (!confirmed) { return; }
+    this.deleteError = null;
+    try {
+      await this.mediaService.deleteMedia(media);
+      this.resetSelectedMedia();
+    } catch {
+      this.deleteError = `Couldn’t delete “${media.title || media.folderName || 'this album'}”. Please try again.`;
+    }
   }
 
   onCancelSelectedMedia(): void {

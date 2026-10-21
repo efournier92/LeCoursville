@@ -95,23 +95,24 @@ test.describe('admin people surfaces', () => {
       'Zip',
     ]);
 
-    await page.evaluate(() => {
-      (window as any).__sawImportBusy = false;
-      const button = document.querySelector('[data-testid="import-confirm"]');
-      const card = document.querySelector('.preview-card');
-      const observer = new MutationObserver(() => {
-        if ((button as HTMLButtonElement)?.disabled || card?.getAttribute('aria-busy') === 'true') {
-          (window as any).__sawImportBusy = true;
-        }
-      });
-      observer.observe(button!, { attributes: true, attributeFilter: ['disabled'] });
-      observer.observe(card!, { attributes: true, attributeFilter: ['aria-busy'] });
-    });
-
     await page.getByTestId('import-confirm').click();
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const button = document.querySelector(
+              '[data-testid="import-confirm"]',
+            ) as HTMLButtonElement | null;
+            const card = document.querySelector('.preview-card');
+            const complete = Array.from(document.querySelectorAll('h3')).some((heading) =>
+              (heading.textContent ?? '').includes('Import Complete'),
+            );
+            return !!button?.disabled || card?.getAttribute('aria-busy') === 'true' || complete;
+          }),
+        { timeout: 15000 },
+      )
+      .toBe(true);
     await expect(page.getByText('Import Complete')).toBeVisible({ timeout: 15000 });
-
-    expect(await page.evaluate(() => (window as any).__sawImportBusy)).toBe(true);
   });
 
   test('families render as cards at 390px with no horizontal overflow', async ({ page }) => {

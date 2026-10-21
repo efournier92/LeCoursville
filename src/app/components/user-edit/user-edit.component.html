@@ -8,7 +8,7 @@
         <input
           matInput
           name="user-name"
-          [(ngModel)]="userOnCard.name"
+          [(ngModel)]="formUser.name"
           />
       </mat-form-field>
       <mat-form-field class="user-edit-form-field w-100">
@@ -17,18 +17,18 @@
           matInput
           type="email"
           name="user-email"
-          [(ngModel)]="userOnCard.email"
+          [(ngModel)]="formUser.email"
           />
       </mat-form-field>
       <div class="user-edit-display-container">
         <div class="user-edit-field-group">
           <div class="user-edit-display-field">
             <div class="user-edit-display-label">Last Active</div>
-            <div class="user-edit-display-value">{{ userOnCard.dateLastActive | date:'yyyy-MM-dd' }}</div>
+            <div class="user-edit-display-value">{{ formUser.dateLastActive | date:'yyyy-MM-dd' }}</div>
           </div>
           <div class="user-edit-display-field user-edit-display-right">
             <div class="user-edit-display-label">Registered</div>
-            <div class="user-edit-display-value">{{ userOnCard.dateRegistered | date:'yyyy-MM-dd' }}</div>
+            <div class="user-edit-display-value">{{ formUser.dateRegistered | date:'yyyy-MM-dd' }}</div>
           </div>
         </div>
       </div>
@@ -38,26 +38,29 @@
           >
           <mat-checkbox
             name="user-roles-user"
-            [(ngModel)]="userOnCard.roles.user"
+            [(ngModel)]="formUser.roles.user"
             >
             User
           </mat-checkbox>
           <mat-checkbox
             name="user-roles-admin"
-            [(ngModel)]="userOnCard.roles.admin"
+            [(ngModel)]="formUser.roles.admin"
+            [disabled]="formUser.roles.super"
+            (change)="onAdminChange(formUser)"
             >
             Admin
           </mat-checkbox>
           <mat-checkbox
             name="user-roles-super"
-            [(ngModel)]="userOnCard.roles.super"
+            [(ngModel)]="formUser.roles.super"
+            (change)="onSuperChange(formUser)"
             >
             Super
           </mat-checkbox>
         </div>
       }
       @if (isAdminMode) {
-        <div class="user-edit-id-caption">{{ userOnCard.id }}</div>
+        <div class="user-edit-id-caption">{{ formUser.id }}</div>
       }
     </form>
     <mat-card-footer class="user-card-footer-actions m-0 mt-4">
@@ -75,7 +78,7 @@
         mat-flat-button
         class="admin-form-action-button admin-form-action-button-upload col m-2"
         color="primary"
-        (click)="onSaveUser(userOnCard)"
+        (click)="onSaveUser(formUser)"
         >
         <span>Save</span>
       </button>
@@ -84,7 +87,7 @@
           mat-stroked-button
           class="admin-form-action-button admin-form-action-button-delete col m-2"
           color="warn"
-          (click)="onDeleteUser(userOnCard)"
+          (click)="onDeleteUser(formUser)"
           >
           <span>Delete</span>
         </button>

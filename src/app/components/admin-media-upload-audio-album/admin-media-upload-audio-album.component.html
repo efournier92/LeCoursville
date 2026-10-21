@@ -1,8 +1,11 @@
-@if (user?.roles?.admin) {
+@if (user?.roles?.admin || user?.roles?.super) {
   <div
     class="w-100 d-flex flex-column"
     >
     <mat-card class="w-100 mat-elevation-z6">
+      @if (deleteError) {
+        <div class="action-error" role="alert">{{ deleteError }}</div>
+      }
       <form class="audio-album-upload-form">
         <mat-form-field class="admin-upload-input">
           <mat-label>Title</mat-label>

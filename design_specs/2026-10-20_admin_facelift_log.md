@@ -57,3 +57,23 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
   fixed and re-verified.
 - Ledger: `design_specs/2026-10-20_admin_facelift_critique.md`.
 - Final render set: `/tmp/af-shots6/` (not committed).
+
+## Phase 5: Redteam Convergence
+
+- Ledger: `docs/critique/2026-10-20_admin-facelift.md`, 59 findings across
+  product, security, accessibility, reliability, scale, data integrity,
+  correctness, and maintainability.
+- Three rounds. Round two found 15 regressions, round three found 6 more in the
+  newest fixes; all highs and mediums are addressed or rejected with evidence.
+- Referee verdict: CONVERGED under the three-round cap; five human-only
+  decisions remain (AFQ-06, AFQ-08, AFQ-09, AFQ-10, AFQ-11).
+- New decisions recorded in `design_specs/admin_facelift_questions.md`:
+  AFQ-05 (super implies admin) is CERTAIN; AFQ-06 through AFQ-11 are recorded
+  with defaults applied.
+
+## Phase 6: Coverage And Gate
+
+- Loading contract extended to all nine admin routes: content within 1s, no
+  blank body, no lingering skeleton after three reloads.
+- Missing unit specs from Phase 0 all present: families, calendars, people
+  import, uploads, recovery, photo albums, album upload dialog.

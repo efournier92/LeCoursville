@@ -17,6 +17,21 @@
   }
 }
 
+.write-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--color-error);
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .calendar-year {
   font-variant-numeric: tabular-nums;
   font-weight: 600;

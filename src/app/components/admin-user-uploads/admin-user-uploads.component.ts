@@ -7,7 +7,7 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { ref, list, getBlob, getMetadata, getDownloadURL } from 'firebase/storage';
+import { ref, list, listAll, getBlob, getMetadata, getDownloadURL } from 'firebase/storage';
 import { FirebaseService } from '../../services/firebase.service';
 import JSZip from 'jszip';
 import { UserUpload } from '../../models/user-upload';
@@ -26,7 +26,8 @@ import { PageToolbarComponent } from '../shared/page-toolbar/page-toolbar.compon
 interface StorageFolder {
   name: string;
   fullPath: string;
-  fileCount: number;
+  /** null when the file listing failed, so the UI does not claim "0 files". */
+  fileCount: number | null;
   section: 'userUploads' | 'photos';
 }
 
@@ -66,6 +67,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   filterStatus: 'pending' | 'all' | 'browser' = 'pending';
   uploadsLoading = true;
   uploadsError: string | null = null;
+  pageError: string | null = null;
   page = 1;
   readonly pageSize = 10;
   @ViewChild('previewDialog') previewDialog!: TemplateRef<any>;
@@ -77,12 +79,18 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   selectedSection: 'userUploads' | 'photos' | null = null;
   pendingFolders: StorageFolder[] = [];
   approvedFolders: StorageFolder[] = [];
+  pendingFoldersCapped = false;
+  approvedFoldersCapped = false;
   currentFolderFiles: StorageFile[] = [];
+  currentFolderFilesCapped = false;
   currentFolderPath: string = '';
   breadcrumbPath: string = '';
   zipDownloadingFolder: string | null = null;
+  zipNotice: string | null = null;
   isLoadingFolders: boolean = false;
+  isLoadingFiles: boolean = false;
   folderError: string | null = null;
+  filesError: string | null = null;
 
   private subscriptions: Subscription[] = [];
 
@@ -156,7 +164,14 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   async onApprove(upload: UserUpload): Promise<void> {
-    const flags = await firstValueFrom(this.featureFlagsService.getAllFeatureFlags());
+    this.pageError = null;
+    let flags: any;
+    try {
+      flags = await firstValueFrom(this.featureFlagsService.getAllFeatureFlags());
+    } catch {
+      this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
+      return;
+    }
     if (!flags['enablePhotoAlbums']?.enabled) {
       // Feature OFF: keep the pre-photo-albums approval behavior.
       this.processingIds.add(upload.id);
@@ -164,6 +179,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
         await this.userUploadService.approveUpload(upload);
       } catch (error) {
         console.error('Approval failed:', error);
+        this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
       } finally {
         this.processingIds.delete(upload.id);
       }
@@ -187,9 +203,14 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       albumId = result.albumId;
       mode = 'existing';
     } else {
-      const created = await this.photoAlbumsService.createAlbum(result.title);
-      albumId = created.id;
-      mode = 'new';
+      try {
+        const created = await this.photoAlbumsService.createAlbum(result.title);
+        albumId = created.id;
+        mode = 'new';
+      } catch {
+        this.pageError = `Couldn’t create the album for “${upload.fileName}”. Please try again.`;
+        return;
+      }
     }
     this.processingIds.add(upload.id);
     try {
@@ -201,12 +222,14 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       });
     } catch (error) {
       console.error('Approval failed:', error);
+      this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
     } finally {
       this.processingIds.delete(upload.id);
     }
   }
 
   async onReject(upload: UserUpload): Promise<void> {
+    this.pageError = null;
     const confirmed = await this.confirmDialog.confirm({
       title: 'Reject upload?',
       message: `Reject “${upload.fileName}” from ${this.getUploaderName(upload) || 'this guest'}? The file will be removed from the review queue.`,
@@ -221,6 +244,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       await this.userUploadService.rejectUpload(upload);
     } catch (error) {
       console.error('Rejection failed:', error);
+      this.pageError = `Couldn’t reject “${upload.fileName}”. Please try again.`;
     } finally {
       this.processingIds.delete(upload.id);
     }
@@ -248,6 +272,8 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     this.filterStatus = 'pending';
     this.storageBrowserTab = 'list';
     this.currentFolderFiles = [];
+    this.currentFolderFilesCapped = false;
+    this.filesError = null;
   }
 
   isProcessing(id: string): boolean {
@@ -282,6 +308,8 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     this.folderError = null;
     this.pendingFolders = [];
     this.approvedFolders = [];
+    this.pendingFoldersCapped = false;
+    this.approvedFoldersCapped = false;
 
     this.loadFolderSection('userUploads').then(() => {
       return this.loadFolderSection('photos');
@@ -305,22 +333,25 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       const folders: StorageFolder[] = result.prefixes.map(prefix => ({
         name: this.getFolderNameFromPath(prefix.fullPath),
         fullPath: prefix.fullPath,
-        fileCount: 0,
+        fileCount: null,
         section,
       }));
       await Promise.all(folders.map(async f => {
         try {
-          const folderRef = this.getFolderRef(section, f.name);
-          const files = await list(folderRef, { maxResults: 1 });
+          // listAll gives the exact count; the old maxResults:1 read always reported "1 file".
+          const files = await listAll(this.getFolderRef(section, f.name));
           f.fileCount = files.items.length;
         } catch {
-          f.fileCount = 0;
+          f.fileCount = null;
         }
       }));
+      const capped = !!result.nextPageToken;
       if (section === 'userUploads') {
         this.pendingFolders = folders;
+        this.pendingFoldersCapped = capped;
       } else {
         this.approvedFolders = folders;
+        this.approvedFoldersCapped = capped;
       }
     } catch (error) {
       console.error(`Failed to list ${section}:`, error);
@@ -341,11 +372,26 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     await this.loadFilesInFolder(folder.fullPath);
   }
 
+  onFolderRowKeydown(event: KeyboardEvent, folder: StorageFolder): void {
+    // Ignore keys from the inner ZIP button so it does not open the folder.
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onFolderClick(folder);
+    }
+  }
+
   async loadFilesInFolder(fullPath: string): Promise<void> {
     this.currentFolderFiles = [];
-    const storageRef = ref(this.firebase.storage, fullPath);
+    this.currentFolderFilesCapped = false;
+    this.isLoadingFiles = true;
+    this.filesError = null;
     try {
+      const storageRef = ref(this.firebase.storage, fullPath);
       const result = await list(storageRef, { maxResults: 200 });
+      this.currentFolderFilesCapped = !!result.nextPageToken;
       const fileRefs = result.items;
       const files: StorageFile[] = fileRefs.map(item => ({
         name: item.name,
@@ -373,12 +419,23 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       this.currentFolderFiles = files;
     } catch (error) {
       console.error('Failed to list files:', error);
+      this.filesError = 'Failed to load files in this folder. Check storage rules.';
+    } finally {
+      this.isLoadingFiles = false;
+    }
+  }
+
+  retryLoadFiles(): void {
+    if (this.currentFolderPath) {
+      this.loadFilesInFolder(this.currentFolderPath);
     }
   }
 
   backToFolderList(): void {
     this.storageBrowserTab = 'list';
     this.currentFolderFiles = [];
+    this.currentFolderFilesCapped = false;
+    this.filesError = null;
     this.currentFolderPath = '';
     this.breadcrumbPath = '';
     this.selectedSection = null;
@@ -386,26 +443,35 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   async downloadFolderAsZip(folder: StorageFolder): Promise<void> {
     this.zipDownloadingFolder = folder.name;
+    this.zipNotice = null;
     const zip = new JSZip();
     const storageRef = ref(this.firebase.storage, folder.fullPath);
 
     try {
-      const result = await list(storageRef, { maxResults: 500 });
-      const files = result.items;
+      const result = await listAll(storageRef);
+      const zipped = result.items.slice(0, 500);
 
-      const blobResults = await Promise.all(
-        files.map(async (item) => {
+      const blobs: ({ name: string; blob: Blob } | null)[] = [];
+      let nextIndex = 0;
+      const fetchNext = async () => {
+        while (nextIndex < zipped.length) {
+          const index = nextIndex++;
+          const item = zipped[index];
           try {
-            const blob = await getBlob(item);
-            return { name: item.name, blob };
+            blobs[index] = { name: item.name, blob: await getBlob(item) };
           } catch (error) {
+            blobs[index] = null;
             console.warn(`Failed to fetch ${item.name}:`, error);
-            return null;
           }
-        })
-      );
+        }
+      };
+      // Bounded fetch concurrency keeps a large folder from pulling every blob at once.
+      await Promise.all(Array.from({ length: Math.min(4, zipped.length) }, fetchNext));
 
-      for (const r of blobResults) {
+      const failed = blobs.filter(blob => blob === null).length;
+      this.zipNotice = this.buildZipNotice(folder.name, result.items.length, zipped.length, failed);
+
+      for (const r of blobs) {
         if (r) {
           zip.folder(folder.name)?.file(r.name, r.blob);
         }
@@ -423,5 +489,18 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     } finally {
       this.zipDownloadingFolder = null;
     }
+  }
+
+  private buildZipNotice(folderName: string, total: number, included: number, failed: number): string | null {
+    const notices: string[] = [];
+    if (total > included) {
+      notices.push(`ZIP contains the first ${included} of ${total} files from “${folderName}”.`);
+    }
+    if (failed > 0) {
+      // The ZIP still downloads; make the partial result explicit instead of
+      // silently dropping the blobs that failed to fetch.
+      notices.push(`${failed} file${failed === 1 ? '' : 's'} could not be added.`);
+    }
+    return notices.length > 0 ? notices.join(' ') : null;
   }
 }

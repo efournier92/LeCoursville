@@ -4,7 +4,7 @@ import { ClanService } from 'src/app/services/clan.service';
 import { Clan } from 'src/app/models/clan';
 import { Person, PersonDate, Email, Phone } from 'src/app/models/person';
 import { Address } from 'src/app/models/address';
-import { paginate, Page } from 'src/app/admin/pagination';
+import { paginate, Page, pageRange } from 'src/app/admin/pagination';
 
 interface ParsedPerson {
   person: Person;
@@ -30,7 +30,10 @@ export class AdminPeopleImportComponent implements OnInit {
   importError: string | null = null;
   selectedFileName: string | null = null;
   hasParsedFile = false;
+  skippedMissingId = 0;
   private clansByNameMap: Map<string, Clan> = new Map();
+  private clansFromDb: Clan[] = [];
+  private pendingClans: Map<string, Clan> = new Map();
 
   // Pagination
   readonly previewPageSize = 10;
@@ -43,7 +46,8 @@ export class AdminPeopleImportComponent implements OnInit {
 
   ngOnInit(): void {
     this.clanService.clans$.subscribe(clans => {
-      this.clansByNameMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
+      this.clansFromDb = clans || [];
+      this.rebuildClansByNameMap();
     });
   }
 
@@ -55,6 +59,10 @@ export class AdminPeopleImportComponent implements OnInit {
     this.importError = null;
     this.hasParsedFile = true;
     this.previewPage = 1;
+    this.skippedMissingId = 0;
+    this.pendingClans.clear();
+    // Drop drafts from a previous parse so they are re-added to pending.
+    this.rebuildClansByNameMap();
 
     const lines = rawCsv.trim().split('\n');
     if (lines.length < 2) {
@@ -74,6 +82,7 @@ export class AdminPeopleImportComponent implements OnInit {
 
       const idIndex = headerMap['ID'];
       if (idIndex !== undefined && (!values[idIndex] || values[idIndex].trim() === '')) {
+        this.skippedMissingId++;
         continue;
       }
 
@@ -206,10 +215,11 @@ export class AdminPeopleImportComponent implements OnInit {
     if (!clanName) return null;
 
     // Case-insensitive lookup in clansByNameMap
-    const clan = this.clansByNameMap.get(clanName.toLowerCase());
+    const key = clanName.toLowerCase();
+    const clan = this.clansByNameMap.get(key);
     if (clan) return clan.id;
 
-    // Auto-create clan with ID from CSV if provided, otherwise use generated push ID
+    // Preview is read-only: draft the clan here and create it on Confirm.
     const hexColor = (colorHex && /^#[0-9A-Fa-f]{6}$/.test(colorHex)) ? colorHex : '#808080';
     const newClan: Clan = {
       id: clanIdFromCsv || this.clanService.createPushId(),
@@ -219,10 +229,10 @@ export class AdminPeopleImportComponent implements OnInit {
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
-    this.clanService.saveClan(newClan);
+    this.pendingClans.set(key, newClan);
 
-    // Update the map with the new clan so subsequent rows with same name use the same clan
-    this.clansByNameMap.set(clanName.toLowerCase(), newClan);
+    // Subsequent rows with the same family name share this draft.
+    this.clansByNameMap.set(key, newClan);
 
     return newClan.id;
   }
@@ -412,26 +422,54 @@ export class AdminPeopleImportComponent implements OnInit {
   }
 
   confirmImport(): void {
-    if (this.parsedPeople.length === 0 || this.isImporting) return;
+    if (this.parsedPeople.length === 0 || this.isImporting || this.validationErrors.length > 0) return;
 
     this.isImporting = true;
     this.importError = null;
     const people = this.parsedPeople.map(p => p.person);
+    const clans = Array.from(this.pendingClans.values());
 
+    if (clans.length === 0) {
+      this.runImport(people);
+      return;
+    }
+
+    Promise.all(clans.map(clan => this.clanService.saveClan(clan)))
+      .then(() => {
+        this.runImport(people, clans);
+      })
+      .catch(err => {
+        this.isImporting = false;
+        this.importError = 'Import failed: ' + (err?.message || 'Unknown error');
+        this.rollbackClans(clans);
+      });
+  }
+
+  private runImport(people: Person[], clans: Clan[] = []): void {
     this.peopleService.importPeople(people).subscribe({
       next: result => {
         this.isImporting = false;
         this.importResult = result;
         this.lastImportTimestamp = new Date().toLocaleString();
+        this.pendingClans.clear();
         this.parsedPeople = [];
         this.importPreview = null;
         this.hasParsedFile = false;
+        this.skippedMissingId = 0;
         this.previewPage = 1;
       },
       error: err => {
         this.isImporting = false;
         this.importError = 'Import failed: ' + (err?.message || 'Unknown error');
+        this.rollbackClans(clans);
       },
+    });
+  }
+
+  private rollbackClans(clans: Clan[]): void {
+    // best-effort: a failed delete must not mask the import error the admin sees.
+    clans.forEach(clan => {
+      this.clanService.deleteClan(clan.id).catch(() => undefined);
     });
   }
 
@@ -440,7 +478,14 @@ export class AdminPeopleImportComponent implements OnInit {
     this.importPreview = null;
     this.importError = null;
     this.hasParsedFile = false;
+    this.skippedMissingId = 0;
+    this.pendingClans.clear();
+    this.rebuildClansByNameMap();
     this.previewPage = 1;
+  }
+
+  private rebuildClansByNameMap(): void {
+    this.clansByNameMap = new Map(this.clansFromDb.map(c => [c.name.toLowerCase(), c]));
   }
 
   onFileSelected(event: Event): void {
@@ -471,14 +516,13 @@ export class AdminPeopleImportComponent implements OnInit {
     return paginate(this.parsedPeople, this.previewPage, this.previewPageSize);
   }
 
+  get skippedSummary(): string {
+    const rowLabel = this.skippedMissingId === 1 ? 'row' : 'rows';
+    return `${this.skippedMissingId} ${rowLabel} skipped: missing ID`;
+  }
+
   get previewShowingRange(): string {
-    const page = this.previewPageData;
-    if (page.total === 0) {
-      return 'Showing 0 of 0';
-    }
-    const start = (page.page - 1) * this.previewPageSize + 1;
-    const end = start + page.items.length - 1;
-    return `Showing ${start}-${end} of ${page.total}`;
+    return pageRange(this.previewPageData);
   }
 
   previousPreviewPage(): void {

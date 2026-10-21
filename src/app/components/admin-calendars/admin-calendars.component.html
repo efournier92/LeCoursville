@@ -12,6 +12,13 @@
     Map each year to the calendar PDF that visitors download. Add or edit a year below.
   </p>
 
+  @if (actionError) {
+    <div class="write-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      {{ actionError }}
+    </div>
+  }
+
   <mat-card class="calendars-card">
     <mat-card-content>
       @if (loading) {
@@ -37,7 +44,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (calendar of pageData.items; track calendar.id) {
+            @for (calendar of calendars; track calendar.id) {
               <tr>
                 <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
                 <td data-label="URL" class="calendar-url-cell calendar-url">{{ calendar.url }}</td>
@@ -53,17 +60,6 @@
             }
           </tbody>
         </table>
-
-        @if (pageData.pageCount > 1) {
-          <div class="admin-pagination">
-            <span>{{ pageData.total }} calendars</span>
-            <div class="pager">
-              <button mat-button type="button" [disabled]="pageData.page === 1" (click)="goToPage(pageData.page - 1)">Previous</button>
-              <span class="admin-muted">Page {{ pageData.page }} of {{ pageData.pageCount }}</span>
-              <button mat-button type="button" [disabled]="pageData.page === pageData.pageCount" (click)="goToPage(pageData.page + 1)">Next</button>
-            </div>
-          </div>
-        }
       }
 
       @if (isAdding || editingCalendar) {

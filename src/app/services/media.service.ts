@@ -85,14 +85,16 @@ export class MediaService {
     return this.filterMedia(loadedMedia);
   }
 
-  deleteMedia(media: UploadableMedia): void {
+  async deleteMedia(media: UploadableMedia): Promise<void> {
+    const removals: Promise<void>[] = [];
     if (media?.listing?.length > 0) {
       media.listing.forEach((id: string) => {
-        this.rtdb.object(`media/${id}`).remove();
+        removals.push(this.rtdb.object(`media/${id}`).remove());
       });
     }
 
-    this.rtdb.object(`media/${media.id}`).remove();
+    removals.push(this.rtdb.object(`media/${media.id}`).remove());
+    await Promise.all(removals);
   }
 
   loadAllMedia(type: string) {

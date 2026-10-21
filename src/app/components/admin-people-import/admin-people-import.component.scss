@@ -48,10 +48,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   padding: 40px 24px;
   border: 1px dashed var(--color-ink-3);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
+  color: inherit;
+  font: inherit;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s;
 
@@ -188,6 +191,12 @@
 // Preview Card
 .preview-card {
   margin-top: 16px;
+}
+
+.preview-skipped {
+  margin: 0 0 16px;
+  color: var(--color-ink-2);
+  font-size: 13px;
 }
 
 .preview-stats {

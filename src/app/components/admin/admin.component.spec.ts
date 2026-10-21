@@ -77,4 +77,32 @@ describe('AdminComponent', () => {
     expect(focusSpy).toHaveBeenCalled();
     Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
   });
+
+  it('traps Tab inside the sidebar, including the logo link', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
+    fixture.detectChanges();
+    flags$.next({});
+    fixture.detectChanges();
+    TestBed.inject(RoutingService).openSidenav();
+    fixture.detectChanges();
+
+    const sidebar = fixture.nativeElement.querySelector('.admin-sidebar') as HTMLElement;
+    const logo = sidebar.querySelector('.logo-link') as HTMLElement;
+    const last = sidebar.querySelectorAll<HTMLElement>('[data-testid^="admin-nav-link-"]');
+    const lastLink = last[last.length - 1];
+
+    const logoFocus = vi.spyOn(logo, 'focus');
+    Object.defineProperty(document, 'activeElement', { value: lastLink, configurable: true });
+    lastLink.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(logoFocus).toHaveBeenCalled();
+
+    const lastFocus = vi.spyOn(lastLink, 'focus');
+    Object.defineProperty(document, 'activeElement', { value: logo, configurable: true });
+    logo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+    expect(lastFocus).toHaveBeenCalled();
+
+    delete (document as any).activeElement;
+    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+  });
 });

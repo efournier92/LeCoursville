@@ -19,6 +19,7 @@ describe('AdminPeopleImportComponent', () => {
     clans$: unknown;
     createPushId: ReturnType<typeof vi.fn>;
     saveClan: ReturnType<typeof vi.fn>;
+    deleteClan: ReturnType<typeof vi.fn>;
   };
 
   const parsedPerson = (): any => ({
@@ -45,6 +46,7 @@ describe('AdminPeopleImportComponent', () => {
       clans$: of([]),
       createPushId: vi.fn(() => 'clan-push'),
       saveClan: vi.fn(),
+      deleteClan: vi.fn(() => Promise.resolve()),
     };
 
     await TestBed.configureTestingModule({
@@ -80,6 +82,95 @@ describe('AdminPeopleImportComponent', () => {
 
     expect(component.parsedPeople).toHaveLength(0);
     expect(fixture.nativeElement.querySelector('app-no-results-message')).toBeTruthy();
+  });
+
+  it('keeps preview read-only and creates drafted clans only on confirm', async () => {
+    peopleService.importPeople.mockReturnValue(of({ created: 1, updated: 0, inactive: 0, conflicts: [] }));
+
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+    fixture.detectChanges();
+
+    expect(clanService.saveClan).not.toHaveBeenCalled();
+    expect(component.parsedPeople[0].person.clanId).toBe('p-1');
+
+    component.confirmImport();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(clanService.saveClan).toHaveBeenCalledTimes(1);
+    expect(clanService.saveClan).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
+    );
+    expect(peopleService.importPeople).toHaveBeenCalledTimes(1);
+  });
+
+  it('rolls back drafted clans when the people write fails', async () => {
+    peopleService.importPeople.mockReturnValue(throwError(() => new Error('boom')));
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+    fixture.detectChanges();
+
+    component.confirmImport();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(clanService.saveClan).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
+    );
+    expect(clanService.deleteClan).toHaveBeenCalledWith('p-1');
+    expect(component.importError).toBe('Import failed: boom');
+  });
+
+  it('re-drafts a clan after cancel so confirm writes it before the people', async () => {
+    peopleService.importPeople.mockReturnValue(of({ created: 1, updated: 0, inactive: 0, conflicts: [] }));
+    clanService.saveClan.mockReturnValue(Promise.resolve());
+
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+    component.cancelImport();
+
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+    fixture.detectChanges();
+
+    component.confirmImport();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(clanService.saveClan).toHaveBeenCalledTimes(1);
+    const savedClan = clanService.saveClan.mock.calls[0][0];
+    const importedPeople = peopleService.importPeople.mock.calls[0][0];
+    expect(importedPeople[0].clanId).toBe(savedClan.id);
+    expect(clanService.saveClan.mock.invocationCallOrder[0]).toBeLessThan(
+      peopleService.importPeople.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('surfaces rows skipped for a missing ID in the preview summary', () => {
+    component.parseCSV([
+      CSV_HEADERS,
+      CSV_ROW,
+      ',Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne',
+    ].join('\n'));
+    fixture.detectChanges();
+
+    expect(component.skippedMissingId).toBe(1);
+    expect(component.skippedSummary).toBe('1 row skipped: missing ID');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-skipped"]').textContent,
+    ).toContain('1 row skipped: missing ID');
+  });
+
+  it('disables Confirm while the preview has errors', () => {
+    component.parseCSV([CSV_HEADERS, CSV_ROW, 'bad,row'].join('\n'));
+    fixture.detectChanges();
+
+    expect(component.validationErrors.length).toBeGreaterThan(0);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-confirm"]').disabled,
+    ).toBe(true);
+
+    component.confirmImport();
+    expect(peopleService.importPeople).not.toHaveBeenCalled();
   });
 
   it('calls the import service once and shows the busy state while it runs', () => {

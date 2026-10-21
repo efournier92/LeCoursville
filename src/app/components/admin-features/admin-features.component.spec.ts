@@ -4,7 +4,9 @@ import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { FEATURES } from 'src/app/config/feature-config';
 import { of, Subject, throwError } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 describe('AdminFeaturesComponent', () => {
   let component: AdminFeaturesComponent;
@@ -23,7 +25,7 @@ describe('AdminFeaturesComponent', () => {
     spy.flagsReady.and.returnValue(of(true));
 
     await TestBed.configureTestingModule({
-      imports: [AppModule, TestSharedModule],
+      imports: [AppModule, TestSharedModule, MatCheckboxModule],
       declarations: [AdminFeaturesComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
@@ -45,11 +47,22 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.getAllFeatureFlags).toHaveBeenCalled();
   });
 
-  it('renders one feature row per entry in featureDefs', () => {
+  it('renders one feature row per entry in FEATURES', () => {
     fixture.detectChanges();
     const items = fixture.nativeElement.querySelectorAll('.feature-row');
-    expect(items.length).toBe(component.featureDefs.length);
+    expect(items.length).toBe(FEATURES.length);
     expect(items.length).toBeGreaterThan(0);
+  });
+
+  it('gives every feature checkbox an accessible name', () => {
+    const boxes = Array.from(
+      fixture.nativeElement.querySelectorAll('mat-checkbox') as NodeListOf<HTMLElement>,
+    );
+
+    expect(boxes.length).toBe(FEATURES.length);
+    // The visible label is projected into the checkbox, so it is the control's
+    // accessible name (Material renders it as the mdc-label content).
+    boxes.forEach(box => expect(box.textContent?.trim()).toBeTruthy());
   });
 
   it('renders the three surface group labels', () => {
@@ -126,5 +139,32 @@ describe('AdminFeaturesComponent', () => {
   it('clicking a checkbox calls onToggle() with the new boolean value', () => {
     component.onToggle('videos', false);
     expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('videos', false);
+  });
+
+  it('reverts the checkbox and shows an error when the write is rejected', async () => {
+    component.flagsMap = { music: { enabled: true, updatedAt: Date.now() } };
+    fixture.detectChanges();
+    mockFeatureFlagsService.setFeatureFlag.and.callFake(() => Promise.reject(new Error('offline')));
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="feature-toggle-music"] input',
+    ) as HTMLInputElement;
+    expect(input.checked).toBe(true);
+
+    input.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('music', false);
+    expect(component.isEnabled('music')).toBe(true);
+    const reverted = fixture.nativeElement.querySelector(
+      '[data-testid="feature-toggle-music"] input',
+    ) as HTMLInputElement;
+    expect(reverted.checked).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="features-toggle-error"]'),
+    ).not.toBeNull();
   });
 });

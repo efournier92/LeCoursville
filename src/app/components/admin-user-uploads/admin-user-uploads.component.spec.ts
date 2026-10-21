@@ -135,4 +135,59 @@ describe('AdminUserUploadsComponent', () => {
     component.setFilter('all');
     expect(component.page).toBe(1);
   });
+
+  it('marks the active segmented filter with aria-pressed', () => {
+    uploads$.next([]);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('.gallery-segmented-btn');
+    expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('surfaces an approve failure and clears the in-flight flag', async () => {
+    const target = upload('u1');
+    uploads$.next([target]);
+    fixture.detectChanges();
+    approveUpload.and.returnValue(Promise.reject(new Error('denied')));
+
+    await component.onApprove(target);
+    fixture.detectChanges();
+
+    expect(component.pageError).toContain('Couldn');
+    expect(component.isProcessing('u1')).toBe(false);
+    expect(fixture.nativeElement.querySelector('.action-error')).not.toBeNull();
+  });
+
+  it('surfaces a reject failure and clears the in-flight flag', async () => {
+    const target = upload('u1');
+    uploads$.next([target]);
+    fixture.detectChanges();
+    confirmSpy.and.returnValue(Promise.resolve(true));
+    rejectUpload.and.returnValue(Promise.reject(new Error('denied')));
+
+    await component.onReject(target);
+    fixture.detectChanges();
+
+    expect(component.pageError).toContain('Couldn');
+    expect(component.isProcessing('u1')).toBe(false);
+    expect(fixture.nativeElement.querySelector('.action-error')).not.toBeNull();
+  });
+
+  it('shows a file-listing error instead of the empty state on failure', async () => {
+    await component.loadFilesInFolder('userUploads/missing');
+
+    expect(component.isLoadingFiles).toBe(false);
+    expect(component.filesError).toBeTruthy();
+  });
+
+  it('counts failed blob fetches in the ZIP notice', () => {
+    const notice = (component as any).buildZipNotice('Folder', 10, 5, 2);
+
+    expect(notice).toContain('5 of 10');
+    expect(notice).toContain('2 files could not be added');
+  });
+
+  it('has no ZIP notice when every file was added', () => {
+    expect((component as any).buildZipNotice('Folder', 3, 3, 0)).toBeNull();
+  });
 });

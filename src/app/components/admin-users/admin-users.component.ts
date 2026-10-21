@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { AdminService } from 'src/app/services/admin.service';
 import { User } from 'src/app/models/user';
 import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
-import { paginate } from 'src/app/admin/pagination';
+import { Page, paginate, pageRange } from 'src/app/admin/pagination';
 
 type UsersState = 'loading' | 'ready' | 'error';
 
@@ -22,6 +22,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   pageIndex = 1;
   filteredTotal = 0;
   readonly pageSize = 10;
+  private displayedPage: Page<User> = { items: [], total: 0, page: 1, pageCount: 1, pageSize: 10 };
 
   private usersSubscription?: Subscription;
 
@@ -67,12 +68,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   get showingRange(): string {
-    if (this.filteredTotal === 0) {
-      return 'Showing 0 of 0';
-    }
-    const start = (this.pageIndex - 1) * this.pageSize + 1;
-    const end = start + this.displayedUsers.length - 1;
-    return `Showing ${start}-${end} of ${this.filteredTotal}`;
+    return pageRange(this.displayedPage);
   }
 
   // TODO: Move and abstract
@@ -155,6 +151,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       : [...(this.allUsers || [])];
     const sorted = this.sortSettings.sortItems(filtered);
     const page = paginate(sorted, this.pageIndex, this.pageSize);
+    this.displayedPage = page;
     this.pageIndex = page.page;
     this.filteredTotal = page.total;
     this.displayedUsers = page.items;

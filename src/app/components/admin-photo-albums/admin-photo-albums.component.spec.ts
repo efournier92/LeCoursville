@@ -15,12 +15,15 @@ describe('AdminPhotoAlbumsComponent', () => {
   let fixture: ComponentFixture<AdminPhotoAlbumsComponent>;
   let component: AdminPhotoAlbumsComponent;
   let albums$: Subject<PhotoAlbum[] | null>;
+  let albumsError$: Subject<boolean>;
   let photos$: Subject<Photo[]>;
   let confirmSpy: jasmine.Spy;
   let deleteAlbumCascade: jasmine.Spy;
   let deletePhoto: jasmine.Spy;
   let updateAlbum: jasmine.Spy;
   let setAlbumCover: jasmine.Spy;
+  let getPhotosByAlbum: jasmine.Spy;
+  let reload: jasmine.Spy;
 
   const album = (id: string, title: string): PhotoAlbum => ({
     id,
@@ -32,12 +35,15 @@ describe('AdminPhotoAlbumsComponent', () => {
 
   beforeEach(async () => {
     albums$ = new Subject<PhotoAlbum[] | null>();
+    albumsError$ = new Subject<boolean>();
     photos$ = new Subject<Photo[]>();
     confirmSpy = jasmine.createSpy('confirm').and.returnValue(Promise.resolve(false));
     deleteAlbumCascade = jasmine.createSpy('deleteAlbumCascade').and.returnValue(Promise.resolve());
     deletePhoto = jasmine.createSpy('deletePhoto').and.returnValue(Promise.resolve());
     updateAlbum = jasmine.createSpy('updateAlbum').and.returnValue(Promise.resolve());
     setAlbumCover = jasmine.createSpy('setAlbumCover').and.returnValue(Promise.resolve());
+    getPhotosByAlbum = jasmine.createSpy('getPhotosByAlbum').and.returnValue(of([]));
+    reload = jasmine.createSpy('reload');
 
     await TestBed.configureTestingModule({
       imports: [AdminPhotoAlbumsComponent],
@@ -47,6 +53,8 @@ describe('AdminPhotoAlbumsComponent', () => {
           provide: PhotoAlbumsService,
           useValue: {
             get albums$() { return albums$.asObservable(); },
+            error$: albumsError$.asObservable(),
+            reload,
             createAlbum: jasmine.createSpy('createAlbum'),
             updateAlbum,
             deleteAlbumCascade,
@@ -56,7 +64,7 @@ describe('AdminPhotoAlbumsComponent', () => {
           provide: PhotosService,
           useValue: {
             nonMessagePhotos$: photos$.asObservable(),
-            getPhotosByAlbum: () => of([]),
+            getPhotosByAlbum,
             deletePhoto,
             setAlbumCover,
             uploadPhotoToAlbum: jasmine.createSpy('uploadPhotoToAlbum'),
@@ -166,5 +174,66 @@ describe('AdminPhotoAlbumsComponent', () => {
     await component.onDeletePhoto(photo);
     expect(deletePhoto).toHaveBeenCalledWith(photo);
     expect(updateAlbum).toHaveBeenCalledWith('a1', {});
+  });
+
+  it('shows an error when the album error signal fires', () => {
+    albumsError$.next(true);
+    fixture.detectChanges();
+    expect(component.status).toBe('error');
+    expect(fixture.nativeElement.querySelector('app-load-error')).not.toBeNull();
+  });
+
+  it('reloads the album stream on retry', () => {
+    albumsError$.next(true);
+    fixture.detectChanges();
+
+    component.onRetry();
+    expect(reload).toHaveBeenCalled();
+    expect(component.status).toBe('loading');
+  });
+
+  it('keeps the drill-in state and shows a page error when the cascade fails', async () => {
+    const target = album('a1', 'E2E Album One');
+    albums$.next([target]);
+    fixture.detectChanges();
+    component.selectedAlbum = target;
+    confirmSpy.and.returnValue(Promise.resolve(true));
+    deleteAlbumCascade.and.returnValue(Promise.reject(new Error('denied')));
+
+    await component.onDeleteAlbum(target);
+
+    expect(component.actionError).toContain('Couldn');
+    expect(component.selectedAlbum).toBe(target);
+    expect(component.isDeletingAlbum).toBe(false);
+  });
+
+  it('refuses to delete an album when the photo list failed to load', async () => {
+    const target = album('a1', 'E2E Album One');
+    albums$.next([target]);
+    fixture.detectChanges();
+    photos$.error(new Error('photos down'));
+    fixture.detectChanges();
+    confirmSpy.and.returnValue(Promise.resolve(true));
+
+    await component.onDeleteAlbum(target);
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(deleteAlbumCascade).not.toHaveBeenCalled();
+    expect(component.actionError).toContain('Couldn');
+    expect(fixture.nativeElement.querySelector('.action-error')).not.toBeNull();
+  });
+
+  it('ignores stale photo emissions after opening another album', () => {
+    const first = new Subject<Photo[]>();
+    const second = new Subject<Photo[]>();
+    getPhotosByAlbum.and.returnValues(first.asObservable(), second.asObservable());
+
+    component.openAlbumPhotos(album('a1', 'Album One'));
+    component.openAlbumPhotos(album('a2', 'Album Two'));
+    first.next([{ id: 'p1', albumId: 'a1' } as Photo]);
+    expect(component.selectedAlbumPhotos).toEqual([]);
+
+    second.next([{ id: 'p2', albumId: 'a2' } as Photo]);
+    expect(component.selectedAlbumPhotos.length).toBe(1);
   });
 });

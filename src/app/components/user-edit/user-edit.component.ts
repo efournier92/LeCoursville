@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { User } from 'src/app/models/user';
 import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
-import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-user-edit',
@@ -11,22 +11,35 @@ import { PromptModalService } from 'src/app/services/prompt-modal.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class UserEditComponent implements OnInit {
+export class UserEditComponent implements OnInit, OnChanges {
   @Input() userOnCard: User;
   @Input() isAdminMode = false;
 
   @Output() cancelEditClickedEvent = new EventEmitter();
 
   userSignedIn: User;
+  formUser: User;
+  private originalRoles = { admin: false, super: false };
 
   constructor(
     private authService: AuthService,
     private adminService: AdminService,
-    private promptModal: PromptModalService,
+    private confirmDialog: ConfirmDialogService,
   ) {}
 
   ngOnInit(): void {
+    this.snapshotRoles();
+    this.resetForm();
     this.subscribeToUserObservable();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // The card is recycled by track id, so a new user object must reset the
+    // baseline or the next save confirms against the previous user's roles.
+    if (changes.userOnCard) {
+      this.snapshotRoles();
+      this.resetForm();
+    }
   }
 
   // SUBSCRIPTIONS
@@ -47,37 +60,110 @@ export class UserEditComponent implements OnInit {
     return this.userSignedIn?.roles?.super;
   }
 
-  onSaveUser(user: User): void {
+  onSuperChange(user: User): void {
+    // Server rules still gate admin writes on roles.admin, so super must carry admin.
+    if (user.roles?.super) {
+      user.roles.admin = true;
+    }
+  }
+
+  onAdminChange(user: User): void {
+    // Super implies admin; the checkbox is disabled but guard programmatic toggles too.
+    if (user.roles?.super && !user.roles.admin) {
+      user.roles.admin = true;
+    }
+  }
+
+  async onSaveUser(user: User): Promise<void> {
+    if (user.roles?.super) {
+      user.roles.admin = true;
+    }
+    const changes = this.roleChanges(user);
+    if (changes.messages.length > 0) {
+      const confirmed = await this.confirmDialog.confirm({
+        title: 'Change access?',
+        message: changes.messages.join(' '),
+        confirmLabel: 'Save',
+        destructive: changes.destructive,
+      });
+      if (!confirmed) {
+        this.resetForm();
+        return;
+      }
+    }
+    this.commitToInput(user);
     this.updateUser(user);
     if (this.isAdminMode) {
       this.emitCancelEditEvent();
     }
   }
 
-  onDeleteUser(user: User): void {
-    this.deleteUser(user);
+  onDeleteUser(user: User): Promise<void> {
+    return this.deleteUser(user);
   }
 
   onCancelEdit(): void {
+    this.resetForm();
     this.emitCancelEditEvent();
-  }
-
-  shouldSeeRoles(): boolean {
-    return this.authService.isUserAdmin();
   }
 
   // HELPER METHODS
 
-  private deleteUser(user: User): void {
-    const dialogRef = this.promptModal.openDialog(
-      'Are You Sure?',
-      'Do you really want to delete this user?',
-    );
-    dialogRef.afterClosed().subscribe((didUserConfirm: boolean) => {
-      if (didUserConfirm) {
-        this.adminService.deleteUser(user);
-      }
+  private resetForm(): void {
+    this.formUser = this.userOnCard
+      ? { ...this.userOnCard, roles: { ...this.userOnCard.roles } }
+      : this.userOnCard;
+  }
+
+  private commitToInput(user: User): void {
+    if (!this.userOnCard || this.userOnCard === user) {
+      return;
+    }
+    this.userOnCard.name = user.name;
+    this.userOnCard.email = user.email;
+    this.userOnCard.roles = { ...user.roles };
+  }
+
+  private snapshotRoles(): void {
+    this.originalRoles = {
+      admin: this.userOnCard?.roles?.admin === true || this.userOnCard?.roles?.super === true,
+      super: this.userOnCard?.roles?.super === true,
+    };
+  }
+
+  private roleChanges(user: User): { messages: string[]; destructive: boolean } {
+    const messages: string[] = [];
+    let destructive = false;
+    const name = this.displayName(user);
+    const admin = user.roles?.admin === true;
+    const superRole = user.roles?.super === true;
+
+    if (admin !== this.originalRoles.admin) {
+      messages.push(admin ? `Give ${name} admin access?` : `Remove admin access from ${name}?`);
+      destructive = destructive || !admin;
+    }
+    if (superRole !== this.originalRoles.super) {
+      messages.push(superRole ? `Give ${name} super access?` : `Remove super access from ${name}?`);
+      destructive = destructive || !superRole;
+    }
+
+    return { messages, destructive };
+  }
+
+  private displayName(user: User): string {
+    return user?.name?.trim() || user?.email || 'this user';
+  }
+
+  private async deleteUser(user: User): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete user?',
+      message: `Delete ${this.displayName(user)}? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
     });
+    if (confirmed) {
+      this.adminService.deleteUser(user);
+    }
   }
 
   private emitCancelEditEvent(): void {

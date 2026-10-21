@@ -120,15 +120,38 @@ describe('AdminCalendarsComponent', () => {
     expect(alert?.textContent).toContain('4-digit');
   });
 
-  it('paginates the year list at 10', () => {
+  it('keeps the form open and shows a role="alert" error when a save fails', async () => {
+    const setSpy = (rtdb.object() as any).set as jasmine.Spy;
+    setSpy.and.returnValue(Promise.reject(new Error('offline')));
+    component.isAdding = true;
+    component.formData = { year: '2026', url: 'https://example.test/2026.pdf' };
+
+    await component.onSave();
+    fixture.detectChanges();
+
+    expect(component.isAdding).toBe(true);
+    expect(component.actionError).toContain('offline');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('offline');
+  });
+
+  it('shows a role="alert" error when a delete fails', async () => {
+    removeSpy.and.returnValue(Promise.reject(new Error('offline')));
+    confirmSpy.and.returnValue(Promise.resolve(true));
+
+    await component.onDelete(calendar('2026'));
+    fixture.detectChanges();
+
+    expect(component.actionError).toContain('offline');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('offline');
+  });
+
+  it('renders every year in the bounded list', () => {
     const calendars = Array.from({ length: 12 }, (_, i) => calendar(String(2000 + i)));
     fixture.detectChanges();
     calendars$.next(calendars);
+    fixture.detectChanges();
 
-    expect(component.pageData.items.length).toBe(10);
-    expect(component.pageData.pageCount).toBe(2);
-
-    component.goToPage(2);
-    expect(component.pageData.items.length).toBe(2);
+    expect(component.calendars.length).toBe(12);
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(12);
   });
 });

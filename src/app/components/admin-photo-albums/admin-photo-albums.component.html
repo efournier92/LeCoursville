@@ -1,4 +1,7 @@
 <div class="admin-photo-albums-container">
+@if (actionError) {
+  <div class="action-error" role="alert">{{ actionError }}</div>
+}
 <app-page-toolbar class="albums-toolbar" title="Photo Albums">
   <mat-form-field class="album-search-field">
     <input matInput placeholder="Search albums" [ngModel]="searchTerm"
@@ -68,7 +71,11 @@
     @for (album of pageData.items; track album) {
       <mat-card
         class="admin-album-card"
-        (click)="openAlbumPhotos(album)">
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'Open album ' + album.title"
+        (click)="openAlbumPhotos(album)"
+        (keydown)="onAlbumCardKeydown($event, album)">
         <div class="album-cover">
           @if (getCoverUrl(album)) {
             <img
@@ -85,13 +92,13 @@
           <div class="album-count">{{ getPhotoCount(album) }} photos</div>
         </mat-card-content>
         <mat-card-actions (click)="$event.stopPropagation()">
-          <button mat-icon-button matTooltip="Add More Photos" (click)="onAddMoreClick(album)">
+          <button mat-icon-button matTooltip="Add More Photos" aria-label="Add more photos" (click)="onAddMoreClick(album)">
             <mat-icon>add_photo_alternate</mat-icon>
           </button>
-          <button mat-icon-button matTooltip="Rename" (click)="onEditAlbum(album)">
+          <button mat-icon-button matTooltip="Rename" aria-label="Rename album" (click)="onEditAlbum(album)">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button matTooltip="Delete" (click)="onDeleteAlbum(album)">
+          <button mat-icon-button matTooltip="Delete" aria-label="Delete album" (click)="onDeleteAlbum(album)">
             <mat-icon>delete</mat-icon>
           </button>
         </mat-card-actions>
@@ -124,7 +131,7 @@
 @if (selectedAlbum) {
   <div class="album-photos-panel">
     <div class="album-photos-header">
-      <button mat-icon-button matTooltip="Back to albums" (click)="closeAlbumPhotos()">
+      <button mat-icon-button matTooltip="Back to albums" aria-label="Back to albums" (click)="closeAlbumPhotos()">
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h2>{{ selectedAlbum.title }}</h2>
@@ -186,26 +193,26 @@
           }
           <mat-card-actions>
             @if (!isEditingPhoto(photo)) {
-              <button mat-icon-button matTooltip="Edit"
+              <button mat-icon-button matTooltip="Edit" aria-label="Edit photo"
                 (click)="onEditPhoto(photo)"><mat-icon>edit</mat-icon></button>
               }
               @if (isEditingPhoto(photo)) {
-                <button mat-icon-button matTooltip="Save"
+                <button mat-icon-button matTooltip="Save" aria-label="Save photo"
                   (click)="onSavePhotoEdit()"><mat-icon>save</mat-icon></button>
                 }
                 @if (isEditingPhoto(photo)) {
-                  <button mat-icon-button matTooltip="Cancel"
+                  <button mat-icon-button matTooltip="Cancel" aria-label="Cancel photo edit"
                     (click)="onCancelPhotoEdit()"><mat-icon>cancel</mat-icon></button>
                   }
                   @if (!isEditingPhoto(photo) && selectedAlbum.coverPhotoId !== photo.id) {
-                    <button mat-icon-button matTooltip="Set as cover"
+                    <button mat-icon-button matTooltip="Set as cover" aria-label="Set as album cover"
                       (click)="onSetAsCover(photo)"><mat-icon>star</mat-icon></button>
                     }
                     @if (!isEditingPhoto(photo)) {
-                      <button mat-icon-button matTooltip="Delete"
+                      <button mat-icon-button matTooltip="Delete" aria-label="Delete photo"
                         (click)="onDeletePhoto(photo)"><mat-icon>delete</mat-icon></button>
                       }
-                      <a mat-icon-button matTooltip="Download" [href]="photo.url" [download]="photo.path" target="_blank">
+                      <a mat-icon-button matTooltip="Download" aria-label="Download photo" [href]="photo.url" [download]="photo.path" target="_blank">
                         <mat-icon>cloud_download</mat-icon>
                       </a>
                     </mat-card-actions>

@@ -6,6 +6,7 @@ import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { MediaService } from 'src/app/services/media.service';
 import { VideoUploadService } from 'src/app/services/video-upload.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-admin-media-upload-video',
@@ -17,11 +18,13 @@ import { VideoUploadService } from 'src/app/services/video-upload.service';
 export class AdminMediaUploadVideoComponent implements OnInit {
   video: Video = new Video();
   user: User;
+  deleteError: string | null = null;
 
   constructor(
     private authService: AuthService,
     private videoUploadService: VideoUploadService,
     private mediaService: MediaService,
+    private confirmDialog: ConfirmDialogService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -52,9 +55,21 @@ export class AdminMediaUploadVideoComponent implements OnInit {
     this.resetSelectedMedia();
   }
 
-  onDeleteSelectedMedia(media: UploadableMedia): void {
-    this.mediaService.deleteMedia(media);
-    this.resetSelectedMedia();
+  async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete video?',
+      message: `Delete “${media.title || media.fileName || 'this video'}”? This cannot be undone.`,
+      confirmLabel: 'Delete video',
+      destructive: true,
+    });
+    if (!confirmed) { return; }
+    this.deleteError = null;
+    try {
+      await this.mediaService.deleteMedia(media);
+      this.resetSelectedMedia();
+    } catch {
+      this.deleteError = `Couldn’t delete “${media.title || media.fileName || 'this video'}”. Please try again.`;
+    }
   }
 
   onCancelSelectedMedia(): void {

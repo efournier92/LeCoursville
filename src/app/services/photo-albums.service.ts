@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PhotoAlbum } from '../models/photo-album';
 import { RtdbService, RtdbListRef } from './rtdb.service';
 
@@ -12,10 +12,24 @@ export class PhotoAlbumsService {
   // snapshot. Admin consumers already coerce falsy to [].
   private albumsSource: BehaviorSubject<PhotoAlbum[] | null> = new BehaviorSubject<PhotoAlbum[] | null>(null);
   public albums$: Observable<PhotoAlbum[] | null> = this.albumsSource.asObservable();
+  private errorSource: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  public error$: Observable<boolean> = this.errorSource.asObservable();
+  private albumsSubscription: Subscription | null = null;
 
   constructor(private rtdb: RtdbService) {
-    this.getAllAlbums().valueChanges().subscribe((albums: PhotoAlbum[]) => {
-      this.albumsSource.next(albums);
+    this.reload();
+  }
+
+  /** Re-subscribes to the album stream after a transient failure. */
+  reload(): void {
+    this.albumsSubscription?.unsubscribe();
+    this.albumsSource.next(null);
+    this.errorSource.next(false);
+    // A failed listener ends on its own; handling the error here leaves the
+    // shared subject open so reload() can re-subscribe.
+    this.albumsSubscription = this.getAllAlbums().valueChanges().subscribe({
+      next: albums => this.albumsSource.next(Array.isArray(albums) ? albums : []),
+      error: () => this.errorSource.next(true),
     });
   }
 
@@ -44,6 +58,8 @@ export class PhotoAlbumsService {
   }
 
   async deleteAlbumCascade(id: string, photoIds: string[]): Promise<void> {
+    // Not atomic: removals are chunked, so a mid-way failure can leave a partial album.
+    // True atomicity needs a Cloud Function (out of scope).
     if (!photoIds || photoIds.length === 0) {
       await this.rtdb.object(`${this.PHOTO_ALBUMS_PATH}/${id}`).remove();
       return;

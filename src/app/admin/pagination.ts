@@ -3,6 +3,7 @@ export interface Page<T> {
   total: number;
   page: number;
   pageCount: number;
+  pageSize: number;
 }
 
 export function paginate<T>(
@@ -20,5 +21,15 @@ export function paginate<T>(
     total,
     page: current,
     pageCount,
+    pageSize,
   };
+}
+
+export function pageRange(page: Page<unknown>): string {
+  if (page.total === 0) {
+    return 'Showing 0 of 0';
+  }
+  const start = (page.page - 1) * page.pageSize + 1;
+  const end = start + page.items.length - 1;
+  return `Showing ${start}-${end} of ${page.total}`;
 }

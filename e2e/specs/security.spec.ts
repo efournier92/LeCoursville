@@ -30,6 +30,8 @@ const TINY_PNG = Buffer.from(
 // rules, password-reset email delivery) are listed in the morning report, not
 // tested here.
 
+test.afterEach(async ({ collector }) => collector.assertClean());
+
 test.describe('security', () => {
   test('guard bypass: tampering localStorage roles must NOT open /admin', async ({ page }) => {
     await login(page, 'user');

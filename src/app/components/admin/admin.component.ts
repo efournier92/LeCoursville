@@ -61,10 +61,6 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.version = this.versionService.getAppVersion();
   }
 
-  get isSidenavOpen() {
-    return this.routingService.sidenavOpen$;
-  }
-
   toggleSidenav(): void {
     this.routingService.toggleSidenav();
   }
@@ -105,12 +101,14 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (!(event.target as HTMLElement)?.closest('.admin-sidebar')) {
       return;
     }
-    const links = Array.from(document.querySelectorAll<HTMLElement>('[data-testid^="admin-nav-link-"]'));
-    if (!links.length) {
+    const focusable = Array.from(document.querySelectorAll<HTMLElement>(
+      '.admin-sidebar a, .admin-sidebar button, .admin-sidebar input, .admin-sidebar select, .admin-sidebar textarea, .admin-sidebar [tabindex]:not([tabindex="-1"])',
+    )).filter(element => !element.hasAttribute('disabled') && element.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) {
       return;
     }
-    const first = links[0];
-    const last = links[links.length - 1];
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();

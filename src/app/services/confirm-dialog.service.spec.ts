@@ -1,6 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { MatDialog } from "@angular/material/dialog";
-import { of } from "rxjs";
+import { of, Subject } from "rxjs";
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -62,5 +62,23 @@ describe("ConfirmDialogService", () => {
     closeWith(undefined);
 
     await expect(service.confirm(data)).resolves.toBe(false);
+  });
+
+  it("denies an overlapping call instead of sharing the open dialog's answer", async () => {
+    const closed = new Subject<boolean>();
+    dialogSpy.open.and.returnValue({ afterClosed: () => closed.asObservable() } as any);
+
+    const first = service.confirm(data);
+    const second = service.confirm(data);
+
+    expect(dialogSpy.open).toHaveBeenCalledTimes(1);
+
+    closed.next(true);
+    closed.complete();
+
+    // The first caller gets the user's answer; the overlapping caller is
+    // denied so it cannot run a different action on another dialog's answer.
+    await expect(first).resolves.toBe(true);
+    await expect(second).resolves.toBe(false);
   });
 });

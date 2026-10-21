@@ -134,6 +134,49 @@ describe('AdminFamiliesComponent', () => {
     expect(component.familyShowingRange).toBe('Showing 11-12 of 12');
   });
 
+  it('renders CSV header errors instead of returning to the empty list', () => {
+    (component as any).parseCsv('Name,ID\nSmith,1');
+    fixture.detectChanges();
+
+    expect(component.isCsvPreview).toBe(true);
+    expect(component.csvErrors.join(' ')).toContain('Color_Hex');
+    expect(fixture.nativeElement.querySelector('.csv-errors[role="alert"]').textContent).toContain('Color_Hex');
+  });
+
+  it('counts only valid rows and pluralizes the import label', () => {
+    const rows = [
+      'Smith,fam-1,#112233',
+      ',fam-2,#112233',
+    ];
+    (component as any).parseCsv(['Name,ID,Color_Hex', ...rows].join('\n'));
+    fixture.detectChanges();
+
+    expect(component.validCsvCount).toBe(1);
+    const button = fixture.nativeElement.querySelector('.csv-actions button:last-child');
+    expect(button.textContent).toContain('Import 1 family');
+
+    const many = Array.from({ length: 12 }, (_, i) => `Family ${i + 1},fam-${i + 1},#112233`);
+    (component as any).parseCsv(['Name,ID,Color_Hex', ...many].join('\n'));
+    fixture.detectChanges();
+    expect(component.validCsvCount).toBe(12);
+    expect(fixture.nativeElement.querySelector('.csv-actions button:last-child').textContent)
+      .toContain('Import 12 families');
+  });
+
+  it('keeps the preview and shows an alert when a CSV write fails', async () => {
+    familyService.saveFamily.mockReturnValue(Promise.reject(new Error('boom')));
+    (component as any).parseCsv(['Name,ID,Color_Hex', 'Smith,fam-1,#112233'].join('\n'));
+
+    await component.onCsvConfirm();
+    fixture.detectChanges();
+
+    expect(component.csvPreview).toHaveLength(1);
+    expect(component.csvErrors).toEqual([]);
+    expect(component.importError).toContain('boom');
+    expect(fixture.nativeElement.querySelector('.import-error[role="alert"]').textContent).toContain('boom');
+    expect(fixture.nativeElement.querySelector('.csv-actions button:last-child').disabled).toBe(false);
+  });
+
   it('limits the CSV preview to 10 rows per page', () => {
     const rows = Array.from({ length: 12 }, (_, i) => `fam-${i + 1},Family ${i + 1},#112233`);
     (component as any).parseCsv(['Name,ID,Color_Hex', ...rows].join('\n'));

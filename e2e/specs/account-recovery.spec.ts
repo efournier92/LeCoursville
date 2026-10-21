@@ -290,6 +290,10 @@ test.describe('account recovery', () => {
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
+    await page
+      .locator('mat-dialog-container')
+      .getByRole('button', { name: 'Generate', exact: true })
+      .click();
 
     const linkEl = row.getByTestId('admin-recovery-link');
     await expect(linkEl).toBeVisible();

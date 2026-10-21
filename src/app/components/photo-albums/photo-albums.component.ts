@@ -45,10 +45,16 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
 
   private loadData(): void {
     this.subscriptions.push(
+      this.photoAlbumsService.error$.subscribe(hasError => {
+        if (hasError) {
+          this.status = 'error';
+        }
+      }),
       this.photoAlbumsService.albums$.subscribe(albums => {
         // null is the service's not-yet-loaded seed; only a real snapshot
-        // (even an empty one) resolves the page.
-        if (albums === null) {
+        // (even an empty one) resolves the page. The error signal owns the
+        // failure state, so ignore any value that follows it.
+        if (albums === null || this.status === 'error') {
           return;
         }
         this.albums = albums;
@@ -70,6 +76,7 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
     this.status = 'loading';
     this.subscriptions.forEach(s => s.unsubscribe());
     this.subscriptions = [];
+    this.photoAlbumsService.reload();
     this.loadData();
   }
 

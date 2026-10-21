@@ -17,6 +17,7 @@ export interface LinkableButton {
 })
 export class NavbarLinksComponent implements OnInit {
   @Input() isMenuList: boolean;
+  @Input() isSuperUser = false;
 
   buttons: LinkableButton[] = [];
 

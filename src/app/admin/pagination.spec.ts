@@ -1,11 +1,11 @@
-import { paginate } from './pagination';
+import { paginate, pageRange } from './pagination';
 
 const range = (count: number) => Array.from({ length: count }, (_, i) => i + 1);
 
 describe('paginate', () => {
   it('returns page 1 of an empty list', () => {
-    expect(paginate([], 1)).toEqual({ items: [], total: 0, page: 1, pageCount: 1 });
-    expect(paginate([], 4)).toEqual({ items: [], total: 0, page: 1, pageCount: 1 });
+    expect(paginate([], 1)).toEqual({ items: [], total: 0, page: 1, pageCount: 1, pageSize: 10 });
+    expect(paginate([], 4)).toEqual({ items: [], total: 0, page: 1, pageCount: 1, pageSize: 10 });
   });
 
   it('slices the first page and reports the total', () => {
@@ -35,5 +35,16 @@ describe('paginate', () => {
 
     expect(result.items).toEqual([21, 22, 23, 24, 25]);
     expect(result.pageCount).toBe(3);
+  });
+});
+
+describe('pageRange', () => {
+  it('reports an empty page', () => {
+    expect(pageRange(paginate([], 1))).toBe('Showing 0 of 0');
+  });
+
+  it('reports the first page and the remainder on the last page', () => {
+    expect(pageRange(paginate(range(25), 1))).toBe('Showing 1-10 of 25');
+    expect(pageRange(paginate(range(25), 3))).toBe('Showing 21-25 of 25');
   });
 });
