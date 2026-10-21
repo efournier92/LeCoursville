@@ -107,14 +107,16 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (!focusable.length) {
       return;
     }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
+    // Move focus ourselves in both directions: browsers differ on whether
+    // anchors join sequential focus navigation (WebKit is the strict one).
+    const index = focusable.indexOf(document.activeElement as HTMLElement);
+    if (index === -1) {
+      return;
     }
+    event.preventDefault();
+    const next = event.shiftKey
+      ? (index - 1 + focusable.length) % focusable.length
+      : (index + 1) % focusable.length;
+    focusable[next].focus();
   }
 }

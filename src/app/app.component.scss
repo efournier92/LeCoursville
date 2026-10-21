@@ -13,6 +13,9 @@
 
 .app-skip-link {
   position: absolute;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
   top: -100px;
   left: 8px;
   z-index: 1100;

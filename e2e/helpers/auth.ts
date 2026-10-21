@@ -22,6 +22,20 @@ export async function login(page: Page, who: 'admin' | 'user' | 'other' | 'spars
   // bar, not the desktop-only toolbar links: at mobile widths those links are
   // display:none, so the old wait hung on a phone-sized viewport.
   await page.waitForFunction(() => location.pathname !== '/', null, { timeout: 30000 });
+  // The redirect can land before the RTDB user record is cached. Wait for the
+  // localStorage record too, otherwise a following goto() can reload before
+  // auth persistence completes (seen on WebKit).
+  await page.waitForFunction(() => {
+    try {
+      return !!JSON.parse(localStorage.getItem('user') || 'null')?.id;
+    } catch {
+      return false;
+    }
+  }, null, { timeout: 30000 });
+  // Let the navbar settle too: navigating away while the first RTDB streams
+  // are still opening leaves the next page waiting on a cold connection
+  // (reproduced on WebKit). Attached, not visible, so mobile widths work.
+  await page.locator('#lecoursville-navbar-links').waitFor({ state: 'attached', timeout: 30000 });
 }
 
 /** Signs out through the real UI (confirm dialog included). */
