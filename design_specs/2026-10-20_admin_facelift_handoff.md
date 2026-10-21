@@ -25,10 +25,11 @@ Working tree: clean apart from this handoff commit.
 
 ## Final Verification
 
-- Unit: `CI=true npm test -- --watch=false` -> 78 files, 363 tests passed.
+- Unit: `CI=true npm test -- --watch=false` -> 78 files, 367 tests passed.
 - Gate: `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home npm run e2e:gate`
-  -> chromium 131 passed, webkit 131 passed, firefox 131 passed. 393
-  executions, 0 failed, 0 skipped, retries 0.
+  -> unit 367 passed, then chromium 134, webkit 134, firefox 134 passed. 402
+  browser executions, 0 failed, 0 skipped, retries 0. The gate now runs the
+  unit suite before the functions build.
 - Chromium-only iteration command:
   `npx ng build --configuration=e2e` then
   `firebase emulators:exec --project lecoursville-dev --only auth,database,storage,hosting,functions "node scripts/e2e/seed.mjs && npx playwright test --project=chromium"`
@@ -47,29 +48,28 @@ Working tree: clean apart from this handoff commit.
 - Seed adds `staff@e2e.local` (admin, not super) for role-boundary tests.
 - Playwright login now waits for the URL, the cached user, and the navbar to
   settle; this fixed WebKit navigation races.
-- Five decisions remain `UNCERTAIN` with defaults applied: AFQ-06, AFQ-08,
-  AFQ-09, AFQ-10, AFQ-11 in
-  `design_specs/admin_facelift_questions.md`. They are the final human batch.
+- All eleven AFQ entries are resolved `CERTAIN`. The follow-up round converted
+  feature flags to Material switches, tightened RTDB rules to super on
+  `features`, `promotedRoute`, and the recovery reads, added a super-only
+  `roleAudit` trail written on role changes, kept the retryable album cascade,
+  and added the unit suite to the gate.
 
 ## Next Actions
 
-1. Answer the five `UNCERTAIN` entries in
-   `design_specs/admin_facelift_questions.md`. Each has a default already
-   applied; only AFQ-08 (server rules) and AFQ-09 (audit trail) change behavior
-   or schema.
-2. If AFQ-08 is approved, change `database.rules.json` for `features`,
-   `promotedRoute`, and recovery nodes to `roles/super`, then add an emulator
-   rules test and rerun the gate.
-3. If AFQ-11 is approved, add `CI=true npm test -- --watch=false` to
-   `scripts/e2e/gate.sh` before the emulator block and rerun the gate.
-4. Ship only on explicit request via the `ship-changes` skill.
+1. Optional: enforce append-only `roleAudit` in rules (`!data.exists()` on
+   write) and surface the trail in the admin UI. The record is written today;
+   only the UI is missing.
+2. Optional: move the album cascade to a functions callable if album volume
+   grows.
+3. Ship only on explicit request via the `ship-changes` skill.
 
 ## Open Risks
 
-- Server rules still allow plain admins to write feature flags, the promoted
-  route, and recovery nodes; the super-only model is UI-enforced only.
-- Role grants and revokes have a confirmation but no audit record.
-- Album delete is a non-atomic chunked cascade; failures are surfaced and
+- Server rules now require super for the flags, promoted route, recovery reads,
+  and `roleAudit`; other admin writes still key on `roles/admin`.
+- Role grants and revokes write `roleAudit`, but there is no admin UI for it
+  yet and the node is overwriteable by a super at the rules level.
+- Album delete remains a non-atomic chunked cascade; failures are surfaced and
   retryable, but a mid-cascade failure can strand photos.
 - The album/photos ZIP is capped at 500 files; the notice says so.
 - Visual-review screenshots live in `/tmp/af-shots6/`, not the repo.
@@ -85,6 +85,6 @@ Working tree: clean apart from this handoff commit.
 Continue the admin facelift from
 `/Users/e/mnt/bnk/cs/lecoursville/design_specs/2026-10-20_admin_facelift_handoff.md`.
 Work on branch `feat/admin-facelift`, do not push, merge, or deploy. First run
-`CI=true npm test -- --watch=false` and the full gate command from the handoff,
-report any divergence, then present the five `UNCERTAIN` entries from
-`design_specs/admin_facelift_questions.md` and apply the answers.
+the full gate command from the handoff and report any divergence; the remaining
+work is the optional append-only role-audit rules and an audit view, and the
+optional album-cascade callable.

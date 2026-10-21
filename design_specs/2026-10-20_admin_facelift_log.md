@@ -85,6 +85,15 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
   control is a button and its test focuses it directly because WebKit's default
   tab order only visits form fields.
 
+## Follow-Up Round (after the question batch)
+
+- User resolved the final batch: Material switches for flags, super-only RTDB
+  rules for flags/promoted route/recovery reads, a `roleAudit` trail on role
+  changes, the retryable album cascade kept, and unit tests added to the gate.
+- Gate now runs `CI=true npm test -- --watch=false` before the functions build.
+- Final: unit 78 files / 367 tests; gate 134 per browser, 402 executions, all
+  green, 0 skipped, retries 0.
+
 ## Phase 7: Wrap
 
 - Handoff: `design_specs/2026-10-20_admin_facelift_handoff.md`.
