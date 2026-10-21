@@ -77,3 +77,17 @@ Phase checkpoints for `feat/admin-facelift`. Newest phase at the bottom.
   blank body, no lingering skeleton after three reloads.
 - Missing unit specs from Phase 0 all present: families, calendars, people
   import, uploads, recovery, photo albums, album upload dialog.
+- Unit: 78 files, 363 tests passed.
+- Full gate: chromium 131, webkit 131, firefox 131, all passed, 0 failed,
+  0 skipped, retries 0 (393 executions).
+- WebKit-specific fixes: login now waits for URL, cached user, and navbar to
+  settle; the drawer trap moves focus itself in both directions; the skip
+  control is a button and its test focuses it directly because WebKit's default
+  tab order only visits form fields.
+
+## Phase 7: Wrap
+
+- Handoff: `design_specs/2026-10-20_admin_facelift_handoff.md`.
+- Question ledger: `design_specs/admin_facelift_questions.md` (AFQ-01 through
+  AFQ-11; five UNCERTAIN entries presented at the end of the run).
+- Nothing pushed, merged, or deployed.
