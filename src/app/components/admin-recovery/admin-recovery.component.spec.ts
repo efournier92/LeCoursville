@@ -350,14 +350,24 @@ describe('AdminRecoveryComponent', () => {
   });
 
   it('shows the expiry derived from the mint audit entry, else the approximate lifetime', () => {
-    const mintedAt = new Date(2026, 0, 2, 3, 4, 5).getTime();
+    const mintedAt = Date.now() - 60 * 1000;
 
     expect(component.expiryLabel('request-1')).toBe('Expires about an hour after generation');
 
     component.audit = [{ action: 'generate_reset_link', requestId: 'request-1', createdAt: mintedAt }];
 
-    expect(component.expiryLabel('request-1')).toBe('Expires 2026-01-02 04:04');
+    expect(component.expiryLabel('request-1')).toBe(`Expires ${formatAbsoluteTimestamp(mintedAt + 60 * 60 * 1000)}`);
+    expect(component.isLinkExpired('request-1')).toBe(false);
     expect(component.expiryLabel('request-2')).toBe('Expires about an hour after generation');
+  });
+
+  it('marks a link expired an hour after the mint', () => {
+    const mintedAt = Date.now() - 2 * 60 * 60 * 1000;
+    component.now = Date.now();
+    component.audit = [{ action: 'generate_reset_link', requestId: 'request-1', createdAt: mintedAt }];
+
+    expect(component.isLinkExpired('request-1')).toBe(true);
+    expect(component.expiryLabel('request-1')).toBe('Expired - generate a new link');
   });
 
   it('shows the no-results empty state and keeps the add form when no recipients exist', () => {

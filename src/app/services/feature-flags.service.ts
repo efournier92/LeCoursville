@@ -4,11 +4,14 @@ import { map } from 'rxjs/operators';
 import { FeatureFlag } from 'src/app/models/feature-flag';
 import { RtdbService } from './rtdb.service';
 
+export type FeatureFlagAuditField = 'enabled' | 'promotedRoute';
+
 export interface FeatureFlagAuditRecord {
   flagId: string;
-  enabled: boolean;
-  previous: boolean;
-  actorId: string;
+  field: FeatureFlagAuditField;
+  from: boolean | string | null;
+  to: boolean | string | null;
+  actorUid: string;
   actorEmail: string;
   at: number;
 }
@@ -93,5 +96,9 @@ export class FeatureFlagsService {
   addFeatureFlagAudit(record: FeatureFlagAuditRecord): Promise<void> {
     const id = this.rtdb.createPushId();
     return this.rtdb.object(`featureFlagAudit/${id}`).set(record);
+  }
+
+  getFeatureFlagAudit(): Observable<FeatureFlagAuditRecord[]> {
+    return this.rtdb.list<FeatureFlagAuditRecord>('featureFlagAudit').valueChanges();
   }
 }

@@ -199,8 +199,12 @@ test.describe('admin content surfaces', () => {
       await deleteDb(`userUploads/${uploadId}`);
       const photos = (await readDb<Record<string, any>>('photos')) ?? {};
       for (const [id, photo] of Object.entries(photos)) {
-        if (photo?.path === destPath) {
+        // Approvals now suffix the destination with the photo push id, so match
+        // the suffix as well as the legacy exact path.
+        const path = String(photo?.path ?? '');
+        if (path === destPath || path.endsWith('_e2e-approve.png')) {
           await deleteDb(`photos/${id}`);
+          await deleteStorageObject(path);
         }
       }
       if (originalAlbum === null) {

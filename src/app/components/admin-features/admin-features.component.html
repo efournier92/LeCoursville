@@ -9,6 +9,10 @@
   <div class="admin-error" role="alert" data-testid="features-toggle-error">{{ toggleError }}</div>
 }
 
+@if (auditNotice) {
+  <p class="feature-audit-notice" role="status" data-testid="feature-audit-notice">{{ auditNotice }}</p>
+}
+
 <mat-card class="admin-surface promoted-route-card">
   <mat-card-header>
     <mat-card-title class="admin-card-title">Promoted Route</mat-card-title>
@@ -73,6 +77,42 @@
           </div>
         </section>
       }
+    }
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="admin-surface feature-audit-card">
+  <mat-card-header>
+    <mat-card-title class="admin-card-title">Recent flag changes</mat-card-title>
+    <mat-card-subtitle>Latest 10, newest first</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (auditHistory.length === 0) {
+      <p class="feature-audit-empty" data-testid="feature-audit-empty">No flag changes recorded yet.</p>
+    } @else {
+      <table class="admin-table feature-audit-table" data-testid="feature-audit-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Actor</th>
+            <th>Flag</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of auditHistory; track $index) {
+            <tr>
+              <td data-label="When">{{ entry.at | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td data-label="Actor">{{ auditActor(entry) }}</td>
+              <td data-label="Flag">{{ auditFlag(entry) }}</td>
+              <td data-label="Change">
+                {{ auditValue(entry, entry.from) }} &rarr; {{ auditValue(entry, entry.to) }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     }
   </mat-card-content>
 </mat-card>

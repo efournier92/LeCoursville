@@ -1,7 +1,12 @@
 import { getDatabase } from "firebase-admin/database";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "./config";
-import { actorHashFromRequest, checkRateLimit, rateLimit } from "./helpers";
+import {
+  actorHashFromRequest,
+  auditRateLimitBreach,
+  rateLimit,
+  sendAdminAlert,
+} from "./helpers";
 
 interface UploaderInput {
   name?: unknown;
@@ -21,6 +26,9 @@ const MAX_FILE_NAME = 255;
 const MAX_EVENT_NAME = 200;
 const MAX_BATCH_ID = MAX_SEGMENT;
 const MAX_CONTENT_TYPE = 100;
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+const MAX_UPLOAD_MESSAGE = "Files must be 50 MB or smaller.";
+const GLOBAL_ALERT_LIMIT = "userUploadsGlobalAlert";
 
 /**
  * Turns a client-supplied path segment into one safe segment. Public upload
@@ -63,6 +71,41 @@ function uploaderInfo(value: unknown): Record<string, string> {
 }
 
 /**
+ * The global cap is a poor denial lever: it is reachable by an unauthenticated
+ * attacker and would lock out every guest. Above it, keep accepting uploads and
+ * raise one throttled alert instead. The throttle write is itself the
+ * rate-limit record for the breach.
+ */
+async function recordGlobalCap(actor: string | null): Promise<void> {
+  try {
+    const first = await rateLimit(GLOBAL_ALERT_LIMIT, "global", 1, WINDOW_MS);
+    if (!first) {
+      return;
+    }
+    await auditRateLimitBreach({
+      functionName: "createUserUpload",
+      layer: "global",
+      emailHash: null,
+      actorHash: actor,
+    });
+    await sendAdminAlert({
+      type: "upload_global_cap",
+      title: "Upload volume is above the global cap",
+      body: `More than ${GLOBAL_MAX} uploads were requested this hour. Uploads stay enabled; review the pending queue.`,
+      data: {
+        function: "createUserUpload",
+        cap: GLOBAL_MAX,
+        windowMs: WINDOW_MS,
+        actorHash: actor,
+      },
+    });
+  } catch (err) {
+    // Alerting must never turn the soft cap back into a hard upload failure.
+    console.error("Could not record the upload global cap", err);
+  }
+}
+
+/**
  * Creates the pending userUploads record for the public upload page. The
  * client can no longer write this tree, so the server owns the id, path,
  * status, and url; the storage object is uploaded to the returned path.
@@ -83,38 +126,30 @@ export const createUserUpload = onCall(
       throw new HttpsError("invalid-argument", "Invalid upload.");
     }
 
-    const actor = actorHashFromRequest(request.rawRequest);
-    const perActorOk = actor
-      ? await checkRateLimit("userUploadsIp", actor, PER_ACTOR_MAX, WINDOW_MS)
-      : true;
-    const globalOk = await checkRateLimit(
-      "userUploadsGlobal",
-      "global",
-      GLOBAL_MAX,
-      WINDOW_MS
-    );
-    if (!perActorOk || !globalOk) {
-      throw new HttpsError("resource-exhausted", "Too many uploads. Try again later.");
+    const fileSize = Number(data.fileSize);
+    if (!Number.isFinite(fileSize) || fileSize < 0 || fileSize > MAX_UPLOAD_BYTES) {
+      throw new HttpsError("invalid-argument", MAX_UPLOAD_MESSAGE);
     }
 
-    // Commit only after every layer would allow, so a call denied by a later
-    // layer does not burn quota on the earlier ones.
-    const actorCommitted = actor
-      ? await rateLimit("userUploadsIp", actor, PER_ACTOR_MAX, WINDOW_MS)
-      : true;
-    const globalCommitted = await rateLimit(
+    const actor = actorHashFromRequest(request.rawRequest);
+    if (
+      actor &&
+      !(await rateLimit("userUploadsIp", actor, PER_ACTOR_MAX, WINDOW_MS))
+    ) {
+      throw new HttpsError("resource-exhausted", "Too many uploads. Try again later.");
+    }
+    const globalOk = await rateLimit(
       "userUploadsGlobal",
       "global",
       GLOBAL_MAX,
       WINDOW_MS
     );
-    if (!actorCommitted || !globalCommitted) {
-      throw new HttpsError("resource-exhausted", "Too many uploads. Try again later.");
+    if (!globalOk) {
+      await recordGlobalCap(actor);
     }
 
     const fileName = safeSegment(data.fileName, "upload");
     const batchId = safeSegment(data.batchId, "");
-    const fileSize = Number(data.fileSize);
     const id = getDatabase().ref("userUploads").push().key;
     if (!id) {
       throw new HttpsError("internal", "Could not create an upload id.");
@@ -134,7 +169,7 @@ export const createUserUpload = onCall(
       uploader: uploaderInfo(data.uploader),
       fileName,
       fileType: boundedText(data.fileType, 100),
-      fileSize: Number.isFinite(fileSize) ? Math.max(0, Math.trunc(fileSize)) : 0,
+      fileSize: Math.trunc(fileSize),
     });
 
     return { id, path };

@@ -20,7 +20,7 @@
             <span class="account-name" data-label="Name">{{ account.name }}</span>
             <span class="account-email" data-label="Email">{{ account.email }}</span>
             <span class="account-roles" data-label="Roles">{{ rolesLabel(account) }}</span>
-            <span class="account-age" data-label="Age">{{ accountAge(account) }}</span>
+            <span class="account-age" data-label="Age">{{ accountCreatedAt(account) }}</span>
           </div>
         } @empty {
           <p class="empty">No accounts.</p>
@@ -105,7 +105,7 @@
                 <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
               </td>
               <td data-label="Received">
-                <span class="recovery-age">{{ age(request.createdAt) }}</span>
+                <span class="recovery-age">{{ formatTimestamp(request.createdAt) }}</span>
               </td>
               <td data-label="" class="recovery-actions">
                 <div class="recovery-actions-inner">
@@ -156,6 +156,7 @@
                         mat-button
                         data-testid="admin-recovery-copy"
                         [attr.aria-label]="'Copy reset link for ' + request.email"
+                        [disabled]="isLinkExpired(request.id)"
                         (click)="copyLink(result.link, request.id)">
                         {{ copied[request.id] ? 'Copied' : 'Copy' }}
                       </button>

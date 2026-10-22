@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { UserUploadService } from '../../services/user-upload.service';
+import { UserUploadService, MAX_UPLOAD_BYTES, MAX_UPLOAD_MESSAGE } from '../../services/user-upload.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { FireUploadTask } from '../../services/fire-upload-task';
 
@@ -183,22 +183,21 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
   addFiles(files: FileList): void {
     this.analyticsService.logEvent('files_added', { count: files.length });
     for (let i = 0; i < files.length; i++) {
-      this.uploadItems.push({
-        file: files[i],
-        progress: 0,
-        status: 'pending'
-      });
+      this.uploadItems.push(this.toUploadItem(files[i]));
     }
   }
 
   addFilesAsList(files: File[]): void {
     for (const file of files) {
-      this.uploadItems.push({
-        file,
-        progress: 0,
-        status: 'pending'
-      });
+      this.uploadItems.push(this.toUploadItem(file));
     }
+  }
+
+  /** Pre-check the server cap so an oversized file never creates a pending row. */
+  private toUploadItem(file: File): UploadItem {
+    return file.size > MAX_UPLOAD_BYTES
+      ? { file, progress: 0, status: 'error', error: MAX_UPLOAD_MESSAGE }
+      : { file, progress: 0, status: 'pending' };
   }
 
   removeItem(index: number): void {
@@ -249,6 +248,10 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
     const batchId = `${sanitizedEvent}${namePart}${datePart}-${hrs}${mins}${secs}`;
 
     for (const item of this.uploadItems) {
+      if (item.status === 'error') {
+        this.checkComplete(++completed, total);
+        continue;
+      }
       item.status = 'uploading';
       item.progress = 0;
 
@@ -263,7 +266,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
         ));
       } catch (err) {
         item.status = 'error';
-        item.error = 'Failed to upload. Please try again.';
+        item.error = this.uploadErrorMessage(err);
         this.analyticsService.logEvent('upload_file_error', {
           file_name: item.file.name,
           file_type: item.file.type,
@@ -287,7 +290,7 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
         this.checkComplete(++completed, total);
       }).catch((err) => {
         item.status = 'error';
-        item.error = 'Failed to upload. Please try again.';
+        item.error = this.uploadErrorMessage(err);
         this.analyticsService.logEvent('upload_file_error', {
           file_name: item.file.name,
           file_type: item.file.type,
@@ -318,6 +321,17 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
         this.isComplete = true;
       }
     }
+  }
+
+  private uploadErrorMessage(error: unknown): string {
+    const code = (error as { code?: string })?.code || '';
+    if (code.endsWith('resource-exhausted')) {
+      return 'Too many uploads. Try again later.';
+    }
+    if (code.endsWith('invalid-argument')) {
+      return 'Invalid upload.';
+    }
+    return 'Failed to upload. Please try again.';
   }
 
   private generateAnonymousId(): string {

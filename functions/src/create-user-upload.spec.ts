@@ -8,6 +8,7 @@ vi.mock("firebase-admin/database", async () => {
 import {
   createUserUpload,
   GLOBAL_MAX,
+  MAX_UPLOAD_BYTES,
   PER_ACTOR_MAX,
   safeSegment,
 } from "./create-user-upload";
@@ -124,16 +125,59 @@ describe("createUserUpload", () => {
     expect(Object.keys(fakeDb.read("userUploads") as object)).toHaveLength(before);
   });
 
-  it("fails closed on the global cap and writes no row", async () => {
+  it("keys per-actor budgets on the forwarded hop, not the shared socket", async () => {
+    const socket = "10.0.0.1";
+    const hopA = {
+      ip: socket,
+      headers: { "x-forwarded-for": "spoof, 203.0.113.1" },
+    };
+    const hopB = {
+      ip: socket,
+      headers: { "x-forwarded-for": "spoof, 203.0.113.2" },
+    };
+    for (let i = 0; i < PER_ACTOR_MAX; i++) {
+      await invoke({ ...validData, fileName: `a-${i}.png` }, hopA);
+    }
+
+    await expect(
+      invoke({ ...validData, fileName: "a-capped.png" }, hopA)
+    ).rejects.toMatchObject({ code: "resource-exhausted" });
+
+    // A different client behind the same proxy gets its own budget.
+    await expect(
+      invoke({ ...validData, fileName: "b-first.png" }, hopB)
+    ).resolves.toMatchObject({ id: expect.any(String) });
+
+    // Replaying hop A still shares its one exhausted budget.
+    await expect(
+      invoke({ ...validData, fileName: "a-again.png" }, hopA)
+    ).rejects.toMatchObject({ code: "resource-exhausted" });
+  });
+
+  it("rejects a file above the server-side size limit before writing a row", async () => {
+    await expect(
+      invoke({ ...validData, fileSize: MAX_UPLOAD_BYTES + 1 })
+    ).rejects.toMatchObject({ code: "invalid-argument" });
+    expect(fakeDb.read("userUploads")).toBeNull();
+  });
+
+  it("soft-degrades at the global cap instead of blocking guests", async () => {
     await fakeDb.ref("rateLimits/userUploadsGlobal/global").set({
       windowStart: Date.now(),
       count: GLOBAL_MAX,
     });
 
-    await expect(invoke(validData)).rejects.toMatchObject({
-      code: "resource-exhausted",
-    });
-    expect(fakeDb.read("userUploads")).toBeNull();
+    const first = await invoke({ ...validData, fileName: "over-1.png" });
+    const second = await invoke({ ...validData, fileName: "over-2.png" });
+    expect(first.id).toBeTruthy();
+    expect(second.id).toBeTruthy();
+    expect(Object.keys(fakeDb.read("userUploads") as object)).toHaveLength(2);
+
+    const alerts = fakeDb.read("adminAlerts") as Record<string, { type?: string }>;
+    expect(
+      Object.values(alerts).filter((alert) => alert.type === "upload_global_cap")
+    ).toHaveLength(1);
+    expect(fakeDb.read("rateLimits/userUploadsGlobalAlert/global")).toBeTruthy();
   });
 
   it("sanitizes a segment independently", () => {

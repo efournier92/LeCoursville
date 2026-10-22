@@ -28,22 +28,24 @@ interface RawRequestLike {
 
 /**
  * x-forwarded-for is client-controlled at the head; GCP appends the real client
- * IP at the end, so use the platform socket address when present and the last
- * forwarded hop otherwise. Null when neither exists, so callers skip the
- * per-actor layer rather than falling open to global.
+ * IP at the end. The socket address behind the proxy is a shared Google address,
+ * so key on the last forwarded hop and only fall back to the socket when no hop
+ * exists. Null when neither exists, so callers skip the per-actor layer rather
+ * than falling open to global.
  */
 export function actorHashFromRequest(
   rawRequest: RawRequestLike | undefined
 ): string | null {
-  const socketIp = rawRequest?.ip;
-  let actor = typeof socketIp === "string" ? socketIp.trim() : "";
+  const forwarded = rawRequest?.headers?.["x-forwarded-for"];
+  const header = Array.isArray(forwarded) ? forwarded.join(",") : forwarded;
+  let actor = "";
+  if (typeof header === "string") {
+    const hops = header.split(",");
+    actor = (hops[hops.length - 1] ?? "").trim();
+  }
   if (!actor) {
-    const forwarded = rawRequest?.headers?.["x-forwarded-for"];
-    const header = Array.isArray(forwarded) ? forwarded.join(",") : forwarded;
-    if (typeof header === "string") {
-      const hops = header.split(",");
-      actor = (hops[hops.length - 1] ?? "").trim();
-    }
+    const socketIp = rawRequest?.ip;
+    actor = typeof socketIp === "string" ? socketIp.trim() : "";
   }
   return actor ? hashKey(actor) : null;
 }

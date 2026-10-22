@@ -6,58 +6,91 @@
 
 ## Findings
 
-- C-20261022-01 | 2026-10-22 | visual | high | high | open | Desktop title bars span 45-74px because padding tracks whatever controls a page embeds | `/tmp/af-shots/2026-10-22/metrics.json`
-- C-20261022-02 | 2026-10-22 | visual | high | high | open | Mobile title bars span 39-185px because filters and secondary buttons stack inside the header | `/tmp/af-shots/2026-10-22/metrics.json`
-- C-20261022-03 | 2026-10-22 | visual | high | high | open | Photo Albums mobile header stacks three control rows and pushes the first album below the fold | `admin-photo-albums.component.html:5`
-- C-20261022-04 | 2026-10-22 | visual | high | high | open | Users mobile header is 137px: full-width filter plus a sort row whose chevron floats mid-row | `admin-users.component.html:3`
-- C-20261022-05 | 2026-10-22 | visual | medium | high | open | Two sort controls: Users has a chevron menu, Photo Albums plain text with no affordance | `admin-users.component.html:25`
-- C-20261022-06 | 2026-10-22 | visual | medium | high | open | Destructive affordance is red only on Users; Families and Calendars icon deletes are near-black | `admin-families.component.html:148`
-- C-20261022-07 | 2026-10-22 | visual | medium | high | open | Intro line exists on 4 of 9 pages, so toolbar-to-content rhythm differs page to page | `admin-features.component.html:4`
-- C-20261022-08 | 2026-10-22 | visual | medium | high | open | Media video tab form fills half its card, leaving a dead white column | `admin-media-upload-video.component.html:9`
-- C-20261022-09 | 2026-10-22 | visual | medium | high | open | Media tab band is full-bleed while every card respects the page gutter | `admin-media.component.scss:66`
-- C-20261022-10 | 2026-10-22 | visual | medium | high | open | Three pagination treatments: floating, card footer, and an extra page counter | `admin-photo-albums.component.html:257`
-- C-20261022-11 | 2026-10-22 | visual | medium | medium | open | People Import leaves the viewport bare below one card; reads unfinished | `admin-people-import.component.html:3`
-- C-20261022-12 | 2026-10-22 | visual | medium | medium | open | Three dropzone copy hierarchies across People, Families, Photo Albums | `admin-people-import.component.html:14`
-- C-20261022-13 | 2026-10-22 | visual | low | high | open | Library header card is split from its list by a shadow seam; Families uses one card | `admin-media.component.html:38`
-- C-20261022-14 | 2026-10-22 | visual | low | high | open | Media library renders dates as 2026:0:30, unlike the ISO format on Users and Recovery | `admin-media.component.html:60`
-- C-20261022-15 | 2026-10-22 | visual | low | high | open | Upload/Clear are full-card-width pills while every other admin CTA is fixed width | `admin-media-upload-video.component.html:75`
-- C-20261022-16 | 2026-10-22 | visual | low | high | open | Page title People Import does not match the People nav label | `admin-people-import.component.html:3`
-- C-20261022-17 | 2026-10-22 | visual | high | high | open | Four card-surface recipes: M3 default, radius+shadow token, shadow only, mat-elevation-z6 | `admin-user-uploads.component.scss:14`
-- C-20261022-18 | 2026-10-22 | visual | high | high | open | Error banner block copy-pasted 5x and mounted at four different positions | `admin-photo-albums.component.scss:5`
-- C-20261022-19 | 2026-10-22 | visual | high | high | open | Media upload is an in-page z6 card while album upload is a MatDialog: two interaction grammars | `admin-media-upload-video.component.html:3`
-- C-20261022-20 | 2026-10-22 | visual | high | high | open | Nine per-page containers re-declare max-width/margin already applied by the admin shell | `admin.component.scss:163`
-- C-20261022-21 | 2026-10-22 | visual | medium | high | open | Cancel button class is white-text in shared styles and overridden per page | `src/app/styles/admin-forms.scss:26`
-- C-20261022-22 | 2026-10-22 | visual | medium | high | open | Dressed form-field recipe duplicated verbatim in three components | `admin-media-upload-video.component.scss:37`
-- C-20261022-23 | 2026-10-22 | visual | medium | high | open | Segmented control is 32px shared but 44px on Uploads; toolbar wrapping patched per page | `admin-user-uploads.component.scss:26`
-- C-20261022-24 | 2026-10-22 | visual | medium | high | open | Section headings differ: 1.25rem bold, 20px/600, and 20px/500 for the same rank | `admin-people-import.component.scss:28`
-- C-20261022-25 | 2026-10-22 | visual | medium | high | open | Header height is hardcoded as 64px in two calc()s while the toolbar is theme-sized | `admin.component.scss:5`
-- C-20261022-26 | 2026-10-22 | visual | low | high | open | Filter inputs have three skins: gallery pill, white-filled outlined field, default outlined | `shared/gallery-bar.scss:13`
-- C-20261022-27 | 2026-10-22 | visual | low | high | open | write-error duplicates action-error under a second name with different metrics | `admin-families.component.scss:29`
-- C-20261022-28 | 2026-10-22 | visual | low | high | open | Admin forms import Bootstrap utilities inside an otherwise token-based system | `admin-media-upload-audio-album.component.html:3`
-- C-20261022-29 | 2026-10-22 | product | high | high | open | User-card Save and Delete failures are unhandled, so a rejected privilege change looks saved | `user-edit.component.ts:77`
-- C-20261022-30 | 2026-10-22 | product | high | high | open | Rename Album form renders at page bottom, far from the trigger that opened it | `admin-photo-albums.component.html:228`
-- C-20261022-31 | 2026-10-22 | product | high | high | open | Album drill-in header does not wrap; Delete Album is off-screen on phones | `admin-photo-albums.component.scss:221`
-- C-20261022-32 | 2026-10-22 | product | high | high | open | Admin-mode user cards have no Cancel and no unsaved-changes guard | `user-edit.component.html:67`
-- C-20261022-33 | 2026-10-22 | product | high | high | open | Empty album drill-in shows the people-search empty copy with no Add Photos pointer | `admin-photo-albums.component.html:221`
-- C-20261022-34 | 2026-10-22 | product | high | high | open | Generate reset link is silently disabled until Reason is typed, with no required cue | `admin-recovery.component.html:112`
-- C-20261022-35 | 2026-10-22 | product | medium | high | open | Families field labeled ID edits sortOrder, not the family identity | `admin-families.component.html:196`
-- C-20261022-36 | 2026-10-22 | product | medium | high | open | CSV import silently skips duplicate families with no imported/skipped summary | `admin-families.component.ts:316`
-- C-20261022-37 | 2026-10-22 | product | medium | medium | open | CSV duplicate check races the still-loading family list | `admin-families.component.ts:317`
-- C-20261022-38 | 2026-10-22 | product | medium | medium | open | CSV partial failure leaves committed rows, so retry duplicates them | `admin-families.component.ts:333`
-- C-20261022-39 | 2026-10-22 | product | medium | high | open | Copy reset-link gives no success feedback and swallows fallback failure | `admin-recovery.component.ts:341`
-- C-20261022-40 | 2026-10-22 | product | medium | high | open | Album create rejection is unhandled after the dialog closes, losing the typed title | `admin-photo-albums.component.ts:367`
-- C-20261022-41 | 2026-10-22 | product | medium | high | open | Rename input forces min-width 320px and overflows a 360px phone | `admin-photo-albums.component.scss:196`
-- C-20261022-42 | 2026-10-22 | product | medium | high | open | Filter and sort state reset on every navigation | `admin-users.component.ts:122`
-- C-20261022-43 | 2026-10-22 | product | low | high | open | Sort reversal is duplicated and the active sort has no visible marker | `admin-users.component.html:26`
-- C-20261022-44 | 2026-10-22 | security | high | high | open | Admin session deletes any storage object via attacker-authored upload.url | `user-upload.service.ts:212`
-- C-20261022-45 | 2026-10-22 | security | high | high | open | Approve copies bytes from attacker-controlled url/path into the public photos tree | `user-upload.service.ts:138`
-- C-20261022-46 | 2026-10-22 | security | high | high | open | Reset link is auto-emailed to an attacker-chosen alternate contact with no admin opt-in | `functions/src/admin-generate-reset-link.ts:228`
-- C-20261022-47 | 2026-10-22 | security | medium | high | open | users is readable by any authenticated principal, exposing the admin roster | `database.rules.json:33`
-- C-20261022-48 | 2026-10-22 | security | medium | high | open | roles/user is client-asserted at signup, so content read access is self-granted | `database.rules.json:36`
-- C-20261022-49 | 2026-10-22 | security | medium | high | open | messages write is unscoped: any user can forge or delete any message | `database.rules.json:15`
-- C-20261022-50 | 2026-10-22 | security | medium | medium | open | Repo rules are not what production runs; deploy ships hosting and functions only | `scripts/deploy.sh:7`
-- C-20261022-51 | 2026-10-22 | security | medium | medium | open | Role change commits before its audit write, and roleAudit is rewritable by any super | `user-edit.component.ts:95`
-- C-20261022-52 | 2026-10-22 | security | low | high | open | media and clans are world-readable with no authentication | `database.rules.json:28`
+- C-20261022-01 | 2026-10-22 | visual | high | high | addressed | Desktop title bars spanned 45-74px because padding tracked embedded controls | `page-toolbar.component.scss` now fixed 64px
+- C-20261022-02 | 2026-10-22 | visual | high | high | addressed | Mobile title bars spanned 39-185px from stacked header controls | fixed 56px; filters moved to a second row
+- C-20261022-03 | 2026-10-22 | visual | high | high | addressed | Photo Albums mobile header stacked three control rows | filters moved out of the bar
+- C-20261022-04 | 2026-10-22 | visual | high | high | addressed | Users mobile header was 137px with a stray sort chevron | title-only bar; one sort control
+- C-20261022-05 | 2026-10-22 | visual | medium | high | addressed | Two sort controls with different affordances | one labelled sort control
+- C-20261022-06 | 2026-10-22 | visual | medium | high | addressed | Destructive affordance inconsistent across tables | consistent destructive styling
+- C-20261022-07 | 2026-10-22 | visual | medium | high | addressed | Intro line existed on 4 of 9 pages | one `.admin-intro` style and placement
+- C-20261022-08 | 2026-10-22 | visual | medium | high | addressed | Media video form left a dead half-card | shared form surface and action row
+- C-20261022-09 | 2026-10-22 | visual | medium | high | addressed | Media tab band was full-bleed | inset to the page gutter
+- C-20261022-10 | 2026-10-22 | visual | medium | high | addressed | Three pagination treatments | one card-footer pattern
+- C-20261022-11 | 2026-10-22 | visual | medium | medium | rejected | People Import left the viewport bare | already shows Import Complete and Last import
+- C-20261022-12 | 2026-10-22 | visual | medium | medium | addressed | Three dropzone copy hierarchies | shared dropzone treatment
+- C-20261022-13 | 2026-10-22 | visual | low | high | addressed | Media library header split from its list by a shadow seam | one surface
+- C-20261022-14 | 2026-10-22 | visual | low | high | addressed | Media dates rendered as 2026:0:30 | zero-padded ISO
+- C-20261022-15 | 2026-10-22 | visual | low | high | addressed | Upload/Clear were full-card-width pills | 36px right-aligned actions
+- C-20261022-16 | 2026-10-22 | visual | low | high | addressed | People Import title did not match the nav label | renamed People
+- C-20261022-17 | 2026-10-22 | visual | high | high | addressed | Four card-surface recipes | single `.admin-surface`
+- C-20261022-18 | 2026-10-22 | visual | high | high | addressed | Error banner copy-pasted 5x in four positions | single `.admin-error` under the bar
+- C-20261022-19 | 2026-10-22 | visual | high | high | addressed | Media upload was an in-page z6 card while album upload was a dialog | shared surface and action grammar
+- C-20261022-20 | 2026-10-22 | visual | high | high | addressed | Nine per-page containers duplicated shell width/gutters | `.admin-page`, shell owns width
+- C-20261022-21 | 2026-10-22 | visual | medium | high | addressed | Cancel button style was overridden per page | one shared recipe
+- C-20261022-22 | 2026-10-22 | visual | medium | high | addressed | Dressed form-field recipe duplicated three times | moved to `admin-forms.scss`
+- C-20261022-23 | 2026-10-22 | visual | medium | high | addressed | Segmented control 32px shared but 44px on Uploads | one 36px control
+- C-20261022-24 | 2026-10-22 | visual | medium | high | addressed | Section headings differed by rank | `.admin-card-title` 20px/600
+- C-20261022-25 | 2026-10-22 | visual | medium | high | addressed | Header height hardcoded 64px twice | `--header-height`
+- C-20261022-26 | 2026-10-22 | visual | low | high | addressed | Filter inputs had three skins | one field recipe in the filter bar
+- C-20261022-27 | 2026-10-22 | visual | low | high | addressed | write-error duplicated action-error | shared `.admin-error`
+- C-20261022-28 | 2026-10-22 | visual | low | high | addressed | Bootstrap utilities inside a token-based system | removed from upload surfaces
+- C-20261022-29 | 2026-10-22 | product | high | high | addressed | User save/delete failures were unhandled | inline errors; dialog stays open
+- C-20261022-30 | 2026-10-22 | product | high | high | addressed | Rename Album form rendered at page bottom | edit dialog
+- C-20261022-31 | 2026-10-22 | product | high | high | addressed | Album drill-in header did not wrap | wraps; mobile action stack
+- C-20261022-32 | 2026-10-22 | product | high | high | addressed | Admin user editor had no Cancel | Cancel added; dialog closes on save
+- C-20261022-33 | 2026-10-22 | product | high | high | addressed | Empty album used people-search copy | page-specific empty copy
+- C-20261022-34 | 2026-10-22 | product | high | high | addressed | Generate link silently disabled without Reason | required cue and hint
+- C-20261022-35 | 2026-10-22 | product | medium | high | addressed | Families ID field edited sortOrder | relabelled Sort Order
+- C-20261022-36 | 2026-10-22 | product | medium | high | addressed | CSV import skipped duplicates silently | imported/skipped summary
+- C-20261022-37 | 2026-10-22 | product | medium | medium | addressed | CSV duplicate check raced the loading list | upload disabled until ready
+- C-20261022-38 | 2026-10-22 | product | medium | medium | addressed | CSV retry duplicated committed rows | allSettled retry skips committed
+- C-20261022-39 | 2026-10-22 | product | medium | high | addressed | Copy reset-link gave no feedback | Copied state and failure message
+- C-20261022-40 | 2026-10-22 | product | medium | high | addressed | Album create rejection was unhandled | dialog keeps title and error
+- C-20261022-41 | 2026-10-22 | product | medium | high | addressed | Rename input forced 320px min-width | removed
+- C-20261022-42 | 2026-10-22 | product | medium | high | addressed | Filter/sort reset on navigation | users state in query params
+- C-20261022-43 | 2026-10-22 | product | low | high | addressed | Active sort had no marker | active sort shown
+- C-20261022-44 | 2026-10-22 | security | high | high | addressed | Admin deleted any storage object via upload.url | path-only refs, validated prefix
+- C-20261022-45 | 2026-10-22 | security | high | high | addressed | Approve copied bytes from attacker-controlled url | server-assigned path
+- C-20261022-46 | 2026-10-22 | security | high | high | addressed | Reset link auto-mailed to attacker alternate contact | explicit per-mint opt-in
+- C-20261022-47 | 2026-10-22 | security | medium | high | addressed | users readable by any authenticated principal | own-record or super
+- C-20261022-48 | 2026-10-22 | security | medium | high | escalated | roles/user is client-asserted at signup | `database.rules.json:36`; needs a product call
+- C-20261022-49 | 2026-10-22 | security | medium | high | addressed | messages write was unscoped | per-field author rules and child reply/like paths
+- C-20261022-50 | 2026-10-22 | security | medium | medium | escalated | Repo rules are not what production runs | `scripts/deploy.sh:7`; console is source of truth
+- C-20261022-51 | 2026-10-22 | security | medium | medium | escalated | Role grant commits before its audit write | needs a transactional callable
+- C-20261022-52 | 2026-10-22 | security | low | high | addressed | media and clans were world-readable | auth required; media routes guarded
+- C-20261022-53 | 2026-10-22 | security | high | medium | addressed | Per-actor rate key collapsed behind the GFE proxy | last x-forwarded-for hop
+- C-20261022-54 | 2026-10-22 | security | high | high | addressed | Global upload cap was attacker-exhaustible | soft-degrade plus admin alert
+- C-20261022-55 | 2026-10-22 | product | high | high | addressed | Upload size unbounded; ghost queue rows | 50MB server and client cap
+- C-20261022-56 | 2026-10-22 | security | medium | high | addressed | Message payload fields unbounded | validate bounds on body/title/attribution
+- C-20261022-57 | 2026-10-22 | security | medium | high | addressed | authorName forgeable at create | pinned to profile name
+- C-20261022-58 | 2026-10-22 | security | medium | high | addressed | attachmentUrl allowlist skipped on update | child validate re-checks
+- C-20261022-59 | 2026-10-22 | security | medium | high | addressed | Reject on an orphan record left it stuck | catch and remove record
+- C-20261022-60 | 2026-10-22 | security | medium | medium | addressed | Approval path collision overwrote bytes | push-id suffix
+- C-20261022-61 | 2026-10-22 | product | high | high | addressed | Calendar edit could duplicate a year silently | collision check on edit too
+- C-20261022-62 | 2026-10-22 | product | high | high | addressed | Delete impact line vanished on read failure | explicit unknown copy
+- C-20261022-63 | 2026-10-22 | product | high | high | addressed | Upload errors flattened to one message | callable codes mapped
+- C-20261022-64 | 2026-10-22 | product | medium | high | addressed | Expired reset link still looked valid | expired state, Copy disabled
+- C-20261022-65 | 2026-10-22 | product | medium | high | addressed | Role history claimed empty while loading | loading/error/retry states
+- C-20261022-66 | 2026-10-22 | product | medium | high | addressed | Relative time labels froze | absolute times plus clock
+- C-20261022-67 | 2026-10-22 | product | low | high | addressed | Badge errors looked like zero work | error badge
+- C-20261022-68 | 2026-10-22 | product | medium | high | addressed | Role history truncated silently | Most recent 20
+- C-20261022-69 | 2026-10-22 | product | medium | medium | addressed | Delete left flagged pending uploads orphaned | confirm states the consequence
+- C-20261022-70 | 2026-10-22 | product | medium | high | addressed | featureFlagAudit was write-only and half-recorded | reader card plus from/to
+- C-20261022-71 | 2026-10-22 | security | low | high | escalated | Audit records are client-authored and skippable | needs server-side stamping
+- C-20261022-72 | 2026-10-22 | security | medium | medium | addressed | Reset-link callable gated on admin not super | super required
+- C-20261022-73 | 2026-10-22 | security | medium | high | addressed | Media read tightening broke an unguarded route | auth guard on media routes
+- C-20261022-74 | 2026-10-22 | security | medium | high | addressed | Unauthenticated upload record creation | callable owns id/path/status
+- C-20261022-75 | 2026-10-22 | security | high | high | addressed | Nested reply/like objects bypassed message rules | child-path rules
+- C-20261022-76 | 2026-10-22 | security | low | medium | addressed | Author could rewrite authorId | immutability validated
+- C-20261022-77 | 2026-10-22 | security | low | high | addressed | Upload record id was not bound to its key | id === $id validated
+- C-20261022-78 | 2026-10-22 | security | low | high | addressed | Upload path segments were not sanitized | shared segment validation
+- C-20261022-79 | 2026-10-22 | maintainability | medium | high | addressed | Pager markup copy-pasted 6x | deferred; shared footer class only
+- C-20261022-80 | 2026-10-22 | maintainability | low | high | addressed | Dead subtitle input and unused spacing tokens | removed
+- C-20261022-81 | 2026-10-22 | maintainability | low | high | rejected | Redundant reset-link security test | kept as the HTTP-layer assertion
 
 ## Rebuttals
 
+  rebuttal | addressed | `npx ng build --configuration=e2e` | initial 822.93 kB raw / 133.32 kB transfer, lazy admin/media/calendar chunks
+  rebuttal | addressed | `CI=true npm test -- --watch=false` | 77 files, 419 tests passed
+  rebuttal | addressed | `npm --prefix functions test` | 8 files, 112 tests passed
+  rebuttal | escalated | `docs/critique` | C-48, C-50, C-51, C-71 are human decisions, recorded in the session questions log

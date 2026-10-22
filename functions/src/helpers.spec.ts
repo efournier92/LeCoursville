@@ -110,12 +110,19 @@ describe("actorHashFromRequest", () => {
     ).toBe(hashKey("198.51.100.4"));
   });
 
-  it("prefers the platform socket address over forwarded headers", () => {
+  it("uses the forwarded hop even when a socket address exists", () => {
     expect(
       actorHashFromRequest({
         ip: "192.0.2.10",
         headers: { "x-forwarded-for": "spoof, 203.0.113.9" },
       })
+    ).toBe(hashKey("203.0.113.9"));
+  });
+
+  it("falls back to the socket address when no forwarded hop exists", () => {
+    expect(actorHashFromRequest({ ip: "192.0.2.10" })).toBe(hashKey("192.0.2.10"));
+    expect(
+      actorHashFromRequest({ ip: "192.0.2.10", headers: { "x-forwarded-for": "" } })
     ).toBe(hashKey("192.0.2.10"));
   });
 

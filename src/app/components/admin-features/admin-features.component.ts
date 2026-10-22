@@ -37,9 +37,12 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
   }));
   promotedRoute: string = '';
   featureOptions = FEATURES;
+  auditHistory: FeatureFlagAuditRecord[] = [];
+  readonly auditHistoryLimit = 10;
   loading = true;
   loadError = '';
   toggleError = '';
+  auditNotice = '';
   // One-way [checked] bindings only repaint when the value changes, so a failed
   // write is pushed back through the live toggle instances.
   @ViewChildren(MatSlideToggle) private toggles?: QueryList<MatSlideToggle>;
@@ -50,6 +53,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
   private flagsSub?: Subscription;
   private promotedSub?: Subscription;
   private userSub?: Subscription;
+  private auditSub?: Subscription;
 
   constructor(
     private featureFlagsService: FeatureFlagsService,
@@ -73,6 +77,19 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     this.userSub = this.authService.userObservable.subscribe((user: User) => {
       this.userSignedIn = user;
     });
+
+    this.auditSub = this.featureFlagsService.getFeatureFlagAudit().subscribe({
+      next: entries => {
+        this.auditHistory = (entries || [])
+          .slice()
+          .sort((a, b) => (b.at || 0) - (a.at || 0))
+          .slice(0, this.auditHistoryLimit);
+      },
+      // featureFlagAudit is super-only; the toggles stay usable if it is denied.
+      error: () => {
+        this.auditHistory = [];
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -80,6 +97,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     this.flagsSub?.unsubscribe();
     this.promotedSub?.unsubscribe();
     this.userSub?.unsubscribe();
+    this.auditSub?.unsubscribe();
   }
 
   retry(): void {
@@ -101,6 +119,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
 
   async onToggle(featureId: string, enabled: boolean): Promise<void> {
     this.toggleError = '';
+    this.auditNotice = '';
     const stored = this.isEnabled(featureId);
     try {
       await this.featureFlagsService.setFeatureFlag(featureId, enabled);
@@ -118,11 +137,12 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       }
       return;
     }
-    this.writeAudit({ flagId: featureId, enabled, previous: stored });
+    this.writeAudit({ flagId: featureId, field: 'enabled', from: stored, to: enabled });
   }
 
   async onPromotedRouteChange(route: string): Promise<void> {
     this.toggleError = '';
+    this.auditNotice = '';
     const stored = this.storedPromotedRoute;
     try {
       await this.featureFlagsService.setPromotedRoute(route);
@@ -131,13 +151,11 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       this.toggleError = 'Couldn’t save the promoted route. The selection was reverted.';
       return;
     }
-    const feature = this.featureForRoute(route);
-    // A route has no boolean of its own, so the matched flag's state records
-    // whether the promoted page is live at the moment it was chosen.
     this.writeAudit({
-      flagId: feature?.id ?? 'promotedRoute',
-      enabled: feature ? this.isEnabled(feature.id) : false,
-      previous: feature ? this.isEnabled(feature.id) : false,
+      flagId: 'promotedRoute',
+      field: 'promotedRoute',
+      from: stored,
+      to: route,
     });
   }
 
@@ -157,15 +175,33 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     if (!updatedAt) {
       return '';
     }
-    const minutes = Math.floor((Date.now() - updatedAt) / 60000);
-    const relative = minutes < 1
-      ? 'just now'
-      : minutes < 60
-        ? `${minutes}m ago`
-        : minutes < 1440
-          ? `${Math.floor(minutes / 60)}h ago`
-          : `${Math.floor(minutes / 1440)}d ago`;
-    return `changed ${relative}`;
+    const date = new Date(updatedAt);
+    const local = date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    return `changed ${local}`;
+  }
+
+  auditActor(record: FeatureFlagAuditRecord): string {
+    return record.actorEmail || record.actorUid || 'Unknown';
+  }
+
+  auditFlag(record: FeatureFlagAuditRecord): string {
+    if (record.flagId === 'promotedRoute') {
+      return 'Promoted route';
+    }
+    return FEATURES.find(feature => feature.id === record.flagId)?.label || record.flagId;
+  }
+
+  auditValue(record: FeatureFlagAuditRecord, value: boolean | string | null): string {
+    if (record.field === 'enabled') {
+      return value ? 'On' : 'Off';
+    }
+    return value ? String(value) : 'None';
   }
 
   private disabledRouteWarning(route: string): string {
@@ -183,17 +219,25 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     return FEATURES.find(feature => feature.route === route);
   }
 
-  private writeAudit(change: { flagId: string; enabled: boolean; previous: boolean }): void {
+  private writeAudit(change: {
+    flagId: string;
+    field: FeatureFlagAuditRecord['field'];
+    from: boolean | string | null;
+    to: boolean | string | null;
+  }): void {
     const record: FeatureFlagAuditRecord = {
       ...change,
-      actorId: this.userSignedIn?.id || '',
+      actorUid: this.userSignedIn?.id || '',
       actorEmail: this.userSignedIn?.email || '',
       at: Date.now(),
     };
     // The audit trail must never hold up the switch it records.
     this.featureFlagsService
       .addFeatureFlagAudit(record)
-      .catch(error => console.error('Error writing feature flag audit:', error));
+      .catch(error => {
+        console.error('Error writing feature flag audit:', error);
+        this.auditNotice = 'The change was saved but could not be added to the audit trail.';
+      });
   }
 
   private loadFlags(): void {

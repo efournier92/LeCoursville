@@ -483,6 +483,9 @@ test.describe('security', () => {
   });
 
   test('rules: userUploads rejects client writes; the callable owns the record', async () => {
+    // RTDB rules cascade: the child id `.write: false` does not revoke the
+    // parent admin `.write`, so the id pin is enforced by `.validate` and the
+    // public denial by the explicit ancestor condition, not by that child rule.
     const userToken = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
     const adminToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
     const key = `security-upload-${Date.now()}`;
@@ -563,7 +566,12 @@ test.describe('security', () => {
         'http://127.0.0.1:5001/lecoursville-dev/us-central1/createUserUpload',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            // Pin the per-actor key to a forwarded hop; the emulator's socket
+            // address is absent, so without this header the actor is null.
+            'X-Forwarded-For': '203.0.113.77',
+          },
           body: JSON.stringify({
             data: {
               fileName: 'rate-limit.png',
@@ -619,6 +627,79 @@ test.describe('security', () => {
     }
   });
 
+  test('global upload cap soft-degrades: guests still upload and one alert is raised', async () => {
+    const eventName = `Security global soft ${Date.now()}`;
+    const startedAt = Date.now();
+    const created: string[] = [];
+    const call = (suffix: string) =>
+      fetch(
+        'http://127.0.0.1:5001/lecoursville-dev/us-central1/createUserUpload',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: {
+              fileName: `${suffix}.png`,
+              eventName,
+              fileType: 'image/png',
+              fileSize: 10,
+              uploader: { name: 'Probe' },
+            },
+          }),
+        },
+      );
+
+    try {
+      await deleteDb('rateLimits/userUploadsIp');
+      await deleteDb('rateLimits/userUploadsGlobal');
+      await deleteDb('rateLimits/userUploadsGlobalAlert');
+      await writeDb('rateLimits/userUploadsGlobal/global', {
+        windowStart: Date.now(),
+        count: 100000,
+      });
+
+      // Over the global cap the call still succeeds, twice, so a guest is
+      // never hard-denied by an attacker-exhaustible counter.
+      for (const suffix of ['global-over-1', 'global-over-2']) {
+        const res = await call(suffix);
+        expect(res.ok).toBe(true);
+        created.push(((await res.json()).result as { id: string }).id);
+      }
+
+      const uploads = (await readDb<Record<string, any>>('userUploads')) ?? {};
+      for (const id of created) {
+        expect(uploads[id]).toBeTruthy();
+      }
+
+      await expect
+        .poll(async () => {
+          const alerts = (await readDb<Record<string, any>>('adminAlerts')) ?? {};
+          return Object.values(alerts).filter(
+            (alert) => alert?.type === 'upload_global_cap' && alert?.createdAt >= startedAt,
+          ).length;
+        }, { timeout: 15000 })
+        .toBe(1);
+    } finally {
+      for (const id of created) {
+        await deleteDb(`userUploads/${id}`);
+      }
+      await deleteDb('rateLimits/userUploadsIp');
+      await deleteDb('rateLimits/userUploadsGlobal');
+      await deleteDb('rateLimits/userUploadsGlobalAlert');
+      const alerts = (await readDb<Record<string, any>>('adminAlerts')) ?? {};
+      for (const [key, alert] of Object.entries(alerts)) {
+        if (alert?.type === 'upload_global_cap' && alert?.createdAt >= startedAt) {
+          await deleteDb(`adminAlerts/${key}`);
+        }
+      }
+      for (const mail of await findOutboundEmails('admin_alert')) {
+        if ((mail.text ?? '').includes('Upload volume is above the global cap')) {
+          await deleteDb(`outboundEmails/${mail.key}`);
+        }
+      }
+    }
+  });
+
   test('upload trust: rejecting an upload touches its path, never an attacker-authored url', async ({ page }) => {
     const key = `security-trust-${Date.now()}`;
     const uploadPath = `userUploads/${key}/attack.png`;
@@ -654,6 +735,112 @@ test.describe('security', () => {
       }
       await deleteDb(`userUploads/${key}`);
       await deleteStorageObject(uploadPath);
+    }
+  });
+
+  test('upload trust: rejecting a record whose object is gone still removes it', async ({ page }) => {
+    const key = `security-orphan-${Date.now()}`;
+    const fileName = `orphan-${Date.now()}.png`;
+    await writeDb(`userUploads/${key}`, {
+      id: key,
+      url: '',
+      path: `userUploads/${key}/${fileName}`,
+      dateAdded: Date.now(),
+      eventName: 'Security orphan probe',
+      status: 'pending',
+      uploader: { name: 'Probe', email: 'probe@e2e.local' },
+      fileName,
+      fileType: 'image/png',
+      fileSize: TINY_PNG.length,
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/uploads');
+      const row = page.locator('tr', { hasText: fileName }).first();
+      await expect(row).toBeVisible();
+      await row.getByRole('button', { name: `Reject ${fileName}` }).click();
+      await page.getByRole('button', { name: 'Reject upload' }).click();
+      await expect.poll(() => readDb(`userUploads/${key}`)).toBeNull();
+    } finally {
+      await deleteDb(`userUploads/${key}`);
+    }
+  });
+
+  test('upload approval: same file name in one album keeps both objects', async ({ page }) => {
+    const stamp = Date.now();
+    const fileName = `collision-${stamp}.png`;
+    const uploads = [`collision-a-${stamp}`, `collision-b-${stamp}`].map((key) => ({
+      key,
+      path: `userUploads/${key}/${fileName}`,
+    }));
+    const createdPhotos: string[] = [];
+    const paths: string[] = [];
+
+    for (const upload of uploads) {
+      await putStorageObject(upload.path);
+      await writeDb(`userUploads/${upload.key}`, {
+        id: upload.key,
+        url: storageUrl(upload.path),
+        path: upload.path,
+        dateAdded: Date.now(),
+        eventName: 'Security collision probe',
+        status: 'pending',
+        uploader: { name: 'Probe', email: 'probe@e2e.local' },
+        fileName,
+        fileType: 'image/png',
+        fileSize: TINY_PNG.length,
+      });
+    }
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/uploads');
+      for (let i = 0; i < uploads.length; i++) {
+        const row = page.locator('tr', { hasText: fileName }).first();
+        await expect(row).toBeVisible();
+        await row.getByRole('button', { name: `Approve ${fileName}` }).click();
+        await page.getByRole('radio', { name: 'Use existing album' }).click();
+        await expect(page.getByRole('combobox')).toBeVisible();
+        await page.getByRole('combobox').click();
+        await page.getByRole('option', { name: 'E2E Album One' }).click();
+        await page.getByRole('button', { name: 'Approve & Add' }).click();
+        await expect(page.getByRole('button', { name: 'Approve & Add' })).toHaveCount(0);
+        await expect
+          .poll(async () => {
+            const records = (await readDb<Record<string, any>>('userUploads')) ?? {};
+            return uploads.filter((upload) => records[upload.key]?.status === 'approved')
+              .length;
+          })
+          .toBe(i + 1);
+      }
+
+      const allPhotos = (await readDb<Record<string, any>>('photos')) ?? {};
+      const mine = Object.entries(allPhotos).filter(
+        ([, photo]) =>
+          photo?.albumId === 'album-1' && String(photo?.path).endsWith(`_${fileName}`),
+      );
+      expect(mine).toHaveLength(2);
+      for (const [id, photo] of mine) {
+        createdPhotos.push(id);
+        paths.push(photo.path);
+        expect(await storageObjectStatus(photo.path)).toBe(200);
+      }
+      expect(new Set(paths).size).toBe(2);
+      // The suffix keeps the second approval from overwriting the first.
+      expect(await storageObjectStatus(`photos/album-1/${fileName}`)).toBe(404);
+    } finally {
+      for (const id of createdPhotos) {
+        await deleteDb(`photos/${id}`);
+      }
+      for (const path of paths) {
+        await deleteStorageObject(path);
+      }
+      await deleteStorageObject(`photos/album-1/${fileName}`);
+      for (const upload of uploads) {
+        await deleteDb(`userUploads/${upload.key}`);
+        await deleteStorageObject(upload.path);
+      }
     }
   });
 
@@ -723,6 +910,23 @@ test.describe('security', () => {
       ).not.toBe(200);
 
       expect((await put(ownKey, message(ownKey, userUid, 'Regular User'))).ok).toBe(true);
+
+      // The create-time storage allowlist must keep holding once the record
+      // exists, so a member cannot swap in an arbitrary attachment URL.
+      expect(
+        (await patch(ownKey, { attachmentUrl: 'https://evil.example/x.png' })).status,
+      ).not.toBe(200);
+      expect(
+        (await readDb<Record<string, any>>(`messages/${ownKey}`))?.attachmentUrl,
+      ).toBe('');
+      expect(
+        (await patch(ownKey, { attachmentUrl: storageUrl('photos/album-1/photo-0-0.png') })).ok,
+      ).toBe(true);
+
+      // Writable payload fields stay strings and within bounds on update.
+      expect((await patch(ownKey, { body: 42 })).status).not.toBe(200);
+      expect((await patch(ownKey, { title: 'x'.repeat(201) })).status).not.toBe(200);
+      expect((await patch(ownKey, { attachmentType: 'x'.repeat(101) })).status).not.toBe(200);
 
       // Another member's body, author, and nested reply tree are all off limits.
       expect(
@@ -837,6 +1041,75 @@ test.describe('security', () => {
       await deleteDb(`messages/security-name-${stamp}`);
       await deleteDb(`messages/security-url-${stamp}`);
       await deleteDb(`messages/security-date-${stamp}`);
+    }
+  });
+
+  test('rules: message identity is pinned to the writer profile name', async () => {
+    // Chat authorName is identity, so it must equal users/<uid>/name; a missing
+    // profile name is rejected rather than falling back to the email local part.
+    // Expression authorName stays a content field: blank or the writer's own
+    // name is accepted, and admins may set any author for quoted material.
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const uid = Object.entries(users).find(
+      ([, value]) => value?.email === E2E_USERS.user.email,
+    )?.[0] as string;
+    const profileName = await readDb<string>(`users/${uid}/name`);
+    expect(profileName).toBeTruthy();
+    const stamp = Date.now();
+    const key = `security-identity-${stamp}`;
+    const base = 'http://localhost:9000/messages';
+    const query = `ns=lecoursville-dev-default-rtdb&auth=${token}`;
+    const record = (authorName: unknown) => ({
+      id: key,
+      authorId: uid,
+      authorName,
+      title: 'Identity probe',
+      body: 'Pinned author',
+      messageType: 'chat',
+      isReply: false,
+      replyLevel: 0,
+      likes: [],
+      replies: [],
+      dateSent: Date.now(),
+      isSticky: false,
+      isEditable: false,
+      isSaved: true,
+      isDeleted: false,
+      attachmentId: '',
+      attachmentType: '',
+      attachmentUrl: '',
+    });
+    const put = (body: unknown) =>
+      fetch(`${base}/${key}.json?${query}`, { method: 'PUT', body: JSON.stringify(body) });
+
+    try {
+      // Another member's name is rejected outright.
+      expect((await put(record('Admin User'))).status).not.toBe(200);
+
+      // A member with no profile name is rejected rather than allowed to
+      // self-attribute with an email-local-part fallback.
+      await writeDb(`users/${uid}/name`, null);
+      expect(
+        (await put(record(E2E_USERS.user.email.split('@')[0]))).status,
+      ).not.toBe(200);
+      await writeDb(`users/${uid}/name`, profileName);
+
+      // The actual profile name is accepted.
+      expect((await put(record(profileName))).ok).toBe(true);
+
+      const like = (userName: unknown) =>
+        fetch(`${base}/msg-1/likes/${uid}.json?${query}`, {
+          method: 'PUT',
+          body: JSON.stringify({ userId: uid, userName }),
+        });
+      await deleteDb(`messages/msg-1/likes/${uid}`);
+      expect((await like('Admin User')).status).not.toBe(200);
+      expect((await like(profileName)).ok).toBe(true);
+    } finally {
+      await writeDb(`users/${uid}/name`, profileName);
+      await deleteDb(`messages/${key}`);
+      await deleteDb(`messages/msg-1/likes/${uid}`);
     }
   });
 

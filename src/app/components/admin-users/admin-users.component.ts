@@ -29,6 +29,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   filteredTotal = 0;
   deleteErrors: Record<string, string> = {};
   roleHistory: RoleAuditRecord[] = [];
+  roleHistoryLoading = true;
+  roleHistoryError = '';
   readonly pageSize = 10;
   readonly roleHistoryLimit = 20;
   sortPropertyText = '';
@@ -82,8 +84,8 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   async deleteUser(user: User): Promise<void> {
     const pendingUploads = await this.countPendingUploads(user);
     const uploadWarning = pendingUploads === null
-      ? ''
-      : ` ${pendingUploads} pending ${pendingUploads === 1 ? 'upload references' : 'uploads reference'} this member.`;
+      ? ' Could not check pending uploads. Pending uploads stay in the queue after deletion.'
+      : ` ${pendingUploads} pending ${pendingUploads === 1 ? 'upload references' : 'uploads reference'} this member. Pending uploads stay in the queue after deletion.`;
     const confirmed = await this.confirmDialog.confirm({
       title: 'Delete user?',
       message: `Delete ${this.displayName(user)}? This cannot be undone.${uploadWarning}`,
@@ -103,6 +105,10 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
 
   retry(): void {
     this.loadUsers();
+  }
+
+  retryRoleHistory(): void {
+    this.loadRoleHistory();
   }
 
   onFilterQueryChange(query: string): void {
@@ -281,16 +287,21 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
 
   private loadRoleHistory(): void {
     this.roleAuditSubscription?.unsubscribe();
+    this.roleHistoryLoading = true;
+    this.roleHistoryError = '';
     this.roleAuditSubscription = this.rtdb.list<RoleAuditRecord>('roleAudit').valueChanges().subscribe({
       next: (entries: RoleAuditRecord[]) => {
         this.roleHistory = (entries || [])
           .slice()
           .sort((a, b) => (b.at || 0) - (a.at || 0))
           .slice(0, this.roleHistoryLimit);
+        this.roleHistoryLoading = false;
       },
       // roleAudit is super-only; never break the users page if it is denied.
       error: () => {
         this.roleHistory = [];
+        this.roleHistoryLoading = false;
+        this.roleHistoryError = 'Could not load role history.';
       },
     });
   }

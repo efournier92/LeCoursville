@@ -234,7 +234,7 @@ describe('AdminUsersComponent', () => {
     await component.deleteUser(users[0]);
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Delete Ada Lovelace? This cannot be undone. 0 pending uploads reference this member.',
+      message: 'Delete Ada Lovelace? This cannot be undone. 0 pending uploads reference this member. Pending uploads stay in the queue after deletion.',
       destructive: true,
     }));
     expect(adminService.deleteUser).not.toHaveBeenCalled();
@@ -304,6 +304,33 @@ describe('AdminUsersComponent', () => {
     expect(rows[0].textContent).toContain('user2@example.com');
     expect(rows[0].textContent).toContain('Admin');
     expect(rows[0].textContent).toContain('Super');
+    expect(fixture.nativeElement.querySelector('.role-history-limit').textContent)
+      .toContain('Most recent 20 changes');
+  });
+
+  it('shows role history loading and error states without the empty message', () => {
+    const roleAudit = new Subject<unknown>();
+    rtdb.list.mockImplementation((path: string) => ({
+      valueChanges: () => path === 'roleAudit'
+        ? roleAudit.asObservable()
+        : pendingUploadsSource.asObservable(),
+    }));
+    usersSource.next(users);
+    fixture = TestBed.createComponent(AdminUsersComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.roleHistoryLoading).toBe(true);
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-role-history-loading"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-role-history-empty"]')).toBeNull();
+
+    roleAudit.error(new Error('permission denied'));
+    fixture.detectChanges();
+
+    expect(component.roleHistoryLoading).toBe(false);
+    expect(component.roleHistoryError).toBe('Could not load role history.');
+    expect(fixture.nativeElement.querySelector('app-load-error')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-role-history-empty"]')).toBeNull();
   });
 
   it('includes the pending upload count in the delete confirmation', async () => {
@@ -318,7 +345,7 @@ describe('AdminUsersComponent', () => {
     await component.deleteUser(users[0]);
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Delete Ada Lovelace? This cannot be undone. 2 pending uploads reference this member.',
+      message: 'Delete Ada Lovelace? This cannot be undone. 2 pending uploads reference this member. Pending uploads stay in the queue after deletion.',
     }));
   });
 
@@ -330,7 +357,7 @@ describe('AdminUsersComponent', () => {
     await component.deleteUser(users[0]);
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Delete Ada Lovelace? This cannot be undone.',
+      message: 'Delete Ada Lovelace? This cannot be undone. Could not check pending uploads. Pending uploads stay in the queue after deletion.',
     }));
   });
 

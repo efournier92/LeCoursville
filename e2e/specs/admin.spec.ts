@@ -146,6 +146,28 @@ test.describe('admin', () => {
     }
   });
 
+  test('admin nav badges show ! and an accessible label when a listener is denied', async ({ page }) => {
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const entry = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local');
+    expect(entry).toBeTruthy();
+    const [uid, adminUser] = entry!;
+    const roles = adminUser.roles;
+
+    await login(page, 'admin');
+    try {
+      // Super without admin keeps /admin reachable while userUploads reads are denied.
+      await writeDb(`users/${uid}/roles`, { user: true, admin: false, super: true });
+      await page.goto('/admin/users');
+
+      const badge = page.getByTestId('admin-nav-badge-uploads');
+      await expect(badge).toBeVisible({ timeout: 20000 });
+      await expect(badge.locator('[aria-hidden="true"]')).toHaveText('!');
+      await expect(badge).toContainText('Pending uploads count unavailable');
+    } finally {
+      await writeDb(`users/${uid}/roles`, roles);
+    }
+  });
+
   test('admin index redirects a super admin to users', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin');

@@ -90,6 +90,18 @@ describe('AdminComponent', () => {
     expect(recovery.textContent).toContain('2 open');
   });
 
+  it('renders a "!" badge with an accessible label when a listener fails', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    pendingUploads$.error(new Error('permission denied'));
+    fixture.detectChanges();
+
+    const uploads = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]');
+    expect(uploads.textContent).toContain('!');
+    expect(uploads.textContent).toContain('Pending uploads count unavailable');
+    expect(uploads.getAttribute('class')).toContain('nav-badge-error');
+  });
+
   it('caps a badge at 99+', () => {
     fixture.detectChanges();
     flags$.next({});

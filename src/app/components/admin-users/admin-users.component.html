@@ -164,9 +164,18 @@
 
     <mat-card class="admin-surface role-history-card">
       <h2 class="admin-card-title">Role history</h2>
-      @if (roleHistory.length === 0) {
+      @if (roleHistoryLoading) {
+        <div class="admin-skeleton-rows" data-testid="admin-role-history-loading" aria-hidden="true">
+          @for (row of [1, 2]; track row) {
+            <span></span>
+          }
+        </div>
+      } @else if (roleHistoryError) {
+        <app-load-error [message]="roleHistoryError" (retry)="retryRoleHistory()" />
+      } @else if (roleHistory.length === 0) {
         <p class="role-history-empty" data-testid="admin-role-history-empty">No role changes yet.</p>
       } @else {
+        <p class="role-history-limit">Most recent 20 changes</p>
         <table class="admin-table role-history-table" data-testid="admin-role-history">
           <thead>
             <tr>

@@ -346,6 +346,49 @@ test.describe('account recovery', () => {
     }
   });
 
+  test('admin sees an expired reset link after the mint audit is an hour old', async ({ page }) => {
+    const accountEmail = E2E_USERS.other.email;
+    const alternate = `recovery-expired-alt-${Date.now()}@e2e.local`;
+    const marker = 'Recovery Expired';
+    await addRecoveryRequest(page, accountEmail, marker, alternate);
+
+    await expect
+      .poll(async () => (await requestsFor(accountEmail)).filter((r) => r.name === marker).length)
+      .toBe(1);
+    const request = (await requestsFor(accountEmail)).find((r) => r.name === marker)!;
+    cleanup.push(`recoveryRequests/${request.key}`);
+
+    await login(page, 'admin');
+    await page.goto('/admin/recovery');
+    const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
+    await expect(row).toBeVisible();
+    await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
+    await row.getByTestId('admin-recovery-generate').click();
+    await page
+      .locator('mat-dialog-container')
+      .getByRole('button', { name: 'Generate', exact: true })
+      .click();
+    await expect(row.getByTestId('admin-recovery-link')).toBeVisible();
+
+    const audit = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+    const mintKeys = Object.entries(audit)
+      .filter(([, value]) => value?.requestId === request.key && value?.action === 'generate_reset_link')
+      .map(([key]) => key);
+    expect(mintKeys.length).toBeGreaterThan(0);
+    for (const key of mintKeys) {
+      cleanup.push(`recoveryAudit/${key}`);
+      await writeDb(`recoveryAudit/${key}/createdAt`, Date.now() - 2 * 60 * 60 * 1000);
+    }
+
+    await expect(row.getByTestId('admin-recovery-expiry')).toHaveText('Expired - generate a new link');
+    await expect(row.getByTestId('admin-recovery-copy')).toBeDisabled();
+
+    for (const mail of await findOutboundEmails('recovery_link', { to: alternate })) {
+      cleanup.push(`outboundEmails/${mail.key}`);
+    }
+    await trackAlertRows(accountEmail);
+  });
+
   test('admin generates a reset link without emailing the alternate when unchecked', async ({ page }) => {
     const accountEmail = E2E_USERS.other.email;
     const alternate = `recovery-unchecked-alt-${Date.now()}@e2e.local`;

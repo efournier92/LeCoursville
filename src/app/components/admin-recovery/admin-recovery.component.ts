@@ -76,6 +76,7 @@ interface GeneratedResult {
   link: string;
   emailed: boolean;
   request: RecoveryRequest;
+  mintedAt: number;
 }
 
 @Component({
@@ -110,6 +111,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   auditLoadError = '';
   accountsLoadError = '';
   alertsLoadError = '';
+  now = Date.now();
 
   readonly pageSize = 10;
   requestsPage = 1;
@@ -121,6 +123,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   private auditSub?: Subscription;
   private accountsSub?: Subscription;
   private alertsSub?: Subscription;
+  private clockTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private rtdb: RtdbService,
@@ -134,9 +137,11 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     this.loadAudit();
     this.loadAccounts();
     this.loadAlerts();
+    this.clockTimer = setInterval(() => this.now = Date.now(), 30000);
   }
 
   ngOnDestroy(): void {
+    clearInterval(this.clockTimer);
     this.requestsSub?.unsubscribe();
     this.recipientsSub?.unsubscribe();
     this.auditSub?.unsubscribe();
@@ -319,8 +324,8 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     return Object.keys(roles).filter(role => roles[role] === true).join(', ');
   }
 
-  accountAge(user: AccountUser): string {
-    return this.age(this.registeredAt(user));
+  accountCreatedAt(user: AccountUser): string {
+    return formatAbsoluteTimestamp(this.registeredAt(user));
   }
 
   canGenerate(request: RecoveryRequest): boolean {
@@ -369,7 +374,12 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
         reason,
         ...(emailAlternateContact ? { emailAlternateContact: true } : {}),
       }) as { data: { link: string; emailed: boolean } };
-      this.generated[request.id] = { link: data.link, emailed: data.emailed, request };
+      this.generated[request.id] = {
+        link: data.link,
+        emailed: data.emailed,
+        request,
+        mintedAt: Date.now(),
+      };
       this.rebuildVisibleRequests();
     } catch (error) {
       this.errors[request.id] = (error as Error)?.message || 'Failed to generate reset link.';
@@ -457,40 +467,36 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     await this.saveRecipients(this.recipients.filter(recipient => recipient !== email));
   }
 
-  age(createdAt: number): string {
-    if (!createdAt) {
-      return '';
-    }
-    const minutes = Math.floor((Date.now() - createdAt) / 60000);
-    if (minutes < 1) {
-      return 'just now';
-    }
-    if (minutes < 60) {
-      return `${minutes}m ago`;
-    }
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-      return `${hours}h ago`;
-    }
-    return `${Math.floor(hours / 24)}d ago`;
-  }
-
   formatTimestamp(createdAt: number): string {
     return formatAbsoluteTimestamp(createdAt);
   }
 
   /**
    * The callable does not return a mint timestamp, so the mint audit entry is
-   * the only trustworthy one. Without it, state the approximate lifetime
-   * rather than derive an expiry that could drift.
+   * the only trustworthy one; a locally minted link covers the gap until it
+   * lands. Without either, state the approximate lifetime rather than derive
+   * an expiry that could drift.
    */
   expiryLabel(requestId: string): string {
-    const mint = this.audit
+    const mint = this.resetMintAt(requestId);
+    if (!mint) {
+      return 'Expires about an hour after generation';
+    }
+    return this.isLinkExpired(requestId)
+      ? 'Expired - generate a new link'
+      : `Expires ${formatAbsoluteTimestamp(mint + RESET_LINK_TTL_MS)}`;
+  }
+
+  isLinkExpired(requestId: string): boolean {
+    const mint = this.resetMintAt(requestId);
+    return mint > 0 && this.now - mint >= RESET_LINK_TTL_MS;
+  }
+
+  private resetMintAt(requestId: string): number {
+    const audited = this.audit
       .filter(entry => entry.action === 'generate_reset_link' && entry.requestId === requestId)
       .reduce((latest, entry) => Math.max(latest, entry.createdAt || 0), 0);
-    return mint
-      ? `Expires ${formatAbsoluteTimestamp(mint + RESET_LINK_TTL_MS)}`
-      : 'Expires about an hour after generation';
+    return audited || this.generated[requestId]?.mintedAt || 0;
   }
 
   auditActor(entry: RecoveryAuditEntry): string {

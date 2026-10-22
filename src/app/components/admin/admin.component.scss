@@ -136,6 +136,10 @@
         pointer-events: none;
       }
 
+      .nav-badge-error {
+        background: var(--color-error);
+      }
+
       .nav-badge-accessible {
         position: absolute;
         width: 1px;

@@ -123,6 +123,33 @@ describe('AdminCalendarsComponent', () => {
     expect(component.isAdding).toBe(true);
   });
 
+  it('warns when an edit renames a year onto another existing year', async () => {
+    fixture.detectChanges();
+    calendars$.next([calendar('2025'), calendar('2026')]);
+    fixture.detectChanges();
+    confirmSpy.and.returnValue(Promise.resolve(false));
+
+    component.onEdit(calendar('2025'));
+    component.formData = { year: '2026', url: 'https://example.test/renamed.pdf' };
+    await component.onSave();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(rtdb.object).not.toHaveBeenCalled();
+    expect(component.editingCalendar?.year).toBe('2025');
+  });
+
+  it('does not warn when an edit keeps its own year', async () => {
+    fixture.detectChanges();
+    calendars$.next([calendar('2026')]);
+    fixture.detectChanges();
+
+    component.onEdit(calendar('2026'));
+    component.formData = { year: '2026', url: 'https://example.test/2026.pdf' };
+    await component.onSave();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+  });
+
   it('replaces an existing year after the warning is confirmed', async () => {
     fixture.detectChanges();
     calendars$.next([calendar('2026')]);

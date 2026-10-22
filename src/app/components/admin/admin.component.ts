@@ -23,6 +23,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   sidenavOpen = false;
   pendingUploads = 0;
   openRecoveryRequests = 0;
+  badgeFailures: Partial<Record<AdminRouteKey, boolean>> = {};
   private sidenavSub: Subscription;
   private userSub: Subscription;
   private flagsSub: Subscription;
@@ -58,12 +59,24 @@ export class AdminComponent implements OnInit, OnDestroy {
   private watchBadges(): void {
     this.badgeSubs.push(
       this.adminBadgeService.pendingUploads().subscribe({
-        next: count => this.pendingUploads = count,
-        error: () => this.pendingUploads = 0,
+        next: count => {
+          this.pendingUploads = count;
+          this.badgeFailures.uploads = false;
+        },
+        error: () => {
+          this.pendingUploads = 0;
+          this.badgeFailures.uploads = true;
+        },
       }),
       this.adminBadgeService.openRecoveryRequests().subscribe({
-        next: count => this.openRecoveryRequests = count,
-        error: () => this.openRecoveryRequests = 0,
+        next: count => {
+          this.openRecoveryRequests = count;
+          this.badgeFailures.recovery = false;
+        },
+        error: () => {
+          this.openRecoveryRequests = 0;
+          this.badgeFailures.recovery = true;
+        },
       }),
     );
   }
@@ -81,6 +94,23 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   badgeLabel(key: AdminRouteKey, count: number): string {
     return `${this.badgeText(count)} ${key === 'recovery' ? 'open' : 'pending'}`;
+  }
+
+  hasBadge(key: AdminRouteKey): boolean {
+    return !!this.badgeFailures[key] || this.badgeCount(key) > 0;
+  }
+
+  badgeDisplay(key: AdminRouteKey): string {
+    return this.badgeFailures[key] ? '!' : this.badgeText(this.badgeCount(key));
+  }
+
+  badgeAccessibleLabel(key: AdminRouteKey): string {
+    if (this.badgeFailures[key]) {
+      return key === 'recovery'
+        ? 'Open recovery requests count unavailable'
+        : 'Pending uploads count unavailable';
+    }
+    return this.badgeLabel(key, this.badgeCount(key));
   }
 
   private buildNavGroups(flags: Record<string, { enabled?: boolean } | undefined> | null) {

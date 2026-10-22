@@ -115,7 +115,10 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.formError = '';
     this.actionError = '';
 
-    if (this.isAdding && this.calendars.some(calendar => calendar.year === year)) {
+    const duplicate = this.calendars.some(
+      calendar => calendar.year === year && calendar.id !== this.editingCalendar?.id,
+    );
+    if (duplicate) {
       const replace = await this.confirmDialog.confirm({
         title: 'Replace calendar?',
         message: `A calendar already exists for ${year}. Replace its PDF mapping?`,

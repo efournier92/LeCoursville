@@ -20,6 +20,8 @@ import { FireUploadTask } from './fire-upload-task';
 
 const UPLOADS_PREFIX = 'userUploads/';
 const SAFE_FILE_NAME = /^[A-Za-z0-9._-]+$/;
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+export const MAX_UPLOAD_MESSAGE = 'Files must be 50 MB or smaller.';
 
 @Injectable({
   providedIn: 'root'
@@ -99,6 +101,9 @@ export class UserUploadService {
   }
 
   async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: FireUploadTask, uploadId: string }> {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error(MAX_UPLOAD_MESSAGE);
+    }
     const now = new Date();
     const datePart = now.toISOString().split('T')[0];
     const hrs = String(now.getHours()).padStart(2, '0');
@@ -154,7 +159,8 @@ export class UserUploadService {
     const pathParts = sourcePath.split('/');
     const fileName = this.destinationFileName(pathParts[pathParts.length - 1]);
     const folderName = pathParts[1];
-    const newPath = `photos/${folderName}/${fileName}`;
+    const photoId = this.rtdb.createPushId();
+    const newPath = `photos/${folderName}/${photoId}_${fileName}`;
     const sourceStorageRef = ref(storageInstance, sourcePath);
     const destStorageRef = ref(storageInstance, newPath);
     const blob = await getBlob(sourceStorageRef);
@@ -162,7 +168,6 @@ export class UserUploadService {
     await deleteObject(sourceStorageRef);
     const newUrl = await getDownloadURL(destStorageRef);
 
-    const photoId = this.rtdb.createPushId();
     const extension = upload.fileName?.split('.').pop() || 'jpg';
     const photo: Photo = {
       id: photoId,
@@ -196,7 +201,9 @@ export class UserUploadService {
       upload.fileName || sourcePath.split('/').pop() || '',
     );
     const extension = fileName.split('.').pop() || 'jpg';
-    const newPath = `photos/${albumId}/${fileName}`;
+    // Suffix with the photo id: two uploads can share a file name, and the
+    // album folder must not silently overwrite the earlier object.
+    const newPath = `photos/${albumId}/${photoId}_${fileName}`;
     const storageInstance = this.firebase.storage;
     const sourceStorageRef = ref(storageInstance, sourcePath);
     const destStorageRef = ref(storageInstance, newPath);
@@ -230,8 +237,12 @@ export class UserUploadService {
   }
 
   async rejectUpload(upload: UserUpload): Promise<void> {
-    const storageRef = ref(this.firebase.storage, this.validatedUploadPath(upload));
-    await deleteObject(storageRef);
+    try {
+      const storageRef = ref(this.firebase.storage, this.validatedUploadPath(upload));
+      await deleteObject(storageRef);
+    } catch (e) {
+      console.warn('File already deleted from storage');
+    }
     await this.rtdb.object(`${this.userUploadsRef}/${upload.id}`).remove();
   }
 

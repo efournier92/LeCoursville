@@ -2,14 +2,9 @@
   <div class="page-toolbar-left">
     <!-- Optional leading control (e.g. back button) — rendered before the title -->
     <ng-content select="[page-toolbar-left]"></ng-content>
-    @if (title || subtitle) {
+    @if (title) {
       <div class="page-toolbar-heading">
-        @if (title) {
-          <span class="page-toolbar-title">{{ title }}</span>
-        }
-        @if (subtitle) {
-          <span class="page-toolbar-subtitle">{{ subtitle }}</span>
-        }
+        <span class="page-toolbar-title">{{ title }}</span>
       </div>
     }
   </div>

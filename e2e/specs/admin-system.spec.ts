@@ -45,6 +45,7 @@ test.describe('admin system surfaces', () => {
 
       const history = page.getByTestId('admin-role-history');
       await expect(history).toBeVisible({ timeout: 20000 });
+      await expect(page.locator('.role-history-card')).toContainText('Most recent 20 changes');
       const row = history.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
       await expect(row).toContainText('Admin User');
       await expect(row).toContainText('Member');
@@ -77,12 +78,41 @@ test.describe('admin system surfaces', () => {
       await row.getByRole('button', { name: 'Delete Regular User' }).click();
       const dialog = page.getByRole('dialog');
       await expect(dialog).toContainText('1 pending upload references this member');
+      await expect(dialog).toContainText('Pending uploads stay in the queue after deletion.');
 
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
       await expect(row).toBeVisible();
     } finally {
       await deleteDb(`userUploads/${uploadKey}`);
+    }
+  });
+
+  test('users: delete confirmation says when pending uploads could not be checked', async ({ page }) => {
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const entry = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local');
+    expect(entry).toBeTruthy();
+    const [uid, adminUser] = entry!;
+    const roles = adminUser.roles;
+
+    await login(page, 'admin');
+    try {
+      // Super without admin: the users list still loads, but userUploads is denied.
+      await writeDb(`users/${uid}/roles`, { user: true, admin: false, super: true });
+      await page.goto('/admin/users');
+
+      const table = page.getByTestId('admin-users-table');
+      await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+      const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+
+      await row.getByRole('button', { name: 'Delete Regular User' }).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('Could not check pending uploads.');
+      await expect(dialog).toContainText('Pending uploads stay in the queue after deletion.');
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await expect(dialog).toHaveCount(0);
+    } finally {
+      await writeDb(`users/${uid}/roles`, roles);
     }
   });
 
@@ -196,6 +226,40 @@ test.describe('admin system surfaces', () => {
     }
   });
 
+  test('calendars: editing a year onto an existing year warns before renaming', async ({ page }) => {
+    const id = 'e2e-cal-1998';
+    const year = '1998';
+    const targetYear = new Date().getFullYear().toString();
+    await writeDb(`calendars/${id}`, {
+      id,
+      year,
+      url: 'https://example.test/e2e-1998.pdf',
+      path: '',
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/calendars');
+      const row = page.locator('.admin-table tbody tr').filter({ hasText: year });
+      await expect(row).toBeVisible();
+
+      await row.getByRole('button', { name: `Edit ${year}` }).click();
+      await page.getByLabel('Year (e.g. 2026)').fill(targetYear);
+      await page.getByRole('button', { name: 'Update' }).click();
+
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('Replace calendar?');
+      await expect(dialog).toContainText(targetYear);
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await expect(dialog).toHaveCount(0);
+
+      await expect.poll(async () => (await readDb<{ year?: string }>(`calendars/${id}`))?.year)
+        .toBe(year);
+    } finally {
+      await deleteDb(`calendars/${id}`);
+    }
+  });
+
   test('features: nine grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
@@ -251,8 +315,8 @@ test.describe('admin system surfaces', () => {
           const rows = Object.values(all).filter(
             (value) => value?.actorEmail === 'admin@e2e.local' && value?.at >= startedAt,
           );
-          return rows.some((value) => value?.flagId === 'music' && value?.enabled === false && value?.previous === true)
-            && rows.some((value) => value?.flagId === 'chat' && value?.enabled === false);
+          return rows.some((value) => value?.flagId === 'music' && value?.field === 'enabled' && value?.from === true && value?.to === false)
+            && rows.some((value) => value?.flagId === 'promotedRoute' && value?.field === 'promotedRoute' && value?.to === '/chat');
         }, { timeout: 15000 })
         .toBe(true);
     } finally {

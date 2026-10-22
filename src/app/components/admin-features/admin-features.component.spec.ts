@@ -3,30 +3,34 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
-import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { FeatureFlagAuditRecord, FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FEATURES } from 'src/app/config/feature-config';
-import { of, Subject, throwError } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 describe('AdminFeaturesComponent', () => {
   let component: AdminFeaturesComponent;
   let fixture: ComponentFixture<AdminFeaturesComponent>;
   let mockFeatureFlagsService: jasmine.SpyObj<FeatureFlagsService>;
+  let auditSource: BehaviorSubject<FeatureFlagAuditRecord[]>;
 
   beforeEach(async () => {
+    auditSource = new BehaviorSubject<FeatureFlagAuditRecord[]>([]);
     const spy = jasmine.createSpyObj('FeatureFlagsService', [
       'getAllFeatureFlags',
       'setFeatureFlag',
       'getPromotedRoute',
       'setPromotedRoute',
       'addFeatureFlagAudit',
+      'getFeatureFlagAudit',
       'flagsReady',
     ]);
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
     spy.setPromotedRoute.and.returnValue(Promise.resolve());
     spy.addFeatureFlagAudit.and.returnValue(Promise.resolve());
+    spy.getFeatureFlagAudit.and.returnValue(auditSource.asObservable());
     spy.flagsReady.and.returnValue(of(true));
 
     await TestBed.configureTestingModule({
@@ -183,12 +187,85 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.addFeatureFlagAudit).toHaveBeenCalledWith(
       jasmine.objectContaining({
         flagId: 'music',
-        enabled: false,
-        previous: true,
-        actorId: 'admin-1',
+        field: 'enabled',
+        from: true,
+        to: false,
+        actorUid: 'admin-1',
         actorEmail: 'admin@e2e.local',
       }),
     );
+  });
+
+  it('records the promoted route as the changed field', async () => {
+    mockFeatureFlagsService.getPromotedRoute.and.returnValue(of('/calendar'));
+    fixture.destroy();
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    await component.onPromotedRouteChange('/chat');
+
+    expect(mockFeatureFlagsService.addFeatureFlagAudit).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        flagId: 'promotedRoute',
+        field: 'promotedRoute',
+        from: '/calendar',
+        to: '/chat',
+        actorUid: 'admin-1',
+        actorEmail: 'admin@e2e.local',
+      }),
+    );
+  });
+
+  it('keeps the toggle when the audit write fails and shows an inline note', async () => {
+    spyOn(console, 'error');
+    component.flagsMap = { music: { enabled: true, updatedAt: Date.now() } };
+    mockFeatureFlagsService.addFeatureFlagAudit.and.returnValue(Promise.reject(new Error('offline')));
+
+    await component.onToggle('music', false);
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('music', false);
+    expect(component.isEnabled('music')).toBe(true);
+    const note = fixture.nativeElement.querySelector('[data-testid="feature-audit-notice"]');
+    expect(note?.textContent).toContain('saved but could not be added to the audit trail');
+  });
+
+  it('renders the empty audit state', () => {
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="feature-audit-empty"]')?.textContent?.trim(),
+    ).toBe('No flag changes recorded yet.');
+  });
+
+  it('renders the latest ten audit changes newest first with absolute time and from/to values', () => {
+    const entries: FeatureFlagAuditRecord[] = Array.from({ length: 12 }, (_, index) => ({
+      flagId: index % 2 === 0 ? 'music' : 'promotedRoute',
+      field: index % 2 === 0 ? 'enabled' : 'promotedRoute',
+      from: index % 2 === 0 ? true : '/calendar',
+      to: index % 2 === 0 ? false : '/chat',
+      actorUid: `admin-${index}`,
+      actorEmail: `admin-${index}@e2e.local`,
+      at: new Date(2026, 0, index + 1, 9, 30).getTime(),
+    }));
+    auditSource.next(entries);
+    fixture.detectChanges();
+
+    expect(component.auditHistory.length).toBe(10);
+    expect(component.auditHistory[0].at).toBe(entries[11].at);
+
+    const rows = fixture.nativeElement.querySelectorAll(
+      '[data-testid="feature-audit-table"] tbody tr',
+    ) as NodeListOf<HTMLElement>;
+    expect(rows.length).toBe(10);
+    expect(rows[0].textContent).toContain('admin-11@e2e.local');
+    expect(rows[0].textContent).toContain('Promoted route');
+    expect(rows[0].textContent).toContain('/calendar');
+    expect(rows[0].textContent).toContain('/chat');
+    expect(rows[0].textContent).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
+    expect(rows[1].textContent).toContain('Music');
+    expect(rows[1].textContent).toContain('On');
+    expect(rows[1].textContent).toContain('Off');
   });
 
   it('reverts the promoted route and shows the toggle error when the write fails', async () => {
@@ -222,10 +299,12 @@ describe('AdminFeaturesComponent', () => {
     expect(component.promotedRouteWarning).toContain('Chat is currently off');
   });
 
-  it('shows the relative changed time from the flag updatedAt', () => {
-    component.flagsMap = { music: { enabled: true, updatedAt: Date.now() - 2 * 3600000 } };
+  it('shows the absolute local changed time from the flag updatedAt', () => {
+    component.flagsMap = {
+      music: { enabled: true, updatedAt: new Date(2026, 0, 2, 3, 4).getTime() },
+    };
     fixture.detectChanges();
 
-    expect(component.changedLabel('music')).toBe('changed 2h ago');
+    expect(component.changedLabel('music')).toBe('changed Jan 2, 03:04');
   });
 });
