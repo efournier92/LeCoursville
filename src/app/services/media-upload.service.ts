@@ -165,6 +165,16 @@ export interface StoredMediaBatch {
   storageName: string;
   folderName: string;
   createdAt: number;
+  // Files do not survive a reload, so the finalize payload and the track order
+  // are persisted here to let a resumed album finish without re-uploading.
+  metadata?: {
+    title: string;
+    date: string;
+    isSticky: boolean;
+    isHidden: boolean;
+  };
+  trackTitles?: string[];
+  trackFileNames?: string[];
 }
 
 export interface AssetRef {

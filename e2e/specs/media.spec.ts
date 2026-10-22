@@ -14,7 +14,9 @@ interface MediaRecord {
   id: string;
   title: string;
   fileName?: string;
+  folderName?: string;
   duration?: string;
+  listing?: string[];
   urls?: { download: string; icon: string };
   type?: string;
   format?: string;
@@ -26,6 +28,11 @@ interface MediaRecord {
     bytes?: number;
     contentType?: string;
     uploadedByHash?: string;
+    folder?: string;
+    coverKey?: string;
+    zipKey?: string;
+    trackKeys?: string[];
+    albumId?: string;
   };
   [field: string]: unknown;
 }
@@ -101,6 +108,152 @@ async function uploadManaged(
     `Saved "${title ?? 'fixture'}".`,
   );
   return waitForRecordByKey(storageName);
+}
+
+const ALBUM_TRACKS = ['01-fixture.mp3', '02-fixture.mp3'];
+
+function albumCard(page: Page): Locator {
+  return page.locator('app-admin-media-upload-audio-album');
+}
+
+/** Mirrors the app's plus-for-space folder convention for ASCII titles. */
+function albumFolderFor(title: string): string {
+  return title.trim().replace(/ +/g, '+');
+}
+
+function albumKeys(folder: string) {
+  return {
+    folderPath: `Music/Albums/${folder}`,
+    cover: `Music/Albums/Covers/${folder}.jpg`,
+    zip: `Music/Albums/Zips/${folder}.zip`,
+    track: (fileName: string) => `Music/Albums/${folder}/${fileName}`,
+  };
+}
+
+async function openAlbumUpload(page: Page): Promise<Locator> {
+  await login(page, 'admin');
+  await page.goto('/admin/media');
+  await page.getByRole('tab', { name: 'Audio Album' }).click();
+  const card = albumCard(page);
+  await expect(card.locator('input[name="albumTitle"]')).toBeVisible();
+  return card;
+}
+
+async function findAlbumByFolder(folder: string): Promise<MediaRecord | null> {
+  const media = await allMedia();
+  return (
+    Object.values(media).find(
+      (record) => record?.type === 'audio-album' && record?.folderName === folder,
+    ) ?? null
+  );
+}
+
+async function waitForAlbum(folder: string): Promise<MediaRecord> {
+  await expect.poll(async () => (await findAlbumByFolder(folder))?.id ?? null).not.toBeNull();
+  return (await findAlbumByFolder(folder)) as MediaRecord;
+}
+
+interface AlbumOptions {
+  title: string;
+  tracks?: string[];
+  manualZip?: boolean;
+  zipFile?: string;
+}
+
+/**
+ * Fills the album form and settles cover extraction before any upload click.
+ * Cover extraction runs async from file selection; waiting on the preview or
+ * the validation error keeps the click from racing it.
+ */
+async function prepareAlbum(page: Page, options: AlbumOptions): Promise<Locator> {
+  const card = albumCard(page);
+  const folder = albumFolderFor(options.title);
+  await card.locator('input[name="albumTitle"]').fill(options.title);
+  await expect(card.locator('input[name="albumFolderName"]')).toHaveValue(folder);
+
+  const tracks = options.tracks ?? ALBUM_TRACKS;
+  if (tracks.length > 0) {
+    await card.getByTestId('album-tracks-input').setInputFiles(tracks.map(fixturePath));
+    await expect(card.locator('.album-track-row')).toHaveCount(tracks.length);
+    await expect(
+      card.getByTestId('album-cover-preview').or(card.getByTestId('album-upload-error')),
+    ).toBeVisible();
+  }
+
+  if (options.manualZip) {
+    await card.getByRole('checkbox', { name: 'Use my own zip' }).check({ force: true });
+    await expect(card.getByTestId('album-zip-input')).toBeVisible();
+    if (options.zipFile) {
+      await card.getByTestId('album-zip-input').setInputFiles(fixturePath(options.zipFile));
+    }
+  }
+  return card;
+}
+
+async function uploadAlbum(
+  page: Page,
+  options: AlbumOptions,
+): Promise<MediaRecord> {
+  const card = await prepareAlbum(page, options);
+  await card.locator('.admin-form-action-button-upload').click();
+  await expect(page.getByTestId('album-upload-success')).toContainText(
+    `Saved album "${options.title}".`,
+  );
+  return waitForAlbum(albumFolderFor(options.title));
+}
+
+async function findBatchForAsset(key: string): Promise<string | null> {
+  const batches = (await readDb<Record<string, { assets?: Array<{ key?: string }> }>>(
+    'mediaUploads',
+  )) ?? {};
+  const entry = Object.entries(batches).find(([, batch]) =>
+    (batch?.assets ?? []).some((asset) => asset?.key === key),
+  );
+  return entry?.[0] ?? null;
+}
+
+/**
+ * Removes every record and batch an album case could have created. Sink objects
+ * are covered by the per-project reset, so nothing here touches the sink.
+ */
+async function cleanupAlbumFolder(folder: string): Promise<void> {
+  const folderPath = `Music/Albums/${folder}`;
+  const media = (await readDb<Record<string, MediaRecord>>('media')) ?? {};
+  const entries = Object.entries(media);
+  const albumEntry = entries.find(
+    ([, record]) => record?.type === 'audio-album' && record?.folderName === folder,
+  );
+  const album = albumEntry?.[1];
+  const trackEntries = entries.filter(([, record]) => {
+    const key = record?.storage?.key;
+    return typeof key === 'string' && key.startsWith(`${folderPath}/`);
+  });
+
+  const recordIds = new Set<string>([
+    ...(album?.listing ?? []),
+    ...trackEntries.map(([id]) => id),
+    ...(albumEntry ? [albumEntry[0]] : []),
+  ]);
+  for (const id of recordIds) {
+    await deleteDb(`media/${id}`);
+    await deleteDb(`mediaDeletions/${id}`);
+  }
+
+  const batches = (await readDb<Record<string, { assets?: Array<{ key?: string }> }>>(
+    'mediaUploads',
+  )) ?? {};
+  for (const [id, batch] of Object.entries(batches)) {
+    const belongs = (batch?.assets ?? []).some(
+      (asset) =>
+        typeof asset?.key === 'string' &&
+        (asset.key.startsWith(`${folderPath}/`) ||
+          asset.key === albumKeys(folder).cover ||
+          asset.key === albumKeys(folder).zip),
+    );
+    if (belongs) {
+      await deleteDb(`mediaUploads/${id}`);
+    }
+  }
 }
 
 test.describe('media', () => {
@@ -508,6 +661,399 @@ test.describe('media', () => {
 
     await page.locator('.admin-form-action-button-upload').click();
     const error = page.getByTestId('video-upload-error');
+    await expect(error).toBeVisible();
+    await expect(error).toHaveAttribute('role', 'alert');
+  });
+
+  test('album upload generates the zip and saves tracks', async ({ page }) => {
+    const title = `E2E Album generated ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+
+    try {
+      await openAlbumUpload(page);
+      const card = await prepareAlbum(page, { title });
+
+      const rows = card.locator('.album-track-row');
+      await expect(rows).toHaveCount(2);
+      await expect(rows.nth(0).locator('input')).toHaveValue('01 fixture');
+      await expect(rows.nth(1).locator('input')).toHaveValue('02 fixture');
+      await expect(rows.nth(0).locator('.album-track-file')).toHaveText('01-fixture.mp3');
+      await expect(rows.nth(1).locator('.album-track-file')).toHaveText('02-fixture.mp3');
+      await expect(card.getByTestId('album-cover-source')).toHaveText('From track art');
+      await expect(card.getByTestId('album-cover-preview')).toBeVisible();
+      await expect(card.locator('.media-zip-controls')).toContainText(
+        'Album zip will be generated',
+      );
+
+      const album = await uploadAlbum(page, { title });
+
+      expect(album.listing?.length).toBe(2);
+      const trackIds = album.listing as string[];
+      expect(new Set(trackIds).size).toBe(2);
+      expect(album.storage?.managed).toBe(true);
+      expect(album.storage?.folder).toBe(keys.folderPath);
+      expect(album.urls?.icon).toBe(sinkUrl(keys.cover));
+      expect(album.urls?.download).toBe(sinkUrl(keys.zip));
+      expect(album.storage?.trackKeys).toEqual([
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]);
+
+      const tracks = await Promise.all(
+        trackIds.map((id) => readDb<MediaRecord>(`media/${id}`)),
+      );
+      expect(tracks.every((track) => track?.type === 'audio-track')).toBe(true);
+      expect(tracks.every((track) => track?.storage?.albumId === album.id)).toBe(true);
+      expect(tracks.every((track) => track?.urls?.icon === album.urls?.icon)).toBe(true);
+      expect(tracks.map((track) => track?.storage?.key).sort()).toEqual([
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]);
+
+      for (const key of [
+        keys.cover,
+        keys.zip,
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]) {
+        const head = await sinkHead(key);
+        expect(head).not.toBeNull();
+        expect(head?.batchId).toBe(album.storage?.batchId);
+      }
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album upload requires tracks', async ({ page }) => {
+    const title = `E2E Album empty ${Date.now()}`;
+    const folder = albumFolderFor(title);
+
+    try {
+      await openAlbumUpload(page);
+      const card = albumCard(page);
+      await card.locator('input[name="albumTitle"]').fill(title);
+      await card.locator('.admin-form-action-button-upload').click();
+
+      await expect(card.getByTestId('album-upload-error')).toContainText(
+        'Add at least one MP3 track.',
+      );
+      expect(await findAlbumByFolder(folder)).toBeNull();
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album upload requires a cover when the track has none', async ({ page }) => {
+    const title = `E2E Album noart ${Date.now()}`;
+    const folder = albumFolderFor(title);
+
+    try {
+      await openAlbumUpload(page);
+      const card = albumCard(page);
+      await card.locator('input[name="albumTitle"]').fill(title);
+      await card.getByTestId('album-tracks-input').setInputFiles(fixturePath('fixture-noart.mp3'));
+
+      await expect(card.locator('.album-track-row')).toHaveCount(1);
+      await expect(card.getByTestId('album-upload-error')).toContainText('Add a cover image.');
+      await expect(card.getByTestId('album-cover-preview')).toHaveCount(0);
+
+      await card.locator('.admin-form-action-button-upload').click();
+      await expect(card.getByTestId('album-upload-error')).toContainText('Add a cover image.');
+      expect(await findAlbumByFolder(folder)).toBeNull();
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album upload accepts a manual zip override', async ({ page }) => {
+    const title = `E2E Album manualzip ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+
+    try {
+      await openAlbumUpload(page);
+      const album = await uploadAlbum(page, {
+        title,
+        manualZip: true,
+        zipFile: 'fixture.zip',
+      });
+
+      const stored = await sinkGet(keys.zip);
+      expect(stored).not.toBeNull();
+      expect(stored?.equals(readFileSync(fixturePath('fixture.zip')))).toBe(true);
+      expect(album.urls?.download).toBe(sinkUrl(keys.zip));
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album folder uses the plus convention', async ({ page }) => {
+    const stamp = Date.now();
+    const title = `E2E Album ${stamp}`;
+    const folder = `E2E+Album+${stamp}`;
+    const keys = albumKeys(folder);
+
+    try {
+      await openAlbumUpload(page);
+      const card = albumCard(page);
+      await card.locator('input[name="albumTitle"]').fill(title);
+      await expect(card.getByTestId('album-folder-preview')).toContainText(
+        `Music/Albums/${folder}/`,
+      );
+
+      const album = await uploadAlbum(page, { title });
+
+      expect(album.folderName).toBe(folder);
+      expect(decodeURIComponent(String(album.urls?.download))).toContain('E2E+Album');
+      expect(decodeURIComponent(String(album.urls?.icon))).toContain('E2E+Album');
+      expect(album.urls?.download).toBe(sinkUrl(keys.zip));
+
+      const trackIds = album.listing as string[];
+      for (const id of trackIds) {
+        const track = await readDb<MediaRecord>(`media/${id}`);
+        expect(decodeURIComponent(String(track?.urls?.download))).toContain('E2E+Album');
+        expect(track?.storage?.key?.startsWith(`${keys.folderPath}/`)).toBe(true);
+      }
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album metadata edit changes titles and order without rewriting tracks', async ({ page }) => {
+    const title = `E2E Album edit ${Date.now()}`;
+    const editedTitle = `${title} edited`;
+    const folder = albumFolderFor(title);
+
+    try {
+      await openAlbumUpload(page);
+      const created = await uploadAlbum(page, { title });
+      const originalListing = created.listing as string[];
+      const [firstId, secondId] = originalListing;
+      const beforeFirst = await readDb<MediaRecord>(`media/${firstId}`);
+      const beforeSecond = await readDb<MediaRecord>(`media/${secondId}`);
+
+      const card = albumCard(page);
+      await card.locator('.media-list-item').filter({ hasText: title }).first().click();
+      await expect(card.locator('input[name="albumFolderName"]')).toHaveCount(0);
+      await expect(card).toContainText(
+        'To change tracks, delete this album and upload it again.',
+      );
+
+      await card.locator('input[name="albumTitle"]').fill(editedTitle);
+      await card.locator('.album-track-row').nth(0).locator('input').fill('Intro edited');
+      await card.getByRole('button', { name: 'Move track down' }).first().click();
+      await expect(card.locator('.album-track-file')).toHaveText([
+        '02-fixture.mp3',
+        '01-fixture.mp3',
+      ]);
+
+      await card.locator('.admin-form-action-button-upload').click();
+      await expect(page.getByTestId('album-upload-success')).toContainText(
+        `Saved album "${editedTitle}".`,
+      );
+
+      const updated = await readDb<MediaRecord>(`media/${created.id}`);
+      expect(updated?.title).toBe(editedTitle);
+      expect(updated?.listing).toEqual([secondId, firstId]);
+      expect(updated?.storage?.trackKeys).toEqual(created.storage?.trackKeys);
+      expect(updated?.storage?.coverKey).toBe(created.storage?.coverKey);
+      expect(updated?.storage?.zipKey).toBe(created.storage?.zipKey);
+      expect(updated?.urls).toEqual(created.urls);
+
+      const afterFirst = await readDb<MediaRecord>(`media/${firstId}`);
+      const afterSecond = await readDb<MediaRecord>(`media/${secondId}`);
+      expect(afterFirst?.title).toBe('Intro edited');
+      expect(afterSecond?.title).toBe(beforeSecond?.title);
+      expect(afterFirst?.urls).toEqual(beforeFirst?.urls);
+      expect(afterSecond?.urls).toEqual(beforeSecond?.urls);
+    } finally {
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album delete cascades records and objects', async ({ page }) => {
+    const title = `E2E Album delete ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+    let album: MediaRecord | null = null;
+
+    try {
+      await openAlbumUpload(page);
+      album = await uploadAlbum(page, { title });
+      const trackIds = album.listing as string[];
+      const albumId = album.id;
+
+      const card = albumCard(page);
+      await card.locator('.media-list-item').filter({ hasText: title }).first().click();
+      await card.locator('.admin-form-action-button-delete').click();
+      await page.getByRole('button', { name: 'Delete album' }).click();
+      await expect(page.getByTestId('album-upload-success')).toContainText(
+        `Deleted "${title}".`,
+      );
+
+      await expect.poll(async () => readDb(`media/${albumId}`)).toBeNull();
+      for (const id of trackIds) {
+        await expect.poll(async () => readDb(`media/${id}`)).toBeNull();
+      }
+      for (const key of [
+        keys.cover,
+        keys.zip,
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]) {
+        await expect.poll(async () => sinkHead(key)).toBeNull();
+      }
+    } finally {
+      await cleanupAlbumFolder(folder);
+      if (album?.id) {
+        await deleteDb(`mediaDeletions/${album.id}`);
+      }
+    }
+  });
+
+  test('cancel cleans up the batch and objects', async ({ page }) => {
+    const title = `E2E Album cancel ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+    const firstTrackKey = keys.track('01-fixture.mp3');
+
+    let markHeld: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      markHeld = resolve;
+    });
+    let releaseHeld: () => void = () => {};
+    const release = new Promise<void>((resolve) => {
+      releaseHeld = resolve;
+    });
+    let canceled = false;
+
+    await page.route(/emulatorMediaSink/, async (route, request) => {
+      if (request.method() === 'PUT') {
+        const key = new URL(request.url()).searchParams.get('key') ?? '';
+        if (key === firstTrackKey) {
+          markHeld();
+          await release;
+          if (canceled) {
+            try {
+              await route.abort('failed');
+            } catch {
+              // Cancel unsubscribed and the browser already dropped the request.
+            }
+            return;
+          }
+        }
+      }
+      await route.continue();
+    });
+
+    try {
+      await openAlbumUpload(page);
+      const card = await prepareAlbum(page, { title });
+      await card.locator('.admin-form-action-button-upload').click();
+      await held;
+
+      await expect
+        .poll(async () => (await findBatchForAsset(firstTrackKey)) ?? null)
+        .not.toBeNull();
+      const batchId = (await findBatchForAsset(firstTrackKey)) as string;
+
+      await card.locator('.admin-form-action-button-cancel').click();
+      await expect.poll(async () => readDb(`mediaUploads/${batchId}`)).toBeNull();
+      await expect.poll(async () => sinkHead(firstTrackKey)).toBeNull();
+      await expect.poll(async () => sinkHead(keys.cover)).toBeNull();
+      await expect.poll(async () => sinkHead(keys.zip)).toBeNull();
+    } finally {
+      canceled = true;
+      releaseHeld();
+      await page.unroute(/emulatorMediaSink/);
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('resume after reload completes the missing asset', async ({ page }) => {
+    const title = `E2E Album resume ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+    const secondTrackKey = keys.track('02-fixture.mp3');
+    let album: MediaRecord | null = null;
+
+    // Store the bytes in the sink, then fail the browser response, so the
+    // reload sees a complete batch while the client still believes it failed.
+    await page.route(/emulatorMediaSink/, async (route, request) => {
+      if (
+        request.method() === 'PUT' &&
+        new URL(request.url()).searchParams.get('key') === secondTrackKey
+      ) {
+        // Intercepted XHR uploads expose no body buffer, so replay the fixture
+        // bytes explicitly while the sink still stores the real object.
+        await route.fetch({ postData: readFileSync(fixturePath('02-fixture.mp3')) });
+        await route.fulfill({
+          status: 500,
+          headers: {
+            'access-control-allow-origin': 'http://localhost:5000',
+            'content-type': 'text/plain',
+          },
+          body: 'forced failure',
+        });
+        return;
+      }
+      await route.continue();
+    });
+
+    try {
+      await openAlbumUpload(page);
+      const card = await prepareAlbum(page, { title });
+      await card.locator('.admin-form-action-button-upload').click();
+      await expect(card.getByTestId('album-upload-error')).toBeVisible();
+      await expect(card.locator('.admin-form-action-button-upload')).toHaveText('Upload');
+
+      await page.unroute(/emulatorMediaSink/);
+      await page.goto('/admin/media');
+      await page.getByRole('tab', { name: 'Audio Album' }).click();
+      const resume = page.getByRole('button', { name: 'Resume upload' });
+      await expect(resume).toBeVisible();
+      await resume.click();
+
+      await expect(page.getByTestId('album-upload-success')).toContainText(
+        `Saved album "${title}".`,
+      );
+      album = await waitForAlbum(folder);
+      expect(album.listing?.length).toBe(2);
+      expect(album.storage?.trackKeys).toEqual([
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]);
+
+      for (const id of album.listing as string[]) {
+        const track = await readDb<MediaRecord>(`media/${id}`);
+        expect(track?.storage?.albumId).toBe(album.id);
+        expect(await sinkHead(track?.storage?.key as string)).not.toBeNull();
+      }
+    } finally {
+      await page.unroute(/emulatorMediaSink/);
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album upload controls expose labels and live regions', async ({ page }) => {
+    await openAlbumUpload(page);
+    const card = albumCard(page);
+
+    await expect(card.getByLabel('Folder name')).toBeVisible();
+    await expect(card.getByLabel('Album tracks')).toBeVisible();
+    await expect(card.getByLabel('Choose cover image')).toBeVisible();
+    await expect(card.locator('mat-checkbox[name="useOwnZip"]')).toBeVisible();
+
+    await card.getByRole('checkbox', { name: 'Use my own zip' }).check({ force: true });
+    await expect(card.getByLabel('Zip file')).toBeVisible();
+
+    const progress = card.getByTestId('album-upload-progress');
+    await expect(progress).toHaveAttribute('role', 'status');
+
+    await card.locator('.admin-form-action-button-upload').click();
+    const error = card.getByTestId('album-upload-error');
     await expect(error).toBeVisible();
     await expect(error).toHaveAttribute('role', 'alert');
   });

@@ -1,43 +1,228 @@
 @if (user?.roles?.admin || user?.roles?.super) {
   <mat-card class="admin-surface admin-media-upload-form-container">
+    <h2 #albumCardHeading class="admin-card-title" tabindex="-1">Audio album upload</h2>
+
     @if (deleteError) {
-      <div class="admin-error" role="alert">{{ deleteError }}</div>
+      <div class="admin-error" role="alert" aria-live="assertive">{{ deleteError }}</div>
     }
+
     <form class="audio-album-upload-form">
       <mat-form-field class="admin-upload-input">
         <mat-label>Title</mat-label>
         <input
+          #titleInput
           type="text"
           matInput
           name="albumTitle"
-          [(ngModel)]="album.title"
+          [ngModel]="album.title"
+          (ngModelChange)="onTitleChange($event)"
           />
       </mat-form-field>
+
+      @if (!isEditing()) {
+        <mat-form-field class="admin-upload-input">
+          <mat-label>Folder name</mat-label>
+          <input
+            #folderInput
+            type="text"
+            matInput
+            name="albumFolderName"
+            [ngModel]="album.folderName"
+            (ngModelChange)="onFolderChange($event)"
+            />
+        </mat-form-field>
+        <div class="media-path-preview" data-testid="album-folder-preview">
+          <span class="media-path-label">Folder path</span>
+          <span class="media-path-value">{{ folderPreview() }}</span>
+        </div>
+      }
+
       <mat-form-field class="admin-upload-input">
-        <mat-label>Folder Name</mat-label>
+        <mat-label>Date</mat-label>
         <input
+          #dateInput
           type="text"
           matInput
-          name="albumFolderName"
-          [(ngModel)]="album.folderName"
+          name="albumDate"
+          [(ngModel)]="album.date"
           />
       </mat-form-field>
-      @if (!isAlbumAlreadyUploaded()) {
-        <mat-form-field
-          class="admin-upload-input"
+
+      @if (!isEditing()) {
+        <label
+          class="media-drop-zone"
+          for="albumTracksInput"
+          (dragover)="onDragOver($event)"
+          (drop)="onTracksDrop($event)"
           >
-          <mat-label>Tracks</mat-label>
-          <textarea
-            matInput
-            name="albumTracks"
-            [(ngModel)]="tracksString"
-            cdkTextareaAutosize
-            #autosize="cdkTextareaAutosize"
-            cdkAutosizeMinRows="1"
-            cdkAutosizeMaxRows="20"
-          ></textarea>
-        </mat-form-field>
+          <span class="media-drop-zone-title">Album tracks</span>
+          <span class="media-drop-zone-hint">Drop MP3 tracks here or choose files.</span>
+          <input
+            #tracksInput
+            id="albumTracksInput"
+            class="media-file-input"
+            type="file"
+            multiple
+            accept="audio/mpeg,.mp3"
+            data-testid="album-tracks-input"
+            aria-label="Album tracks"
+            (change)="onTracksFileChange($event)"
+            />
+        </label>
+
+        @if (supportsFolderPicker()) {
+          <label
+            class="media-folder-picker"
+            for="albumFolderInput"
+            data-testid="album-folder-button"
+            >
+            <span>Choose a folder</span>
+            <input
+              id="albumFolderInput"
+              class="media-file-input"
+              type="file"
+              multiple
+              webkitdirectory
+              accept="audio/mpeg,.mp3"
+              data-testid="album-folder-input"
+              (change)="onTracksFileChange($event)"
+              />
+          </label>
+        }
       }
+
+      @if (isEditing()) {
+        <p class="media-file-name">
+          To change tracks, delete this album and upload it again.
+        </p>
+      }
+
+      @if (trackRows.length > 0) {
+        <div class="album-track-list" data-testid="album-track-list">
+          @for (row of trackRows; track row.id; let i = $index; let last = $last) {
+            <div class="album-track-row">
+              <mat-form-field class="admin-upload-input album-track-title">
+                <mat-label>Track title</mat-label>
+                <input
+                  #trackTitleInput
+                  type="text"
+                  matInput
+                  [name]="'albumTrackTitle' + i"
+                  [ngModel]="row.title"
+                  (ngModelChange)="row.title = $event"
+                  />
+              </mat-form-field>
+              <span class="album-track-file">{{ row.fileName }}</span>
+              @if (row.size) {
+                <span class="album-track-size">{{ rowSize(row) }}</span>
+              }
+              <div class="album-track-actions">
+                <button
+                  #moveUpButton
+                  type="button"
+                  mat-stroked-button
+                  class="album-track-button"
+                  [disabled]="i === 0"
+                  (click)="moveTrack(i, -1)"
+                  aria-label="Move track up"
+                  >
+                  Up
+                </button>
+                <button
+                  #moveDownButton
+                  type="button"
+                  mat-stroked-button
+                  class="album-track-button"
+                  [disabled]="last"
+                  (click)="moveTrack(i, 1)"
+                  aria-label="Move track down"
+                  >
+                  Down
+                </button>
+                @if (!isEditing()) {
+                  <button
+                    #removeButton
+                    type="button"
+                    mat-stroked-button
+                    class="album-track-button album-track-remove"
+                    (click)="removeTrack(i)"
+                    aria-label="Remove track"
+                    >
+                    Remove
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (!isEditing()) {
+        <div class="media-cover-controls">
+          @if (coverPreviewUrl) {
+            <img
+              data-testid="album-cover-preview"
+              class="media-cover-preview"
+              [src]="coverPreviewUrl"
+              alt="Album cover"
+              />
+          }
+          @if (coverSource) {
+            <p class="media-file-name" data-testid="album-cover-source">
+              {{ coverSource === 'track' ? 'From track art' : 'Custom image' }}
+            </p>
+          }
+          <label class="media-control-label" for="albumCoverInput">Choose cover image</label>
+          <input
+            #coverInput
+            id="albumCoverInput"
+            class="media-file-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            data-testid="album-cover-input"
+            (change)="onCoverFileChange($event)"
+            />
+        </div>
+
+        <div class="media-zip-controls">
+          @if (!needsManualZip()) {
+            <p class="media-file-name">{{ zipSummary() }}</p>
+            <mat-checkbox
+              class="admin-upload-checkbox"
+              name="useOwnZip"
+              [(ngModel)]="useOwnZip"
+              >Use my own zip</mat-checkbox
+              >
+            @if (useOwnZip) {
+              <label class="media-control-label" for="albumZipInput">Zip file</label>
+              <input
+                #zipInput
+                id="albumZipInput"
+                class="media-file-input"
+                type="file"
+                name="albumZip"
+                accept=".zip,application/zip"
+                data-testid="album-zip-input"
+                (change)="onZipFileChange($event)"
+                />
+            }
+          } @else {
+            <label class="media-control-label" for="albumZipRequired">Zip file</label>
+            <input
+              #zipInput
+              id="albumZipRequired"
+              class="media-file-input"
+              type="file"
+              name="albumZip"
+              accept=".zip,application/zip"
+              data-testid="album-zip-input"
+              (change)="onZipFileChange($event)"
+              />
+            <p class="media-file-name">Albums over 500 MB need a zip file.</p>
+          }
+        </div>
+      }
+
       <mat-checkbox
         class="admin-upload-checkbox"
         name="isSticky"
@@ -50,14 +235,36 @@
         [(ngModel)]="album.isHidden"
         >Should Hide from Lists?</mat-checkbox
         >
+
       @if (formError) {
-        <div class="admin-error" role="alert" data-testid="album-upload-error">{{ formError }}</div>
+        <div
+          class="admin-error"
+          role="alert"
+          aria-live="assertive"
+          data-testid="album-upload-error"
+          >{{ formError }}</div
+          >
       }
       @if (uploadSuccess) {
-        <div class="admin-success" role="status" data-testid="album-upload-success">{{ uploadSuccess }}</div>
+        <div
+          class="admin-success"
+          role="status"
+          aria-live="polite"
+          data-testid="album-upload-success"
+          >{{ uploadSuccess }}</div
+          >
       }
+      <div
+        class="admin-upload-progress"
+        role="status"
+        aria-live="polite"
+        data-testid="album-upload-progress"
+        >{{ progressMessage }}</div
+        >
+
       <div class="admin-form-actions">
         <button
+          type="button"
           mat-flat-button
           color="primary"
           class="admin-form-action-button admin-form-action-button-upload"
@@ -65,43 +272,80 @@
           (click)="onUploadSelectedMedia()"
           >
           @if (uploading) {
-            <span>Uploading…</span>
+            <span>Uploading...</span>
           }
-          @if (!uploading && !isAlbumAlreadyUploaded()) {
+          @if (!uploading && !isEditing()) {
             <span>Upload</span>
           }
-          @if (!uploading && isAlbumAlreadyUploaded()) {
+          @if (!uploading && isEditing()) {
             <span>Update</span>
           }
         </button>
-        <button
-          mat-stroked-button
-          class="admin-form-action-button admin-form-action-button-cancel"
-          [disabled]="uploading"
-          (click)="onCancelSelectedMedia(album)"
-          >
-          Clear
-        </button>
-        @if (album.id) {
+
+        @if (uploading) {
           <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-cancel"
+            (click)="onCancelUpload()"
+            >
+            Cancel
+          </button>
+        } @else {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-cancel"
+            (click)="onClearForm()"
+            >
+            Clear
+          </button>
+        }
+
+        @if (isEditing()) {
+          <button
+            type="button"
             mat-stroked-button
             class="admin-form-action-button admin-form-action-button-delete"
+            [disabled]="uploading"
             (click)="onDeleteSelectedMedia(album)"
             >
             Delete
           </button>
         }
+
+        @if (finalizeFailed) {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-retry"
+            [disabled]="uploading"
+            (click)="onRetryFinalize()"
+            >
+            Retry
+          </button>
+        }
+
+        @if (resumeBatch && !uploading) {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-resume"
+            (click)="onResumeUpload()"
+            >
+            Resume upload
+          </button>
+        }
       </div>
     </form>
   </mat-card>
+
   <div class="admin-media-list-container">
-    @if (isUserAdmin()) {
-      <app-media-list
-        [mediaTypesToShow]="getAudioAlbumTypeId()"
-        [isAdminMode]="true"
-        (mediaClickEvent)="onMediaSelect($event)"
-        >
-      </app-media-list>
-    }
+    <app-media-list
+      [mediaTypesToShow]="getAudioAlbumTypeId()"
+      [isAdminMode]="true"
+      (mediaClickEvent)="onMediaSelect($event)"
+      >
+    </app-media-list>
   </div>
 }

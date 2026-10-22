@@ -11,6 +11,162 @@
   display: block;
 }
 
+.media-drop-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.media-drop-zone-title {
+  font-weight: 600;
+}
+
+.media-drop-zone-hint,
+.media-file-name {
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+}
+
+.media-file-name {
+  margin: 0 0 12px;
+}
+
+.media-folder-picker {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.media-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.media-path-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+  font-size: 0.8rem;
+  color: var(--color-ink);
+}
+
+.media-path-label {
+  font-weight: 600;
+  color: var(--color-ink-2);
+}
+
+.media-path-value {
+  word-break: break-all;
+}
+
+.album-track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.album-track-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+}
+
+.album-track-title {
+  grid-column: 1 / -1;
+}
+
+.album-track-file {
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+  word-break: break-all;
+}
+
+.album-track-size {
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+}
+
+.album-track-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+
+.album-track-button {
+  height: 32px;
+  min-width: 56px;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.album-track-remove {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.media-cover-controls,
+.media-zip-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.media-cover-preview {
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+}
+
+.media-control-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.admin-upload-progress {
+  min-height: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+}
+
 .admin-success {
   padding: 12px 16px;
   margin-bottom: 12px;
