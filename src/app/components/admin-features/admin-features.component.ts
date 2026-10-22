@@ -1,9 +1,11 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy, QueryList, ViewChildren } from '@angular/core';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { Subscription } from 'rxjs';
-import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { FeatureFlagsService, FeatureFlagAuditRecord } from 'src/app/services/feature-flags.service';
 import { FeatureFlag } from 'src/app/models/feature-flag';
 import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
+import { AuthService } from 'src/app/services/auth.service';
+import { User } from 'src/app/models/user';
 
 interface FeatureGroup {
   label: string;
@@ -42,12 +44,16 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
   // write is pushed back through the live toggle instances.
   @ViewChildren(MatSlideToggle) private toggles?: QueryList<MatSlideToggle>;
 
+  private userSignedIn: User;
+  private storedPromotedRoute = '';
   private readySub?: Subscription;
   private flagsSub?: Subscription;
   private promotedSub?: Subscription;
+  private userSub?: Subscription;
 
   constructor(
     private featureFlagsService: FeatureFlagsService,
+    private authService: AuthService,
     private changeDetector: ChangeDetectorRef,
   ) { }
 
@@ -59,8 +65,13 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.promotedSub = this.featureFlagsService.getPromotedRoute().subscribe((data: any) => {
-      this.promotedRoute = data?.route || '';
+    this.promotedSub = this.featureFlagsService.getPromotedRoute().subscribe(route => {
+      this.storedPromotedRoute = route || '';
+      this.promotedRoute = this.storedPromotedRoute;
+    });
+
+    this.userSub = this.authService.userObservable.subscribe((user: User) => {
+      this.userSignedIn = user;
     });
   }
 
@@ -68,6 +79,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     this.readySub?.unsubscribe();
     this.flagsSub?.unsubscribe();
     this.promotedSub?.unsubscribe();
+    this.userSub?.unsubscribe();
   }
 
   retry(): void {
@@ -104,11 +116,84 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
         toggle.checked = stored;
         this.changeDetector.detectChanges();
       }
+      return;
     }
+    this.writeAudit({ flagId: featureId, enabled, previous: stored });
   }
 
-  onPromotedRouteChange(route: string): void {
-    this.featureFlagsService.setPromotedRoute(route);
+  async onPromotedRouteChange(route: string): Promise<void> {
+    this.toggleError = '';
+    const stored = this.storedPromotedRoute;
+    try {
+      await this.featureFlagsService.setPromotedRoute(route);
+    } catch {
+      this.promotedRoute = stored;
+      this.toggleError = 'Couldn’t save the promoted route. The selection was reverted.';
+      return;
+    }
+    const feature = this.featureForRoute(route);
+    // A route has no boolean of its own, so the matched flag's state records
+    // whether the promoted page is live at the moment it was chosen.
+    this.writeAudit({
+      flagId: feature?.id ?? 'promotedRoute',
+      enabled: feature ? this.isEnabled(feature.id) : false,
+      previous: feature ? this.isEnabled(feature.id) : false,
+    });
+  }
+
+  get promotedRouteWarning(): string {
+    const selected = this.disabledRouteWarning(this.promotedRoute);
+    if (selected) {
+      return selected;
+    }
+    if (this.storedPromotedRoute !== this.promotedRoute) {
+      return this.disabledRouteWarning(this.storedPromotedRoute);
+    }
+    return '';
+  }
+
+  changedLabel(featureId: string): string {
+    const updatedAt = this.flagsMap[featureId]?.updatedAt;
+    if (!updatedAt) {
+      return '';
+    }
+    const minutes = Math.floor((Date.now() - updatedAt) / 60000);
+    const relative = minutes < 1
+      ? 'just now'
+      : minutes < 60
+        ? `${minutes}m ago`
+        : minutes < 1440
+          ? `${Math.floor(minutes / 60)}h ago`
+          : `${Math.floor(minutes / 1440)}d ago`;
+    return `changed ${relative}`;
+  }
+
+  private disabledRouteWarning(route: string): string {
+    if (!route) {
+      return '';
+    }
+    const feature = this.featureForRoute(route);
+    if (!feature || this.isEnabled(feature.id)) {
+      return '';
+    }
+    return `${feature.label} is currently off, so members will land on the feature-disabled page.`;
+  }
+
+  private featureForRoute(route: string): FeatureConfig | undefined {
+    return FEATURES.find(feature => feature.route === route);
+  }
+
+  private writeAudit(change: { flagId: string; enabled: boolean; previous: boolean }): void {
+    const record: FeatureFlagAuditRecord = {
+      ...change,
+      actorId: this.userSignedIn?.id || '',
+      actorEmail: this.userSignedIn?.email || '',
+      at: Date.now(),
+    };
+    // The audit trail must never hold up the switch it records.
+    this.featureFlagsService
+      .addFeatureFlagAudit(record)
+      .catch(error => console.error('Error writing feature flag audit:', error));
   }
 
   private loadFlags(): void {

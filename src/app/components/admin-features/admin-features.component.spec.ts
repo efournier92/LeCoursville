@@ -4,6 +4,7 @@ import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { FEATURES } from 'src/app/config/feature-config';
 import { of, Subject, throwError } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -18,10 +19,14 @@ describe('AdminFeaturesComponent', () => {
       'getAllFeatureFlags',
       'setFeatureFlag',
       'getPromotedRoute',
+      'setPromotedRoute',
+      'addFeatureFlagAudit',
       'flagsReady',
     ]);
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
+    spy.setPromotedRoute.and.returnValue(Promise.resolve());
+    spy.addFeatureFlagAudit.and.returnValue(Promise.resolve());
     spy.flagsReady.and.returnValue(of(true));
 
     await TestBed.configureTestingModule({
@@ -30,6 +35,7 @@ describe('AdminFeaturesComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: FeatureFlagsService, useValue: spy },
+        { provide: AuthService, useValue: { userObservable: of({ id: 'admin-1', email: 'admin@e2e.local' }) } },
       ]
     }).compileComponents();
 
@@ -166,5 +172,60 @@ describe('AdminFeaturesComponent', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="features-toggle-error"]'),
     ).not.toBeNull();
+  });
+
+  it('writes one audit row per successful toggle change', async () => {
+    component.flagsMap = { music: { enabled: true, updatedAt: Date.now() } };
+    fixture.detectChanges();
+
+    await component.onToggle('music', false);
+
+    expect(mockFeatureFlagsService.addFeatureFlagAudit).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        flagId: 'music',
+        enabled: false,
+        previous: true,
+        actorId: 'admin-1',
+        actorEmail: 'admin@e2e.local',
+      }),
+    );
+  });
+
+  it('reverts the promoted route and shows the toggle error when the write fails', async () => {
+    mockFeatureFlagsService.getPromotedRoute.and.returnValue(of('/calendar'));
+    fixture.destroy();
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(component.promotedRoute).toBe('/calendar');
+
+    mockFeatureFlagsService.setPromotedRoute.and.returnValue(Promise.reject(new Error('offline')));
+    await component.onPromotedRouteChange('/chat');
+    fixture.detectChanges();
+
+    expect(component.promotedRoute).toBe('/calendar');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="features-toggle-error"]'),
+    ).not.toBeNull();
+    expect(mockFeatureFlagsService.addFeatureFlagAudit).not.toHaveBeenCalled();
+  });
+
+  it('warns when the selected promoted route belongs to a flag that is off', () => {
+    mockFeatureFlagsService.getPromotedRoute.and.returnValue(of('/chat'));
+    fixture.destroy();
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    component.flagsMap = { chat: { enabled: false, updatedAt: Date.now() } };
+    fixture.detectChanges();
+
+    expect(component.promotedRouteWarning).toContain('Chat is currently off');
+  });
+
+  it('shows the relative changed time from the flag updatedAt', () => {
+    component.flagsMap = { music: { enabled: true, updatedAt: Date.now() - 2 * 3600000 } };
+    fixture.detectChanges();
+
+    expect(component.changedLabel('music')).toBe('changed 2h ago');
   });
 });

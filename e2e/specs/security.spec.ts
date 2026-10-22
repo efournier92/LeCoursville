@@ -437,6 +437,51 @@ test.describe('security', () => {
     }
   });
 
+  test('rules: featureFlagAudit is super-create and super-read only', async () => {
+    const staffToken = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
+    const superToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+    const id = `security-feature-audit-${Date.now()}`;
+    const record = {
+      flagId: 'chat',
+      enabled: false,
+      previous: true,
+      actorId: 'probe-actor',
+      actorEmail: 'probe@e2e.local',
+      at: Date.now(),
+    };
+    const url = `http://localhost:9000/featureFlagAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`;
+
+    try {
+      const staffRes = await fetch(
+        `http://localhost:9000/featureFlagAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${staffToken}`,
+        { method: 'PUT', body: JSON.stringify(record) },
+      );
+      expect(staffRes.status).not.toBe(200);
+      expect(await readDb(`featureFlagAudit/${id}`)).toBeNull();
+
+      const superWrite = await fetch(url, { method: 'PUT', body: JSON.stringify(record) });
+      expect(superWrite.ok).toBe(true);
+      expect(await readDb(`featureFlagAudit/${id}`)).toEqual(record);
+
+      const superRead = await fetch(url);
+      expect(superRead.status).toBe(200);
+      expect(await superRead.json()).toEqual(record);
+
+      const superUpdate = await fetch(url, {
+        method: 'PUT',
+        body: JSON.stringify({ ...record, enabled: true }),
+      });
+      expect(superUpdate.status).not.toBe(200);
+      expect(await readDb(`featureFlagAudit/${id}`)).toEqual(record);
+
+      const superDelete = await fetch(url, { method: 'DELETE' });
+      expect(superDelete.status).not.toBe(200);
+      expect(await readDb(`featureFlagAudit/${id}`)).toEqual(record);
+    } finally {
+      await deleteDb(`featureFlagAudit/${id}`);
+    }
+  });
+
   test('rules: userUploads rejects client writes; the callable owns the record', async () => {
     const userToken = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
     const adminToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
@@ -509,6 +554,68 @@ test.describe('security', () => {
           await deleteDb(`userUploads/${id}`);
         }
       }
+    }
+  });
+
+  test('upload rate limit: a capped call is rejected and writes no record', async () => {
+    const call = (eventName: string) =>
+      fetch(
+        'http://127.0.0.1:5001/lecoursville-dev/us-central1/createUserUpload',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: {
+              fileName: 'rate-limit.png',
+              eventName,
+              fileType: 'image/png',
+              fileSize: 10,
+              uploader: { name: 'Probe' },
+            },
+          }),
+        },
+      );
+    const eventName = `Security rate limit ${Date.now()}`;
+    let createdId = '';
+
+    try {
+      await deleteDb('rateLimits/userUploadsIp');
+      await deleteDb('rateLimits/userUploadsGlobal');
+
+      const first = await call(eventName);
+      expect(first.ok).toBe(true);
+      createdId = ((await first.json()).result as { id: string }).id;
+
+      // Saturate every layer this caller participates in. The cap values live
+      // in create-user-upload.ts; any count above them denies the next call.
+      const ipLimits =
+        (await readDb<Record<string, any>>('rateLimits/userUploadsIp')) ?? {};
+      for (const actor of Object.keys(ipLimits)) {
+        await writeDb(`rateLimits/userUploadsIp/${actor}`, {
+          windowStart: Date.now(),
+          count: 100000,
+        });
+      }
+      await writeDb('rateLimits/userUploadsGlobal/global', {
+        windowStart: Date.now(),
+        count: 100000,
+      });
+
+      const before = (await readDb<Record<string, any>>('userUploads')) ?? {};
+      const blocked = await call(`${eventName} blocked`);
+      expect(blocked.ok).toBe(false);
+      expect(blocked.status).toBe(429);
+      const body = await blocked.json().catch(() => null);
+      expect(body?.error?.status).toBe('RESOURCE_EXHAUSTED');
+
+      const after = (await readDb<Record<string, any>>('userUploads')) ?? {};
+      expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
+    } finally {
+      if (createdId) {
+        await deleteDb(`userUploads/${createdId}`);
+      }
+      await deleteDb('rateLimits/userUploadsIp');
+      await deleteDb('rateLimits/userUploadsGlobal');
     }
   });
 

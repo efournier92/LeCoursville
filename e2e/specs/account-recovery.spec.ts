@@ -287,7 +287,13 @@ test.describe('account recovery', () => {
       .filter({ hasText: marker })
       .filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
+    await expect(row.getByRole('textbox', { name: `Reason for ${accountEmail}` })).toBeVisible();
+    await expect(row.getByRole('button', { name: `Generate reset link for ${accountEmail}` })).toBeVisible();
+    await expect(row.getByRole('button', { name: `Mark closed for ${accountEmail}` })).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
+    await expect(
+      row.getByRole('checkbox', { name: `Email reset link to ${alternate} for ${accountEmail}` }),
+    ).toBeVisible();
     await row.getByTestId('admin-recovery-email-alternate').locator('input').check();
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
@@ -298,6 +304,11 @@ test.describe('account recovery', () => {
 
     const linkEl = row.getByTestId('admin-recovery-link');
     await expect(linkEl).toBeVisible();
+    // The mint audit entry lands live; until then the label states the lifetime.
+    await expect(row.getByTestId('admin-recovery-expiry'))
+      .toHaveText(/Expires (\d{4}-\d{2}-\d{2} \d{2}:\d{2}|about an hour after generation)/);
+    await expect(row.getByTestId('admin-recovery-copy'))
+      .toHaveAttribute('aria-label', `Copy reset link for ${accountEmail}`);
     const link = ((await linkEl.textContent()) ?? '').trim();
     expect(link).toContain('oobCode');
     await expect(row.locator('.generated-emailed')).toContainText('Emailed to the alternate contact');
@@ -409,6 +420,22 @@ test.describe('account recovery', () => {
 
     await expect.poll(async () => (await alertsFor(email)).length, { timeout: 15000 }).toBeGreaterThan(0);
     await trackAlertRows(email);
+  });
+
+  test('admin recipients empty state says alerts go nowhere and keeps the add form', async ({ page }) => {
+    const original = await readDb<string[]>('config/adminAlertRecipients');
+    try {
+      await writeDb('config/adminAlertRecipients', []);
+
+      await login(page, 'admin');
+      await page.goto('/admin/recovery');
+
+      const card = page.getByTestId('admin-recipients');
+      await expect(card.locator('app-no-results-message')).toContainText('recovery alerts go nowhere');
+      await expect(page.getByTestId('admin-recipient-email')).toBeVisible();
+    } finally {
+      await writeDb('config/adminAlertRecipients', original ?? [E2E_USERS.admin.email]);
+    }
   });
 
   test('admin adds and removes an alert recipient, and the new recipient gets alerts', async ({ page }) => {

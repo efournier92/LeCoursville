@@ -27,6 +27,11 @@
         }
       </mat-select>
     </mat-form-field>
+    @if (promotedRouteWarning) {
+      <p class="promoted-route-warning" role="status" data-testid="promoted-route-warning">
+        {{ promotedRouteWarning }}
+      </p>
+    }
   </mat-card-content>
 </mat-card>
 
@@ -60,6 +65,9 @@
                   [attr.data-testid]="'feature-toggle-' + feature.id">
                   <span class="feature-label">{{ feature.label }}</span>
                 </mat-slide-toggle>
+                <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
+                  {{ changedLabel(feature.id) }}
+                </span>
               </div>
             }
           </div>

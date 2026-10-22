@@ -20,6 +20,70 @@ test.describe('admin system surfaces', () => {
     await expect(regular).toContainText('Regular User');
     await expect(regular).toContainText('Member');
     await expect(page.locator('.admin-pagination')).toContainText('Showing 1-5 of 5');
+    await expect(page.getByTestId('admin-role-history-empty')).toHaveText('No role changes yet.');
+
+    await expect(regular.getByRole('button', { name: 'Edit Regular User' })).toBeVisible();
+    await expect(regular.getByRole('button', { name: 'Delete Regular User' })).toBeVisible();
+  });
+
+  test('users: role history shows when, actor, target, and before -> after roles', async ({ page }) => {
+    const key = `e2e-audit-${Date.now()}`;
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const adminUid = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local')?.[0];
+    await writeDb(`roleAudit/${key}`, {
+      actorId: adminUid,
+      targetId: 'e2e-target-uid',
+      targetEmail: 'user@e2e.local',
+      before: { admin: false, super: false },
+      after: { admin: true, super: false },
+      at: Date.now(),
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/users');
+
+      const history = page.getByTestId('admin-role-history');
+      await expect(history).toBeVisible({ timeout: 20000 });
+      const row = history.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+      await expect(row).toContainText('Admin User');
+      await expect(row).toContainText('Member');
+      await expect(row).toContainText('Admin');
+    } finally {
+      await deleteDb(`roleAudit/${key}`);
+    }
+  });
+
+  test('users: pending uploads referencing the member are named in the delete confirmation', async ({ page }) => {
+    const uploadKey = `e2e-pending-upload-${Date.now()}`;
+    await writeDb(`userUploads/${uploadKey}`, {
+      id: uploadKey,
+      status: 'pending',
+      uploader: { name: 'Regular User', email: 'user@e2e.local' },
+      fileName: 'pending.png',
+      fileType: 'image/png',
+      fileSize: 68,
+      dateAdded: Date.now(),
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/users');
+
+      const table = page.getByTestId('admin-users-table');
+      await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+      const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+
+      await row.getByRole('button', { name: 'Delete Regular User' }).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toContainText('1 pending upload references this member');
+
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await expect(dialog).toHaveCount(0);
+      await expect(row).toBeVisible();
+    } finally {
+      await deleteDb(`userUploads/${uploadKey}`);
+    }
   });
 
   test('users: Edit opens the editor dialog and Cancel closes it unchanged', async ({ page }) => {
@@ -30,7 +94,7 @@ test.describe('admin system surfaces', () => {
     await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
     const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
 
-    await row.getByRole('button', { name: 'Edit' }).click();
+    await row.getByRole('button', { name: 'Edit Regular User' }).click();
     const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
     await expect(editor).toBeVisible();
     await expect(editor.locator('input[name="user-name"]')).toHaveValue('Regular User');
@@ -48,7 +112,7 @@ test.describe('admin system surfaces', () => {
     await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
     const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
 
-    await row.getByRole('button', { name: 'Delete' }).click();
+    await row.getByRole('button', { name: 'Delete Regular User' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Delete user?');
     await expect(dialog).toContainText('Delete Regular User? This cannot be undone.');
@@ -146,6 +210,61 @@ test.describe('admin system surfaces', () => {
 
     await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
     await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('feature-changed-chat')).toContainText('changed');
+  });
+
+  test('features: warns when the stored promoted route belongs to a disabled flag', async ({ page }) => {
+    const before = await readDb('promotedRoute');
+    await writeDb('promotedRoute', { route: '/chat', updatedAt: Date.now() });
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+
+      const warning = page.getByTestId('promoted-route-warning');
+      await expect(warning).toBeVisible();
+      await expect(warning).toContainText('Chat is currently off');
+      await expect(warning).toContainText('feature-disabled page');
+    } finally {
+      await writeDb('promotedRoute', before);
+    }
+  });
+
+  test('features: toggles and promoted-route changes write audit rows', async ({ page }) => {
+    const startedAt = Date.now();
+    const featureBefore = await readDb('features/music');
+    const routeBefore = await readDb('promotedRoute');
+    const auditBefore = (await readDb<Record<string, any>>('featureFlagAudit')) ?? {};
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+
+      const music = page.getByTestId('feature-toggle-music').locator('button[role="switch"]');
+      await music.click();
+      await expect(music).toHaveAttribute('aria-checked', 'false');
+
+      await page.getByLabel('Default Landing Page').click();
+      await page.getByRole('option', { name: /Chat/ }).click();
+
+      await expect
+        .poll(async () => {
+          const all = (await readDb<Record<string, any>>('featureFlagAudit')) ?? {};
+          const rows = Object.values(all).filter(
+            (value) => value?.actorEmail === 'admin@e2e.local' && value?.at >= startedAt,
+          );
+          return rows.some((value) => value?.flagId === 'music' && value?.enabled === false && value?.previous === true)
+            && rows.some((value) => value?.flagId === 'chat' && value?.enabled === false);
+        }, { timeout: 15000 })
+        .toBe(true);
+    } finally {
+      await writeDb('features/music', featureBefore);
+      await writeDb('promotedRoute', routeBefore);
+      const after = (await readDb<Record<string, any>>('featureFlagAudit')) ?? {};
+      for (const key of Object.keys(after)) {
+        if (!(key in auditBefore)) {
+          await deleteDb(`featureFlagAudit/${key}`);
+        }
+      }
+    }
   });
 
   test('recovery: requests render a row or empty state, and close asks before mutating', async ({ page }) => {

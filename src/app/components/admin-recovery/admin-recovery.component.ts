@@ -58,6 +58,9 @@ const ACTIVITY_ACTIONS = [
 ];
 const ALERT_ACTIVITY_TYPES = ['recovery_request', 'rate_limit_breach'];
 
+// Firebase password reset links expire one hour after the mint.
+const RESET_LINK_TTL_MS = 60 * 60 * 1000;
+
 /** Absolute timestamps read `YYYY-MM-DD HH:mm` so audit and activity align. */
 export function formatAbsoluteTimestamp(createdAt: number): string {
   if (!createdAt) {
@@ -474,6 +477,20 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
 
   formatTimestamp(createdAt: number): string {
     return formatAbsoluteTimestamp(createdAt);
+  }
+
+  /**
+   * The callable does not return a mint timestamp, so the mint audit entry is
+   * the only trustworthy one. Without it, state the approximate lifetime
+   * rather than derive an expiry that could drift.
+   */
+  expiryLabel(requestId: string): string {
+    const mint = this.audit
+      .filter(entry => entry.action === 'generate_reset_link' && entry.requestId === requestId)
+      .reduce((latest, entry) => Math.max(latest, entry.createdAt || 0), 0);
+    return mint
+      ? `Expires ${formatAbsoluteTimestamp(mint + RESET_LINK_TTL_MS)}`
+      : 'Expires about an hour after generation';
   }
 
   auditActor(entry: RecoveryAuditEntry): string {

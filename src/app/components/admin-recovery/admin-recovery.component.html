@@ -111,7 +111,12 @@
                 <div class="recovery-actions-inner">
                   <mat-form-field class="reason-field">
                     <mat-label>Reason</mat-label>
-                    <input matInput required data-testid="admin-recovery-reason" [(ngModel)]="reasons[request.id]" />
+                    <input
+                      matInput
+                      required
+                      data-testid="admin-recovery-reason"
+                      [attr.aria-label]="'Reason for ' + request.email"
+                      [(ngModel)]="reasons[request.id]" />
                   </mat-form-field>
                   @if (!canGenerate(request) && !generating[request.id]) {
                     <span class="reason-hint">{{ reasonHint(request) }}</span>
@@ -119,6 +124,7 @@
                   @if (request.alternateContact) {
                     <mat-checkbox
                       data-testid="admin-recovery-email-alternate"
+                      [aria-label]="'Email reset link to ' + request.alternateContact + ' for ' + request.email"
                       [(ngModel)]="emailAlternate[request.id]">
                       Email the reset link to {{ request.alternateContact }}
                     </mat-checkbox>
@@ -127,6 +133,7 @@
                     mat-flat-button
                     color="primary"
                     data-testid="admin-recovery-generate"
+                    [attr.aria-label]="'Generate reset link for ' + request.email"
                     [disabled]="generating[request.id] || !canGenerate(request)"
                     (click)="generate(request)">
                     Generate reset link
@@ -134,6 +141,7 @@
                   <button
                     mat-button
                     data-testid="admin-recovery-close"
+                    [attr.aria-label]="'Mark closed for ' + request.email"
                     [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
                     (click)="markClosed(request)">
                     Mark closed
@@ -141,7 +149,16 @@
                   @if (generated[request.id]; as result) {
                     <div class="generated-result">
                       <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
-                      <button mat-button data-testid="admin-recovery-copy" (click)="copyLink(result.link, request.id)">{{ copied[request.id] ? 'Copied' : 'Copy' }}</button>
+                      <span class="generated-expiry" data-testid="admin-recovery-expiry">
+                        {{ expiryLabel(request.id) }}
+                      </span>
+                      <button
+                        mat-button
+                        data-testid="admin-recovery-copy"
+                        [attr.aria-label]="'Copy reset link for ' + request.email"
+                        (click)="copyLink(result.link, request.id)">
+                        {{ copied[request.id] ? 'Copied' : 'Copy' }}
+                      </button>
                       <span class="generated-emailed">
                         {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; copy the link yourself.' }}
                       </span>
@@ -190,7 +207,10 @@
       <app-load-error [message]="recipientsLoadError" (retry)="loadRecipients()" />
     } @else {
       @if (recipientPageData.total === 0) {
-        <p class="empty">No recipients configured.</p>
+        <app-no-results-message
+          title="No alert recipients"
+          hint="With zero recipients, recovery alerts go nowhere. Add an address below so someone sees them."
+          [isCentered]="true" />
       } @else {
         <table class="admin-table">
           <thead>

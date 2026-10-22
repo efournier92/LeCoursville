@@ -54,7 +54,7 @@ test.describe('admin', () => {
     const before = await readDb(`users/${uid}`);
 
     try {
-      await row.getByRole('button', { name: 'Edit' }).click();
+      await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
       await editor.getByRole('checkbox', { name: 'Admin', exact: true }).click();
@@ -95,6 +95,54 @@ test.describe('admin', () => {
       await link.click();
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.locator('app-page-toolbar').first()).toBeVisible();
+    }
+  });
+
+  test('admin nav badges count pending uploads and open recovery requests', async ({ page }) => {
+    const uploadKey = `badge-upload-${Date.now()}`;
+    const recoveryKey = `badge-recovery-${Date.now()}`;
+    await writeDb(`userUploads/${uploadKey}`, {
+      id: uploadKey,
+      path: `userUploads/e2e/${uploadKey}.png`,
+      fileName: `${uploadKey}.png`,
+      status: 'pending',
+      dateAdded: Date.now(),
+      uploader: { name: 'Regular User', email: 'user@e2e.local' },
+    });
+    await writeDb(`recoveryRequests/${recoveryKey}`, {
+      id: recoveryKey,
+      email: `${recoveryKey}@e2e.local`,
+      status: 'open',
+      createdAt: Date.now(),
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/users');
+      const nav = page.getByTestId('admin-nav');
+      const uploadsBadge = nav.getByTestId('admin-nav-badge-uploads');
+      const recoveryBadge = nav.getByTestId('admin-nav-badge-recovery');
+      await expect(uploadsBadge).toBeVisible();
+      await expect(uploadsBadge.locator('[aria-hidden="true"]')).toHaveText('1');
+      await expect(uploadsBadge).toContainText('1 pending');
+      await expect(recoveryBadge).toBeVisible();
+      await expect(recoveryBadge).toContainText('1 open');
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(nav).not.toBeVisible();
+      await page.getByTestId('nav-menu-toggle').click();
+      await expect(nav).toBeVisible();
+      await expect(uploadsBadge).toBeVisible();
+      await expect(recoveryBadge).toBeVisible();
+      await page.keyboard.press('Escape');
+
+      await deleteDb(`userUploads/${uploadKey}`);
+      await deleteDb(`recoveryRequests/${recoveryKey}`);
+      await expect(uploadsBadge).toHaveCount(0);
+      await expect(recoveryBadge).toHaveCount(0);
+    } finally {
+      await deleteDb(`userUploads/${uploadKey}`);
+      await deleteDb(`recoveryRequests/${recoveryKey}`);
     }
   });
 

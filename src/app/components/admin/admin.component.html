@@ -16,6 +16,12 @@
                   <mat-icon>{{ item.icon }}</mat-icon>
                   <span>{{ item.label }}</span>
                 </a>
+                @if (badgeCount(item.key); as count) {
+                  <span class="nav-badge" [attr.data-testid]="'admin-nav-badge-' + item.key">
+                    <span aria-hidden="true">{{ badgeText(count) }}</span>
+                    <span class="nav-badge-accessible">{{ badgeLabel(item.key, count) }}</span>
+                  </span>
+                }
               </li>
             }
           </ul>

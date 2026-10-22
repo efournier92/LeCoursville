@@ -176,7 +176,8 @@
     },
     "recoveryRequests": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
-      ".write": false
+      ".write": false,
+      ".indexOn": ["status"]
     },
     "adminAlerts": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
@@ -195,6 +196,12 @@
     "roleAudit": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
+    },
+    "featureFlagAudit": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      "$id": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true && !data.exists()"
+      }
     },
     "rateLimits": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",

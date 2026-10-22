@@ -1,6 +1,7 @@
 import { getDatabase } from "firebase-admin/database";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "./config";
+import { actorHashFromRequest, checkRateLimit, rateLimit } from "./helpers";
 
 interface UploaderInput {
   name?: unknown;
@@ -9,6 +10,17 @@ interface UploaderInput {
 }
 
 const MAX_SEGMENT = 120;
+// A guest may upload a whole folder in one session; the cap stays generous
+// enough for a legitimate first batch while bounding pending-row spam.
+const WINDOW_MS = 60 * 60 * 1000;
+export const PER_ACTOR_MAX = 300;
+export const GLOBAL_MAX = 1500;
+// Control characters would inject line breaks into admin-facing records.
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
+const MAX_FILE_NAME = 255;
+const MAX_EVENT_NAME = 200;
+const MAX_BATCH_ID = MAX_SEGMENT;
+const MAX_CONTENT_TYPE = 100;
 
 /**
  * Turns a client-supplied path segment into one safe segment. Public upload
@@ -28,6 +40,14 @@ export function safeSegment(value: unknown, fallback: string): string {
 
 function boundedText(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
+
+function withinBounds(value: unknown, max: number): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    (typeof value === "string" && value.length <= max && !CONTROL_CHARS.test(value))
+  );
 }
 
 function uploaderInfo(value: unknown): Record<string, string> {
@@ -51,8 +71,45 @@ export const createUserUpload = onCall(
   { region: REGION, cors: true },
   async (request) => {
     const data = (request.data ?? {}) as Record<string, unknown>;
-    if (typeof data.fileName !== "string" || data.fileName.trim() === "") {
-      throw new HttpsError("invalid-argument", "A file name is required.");
+    const fileNameInput = typeof data.fileName === "string" ? data.fileName : "";
+    if (
+      fileNameInput.trim() === "" ||
+      fileNameInput.length > MAX_FILE_NAME ||
+      CONTROL_CHARS.test(fileNameInput) ||
+      !withinBounds(data.eventName, MAX_EVENT_NAME) ||
+      !withinBounds(data.batchId, MAX_BATCH_ID) ||
+      !withinBounds(data.fileType, MAX_CONTENT_TYPE)
+    ) {
+      throw new HttpsError("invalid-argument", "Invalid upload.");
+    }
+
+    const actor = actorHashFromRequest(request.rawRequest);
+    const perActorOk = actor
+      ? await checkRateLimit("userUploadsIp", actor, PER_ACTOR_MAX, WINDOW_MS)
+      : true;
+    const globalOk = await checkRateLimit(
+      "userUploadsGlobal",
+      "global",
+      GLOBAL_MAX,
+      WINDOW_MS
+    );
+    if (!perActorOk || !globalOk) {
+      throw new HttpsError("resource-exhausted", "Too many uploads. Try again later.");
+    }
+
+    // Commit only after every layer would allow, so a call denied by a later
+    // layer does not burn quota on the earlier ones.
+    const actorCommitted = actor
+      ? await rateLimit("userUploadsIp", actor, PER_ACTOR_MAX, WINDOW_MS)
+      : true;
+    const globalCommitted = await rateLimit(
+      "userUploadsGlobal",
+      "global",
+      GLOBAL_MAX,
+      WINDOW_MS
+    );
+    if (!actorCommitted || !globalCommitted) {
+      throw new HttpsError("resource-exhausted", "Too many uploads. Try again later.");
     }
 
     const fileName = safeSegment(data.fileName, "upload");

@@ -331,4 +331,41 @@ describe('AdminRecoveryComponent', () => {
 
     expect(fixture.nativeElement.querySelector('.reason-hint')).toBeNull();
   });
+
+  it('names each request control with the requester', () => {
+    const withAlternate: RecoveryRequest = { ...request, alternateContact: 'alt@example.test' };
+    requestsStream = of([withAlternate]);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    fixture.detectChanges();
+
+    const name = (testId: string): string =>
+      fixture.nativeElement.querySelector(`[data-testid="${testId}"]`).getAttribute('aria-label');
+
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recovery-reason"]').getAttribute('aria-label'))
+      .toBe('Reason for locked-out@example.test');
+    expect(name('admin-recovery-generate')).toBe('Generate reset link for locked-out@example.test');
+    expect(name('admin-recovery-close')).toBe('Mark closed for locked-out@example.test');
+    expect(name('admin-recovery-email-alternate'))
+      .toBe('Email reset link to alt@example.test for locked-out@example.test');
+  });
+
+  it('shows the expiry derived from the mint audit entry, else the approximate lifetime', () => {
+    const mintedAt = new Date(2026, 0, 2, 3, 4, 5).getTime();
+
+    expect(component.expiryLabel('request-1')).toBe('Expires about an hour after generation');
+
+    component.audit = [{ action: 'generate_reset_link', requestId: 'request-1', createdAt: mintedAt }];
+
+    expect(component.expiryLabel('request-1')).toBe('Expires 2026-01-02 04:04');
+    expect(component.expiryLabel('request-2')).toBe('Expires about an hour after generation');
+  });
+
+  it('shows the no-results empty state and keeps the add form when no recipients exist', () => {
+    recipientsStream = of([]);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recipients"] app-no-results-message')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recipient-email"]')).toBeTruthy();
+  });
 });

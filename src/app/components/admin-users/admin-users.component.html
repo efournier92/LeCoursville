@@ -116,7 +116,7 @@
                 <td data-label="" class="user-actions">
                   <button
                     mat-icon-button
-                    aria-label="Edit"
+                    [attr.aria-label]="'Edit ' + rowName(rowUser)"
                     (click)="openEditor(rowUser)"
                     >
                     <mat-icon>edit</mat-icon>
@@ -124,7 +124,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    aria-label="Delete"
+                    [attr.aria-label]="'Delete ' + rowName(rowUser)"
                     (click)="deleteUser(rowUser)"
                     >
                     <mat-icon>delete</mat-icon>
@@ -161,5 +161,33 @@
         </div>
       </mat-card>
     }
+
+    <mat-card class="admin-surface role-history-card">
+      <h2 class="admin-card-title">Role history</h2>
+      @if (roleHistory.length === 0) {
+        <p class="role-history-empty" data-testid="admin-role-history-empty">No role changes yet.</p>
+      } @else {
+        <table class="admin-table role-history-table" data-testid="admin-role-history">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Actor</th>
+              <th>Target</th>
+              <th>Roles</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of roleHistory; track $index) {
+              <tr>
+                <td data-label="When">{{ entry.at | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td data-label="Actor">{{ actorName(entry) }}</td>
+                <td data-label="Target">{{ entry.targetEmail }}</td>
+                <td data-label="Roles">{{ roleSummary(entry.before) }} &rarr; {{ roleSummary(entry.after) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </mat-card>
   }
 </div>

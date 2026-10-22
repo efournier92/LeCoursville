@@ -4,6 +4,15 @@ import { map } from 'rxjs/operators';
 import { FeatureFlag } from 'src/app/models/feature-flag';
 import { RtdbService } from './rtdb.service';
 
+export interface FeatureFlagAuditRecord {
+  flagId: string;
+  enabled: boolean;
+  previous: boolean;
+  actorId: string;
+  actorEmail: string;
+  at: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -79,5 +88,10 @@ export class FeatureFlagsService {
       route,
       updatedAt: Date.now(),
     });
+  }
+
+  addFeatureFlagAudit(record: FeatureFlagAuditRecord): Promise<void> {
+    const id = this.rtdb.createPushId();
+    return this.rtdb.object(`featureFlagAudit/${id}`).set(record);
   }
 }

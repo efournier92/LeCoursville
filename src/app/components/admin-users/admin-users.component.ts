@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { AdminService } from 'src/app/services/admin.service';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { AdminService, RoleAuditRecord } from 'src/app/services/admin.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
+import { RtdbService } from 'src/app/services/rtdb.service';
 import { User } from 'src/app/models/user';
+import { UserUpload } from 'src/app/models/user-upload';
 import { SortSettingsForUsers } from 'src/app/models/sort-settings-for-users';
 import { Page, paginate, pageRange } from 'src/app/admin/pagination';
 import { UserEditComponent } from 'src/app/components/user-edit/user-edit.component';
@@ -26,13 +28,17 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   pageIndex = 1;
   filteredTotal = 0;
   deleteErrors: Record<string, string> = {};
+  roleHistory: RoleAuditRecord[] = [];
   readonly pageSize = 10;
+  readonly roleHistoryLimit = 20;
   sortPropertyText = '';
   activeSortKey = '';
   private rolesByUserId = new Map<string, string[]>();
+  private usersById = new Map<string, User>();
   private displayedPage: Page<User> = { items: [], total: 0, page: 1, pageCount: 1, pageSize: 10 };
 
   private usersSubscription?: Subscription;
+  private roleAuditSubscription?: Subscription;
 
   constructor(
     private adminService: AdminService,
@@ -40,16 +46,19 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private router: Router,
     private route: ActivatedRoute,
+    private rtdb: RtdbService,
   ) { }
 
   ngOnInit(): void {
     this.initializeSortSettings();
     this.restoreState();
     this.loadUsers();
+    this.loadRoleHistory();
   }
 
   ngOnDestroy(): void {
     this.usersSubscription?.unsubscribe();
+    this.roleAuditSubscription?.unsubscribe();
   }
 
   // PUBLIC METHODS
@@ -71,9 +80,13 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   async deleteUser(user: User): Promise<void> {
+    const pendingUploads = await this.countPendingUploads(user);
+    const uploadWarning = pendingUploads === null
+      ? ''
+      : ` ${pendingUploads} pending ${pendingUploads === 1 ? 'upload references' : 'uploads reference'} this member.`;
     const confirmed = await this.confirmDialog.confirm({
       title: 'Delete user?',
-      message: `Delete ${this.displayName(user)}? This cannot be undone.`,
+      message: `Delete ${this.displayName(user)}? This cannot be undone.${uploadWarning}`,
       confirmLabel: 'Delete',
       destructive: true,
     });
@@ -131,6 +144,22 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   /** Cached per displayed row so the template never allocates on a CD tick. */
   rolesFor(user: User): string[] {
     return this.rolesByUserId.get(user.id) || [];
+  }
+
+  rowName(user: User): string {
+    return this.displayName(user);
+  }
+
+  actorName(entry: RoleAuditRecord): string {
+    const actor = this.usersById.get(entry.actorId);
+    return actor?.name?.trim() || actor?.email || entry.actorId || 'Unknown';
+  }
+
+  roleSummary(roles: { admin: boolean; super: boolean } | undefined): string {
+    return [
+      roles?.admin ? 'Admin' : '',
+      roles?.super ? 'Super' : '',
+    ].filter(Boolean).join(', ') || 'Member';
   }
 
   isActiveSort(key: string): boolean {
@@ -240,6 +269,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
           return;
         }
         this.allUsers = users;
+        this.usersById = new Map(users.map(user => [user.id, user]));
         this.refreshDisplayedUsers();
         this.state = 'ready';
       },
@@ -247,6 +277,42 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         this.state = 'error';
       },
     });
+  }
+
+  private loadRoleHistory(): void {
+    this.roleAuditSubscription?.unsubscribe();
+    this.roleAuditSubscription = this.rtdb.list<RoleAuditRecord>('roleAudit').valueChanges().subscribe({
+      next: (entries: RoleAuditRecord[]) => {
+        this.roleHistory = (entries || [])
+          .slice()
+          .sort((a, b) => (b.at || 0) - (a.at || 0))
+          .slice(0, this.roleHistoryLimit);
+      },
+      // roleAudit is super-only; never break the users page if it is denied.
+      error: () => {
+        this.roleHistory = [];
+      },
+    });
+  }
+
+  private async countPendingUploads(user: User): Promise<number | null> {
+    const email = (user?.email || '').trim().toLowerCase();
+    if (!email) {
+      return null;
+    }
+    try {
+      const pending = await firstValueFrom(
+        this.rtdb.list<UserUpload>('userUploads', [
+          this.rtdb.orderByChild('status'),
+          this.rtdb.equalTo('pending'),
+        ]).valueChanges(),
+      );
+      return (pending || []).filter(
+        upload => (upload.uploader?.email || '').trim().toLowerCase() === email,
+      ).length;
+    } catch {
+      return null;
+    }
   }
 
   private refreshDisplayedUsers(): void {

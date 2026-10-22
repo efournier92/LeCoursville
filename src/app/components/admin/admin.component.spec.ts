@@ -7,14 +7,19 @@ import { AppModule } from '../../app.module';
 import { AdminComponent } from './admin.component';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { RoutingService } from '../../services/routing.service';
+import { AdminBadgeService } from '../../services/admin-badge.service';
 
 describe('AdminComponent', () => {
   let component: AdminComponent;
   let fixture: ComponentFixture<AdminComponent>;
   let flags$: Subject<Record<string, any>>;
+  let pendingUploads$: Subject<number>;
+  let openRecovery$: Subject<number>;
 
   beforeEach(async () => {
     flags$ = new Subject();
+    pendingUploads$ = new Subject();
+    openRecovery$ = new Subject();
     await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
       declarations: [ AdminComponent ],
@@ -22,6 +27,13 @@ describe('AdminComponent', () => {
         {
           provide: FeatureFlagsService,
           useValue: { getAllFeatureFlags: () => flags$, getPromotedRoute: () => of(null) },
+        },
+        {
+          provide: AdminBadgeService,
+          useValue: {
+            pendingUploads: () => pendingUploads$,
+            openRecoveryRequests: () => openRecovery$,
+          },
         },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -51,6 +63,52 @@ describe('AdminComponent', () => {
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
     expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(8);
+  });
+
+  it('renders no badges at zero', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    pendingUploads$.next(0);
+    openRecovery$.next(0);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-recovery"]')).toBeNull();
+  });
+
+  it('shows upload and recovery counts with an accessible label', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    pendingUploads$.next(3);
+    openRecovery$.next(2);
+    fixture.detectChanges();
+
+    const uploads = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]');
+    expect(uploads.textContent).toContain('3');
+    expect(uploads.textContent).toContain('3 pending');
+    const recovery = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-recovery"]');
+    expect(recovery.textContent).toContain('2 open');
+  });
+
+  it('caps a badge at 99+', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    pendingUploads$.next(150);
+    fixture.detectChanges();
+
+    const uploads = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]');
+    expect(uploads.textContent).toContain('99+');
+    expect(uploads.textContent).toContain('99+ pending');
+  });
+
+  it('unsubscribes the badge listeners on destroy', () => {
+    fixture.detectChanges();
+    expect(pendingUploads$.observed).toBe(true);
+
+    fixture.destroy();
+
+    expect(pendingUploads$.observed).toBe(false);
+    expect(openRecovery$.observed).toBe(false);
   });
 
   it('closes the drawer on Escape', () => {

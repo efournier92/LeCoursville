@@ -9,6 +9,7 @@ import { AppModule } from '../../app.module';
 import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
+import { RtdbService } from 'src/app/services/rtdb.service';
 import { User } from 'src/app/models/user';
 import { UserEditComponent } from 'src/app/components/user-edit/user-edit.component';
 import { AdminUsersComponent } from './admin-users.component';
@@ -43,6 +44,13 @@ describe('AdminUsersComponent', () => {
   };
   let router: { navigate: ReturnType<typeof vi.fn> };
   let queryParams: Record<string, string>;
+  let roleAuditSource: BehaviorSubject<unknown>;
+  let pendingUploadsSource: BehaviorSubject<unknown>;
+  let rtdb: {
+    list: ReturnType<typeof vi.fn>;
+    orderByChild: ReturnType<typeof vi.fn>;
+    equalTo: ReturnType<typeof vi.fn>;
+  };
 
   const users = [
     makeUser(1, 'Ada Lovelace'),
@@ -52,6 +60,8 @@ describe('AdminUsersComponent', () => {
 
   beforeEach(async () => {
     usersSource = new BehaviorSubject<unknown>({});
+    roleAuditSource = new BehaviorSubject<unknown>([]);
+    pendingUploadsSource = new BehaviorSubject<unknown>([]);
     queryParams = {};
     adminService = {
       allUsersObservable: usersSource.asObservable(),
@@ -69,6 +79,15 @@ describe('AdminUsersComponent', () => {
     };
     dialog = { open: vi.fn(() => dialogRef) };
     router = { navigate: vi.fn() };
+    rtdb = {
+      list: vi.fn((path: string) => ({
+        valueChanges: () => path === 'roleAudit'
+          ? roleAuditSource.asObservable()
+          : pendingUploadsSource.asObservable(),
+      })),
+      orderByChild: vi.fn((key: string) => ({ key })),
+      equalTo: vi.fn((value: string) => ({ value })),
+    };
 
     await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
@@ -81,6 +100,7 @@ describe('AdminUsersComponent', () => {
         { provide: ConfirmDialogService, useValue: confirmDialog },
         { provide: MatDialog, useValue: dialog },
         { provide: Router, useValue: router },
+        { provide: RtdbService, useValue: rtdb },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: { get: (key: string) => queryParams[key] ?? null } } },
@@ -214,7 +234,7 @@ describe('AdminUsersComponent', () => {
     await component.deleteUser(users[0]);
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Delete Ada Lovelace? This cannot be undone.',
+      message: 'Delete Ada Lovelace? This cannot be undone. 0 pending uploads reference this member.',
       destructive: true,
     }));
     expect(adminService.deleteUser).not.toHaveBeenCalled();
@@ -235,6 +255,83 @@ describe('AdminUsersComponent', () => {
 
     expect(component.deleteErrors[users[1].id]).toContain('permission denied');
     expect(fixture.nativeElement.querySelector('.row-error')).toBeTruthy();
+  });
+
+  it('names the user in row action accessible labels', () => {
+    fixture.detectChanges();
+    settle(users);
+
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('.user-actions button'),
+    ).map((button: Element) => button.getAttribute('aria-label'));
+    expect(labels).toEqual([
+      'Edit Alan Turing',
+      'Delete Alan Turing',
+      'Edit Grace Hopper',
+      'Delete Grace Hopper',
+      'Edit Ada Lovelace',
+      'Delete Ada Lovelace',
+    ]);
+  });
+
+  it('renders the role history empty state', () => {
+    fixture.detectChanges();
+    settle(users);
+
+    const empty = fixture.nativeElement.querySelector('[data-testid="admin-role-history-empty"]');
+    expect(empty?.textContent?.trim()).toBe('No role changes yet.');
+  });
+
+  it('renders role history newest first with actor, target, and before/after roles', () => {
+    fixture.detectChanges();
+    settle(users);
+    roleAuditSource.next([
+      {
+        actorId: 'user-2', targetId: 'user-3', targetEmail: 'user3@example.com',
+        before: { admin: false, super: false }, after: { admin: true, super: false }, at: 1000,
+      },
+      {
+        actorId: 'user-1', targetId: 'user-2', targetEmail: 'user2@example.com',
+        before: { admin: true, super: false }, after: { admin: true, super: true }, at: 2000,
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(component.roleHistory.map(entry => entry.at)).toEqual([2000, 1000]);
+    const rows = fixture.nativeElement.querySelectorAll('.role-history-table tbody tr');
+    expect(rows).toHaveLength(2);
+    expect(rows[0].textContent).toContain('Ada Lovelace');
+    expect(rows[0].textContent).toContain('user2@example.com');
+    expect(rows[0].textContent).toContain('Admin');
+    expect(rows[0].textContent).toContain('Super');
+  });
+
+  it('includes the pending upload count in the delete confirmation', async () => {
+    fixture.detectChanges();
+    settle(users);
+    pendingUploadsSource.next([
+      { uploader: { email: 'user1@example.com' } },
+      { uploader: { email: 'USER1@example.com' } },
+      { uploader: { email: 'someone@example.com' } },
+    ]);
+
+    await component.deleteUser(users[0]);
+
+    expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Delete Ada Lovelace? This cannot be undone. 2 pending uploads reference this member.',
+    }));
+  });
+
+  it('still asks for delete confirmation when the pending upload read fails', async () => {
+    fixture.detectChanges();
+    settle(users);
+    pendingUploadsSource.error(new Error('permission denied'));
+
+    await component.deleteUser(users[0]);
+
+    expect(confirmDialog.confirm).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Delete Ada Lovelace? This cannot be undone.',
+    }));
   });
 
   it('renders the error state and retries the subscription', () => {

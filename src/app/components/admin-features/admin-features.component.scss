@@ -7,6 +7,12 @@
     padding: 0 1em;
     margin-top: 8px;
   }
+
+  .promoted-route-warning {
+    margin: 8px 1em 0;
+    font-size: 0.875rem;
+    color: var(--color-accent-strong);
+  }
 }
 
 .feature-group + .feature-group {
@@ -53,5 +59,11 @@
   .feature-label {
     font-size: 15px;
     font-weight: 500;
+  }
+
+  .feature-changed {
+    margin-left: auto;
+    font-size: 0.8125rem;
+    color: var(--color-ink-2);
   }
 }

@@ -5,11 +5,19 @@ vi.mock("firebase-admin/database", async () => {
   return { getDatabase: () => fakeDb };
 });
 
-import { createUserUpload, safeSegment } from "./create-user-upload";
+import {
+  createUserUpload,
+  GLOBAL_MAX,
+  PER_ACTOR_MAX,
+  safeSegment,
+} from "./create-user-upload";
 import { fakeDb, resetFakeState } from "./test-support";
 
-function invoke(data: Record<string, unknown>) {
-  return createUserUpload.run({ data, rawRequest: {} } as never) as Promise<{
+function invoke(
+  data: Record<string, unknown>,
+  rawRequest: Record<string, unknown> = {}
+) {
+  return createUserUpload.run({ data, rawRequest } as never) as Promise<{
     id: string;
     path: string;
   }>;
@@ -84,6 +92,48 @@ describe("createUserUpload", () => {
     await expect(invoke({ ...validData, fileName: undefined })).rejects.toMatchObject({
       code: "invalid-argument",
     });
+  });
+
+  it("rejects control characters and oversized fields", async () => {
+    const invalid = [
+      { eventName: "Reunion\nInjected" },
+      { fileName: "photo.png\n" },
+      { fileName: "a".repeat(256) },
+      { batchId: "b".repeat(121) },
+      { fileType: "x".repeat(101) },
+    ];
+    for (const override of invalid) {
+      await expect(invoke({ ...validData, ...override })).rejects.toMatchObject({
+        code: "invalid-argument",
+      });
+    }
+    expect(fakeDb.read("userUploads")).toBeNull();
+  });
+
+  it("rejects the call past the per-actor cap and writes no row", async () => {
+    const rawRequest = { ip: "203.0.113.9" };
+    for (let i = 0; i < PER_ACTOR_MAX; i++) {
+      await invoke({ ...validData, fileName: `photo-${i}.png` }, rawRequest);
+    }
+    const before = Object.keys(fakeDb.read("userUploads") as object).length;
+
+    await expect(
+      invoke({ ...validData, fileName: "capped.png" }, rawRequest)
+    ).rejects.toMatchObject({ code: "resource-exhausted" });
+
+    expect(Object.keys(fakeDb.read("userUploads") as object)).toHaveLength(before);
+  });
+
+  it("fails closed on the global cap and writes no row", async () => {
+    await fakeDb.ref("rateLimits/userUploadsGlobal/global").set({
+      windowStart: Date.now(),
+      count: GLOBAL_MAX,
+    });
+
+    await expect(invoke(validData)).rejects.toMatchObject({
+      code: "resource-exhausted",
+    });
+    expect(fakeDb.read("userUploads")).toBeNull();
   });
 
   it("sanitizes a segment independently", () => {

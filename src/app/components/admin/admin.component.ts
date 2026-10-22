@@ -5,7 +5,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
-import { ADMIN_NAV_GROUPS, AdminNavGroup, AdminNavItem, visibleAdminNav } from 'src/app/admin/admin-nav';
+import { AdminBadgeService } from 'src/app/services/admin-badge.service';
+import { ADMIN_NAV_GROUPS, AdminNavGroup, AdminNavItem, AdminRouteKey, visibleAdminNav } from 'src/app/admin/admin-nav';
 
 @Component({
     selector: 'app-admin',
@@ -20,15 +21,19 @@ export class AdminComponent implements OnInit, OnDestroy {
   isNavReady = false;
   navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null);
   sidenavOpen = false;
+  pendingUploads = 0;
+  openRecoveryRequests = 0;
   private sidenavSub: Subscription;
   private userSub: Subscription;
   private flagsSub: Subscription;
+  private badgeSubs: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
     private versionService: VersionService,
     private routingService: RoutingService,
     private featureFlagsService: FeatureFlagsService,
+    private adminBadgeService: AdminBadgeService,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -40,12 +45,42 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.isNavReady = true;
     });
     this.sidenavSub = this.routingService.sidenavOpen$.subscribe(open => this.onSidenavChange(open));
+    this.watchBadges();
   }
 
   ngOnDestroy(): void {
     this.userSub?.unsubscribe();
     this.flagsSub?.unsubscribe();
     this.sidenavSub?.unsubscribe();
+    this.badgeSubs.forEach(sub => sub.unsubscribe());
+  }
+
+  private watchBadges(): void {
+    this.badgeSubs.push(
+      this.adminBadgeService.pendingUploads().subscribe({
+        next: count => this.pendingUploads = count,
+        error: () => this.pendingUploads = 0,
+      }),
+      this.adminBadgeService.openRecoveryRequests().subscribe({
+        next: count => this.openRecoveryRequests = count,
+        error: () => this.openRecoveryRequests = 0,
+      }),
+    );
+  }
+
+  badgeCount(key: AdminRouteKey): number {
+    if (key === 'uploads') {
+      return this.pendingUploads;
+    }
+    return key === 'recovery' ? this.openRecoveryRequests : 0;
+  }
+
+  badgeText(count: number): string {
+    return count > 99 ? '99+' : String(count);
+  }
+
+  badgeLabel(key: AdminRouteKey, count: number): string {
+    return `${this.badgeText(count)} ${key === 'recovery' ? 'open' : 'pending'}`;
   }
 
   private buildNavGroups(flags: Record<string, { enabled?: boolean } | undefined> | null) {

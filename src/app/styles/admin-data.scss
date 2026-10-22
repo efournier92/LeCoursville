@@ -171,6 +171,12 @@
         content: none;
       }
     }
+
+    // Row actions are icon-only: keep the 24px glyph but give the button a
+    // 44px mobile hit area. Desktop keeps the compact 40px control.
+    tbody .mat-mdc-icon-button {
+      --mat-icon-button-state-layer-size: 44px;
+    }
   }
 }
 
