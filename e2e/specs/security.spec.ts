@@ -21,6 +21,26 @@ async function idToken(email: string, password: string): Promise<string> {
   return body.idToken as string;
 }
 
+const FUNCTIONS_BASE = 'http://127.0.0.1:5001/lecoursville-dev/us-central1';
+const DB_NS = 'ns=lecoursville-dev-default-rtdb';
+
+function callChangeUserRole(token: string, data: Record<string, unknown>) {
+  return fetch(`${FUNCTIONS_BASE}/changeUserRole`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ data }),
+  });
+}
+
+async function uidForEmail(email: string): Promise<string> {
+  const users = (await readDb<Record<string, any>>('users')) ?? {};
+  const entry = Object.entries(users).find(([, user]) => user?.email === email);
+  if (!entry) {
+    throw new Error(`no user record for ${email}`);
+  }
+  return entry[0];
+}
+
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64',
@@ -399,7 +419,7 @@ test.describe('security', () => {
     }
   });
 
-  test('rules: roleAudit is super-write and super-read only', async () => {
+  test('rules: roleAudit is super-read only and rejects every client write', async () => {
     const staffToken = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
     const superToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
     const id = `security-probe-${Date.now()}`;
@@ -407,34 +427,140 @@ test.describe('security', () => {
       actorId: 'probe-actor',
       targetId: 'probe-target',
       targetEmail: 'probe@e2e.local',
-      before: { admin: false, super: false },
-      after: { admin: true, super: false },
+      before: { user: true, admin: false, super: false },
+      after: { user: true, admin: true, super: false },
       at: Date.now(),
     };
+    await writeDb(`roleAudit/${id}`, record);
+    const url = `http://localhost:9000/roleAudit/${id}.json?${DB_NS}`;
 
     try {
-      const staffRes = await fetch(
-        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${staffToken}`,
-        { method: 'PUT', body: JSON.stringify(record) },
-      );
-      expect(staffRes.status).not.toBe(200);
-      expect(await readDb(`roleAudit/${id}`)).toBeNull();
-
-      const superWrite = await fetch(
-        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`,
-        { method: 'PUT', body: JSON.stringify(record) },
-      );
-      expect(superWrite.ok).toBe(true);
+      for (const token of [staffToken, superToken]) {
+        const res = await fetch(`${url}&auth=${token}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...record, actorId: 'overwritten' }),
+        });
+        expect(res.status).not.toBe(200);
+      }
       expect(await readDb(`roleAudit/${id}`)).toEqual(record);
 
-      const superRead = await fetch(
-        `http://localhost:9000/roleAudit/${id}.json?ns=lecoursville-dev-default-rtdb&auth=${superToken}`,
-      );
+      const superRead = await fetch(`${url}&auth=${superToken}`);
       expect(superRead.status).toBe(200);
       expect(await superRead.json()).toEqual(record);
+
+      const staffRead = await fetch(`${url}&auth=${staffToken}`);
+      expect(staffRead.status).not.toBe(200);
     } finally {
       await deleteDb(`roleAudit/${id}`);
     }
+  });
+
+  test('changeUserRole: non-super callers are denied', async () => {
+    const targetUid = await uidForEmail(E2E_USERS.user.email);
+    for (const who of ['user', 'staff'] as const) {
+      const token = await idToken(E2E_USERS[who].email, E2E_USERS[who].password);
+      const res = await callChangeUserRole(token, {
+        uid: targetUid,
+        roles: { user: true, admin: true, super: false },
+      });
+      expect(res.status).toBe(403);
+      const body = await res.json().catch(() => null);
+      expect(body?.error?.status).toBe('PERMISSION_DENIED');
+    }
+    expect(await readDb(`users/${targetUid}/roles/admin`)).not.toBe(true);
+  });
+
+  test('changeUserRole: super grant writes roles and one server-stamped audit row', async () => {
+    const adminUid = await uidForEmail(E2E_USERS.admin.email);
+    const targetUid = await uidForEmail(E2E_USERS.user.email);
+    const before = await readDb<Record<string, boolean>>(`users/${targetUid}/roles`);
+    const startedAt = Date.now();
+    const token = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+
+    try {
+      const res = await callChangeUserRole(token, {
+        uid: targetUid,
+        roles: { user: true, admin: true, super: false },
+        actorId: 'attacker',
+        actorEmail: 'evil@example.com',
+        at: 0,
+      });
+      expect(res.ok).toBe(true);
+      const body = await res.json();
+      expect(body.result.after).toEqual({ user: true, admin: true, super: false });
+      expect(await readDb(`users/${targetUid}/roles`)).toEqual({
+        user: true,
+        admin: true,
+        super: false,
+      });
+
+      await expect
+        .poll(async () => {
+          const all = (await readDb<Record<string, any>>('roleAudit')) ?? {};
+          return Object.values(all).filter(
+            (row) => row?.targetId === targetUid && row?.at >= startedAt,
+          ).length;
+        }, { timeout: 15000 })
+        .toBe(1);
+      const allAudit = (await readDb<Record<string, any>>('roleAudit')) ?? {};
+      const row = Object.values(allAudit).find(
+        (entry) => entry?.targetId === targetUid && entry?.at >= startedAt,
+      )!;
+      expect(row).toMatchObject({
+        actorId: adminUid,
+        actorEmail: E2E_USERS.admin.email,
+        targetId: targetUid,
+        targetEmail: E2E_USERS.user.email,
+        before: before ?? { user: true, admin: false, super: false },
+        after: { user: true, admin: true, super: false },
+      });
+      expect(row.at).toBeGreaterThanOrEqual(startedAt);
+      expect(row.actorId).not.toBe('attacker');
+    } finally {
+      await writeDb(`users/${targetUid}/roles`, before);
+      const all = (await readDb<Record<string, any>>('roleAudit')) ?? {};
+      for (const [key, row] of Object.entries(all)) {
+        if (row?.targetId === targetUid && row?.at >= startedAt) {
+          await deleteDb(`roleAudit/${key}`);
+        }
+      }
+    }
+  });
+
+  test('changeUserRole: last-super demotion is rejected without an audit row', async () => {
+    const adminUid = await uidForEmail(E2E_USERS.admin.email);
+    const before = await readDb<Record<string, boolean>>(`users/${adminUid}/roles`);
+    const startedAt = Date.now();
+    const token = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+
+    const res = await callChangeUserRole(token, {
+      uid: adminUid,
+      roles: { user: true, admin: true, super: false },
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json().catch(() => null);
+    expect(body?.error?.status).toBe('FAILED_PRECONDITION');
+    expect(await readDb(`users/${adminUid}/roles`)).toEqual(before);
+
+    const all = (await readDb<Record<string, any>>('roleAudit')) ?? {};
+    expect(
+      Object.values(all).filter(
+        (row) => row?.targetId === adminUid && row?.at >= startedAt,
+      ),
+    ).toHaveLength(0);
+  });
+
+  test('rules: signed-out media reads are public, clans stay authenticated', async () => {
+    const mediaRes = await fetch(
+      `http://localhost:9000/media/media-audio.json?${DB_NS}`,
+    );
+    expect(mediaRes.status).toBe(200);
+    expect(await mediaRes.json()).toMatchObject({ id: 'media-audio' });
+
+    const clanRes = await fetch(
+      `http://localhost:9000/clans/clan-1.json?${DB_NS}`,
+    );
+    expect(clanRes.status).not.toBe(200);
   });
 
   test('rules: featureFlagAudit is super-create and super-read only', async () => {
@@ -1133,14 +1259,20 @@ test.describe('security', () => {
     expect((await read('users', superToken)).ok).toBe(true);
   });
 
-  test('rules: media and clans require authentication', async () => {
+  test('rules: media reads are public, clans still require authentication', async () => {
     const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
-    for (const node of ['media', 'clans']) {
-      const anonymous = await fetch(
-        `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb`,
-      );
-      expect(anonymous.status).not.toBe(200);
 
+    const mediaAnonymous = await fetch(
+      `http://localhost:9000/media.json?ns=lecoursville-dev-default-rtdb`,
+    );
+    expect(mediaAnonymous.status).toBe(200);
+
+    const clanAnonymous = await fetch(
+      `http://localhost:9000/clans.json?ns=lecoursville-dev-default-rtdb`,
+    );
+    expect(clanAnonymous.status).not.toBe(200);
+
+    for (const node of ['media', 'clans']) {
       const authenticated = await fetch(
         `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
       );

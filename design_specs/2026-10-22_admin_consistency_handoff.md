@@ -9,7 +9,8 @@ merged, or deployed. Session commits:
 - `68a67bcd` Split the platform bundle and close admin trust gaps
 - `09568ebf` Give admins work-queue, audit, and safety surfaces
 - `c6e18b5c` Close the admin hardening round and prove the full gate
-- plus the final visual-craft commit on top
+- `bf650300` Record the admin consistency contract, ledger, and open questions
+- plus the final visual-craft and approved-decisions commits
 
 Working tree contains only this handoff and the two session docs.
 
@@ -17,10 +18,10 @@ Working tree contains only this handoff and the two session docs.
 
 Executed this session, last run on the final tree:
 
-- `npm run e2e:gate` -> unit 419 passed, then chromium 188, webkit 188, firefox
-  188 passed. 564 browser executions, 0 failed, 0 skipped, retries 0.
+- `npm run e2e:gate` -> unit 421 passed, then chromium 196, webkit 196, firefox
+  196 passed. 588 browser executions, 0 failed, 0 skipped, retries 0.
 - `CI=true npm test -- --watch=false` -> 77 files, 419 tests passed.
-- `npm --prefix functions test` -> 8 files, 112 tests passed.
+- `npm --prefix functions test` -> 10 files, 127 tests passed.
 - `npx ng build --configuration=e2e` -> initial 822.93 kB raw / 133.32 kB
   transfer; admin 352.60 kB, media 962.49 kB, calendar 104.23 kB lazy chunks.
 - Measured at 1440 and 390: title bar exactly 64 px desktop and 56 px mobile on
@@ -50,9 +51,19 @@ reset-link callable privilege (now super), upload rate-limit identity, global
 cap availability, upload size, message payload bounds, attachment URL updates,
 orphan reject, and approval path collisions.
 
-Remaining human decisions are in `design_specs/2026-10-22_admin_open_questions.md`:
-signup self-assertion (C-48), repo-vs-production rules (C-50), role-audit
-atomicity (C-51), client-authored audit records (C-71).
+The user reviewed and decided all ten entries in
+`design_specs/2026-10-22_admin_open_questions.md` on 2026-10-22. Applied since:
+membership is server-stamped (`claimMemberRole` plus a trigger watchdog, clients
+can never write roles), role grants and audit are one super-only transaction
+(`changeUserRole`, server-derived actor/time, last-super guard), and database and
+storage rules now deploy from the repo (`RULES_ONLY=1` for rules only, production
+storage in `storage.rules.prod`).
+
+Media access follows the decided split: reads stay public so copied
+`/media/explorer?id=<id>` links play video or audio signed out, writes stay
+admin-only, clans require authentication, and uploads keep working for regular
+users. `e2e/specs/media.spec.ts` covers both an audio and a video link, and its
+red proof (re-adding the old guard) is recorded in the ledger.
 
 ## Performance And UX
 
@@ -74,6 +85,8 @@ atomicity (C-51), client-authored audit records (C-71).
   proven only in the emulator.
 - Public upload stays unauthenticated by design: per-actor rate limited and
   global soft-degraded with an admin alert, not captcha-protected.
+- Production storage rules allow public create under `userUploads/**`, so
+  direct Storage writes bypass the callable's rate limits (C-93).
 - `roleAudit` and `featureFlagAudit` are client-authored, create-only, and
   super-writable at the tree level.
 - Pagination markup is still duplicated across six tables (deferred).
@@ -83,19 +96,19 @@ atomicity (C-51), client-authored audit records (C-71).
 
 ## Repo Notes
 
-This repo has `design_specs/` and now `docs/critique/` but no `docs/discovery/`.
-Progressive Discovery is an available opt-in; creating `docs/discovery/` is a
-one-way decision and was not taken (AFQ2-10).
+This repo now opts into Progressive Discovery: `docs/discovery/DISCOVERY.md`
+exists with entries D-20261022-01 through -11. Grep it by scope token before
+re-exploring; see `log-discoveries` for the read and append contracts.
 
 ## Next Actions
 
-1. Answer the ten entries in `design_specs/2026-10-22_admin_open_questions.md`.
-2. If approved: snapshot production rules and add a drift check (AFQ2-02).
-3. Optional: transactional role-grant callable with server-stamped audit
-   (AFQ2-03/04).
-4. Optional: shared pager component; batch upload approval; alert
+1. Ops sign-off to run `bash scripts/deploy.sh prod` (or `RULES_ONLY=1` for a
+   rules-only ship). Nothing has been deployed.
+2. Decide whether to bind production storage public-create to custom claims or
+   a callable-only path (C-93).
+3. Optional: shared pager component; batch upload approval; alert
    acknowledgment.
-5. Ship only on explicit request via `ship-changes`.
+4. Ship only on explicit request via `ship-changes`.
 
 ## Resume Prompt
 

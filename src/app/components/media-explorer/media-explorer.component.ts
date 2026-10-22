@@ -46,13 +46,15 @@ export class MediaExplorerComponent implements OnInit {
     this.selectedMedia = undefined;
     // this.allMedia = [];
 
+    // Query-param routing must not wait for the media read: a signed-out
+    // visitor with no id has to reach sign-in even if the data stream is slow
+    // or denied.
+    this.getQueryParams();
+    this.subscribeToUserObservable();
+
     // this.mediaService.getMedia().valueChanges().subscribe(
     this.mediaService.mediaObservable.subscribe(
-      (mediaList: UploadableMedia[]) => {
-        // this.allMedia = this.sortMediaByDate(mediaList);
-        this.getQueryParams();
-        this.subscribeToUserObservable();
-      },
+      () => this.loadMediaByQueryId(this.activatedRoute.snapshot.queryParams.id),
       // Page-level error UI lives in app-media-list, which subscribes to
       // this same stream; nothing in this template renders off its data.
       () => {},
@@ -252,6 +254,10 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   private loadMediaByQueryId(id: string) {
+    if (!id) {
+      return;
+    }
+
     const media = this.mediaService.getMediaById(id);
     if (media?.id === id) {
       this.selectedMedia = media;

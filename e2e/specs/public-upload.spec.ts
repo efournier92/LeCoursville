@@ -32,6 +32,20 @@ test.describe('public upload', () => {
     await expect(page.getByText('Pending').first()).toBeVisible();
   });
 
+  test('signed-in member can upload', async ({ page }) => {
+    await login(page, 'user');
+    await page.goto('/upload');
+    await page.getByLabel('Event Name').fill('E2E Member Upload');
+    await page.getByTestId('upload-file-input').setInputFiles({
+      name: 'member-photo.png',
+      mimeType: 'image/png',
+      buffer: TINY_PNG,
+    });
+    await expect(page.getByText('1 File Selected')).toBeVisible();
+    await page.getByRole('button', { name: 'Upload All' }).click();
+    await expect(page.getByText('Thanks For Sharing!')).toBeVisible({ timeout: 30000 });
+  });
+
   test('validation: submit with no file is impossible (no upload button rendered)', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', (r) => requests.push(r.url()));

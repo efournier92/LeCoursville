@@ -3,23 +3,62 @@ set -e
 
 # Deploy LeCoursville
 # Usage: ./deploy.sh <prod|dev>
+#        RULES_ONLY=1 ./deploy.sh <prod|dev>   # database + storage rules only
 
-# Hosting and functions are the ONLY Firebase targets this repo deploys.
-# Never use a bare `firebase deploy` here: firebase.json also wires
-# `storage.rules` for the storage emulator, and that file is deliberately open
-# (`allow read, write: if true`) so the e2e gate can seed fixtures. A bare
-# deploy ships it and overwrites the real rules in the Firebase console with an
-# open bucket.
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+# Never use a bare `firebase deploy` here: firebase.json wires `storage.rules`,
+# which is deliberately open so the e2e gate can seed fixtures. Rules deploys go
+# through the functions below, which always select storage.rules.prod.
+deploy_storage_rules() {
+  local project=$1
+  local tmp_dir tmp_config
+  if [ ! -f "$REPO_ROOT/storage.rules.prod" ]; then
+    echo "ERROR: $REPO_ROOT/storage.rules.prod is missing."
+    exit 1
+  fi
+  tmp_dir=$(mktemp -d)
+  tmp_config="$tmp_dir/firebase.json"
+  cat > "$tmp_config" <<EOF
+{
+  "storage": {
+    "rules": "$REPO_ROOT/storage.rules.prod"
+  }
+}
+EOF
+  # A throwaway config keeps the emulator's open storage.rules out of the deploy.
+  local status=0
+  firebase deploy --only storage --config "$tmp_config" --project "$project" || status=$?
+  rm -rf "$tmp_dir"
+  return $status
+}
+
 deploy_prod() {
   echo "Deploying to production..."
   firebase use lecoursville
-  firebase deploy --only hosting,functions
+  firebase deploy --only hosting,functions,database
+  deploy_storage_rules lecoursville
 }
 
 deploy_dev() {
   echo "Deploying to dev..."
   firebase use lecoursville-dev
-  firebase deploy --only hosting,functions
+  firebase deploy --only hosting,functions,database
+  deploy_storage_rules lecoursville-dev
+}
+
+deploy_rules_prod() {
+  echo "Deploying rules to production..."
+  firebase use lecoursville
+  firebase deploy --only database
+  deploy_storage_rules lecoursville
+}
+
+deploy_rules_dev() {
+  echo "Deploying rules to dev..."
+  firebase use lecoursville-dev
+  firebase deploy --only database
+  deploy_storage_rules lecoursville-dev
 }
 
 build_prod() {
@@ -145,6 +184,11 @@ main() {
   if [ "$ENV" = "prod" ]; then
     validate_prod_branch
     run_e2e_gate
+    if [ "$RULES_ONLY" = "1" ]; then
+      deploy_rules_prod
+      echo "=== Production rules deploy complete ==="
+      return
+    fi
     build_prod
     validate_bundle_config prod
     deploy_prod
@@ -153,6 +197,11 @@ main() {
   elif [ "$ENV" = "dev" ]; then
     validate_dev_branch
     run_e2e_gate
+    if [ "$RULES_ONLY" = "1" ]; then
+      deploy_rules_dev
+      echo "=== Dev rules deploy complete ==="
+      return
+    fi
     build_dev
     validate_bundle_config dev
     deploy_dev

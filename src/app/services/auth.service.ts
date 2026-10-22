@@ -13,6 +13,7 @@ import {
   confirmPasswordReset,
   User as FirebaseUser,
 } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
 import { MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Observable } from "rxjs";
 import { User } from "src/app/models/user";
@@ -207,7 +208,7 @@ export class AuthService {
       handled = true;
 
       if (!existingUser) {
-        this.createUser(authData, existingUser);
+        void this.createUser(authData, existingUser);
         return;
       }
 
@@ -217,9 +218,22 @@ export class AuthService {
     });
   }
 
-  createUser(authData: any, existingUser: User): void {
+  async createUser(authData: any, existingUser: User): Promise<void> {
     const user: User = new User(authData, existingUser);
-    this.updateUser(user);
+    // Stamped before the write: the profile write must not re-enter the
+    // listener that also rewrites the record.
+    this.hasAlreadyUpdatedUser = true;
+
+    // Membership is server-owned. The client creates the profile without
+    // roles, then the callable stamps `roles/user` before anything renders.
+    const profile: Partial<User> = { ...user };
+    delete profile.roles;
+    await this.rtdb.object(`users/${user.id}`).update(profile as any);
+    await this.claimMemberRole();
+
+    user.roles = { ...user.roles, user: true };
+    this.user = user;
+    this.userSource.next(user);
     this.setUserInLocalStorage(user);
   }
 
@@ -326,6 +340,15 @@ export class AuthService {
   private isTransportFailure(error: unknown): boolean {
     const code = (error as { code?: string })?.code;
     return code === "functions/unavailable" || code === "functions/deadline-exceeded";
+  }
+
+  /** The `/users/{uid}` creation trigger is the watchdog for a lost call. */
+  private async claimMemberRole(): Promise<void> {
+    try {
+      await httpsCallable(this.firebase.functions, "claimMemberRole")();
+    } catch {
+      // Signup must not wedge on a cold callable; the trigger still stamps.
+    }
   }
 
   private getUserFromLocalStorage() {

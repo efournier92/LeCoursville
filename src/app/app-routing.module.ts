@@ -80,7 +80,6 @@ const routes: Routes =
     // MEDIA
     {
       path: 'media',
-      canActivate: [AuthGuardService],
       loadChildren: () => import('./components/media/media.module').then(m => m.MediaFeatureModule),
     },
     // ADMIN

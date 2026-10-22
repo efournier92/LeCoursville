@@ -79,20 +79,18 @@ export const secrets = {
 
 ## Deploy
 
-### 1. Build For Production
+Deploys go through `scripts/deploy.sh` so the e2e gate and its explicit sign-off always run first:
 
-- `npx ng build --configuration=production`
+- `bash scripts/deploy.sh prod` (production, `master` only)
+- `bash scripts/deploy.sh dev`
 
-### 2. Select an Environment
+Each deploy builds the bundle, then ships hosting, functions, database rules (`database.rules.json`), and storage rules (`storage.rules.prod`).
+The storage emulator keeps using the open `storage.rules`, so never run a bare `firebase deploy`: it would ship the emulator rules to the bucket.
 
-- `firebase use --add`
-  - Select:
-    - `lecoursville` for Production
-    - `lecoursville-dev` for Test
+To ship rules without rebuilding hosting:
 
-### 3. Deploy to the Selected Environment
-
-- `firebase deploy`
+- `RULES_ONLY=1 bash scripts/deploy.sh prod`
+- `RULES_ONLY=1 bash scripts/deploy.sh dev`
 
 ## Contribute
 

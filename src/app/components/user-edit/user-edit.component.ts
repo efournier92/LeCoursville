@@ -22,7 +22,7 @@ export class UserEditComponent implements OnInit, OnChanges {
   formUser: User;
   saveError = '';
   deleteError = '';
-  private originalRoles = { admin: false, super: false };
+  private originalRoles = { user: false, admin: false, super: false };
 
   constructor(
     private authService: AuthService,
@@ -82,6 +82,12 @@ export class UserEditComponent implements OnInit, OnChanges {
     if (user.roles?.super) {
       user.roles.admin = true;
     }
+    // Membership revoke is a ban: no privilege survives it, and the local
+    // object must match what the callable writes or the profile write races it.
+    if (user.roles && user.roles.user !== true) {
+      user.roles.admin = false;
+      user.roles.super = false;
+    }
     const changes = this.roleChanges(user);
     if (changes.messages.length > 0) {
       const confirmed = await this.confirmDialog.confirm({
@@ -96,10 +102,17 @@ export class UserEditComponent implements OnInit, OnChanges {
       }
     }
     try {
+      if (changes.messages.length > 0) {
+        await this.adminService.changeUserRole(user.id, {
+          user: user.roles?.user === true,
+          admin: user.roles?.admin === true,
+          super: user.roles?.super === true,
+        });
+      }
       await this.updateUser(user);
       if (changes.messages.length > 0) {
-        await this.recordRoleChange(user);
         this.originalRoles = {
+          user: user.roles?.user === true,
           admin: user.roles?.admin === true,
           super: user.roles?.super === true,
         };
@@ -160,6 +173,7 @@ export class UserEditComponent implements OnInit, OnChanges {
 
   private snapshotRoles(): void {
     this.originalRoles = {
+      user: this.userOnCard?.roles?.user === true,
       admin: this.userOnCard?.roles?.admin === true || this.userOnCard?.roles?.super === true,
       super: this.userOnCard?.roles?.super === true,
     };
@@ -169,9 +183,14 @@ export class UserEditComponent implements OnInit, OnChanges {
     const messages: string[] = [];
     let destructive = false;
     const name = this.displayName(user);
+    const member = user.roles?.user === true;
     const admin = user.roles?.admin === true;
     const superRole = user.roles?.super === true;
 
+    if (member !== this.originalRoles.user) {
+      messages.push(member ? `Restore ${name}'s membership?` : `Revoke ${name}'s membership?`);
+      destructive = destructive || !member;
+    }
     if (admin !== this.originalRoles.admin) {
       messages.push(admin ? `Give ${name} admin access?` : `Remove admin access from ${name}?`);
       destructive = destructive || !admin;
@@ -186,20 +205,6 @@ export class UserEditComponent implements OnInit, OnChanges {
 
   private displayName(user: User): string {
     return user?.name?.trim() || user?.email || 'this user';
-  }
-
-  private recordRoleChange(user: User): Promise<void> {
-    return this.adminService.addRoleAudit({
-      actorId: this.userSignedIn?.id,
-      targetId: user.id,
-      targetEmail: user.email,
-      before: { ...this.originalRoles },
-      after: {
-        admin: user.roles?.admin === true,
-        super: user.roles?.super === true,
-      },
-      at: Date.now(),
-    });
   }
 
   private errorMessage(error: unknown): string {

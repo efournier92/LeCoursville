@@ -5,12 +5,43 @@ import { deleteDb, readDb } from '../helpers/admin-db';
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('media', () => {
-  test('signed-out media routes redirect to sign-in', async ({ page }) => {
-    for (const route of ['/media/explorer', '/media/audio', '/media/video']) {
+  test('signed-out explorer without an id redirects to sign-in', async ({ page }) => {
+    await page.goto('/media/explorer');
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('auth-email')).toBeVisible();
+  });
+
+  test('signed-out audio and video routes still redirect to sign-in', async ({ page }) => {
+    for (const route of ['/media/audio', '/media/video']) {
       await page.goto(route);
       await expect(page).toHaveURL('/');
       await expect(page.getByTestId('auth-email')).toBeVisible();
     }
+  });
+
+  test('signed-out shared link plays the referenced item', async ({ page }) => {
+    await page.goto('/media/explorer?id=media-audio');
+    await expect(page).toHaveURL(/\/media\/explorer\?id=media-audio$/);
+    await expect(page.locator('.audio-player-container')).toBeVisible();
+    await expect(page.locator('.audio-player-element')).toHaveAttribute('src', /fixture\.wav/);
+    await expect(page.getByTestId('auth-email')).toHaveCount(0);
+    await expect(page.locator('.media-list-item')).toHaveCount(0);
+
+    // A copied link to a single video must also open signed out. Stub the
+    // external Drive iframe so the assertion does not depend on the network.
+    await page.route('https://drive.google.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }),
+    );
+    await page.goto('/media/explorer?id=media-video', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/media\/explorer\?id=media-video$/);
+    const videoFrame = page.locator('app-video-player-drive-iframe iframe.video-iframe');
+    await expect(videoFrame).toBeVisible();
+    await expect(videoFrame).toHaveAttribute(
+      'src',
+      'https://drive.google.com/file/d/e2efixture/preview',
+    );
+    await expect(page.getByTestId('auth-email')).toHaveCount(0);
+    await expect(page.locator('.media-list-item')).toHaveCount(0);
   });
 
   test('explorer lists the 3 seeded media entries', async ({ page }) => {

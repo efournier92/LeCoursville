@@ -51,6 +51,14 @@ describe("onAccountCreated", () => {
     expect(audits[0]).toMatchObject({ action: "account_created_notified", uid: "u1" });
   });
 
+  it("stamps roles/user when the signup record was created without it", async () => {
+    await onAccountCreated.run(
+      eventFor("u1", { email: "new@example.com", name: "New User" })
+    );
+
+    expect(fakeDb.read("users/u1/roles/user")).toBe(true);
+  });
+
   it("does nothing for an empty record", async () => {
     await onAccountCreated.run(eventFor("u1", null));
     expect(sendEmail).not.toHaveBeenCalled();

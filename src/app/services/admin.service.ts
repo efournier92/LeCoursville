@@ -1,15 +1,18 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, Optional } from '@angular/core';
+import { httpsCallable } from 'firebase/functions';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { User } from 'src/app/models/user';
+import { AuthRoles, User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
+import { FirebaseService } from './firebase.service';
 import { RtdbService } from './rtdb.service';
 
 export interface RoleAuditRecord {
   actorId: string;
+  actorEmail?: string | null;
   targetId: string;
-  targetEmail: string;
-  before: { admin: boolean; super: boolean };
-  after: { admin: boolean; super: boolean };
+  targetEmail: string | null;
+  before: { user?: boolean; admin: boolean; super: boolean };
+  after: { user?: boolean; admin: boolean; super: boolean };
   at: number;
 }
 
@@ -29,6 +32,7 @@ export class AdminService implements OnDestroy {
   constructor(
     private rtdb: RtdbService,
     private auth: AuthService,
+    @Optional() private firebase?: FirebaseService,
   ) {
     this.userSub = this.auth.userObservable.subscribe(
       (user: User) => {
@@ -69,6 +73,19 @@ export class AdminService implements OnDestroy {
     return this.rtdb.object(`users/${user.id}`).update(user as any);
   }
 
+  /** Role grants and their audit row are one server transaction. */
+  changeUserRole(uid: string, roles: AuthRoles): Promise<void> {
+    if (!this.firebase) {
+      return Promise.reject(new Error('Functions are unavailable.'));
+    }
+    const callable = httpsCallable<{ uid: string; roles: AuthRoles }, unknown>(
+      this.firebase.functions,
+      'changeUserRole',
+    );
+    return callable({ uid, roles }).then(() => undefined);
+  }
+
+  /** @deprecated roleAudit denies client writes; use changeUserRole. */
   addRoleAudit(record: RoleAuditRecord): Promise<void> {
     const id = this.rtdb.createPushId();
     return this.rtdb.object(`roleAudit/${id}`).set(record);

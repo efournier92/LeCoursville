@@ -53,10 +53,10 @@
 - C-20261022-45 | 2026-10-22 | security | high | high | addressed | Approve copied bytes from attacker-controlled url | server-assigned path
 - C-20261022-46 | 2026-10-22 | security | high | high | addressed | Reset link auto-mailed to attacker alternate contact | explicit per-mint opt-in
 - C-20261022-47 | 2026-10-22 | security | medium | high | addressed | users readable by any authenticated principal | own-record or super
-- C-20261022-48 | 2026-10-22 | security | medium | high | escalated | roles/user is client-asserted at signup | `database.rules.json:36`; needs a product call
+- C-20261022-48 | 2026-10-22 | security | medium | high | addressed | roles/user was client-asserted at signup | server-stamped; clients cannot write roles
 - C-20261022-49 | 2026-10-22 | security | medium | high | addressed | messages write was unscoped | per-field author rules and child reply/like paths
-- C-20261022-50 | 2026-10-22 | security | medium | medium | escalated | Repo rules are not what production runs | `scripts/deploy.sh:7`; console is source of truth
-- C-20261022-51 | 2026-10-22 | security | medium | medium | escalated | Role grant commits before its audit write | needs a transactional callable
+- C-20261022-50 | 2026-10-22 | security | medium | medium | addressed | Repo rules were not what production runs | deploy now ships database and storage rules
+- C-20261022-51 | 2026-10-22 | security | medium | medium | addressed | Role grant committed before its audit write | one super-only transaction
 - C-20261022-52 | 2026-10-22 | security | low | high | addressed | media and clans were world-readable | auth required; media routes guarded
 - C-20261022-53 | 2026-10-22 | security | high | medium | addressed | Per-actor rate key collapsed behind the GFE proxy | last x-forwarded-for hop
 - C-20261022-54 | 2026-10-22 | security | high | high | addressed | Global upload cap was attacker-exhaustible | soft-degrade plus admin alert
@@ -76,7 +76,7 @@
 - C-20261022-68 | 2026-10-22 | product | medium | high | addressed | Role history truncated silently | Most recent 20
 - C-20261022-69 | 2026-10-22 | product | medium | medium | addressed | Delete left flagged pending uploads orphaned | confirm states the consequence
 - C-20261022-70 | 2026-10-22 | product | medium | high | addressed | featureFlagAudit was write-only and half-recorded | reader card plus from/to
-- C-20261022-71 | 2026-10-22 | security | low | high | escalated | Audit records are client-authored and skippable | needs server-side stamping
+- C-20261022-71 | 2026-10-22 | security | low | high | addressed | Audit records were client-authored and skippable | server-derived actor/time in the callable
 - C-20261022-72 | 2026-10-22 | security | medium | medium | addressed | Reset-link callable gated on admin not super | super required
 - C-20261022-73 | 2026-10-22 | security | medium | high | addressed | Media read tightening broke an unguarded route | auth guard on media routes
 - C-20261022-74 | 2026-10-22 | security | medium | high | addressed | Unauthenticated upload record creation | callable owns id/path/status
@@ -98,6 +98,8 @@
 - C-20261022-89 | 2026-10-22 | visual | medium | high | addressed | Mobile calendar YEAR and URL used different value columns | one value column
 - C-20261022-90 | 2026-10-22 | visual | low | high | addressed | Recovery mobile label/value treatment differed from siblings | label-left rows
 - C-20261022-91 | 2026-10-22 | visual | low | high | addressed | Album card footer icon row was cramped | balanced 14px padding
+- C-20261022-92 | 2026-10-22 | correctness | high | high | addressed | A media parent auth guard broke signed-out single-item share links | guard removed; audio+video e2e
+- C-20261022-93 | 2026-10-22 | security | medium | medium | escalated | Production storage allows public create under userUploads, bypassing callable limits | `storage.rules.prod:17`
 
 ## Rebuttals
 
@@ -105,5 +107,7 @@
   rebuttal | addressed | `npx ng build --configuration=e2e` | initial 822.93 kB raw / 133.32 kB transfer; admin 352.60 kB, media 962.49 kB, calendar 104.23 kB lazy
   rebuttal | addressed | `npm --prefix functions test` | 8 files, 112 tests passed
   rebuttal | addressed | `/tmp/af-final/features-desktop.png` | knob travels right in ON state; screenshots for 9 fixes captured
-  rebuttal | escalated | `docs/critique` | C-48, C-50, C-51, C-71 are human decisions, recorded in `design_specs/2026-10-22_admin_open_questions.md`
+  rebuttal | addressed | `functions/src/claim-member-role.ts` | user approved server-stamped membership and audited role callable
+  rebuttal | addressed | `e2e/specs/media.spec.ts:22` | red proof: guard re-added failed the link test, restored passed
+  rebuttal | escalated | `storage.rules.prod:17` | C-93 public storage create cannot be bound to the callable without custom claims
   rebuttal | addressed | `database.rules.json:149` | referee noted the C-48 pointer was stale; substance unchanged

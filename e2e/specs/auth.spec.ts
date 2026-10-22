@@ -1,5 +1,36 @@
 import { test, expect } from '../helpers/fixture';
 import { login, logout, E2E_USERS } from '../helpers/auth';
+import { deleteDb, readDb } from '../helpers/admin-db';
+
+const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
+const DB_NS = 'ns=lecoursville-dev-default-rtdb';
+
+async function signUpNewAccount(email: string): Promise<{ uid: string; token: string }> {
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'E2e-pass-2026', returnSecureToken: true }),
+    },
+  );
+  const body = await res.json();
+  if (!body.localId || !body.idToken) {
+    throw new Error(`signUp failed: ${JSON.stringify(body)}`);
+  }
+  return { uid: body.localId, token: body.idToken };
+}
+
+async function deleteAuthAccount(token: string): Promise<void> {
+  await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:delete?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: token }),
+    },
+  );
+}
 
 test.describe('auth', () => {
   test('anonymous redirect: /contacts lands on the sign-in page', async ({ page }) => {
@@ -90,6 +121,46 @@ test.describe('auth', () => {
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('account-connect-google')).toBeVisible();
     await expect(page.getByTestId('account-connect-google')).toContainText('Connect Google');
+  });
+
+  test('new account: membership is server-stamped and the client cannot write roles', async () => {
+    const email = `signup-${Date.now()}@e2e.local`;
+    const { uid, token } = await signUpNewAccount(email);
+    const userUrl = `http://localhost:9000/users/${uid}.json?${DB_NS}&auth=${token}`;
+
+    try {
+      const withRoles = await fetch(userUrl, {
+        method: 'PUT',
+        body: JSON.stringify({ id: uid, email, name: 'New Signup', roles: { user: true } }),
+      });
+      expect(withRoles.status).not.toBe(200);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+
+      const directRole = await fetch(
+        `http://localhost:9000/users/${uid}/roles/user.json?${DB_NS}&auth=${token}`,
+        { method: 'PUT', body: 'true' },
+      );
+      expect(directRole.status).not.toBe(200);
+      expect(await readDb(`users/${uid}/roles/user`)).toBeNull();
+
+      const profile = await fetch(userUrl, {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: uid,
+          email,
+          name: 'New Signup',
+          dateRegistered: Date.now(),
+          dateLastActive: Date.now(),
+        }),
+      });
+      expect(profile.ok).toBe(true);
+      await expect
+        .poll(async () => readDb(`users/${uid}/roles/user`), { timeout: 20000 })
+        .toBe(true);
+    } finally {
+      await deleteDb(`users/${uid}`);
+      await deleteAuthAccount(token);
+    }
   });
 });
 

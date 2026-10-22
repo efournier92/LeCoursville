@@ -138,15 +138,14 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "media": {
-      ".read": "auth != null",
+      ".read": "true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "users": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true)",
-        ".write": "$uid === auth.uid && ((!data.exists() && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && data.child('roles/user').val() === newData.child('roles/user').val() && data.child('roles/admin').val() === newData.child('roles/admin').val() && data.child('roles/super').val() === newData.child('roles/super').val()))"
+        ".write": "((!data.exists() && $uid === auth.uid && newData.child('roles/user').val() === null && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && !newData.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true) || (data.exists() && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('roles/user').val() === data.child('roles/user').val() && newData.child('roles/admin').val() === data.child('roles/admin').val() && newData.child('roles/super').val() === data.child('roles/super').val()))"
       }
     },
     "features": {
@@ -207,7 +206,7 @@
     },
     "roleAudit": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
+      ".write": false
     },
     "featureFlagAudit": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",

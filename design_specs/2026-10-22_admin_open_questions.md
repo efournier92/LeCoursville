@@ -5,9 +5,8 @@ code cannot settle on its own. Redteams chose the default recorded here; the
 default is already applied on branch `feat/admin-facelift` and nothing is
 pushed, merged, or deployed.
 
-Status: `UNCERTAIN` means a default shipped and needs a human yes/no.
-`CERTAIN` entries were decided by the user up front and are listed for context
-only.
+Status: all ten entries are now `CERTAIN`; the user reviewed them on
+2026-10-22 and each entry records the decision made.
 
 ## AFQ2-01: Signup self-asserts `roles/user`
 
@@ -19,8 +18,9 @@ only.
 - Strongest counter: every existing user already carries the bit, so the change
   needs a migration and a signup-contract change the emulator gate cannot prove
   against production.
-- Verdict: `UNCERTAIN`, default applied: unchanged client assertion; the rule
-  still blocks self-asserted `admin`/`super`.
+- Verdict: `CERTAIN`, user decision (2026-10-22): open membership, server
+  stamps `roles/user`; clients can never write roles; admin revoke is the ban
+  switch.
 - Evidence: C-20261022-48, `database.rules.json:149`.
 - Revisit cost: medium (function, migration, two e2e specs).
 
@@ -33,8 +33,9 @@ only.
   not part of this branch.
 - Strongest counter: until rules are hand-applied, none of this round's
   hardening is proven live in production.
-- Verdict: `UNCERTAIN`, default applied: repo rules only; deploy still ships
-  hosting and functions only.
+- Verdict: `CERTAIN`, user decision (2026-10-22): override; database and
+  storage rules now deploy from the repo, with `RULES_ONLY=1` for rules-only
+  ships and production storage in `storage.rules.prod`.
 - Evidence: C-20261022-50, `scripts/deploy.sh:7`.
 - Revisit cost: low for the snapshot, high for a rules deploy.
 
@@ -46,8 +47,8 @@ only.
   `close-recovery-request`.
 - Strongest counter: both writes are already super-only; the failure mode is a
   missing audit row, not a wrong grant, and a callable adds deploy surface.
-- Verdict: `UNCERTAIN`, default applied: two client writes, audit failure
-  surfaced in the UI.
+- Verdict: `CERTAIN`, user decision (2026-10-22): build the transactional
+  super-only callable with server-derived actor/time and last-super guard.
 - Evidence: C-20261022-51, `src/app/services/admin.service.ts:74`.
 - Revisit cost: medium.
 
@@ -59,7 +60,8 @@ only.
   the create-only super rule is the compensating control.
 - Strongest counter: writers are super-only and records are create-only, a
   trust assumption this codebase already makes elsewhere.
-- Verdict: `UNCERTAIN`, default applied: client-authored, create-only.
+- Verdict: `CERTAIN`, user decision (2026-10-22): server-stamped, folded into
+  the role-grant callable.
 - Evidence: C-20261022-71, `src/app/services/feature-flags.service.ts:98`.
 - Revisit cost: low once the callable exists.
 
@@ -71,7 +73,8 @@ only.
   the global cap soft-degrades instead of blocking.
 - Strongest counter: a determined attacker can still fill the admin review
   queue within the per-actor budget; a captcha would be the real fix.
-- Verdict: `UNCERTAIN`, default applied: public + rate limits + admin alert.
+- Verdict: `CERTAIN`, user decision (2026-10-22): keep it public with rate
+  limits and the soft global cap.
 - Evidence: C-20261022-54, `functions/src/create-user-upload.ts`.
 - Revisit cost: medium (captcha provider or anonymous auth).
 
@@ -82,7 +85,10 @@ only.
   media routes now carry the auth guard.
 - Strongest counter: if any public page ever linked media, signed-out visitors
   now get a redirect instead of content.
-- Verdict: `UNCERTAIN`, default applied: auth required, routes guarded.
+- Verdict: `CERTAIN`, user decision (2026-10-22): member reads for media,
+  admin-only writes, clans require auth, and copied
+  `/media/explorer?id=<id>` links must play signed out. Uploads stay supported
+  for regular users and are covered by e2e.
 - Evidence: C-20261022-52, `database.rules.json`, `app-routing.module.ts`.
 - Revisit cost: low (revert one rule and one guard).
 
@@ -95,8 +101,8 @@ only.
 - Strongest counter: mobile users on slow links still pay ~415 kB before first
   paint, and the budget only measures the 822 kB initial, not the statically
   imported shared chunk.
-- Verdict: `UNCERTAIN`, default applied: admin/media/calendar lazy; initial
-  budget 1.2/1.5 MB.
+- Verdict: `CERTAIN`, user decision (2026-10-22): accept the remaining vendor
+  weight; admin/media/calendar stay lazy with a 1.2/1.5 MB initial budget.
 - Evidence: build report; C-20261022-50 context.
 - Revisit cost: medium.
 
@@ -105,7 +111,8 @@ only.
 - Question: extract a shared pager component now or later?
 - Recommendation: later. Behavior is pinned by e2e and the duplication is
   presentational; extracting it touches six tables with no user-visible win.
-- Verdict: `UNCERTAIN`, default applied: deferred (C-20261022-79).
+- Verdict: `CERTAIN`, user decision (2026-10-22): accepted the deferral
+  (C-20261022-79).
 - Revisit cost: low risk, medium churn.
 
 ## AFQ2-09: Ideas deliberately not built
@@ -114,12 +121,13 @@ only.
   risk).
 - Alert acknowledgment for `adminAlerts` (needs a rules decision).
 - Visual-regression screenshot baselines (previously declined in AFQ-07).
-- Verdict: `UNCERTAIN`, default applied: not built; logged for a future round.
+- Verdict: `CERTAIN`, user decision (2026-10-22): accepted as not built for
+  this round.
 
 ## AFQ2-10: Progressive Discovery
 
 - Question: opt this repository into `docs/discovery/`?
 - Recommendation: yes, now that the work spans multiple sessions.
-- Verdict: `UNCERTAIN`, default applied: no directory created. Creating
-  `docs/discovery/DISCOVERY.md` is a one-way opt-in.
+- Verdict: `CERTAIN`, user decision (2026-10-22): opted in. Index created at
+  `docs/discovery/DISCOVERY.md` with entries D-20261022-01 through -11.
 - Evidence: handoff note in `design_specs/2026-10-20_admin_facelift_handoff.md`.
