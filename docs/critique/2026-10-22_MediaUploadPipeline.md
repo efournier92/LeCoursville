@@ -1,0 +1,70 @@
+# Critique Ledger: Media Upload Pipeline
+
+- Goal: pressure-test the 2026-10-22 media upload pipeline spec across security, data integrity, reliability, cost, and product, then patch the spec.
+- Started: 2026-10-22
+- Branch: feat/admin-facelift
+
+## Findings
+
+- C-20261022-01 | 2026-10-22 | security | high | high | addressed | No rate limits on media callables; HEAD and delete amplification is unbounded | functions/src/helpers.ts:192
+  - rebuttal | addressed | spec:573 | per-uid and per-batch limits on create, resume, finalize, update, and delete
+- C-20261022-02 | 2026-10-22 | security | high | high | addressed | Finalize trusts client track names and folder fields, not just batch keys | docs/specs/2026-10-22_MediaUploadPipeline.md:574
+  - rebuttal | addressed | spec:527 | create derives and freezes keys; finalize reads keys only from the batch
+- C-20261022-03 | 2026-10-22 | security | medium | high | addressed | Declared size is unenforceable; a presigned PUT allows up to 5 GB | https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html
+  - rebuttal | addressed | spec:640 | finalize HEADs actual size, rejects oversize, and deletes the object
+- C-20261022-04 | 2026-10-22 | security | medium | high | addressed | Content-Type and If-None-Match are unsigned unless signableHeaders is set | https://github.com/aws/aws-sdk-js-v3/tree/main/packages/s3-request-presigner
+  - rebuttal | addressed | spec:604 | signableHeaders covers content-type, batch metadata, if-none-match, and if-match
+- C-20261022-05 | 2026-10-22 | security | medium | high | addressed | Delete removes records first; failed object deletes stay public | docs/specs/2026-10-22_MediaUploadPipeline.md:624
+  - rebuttal | addressed | spec:680 | delete and verify objects first, keep records intact on failure, retry via the deletion ledger
+- C-20261022-06 | 2026-10-22 | security | medium | high | addressed | uploadedByHash correlates with public message authorId uids | database.rules.json:15
+  - rebuttal | addressed | spec:349 | remove the hash; the uid stays only in server-only batch and deletion ledgers
+- C-20261022-07 | 2026-10-22 | security | medium | high | addressed | Track filenames keep ? # and encodeURI leaves them significant | docs/specs/2026-10-22_MediaUploadPipeline.md:460
+  - rebuttal | addressed | spec:460 | reject percent, ?, #, &, and control chars; encode each segment
+- C-20261022-08 | 2026-10-22 | security | medium | low | addressed | A replayed replace ticket can overwrite newer bytes | docs/specs/2026-10-22_MediaUploadPipeline.md:547
+  - rebuttal | addressed | spec:604 | sign If-Match with the current ETag; a 412 means stale content
+- C-20261022-09 | 2026-10-22 | data-integrity | high | high | addressed | Finalize idempotency is check-then-act; concurrent calls duplicate records | docs/specs/2026-10-22_MediaUploadPipeline.md:586
+  - rebuttal | addressed | spec:640 | transaction claim to finalizing, then records and status in one atomic update
+- C-20261022-10 | 2026-10-22 | data-integrity | medium | high | addressed | Duplicate check ignores media records; two records can share one object | docs/specs/2026-10-22_MediaUploadPipeline.md:545
+  - rebuttal | addressed | spec:580 | index fileName and folderName and reject a matching record as well as an object
+- C-20261022-11 | 2026-10-22 | data-integrity | medium | high | addressed | Deleting a track leaves a dangling album listing | docs/specs/2026-10-22_MediaUploadPipeline.md:623
+  - rebuttal | addressed | spec:649 | stamp storage.albumId; track delete rewrites the parent listing and trackKeys
+- C-20261022-12 | 2026-10-22 | data-integrity | medium | medium | addressed | Duplicate track names collapse to one key with the wrong error | docs/specs/2026-10-22_MediaUploadPipeline.md:547
+  - rebuttal | addressed | spec:576 | reject duplicate track filenames client-side and in createMediaUpload
+- C-20261022-13 | 2026-10-22 | data-integrity | medium | medium | addressed | A lost PUT retry gets 412 and is misreported as duplicate | docs/specs/2026-10-22_MediaUploadPipeline.md:708
+  - rebuttal | addressed | spec:611 | on 412 call verifyOnly resume; a matching batch continues, a foreign batch shows duplicate
+- C-20261022-14 | 2026-10-22 | reliability | high | high | addressed | Upfront tickets with a 1 hour TTL can expire mid-album | docs/specs/2026-10-22_MediaUploadPipeline.md:547
+  - rebuttal | addressed | spec:590 | 15-minute tickets minted per asset immediately before use
+- C-20261022-15 | 2026-10-22 | reliability | high | high | addressed | A 2 GiB single PUT with no multipart restarts from zero on a drop | docs/specs/2026-10-22_MediaUploadPipeline.md:174
+  - rebuttal | addressed | spec:112 | presigned multipart above 100 MiB with 8 MiB parts and per-part retry
+- C-20261022-16 | 2026-10-22 | reliability | high | high | addressed | No resume or re-ticket after a partial upload | docs/specs/2026-10-22_MediaUploadPipeline.md:545
+  - rebuttal | addressed | spec:590 | resumeMediaUpload signs only missing assets and skips create-only HEAD checks
+- C-20261022-17 | 2026-10-22 | reliability | medium | high | addressed | No sweeper for ticketed batches or orphan objects | docs/specs/2026-10-22_MediaUploadPipeline.md:175
+  - rebuttal | addressed | spec:690 | daily sweep with lastActivityAt and grace, plus the multipart lifecycle rule
+- C-20261022-18 | 2026-10-22 | cost | medium | high | addressed | CloudFront gives 1000 free invalidation paths per month, not per request | https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingForInvalidation.html
+  - rebuttal | addressed | spec:755 | skip create, wildcard album deletes, document the budget
+- C-20261022-19 | 2026-10-22 | reliability | medium | medium | addressed | Static AWS SDK imports raise cold starts for auth and recovery | functions/src/index.ts:5
+  - rebuttal | addressed | spec:789 | dynamic imports inside media handlers, with p95 measurement in Phase 4
+- C-20261022-20 | 2026-10-22 | reliability | medium | high | addressed | Phase 1 cannot deploy without the secrets it binds | functions/src/config.ts:32
+  - rebuttal | addressed | spec:937 | Phase 0 creates secrets, CORS, IAM, and lifecycle rules
+- C-20261022-21 | 2026-10-22 | product | high | high | addressed | Plus-for-space is kept for new audio; two encoding dialects remain | src/app/services/audio-album-upload.service.ts:73
+  - rebuttal | addressed | spec:108 | user kept the plus convention; legacy records stay untouched
+- C-20261022-22 | 2026-10-22 | product | high | medium | addressed | Required zip is the last manual artifact, up to 2 GiB | docs/specs/2026-10-22_MediaUploadPipeline.md:172
+  - rebuttal | addressed | spec:866 | browser generates the zip under 500 MB; manual fallback above the cap
+- C-20261022-23 | 2026-10-22 | product | medium | high | addressed | Replace forces a thumbnail re-upload; track edits force a full album re-upload | docs/specs/2026-10-22_MediaUploadPipeline.md:533
+  - rebuttal | addressed | spec:831 | thumbnail optional on replace; update handles track titles and order
+- C-20261022-24 | 2026-10-22 | product | medium | high | addressed | No accessibility requirements for controls, progress, or focus | docs/specs/2026-10-22_MediaUploadPipeline.md:717
+  - rebuttal | addressed | spec:836 | labels, live regions, keyboard order, and focus restore in both tabs
+- C-20261022-25 | 2026-10-22 | correctness | high | high | addressed | Phase 2 and Phase 4 both claim delete, replace, and their tests | docs/specs/2026-10-22_MediaUploadPipeline.md:836
+  - rebuttal | addressed | spec:940 | lifecycle ships with its UI; Phase 4 is verification only
+- C-20261022-26 | 2026-10-22 | correctness | medium | high | addressed | Replace, cancel, and retry lack e2e coverage | AGENTS.md
+  - rebuttal | addressed | spec:1137 | e2e cases for replace, cancel, retry, resume, and a11y
+- C-20261022-27 | 2026-10-22 | correctness | medium | medium | addressed | JSON bulk upload still writes media client-side | src/app/services/json.service.ts:114
+  - rebuttal | addressed | spec:912 | remove the dead JSON upload path
+- C-20261022-28 | 2026-10-22 | maintainability | medium | medium | rejected | Metadata callable duplicates admin write authority | database.rules.json:140
+  - rebuttal | rejected | spec:667 | keep it and extend it to track edits; client full-record writes could overwrite urls
+- C-20261022-29 | 2026-10-22 | maintainability | medium | medium | rejected | ID3 parser exists only to skip one cover pick | docs/specs/2026-10-22_MediaUploadPipeline.md:771
+  - rebuttal | rejected | spec:866 | embedded art is an explicit product choice; override stays the fallback
+- C-20261022-30 | 2026-10-22 | maintainability | medium | medium | rejected | Client naming mirror can drift from the server | docs/specs/2026-10-22_MediaUploadPipeline.md:434
+  - rebuttal | rejected | spec:1072 | prefill needs a client copy; the parity test pins the contract
+- C-20261022-31 | 2026-10-22 | reliability | medium | high | addressed | Playwright Chromium lacks H.264; capture cannot be the e2e proof | https://playwright.dev/docs/browsers#media-codecs
+  - rebuttal | addressed | spec:1132 | e2e uses the override path; capture is unit-tested
