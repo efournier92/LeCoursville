@@ -1,18 +1,21 @@
 <div class="admin-page">
-<app-page-toolbar title="Calendars"></app-page-toolbar>
-
-<p class="admin-intro">
-  Map each year to the calendar PDF that visitors download. Add or edit a year below.
-</p>
-
-@if (!isAdding && !editingCalendar) {
-  <div class="d-flex justify-content-end mb-3">
+<app-page-toolbar title="Calendars">
+  @if (!isAdding && !editingCalendar) {
     <button mat-flat-button color="primary" (click)="onAdd()">
       <mat-icon>add</mat-icon>
       Add Calendar
     </button>
-  </div>
-}
+  } @else {
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-flat-button color="primary" type="submit" form="calendar-form">
+      {{ editingCalendar ? 'Update' : 'Add' }}
+    </button>
+  }
+</app-page-toolbar>
+
+<p class="admin-intro">
+  Map each year to the calendar PDF that visitors download. Add or edit a year below.
+</p>
 
 @if (actionError) {
   <div class="admin-error" role="alert">
@@ -76,7 +79,7 @@
         <mat-card class="admin-surface form-card">
           <mat-card-content>
             <h3 class="admin-card-title">{{ editingCalendar ? 'Edit Calendar' : 'Add New Calendar' }}</h3>
-            <form (ngSubmit)="onSave()">
+            <form id="calendar-form" (ngSubmit)="onSave()">
               <mat-form-field class="full-width">
                 <mat-label>Year (e.g. 2026)</mat-label>
                 <input #yearInput matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
@@ -91,12 +94,6 @@
                   {{ formError }}
                 </div>
               }
-              <div class="form-actions">
-                <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                <button mat-flat-button color="primary" type="submit">
-                  {{ editingCalendar ? 'Update' : 'Add' }}
-                </button>
-              </div>
             </form>
           </mat-card-content>
         </mat-card>

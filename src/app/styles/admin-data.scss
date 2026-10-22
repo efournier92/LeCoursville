@@ -82,6 +82,39 @@
   }
 }
 
+// One bordered pill per sort control, with the direction toggle seated inside.
+.admin-sort-control {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  overflow: hidden;
+  flex: 0 0 auto;
+
+  .admin-sort-trigger {
+    height: 36px;
+    min-width: 0;
+    padding: 0 10px 0 14px;
+    border-radius: 0;
+    color: var(--color-ink);
+
+    mat-icon {
+      margin-left: 2px;
+    }
+  }
+
+  .admin-sort-direction {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-left: 1px solid var(--color-border);
+    border-radius: 0;
+    color: var(--color-ink-2);
+  }
+}
+
 .admin-filter-actions {
   display: flex;
   align-items: center;

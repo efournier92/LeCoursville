@@ -1,18 +1,21 @@
 <div class="admin-page">
-<app-page-toolbar title="Families"></app-page-toolbar>
-
-<p class="admin-intro">
-  Manage family groups and their display colors, or import several at once from a CSV.
-</p>
-
-@if (!isAdding && !editingFamily && !isCsvPreview) {
-  <div class="d-flex justify-content-end mb-3">
+<app-page-toolbar title="Families">
+  @if (isAdding || editingFamily) {
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-flat-button color="primary" type="submit" form="family-form">
+      {{ editingFamily ? 'Update' : 'Add' }}
+    </button>
+  } @else if (!isCsvPreview) {
     <button mat-flat-button color="primary" (click)="onAdd()">
       <mat-icon>add</mat-icon>
       Add Family
     </button>
-  </div>
-}
+  }
+</app-page-toolbar>
+
+<p class="admin-intro">
+  Manage family groups and their display colors, or import several at once from a CSV.
+</p>
 
 @if (actionError) {
   <div class="admin-error" role="alert">
@@ -201,7 +204,7 @@
         <mat-card class="admin-surface form-card">
           <mat-card-content>
             <h3 class="admin-card-title">{{ editingFamily ? 'Edit Family' : 'Add New Family' }}</h3>
-            <form (ngSubmit)="onSave()">
+            <form id="family-form" (ngSubmit)="onSave()">
               <mat-form-field class="full-width">
                 <mat-label>Sort Order</mat-label>
                 <input #sortOrderInput matInput [(ngModel)]="formData.sortOrder" name="sortOrder" />
@@ -226,12 +229,6 @@
                   {{ formError }}
                 </div>
               }
-              <div class="form-actions">
-                <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                <button mat-flat-button color="primary" type="submit">
-                  {{ editingFamily ? 'Update' : 'Add' }}
-                </button>
-              </div>
             </form>
           </mat-card-content>
         </mat-card>

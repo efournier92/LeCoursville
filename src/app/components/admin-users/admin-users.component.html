@@ -24,17 +24,19 @@
       }
     </mat-form-field>
 
-    <div class="admin-users-sort-buttons" admin-filter-actions>
+    <div class="admin-sort-control" admin-filter-actions>
       <button
         mat-button
+        class="admin-sort-trigger"
         data-testid="admin-users-sort"
         [matMenuTriggerFor]="menu"
         >
         Sort: {{ sortPropertyText }}
-        <mat-icon>{{ isSortDescending() ? 'arrow_drop_down' : 'arrow_drop_up' }}</mat-icon>
+        <mat-icon>arrow_drop_down</mat-icon>
       </button>
       <button
         mat-icon-button
+        class="admin-sort-direction"
         data-testid="admin-users-sort-direction"
         aria-label="Reverse sort direction"
         (click)="reverseDisplayedUsersSortOrder()"

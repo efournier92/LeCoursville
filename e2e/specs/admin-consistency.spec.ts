@@ -134,3 +134,143 @@ test.describe('admin visual contract', () => {
     });
   }
 });
+
+test.describe('admin consistency fixes', () => {
+  async function handleMetrics(page: Page, id: string) {
+    return page.getByTestId(`feature-toggle-${id}`).locator('.mdc-switch__handle-track').evaluate((el) => {
+      const transform = getComputedStyle(el).transform;
+      const matrix = transform === 'none' ? null : new DOMMatrixReadOnly(transform);
+      const knob = el.querySelector('.mdc-switch__handle')!.getBoundingClientRect();
+      const track = el.closest('.mdc-switch')!.querySelector('.mdc-switch__track')!.getBoundingClientRect();
+      return {
+        x: Math.round(matrix?.m41 ?? 0),
+        knobLeft: Math.round(knob.left),
+        knobRight: Math.round(knob.right),
+        trackLeft: Math.round(track.left),
+        trackRight: Math.round(track.right),
+      };
+    });
+  }
+
+  test('feature switches travel right when on and keep the thumb inside the track', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    await expect(page.getByTestId('feature-toggle-contacts')).toBeVisible();
+
+    for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport);
+      const on = await handleMetrics(page, 'contacts');
+      const off = await handleMetrics(page, 'chat');
+      expect(on.x).toBeGreaterThan(off.x);
+      expect(on.knobRight).toBeLessThanOrEqual(on.trackRight);
+      expect(on.knobLeft).toBeGreaterThanOrEqual(on.trackLeft);
+      expect(off.knobLeft).toBeGreaterThanOrEqual(off.trackLeft);
+      await expect(page.locator('.mdc-switch__icons')).toHaveCount(0);
+    }
+
+    const changed = await page.getByTestId('feature-changed-contacts').evaluate((el) => {
+      const row = el.closest('.feature-row') as HTMLElement;
+      return {
+        right: Math.round(el.getBoundingClientRect().right),
+        rowContentRight: Math.round(row.getBoundingClientRect().right - parseFloat(getComputedStyle(row).paddingRight)),
+      };
+    });
+    expect(Math.abs(changed.right - changed.rowContentRight)).toBeLessThanOrEqual(1);
+  });
+
+  test('users and photo albums use one bordered 36px sort pill', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/users');
+    await expect(page.getByTestId('admin-users-table')).toBeVisible();
+    const usersPill = page.locator('.admin-sort-control');
+    await expect(usersPill).toHaveCount(1);
+    await expect(usersPill).toHaveCSS('height', '36px');
+    await expect(usersPill).toHaveCSS('border-top-width', '1px');
+    await expect(usersPill).toHaveCSS('border-radius', '999px');
+    await expect(usersPill.locator('.admin-sort-direction')).toHaveCount(1);
+
+    await page.goto('/admin/photo-albums');
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+    const albumsPill = page.locator('.admin-sort-control');
+    await expect(albumsPill).toHaveCount(1);
+    await expect(albumsPill).toHaveCSS('height', '36px');
+    await expect(albumsPill).toHaveCSS('border-top-width', '1px');
+  });
+
+  test('calendar and family primary actions live in the title bar', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/calendars');
+    const calendarsBar = page.locator('.page-toolbar');
+    await expect(calendarsBar.getByRole('button', { name: 'Add Calendar' })).toBeVisible();
+    await calendarsBar.getByRole('button', { name: 'Add Calendar' }).click();
+    await expect(calendarsBar.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
+    await expect(calendarsBar.getByRole('button', { name: 'Cancel' })).toBeVisible();
+
+    await page.goto('/admin/families');
+    const familiesBar = page.locator('.page-toolbar');
+    await expect(familiesBar.getByRole('button', { name: 'Add Family' })).toBeVisible();
+    await familiesBar.getByRole('button', { name: 'Add Family' }).click();
+    await expect(familiesBar.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
+    await expect(familiesBar.getByRole('button', { name: 'Add Family' })).toHaveCount(0);
+    await familiesBar.getByRole('button', { name: 'Cancel' }).click();
+    await expect(familiesBar.getByRole('button', { name: 'Add Family' })).toBeVisible();
+  });
+
+  test('media rows have no accent strip and the album footer is balanced', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/media');
+    const row = page.locator('.media-list-item').first();
+    await expect(row).toBeVisible();
+    await expect(row).toHaveCSS('border-left-width', '1px');
+
+    await page.goto('/admin/photo-albums');
+    await expect(page.locator('.admin-album-card').first()).toBeVisible();
+    const footer = page.locator('.admin-album-card').first().locator('mat-card-actions');
+    await expect(footer).toHaveCSS('padding-top', '14px');
+    await expect(footer).toHaveCSS('padding-bottom', '14px');
+  });
+
+  test('recovery account rows share a grid and the mobile calendar aligns its value column', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/recovery');
+    const rows = page.locator('.account-row');
+    await expect(rows.first()).toBeVisible();
+    const columns = await rows.evaluateAll((els) => els.slice(0, 3).map((el) => {
+      const x = (selector: string) => Math.round(el.querySelector(selector)!.getBoundingClientRect().left);
+      const age = el.querySelector('.account-age')!.getBoundingClientRect();
+      const row = el.getBoundingClientRect();
+      return {
+        name: x('.account-name'),
+        email: x('.account-email'),
+        roles: x('.account-roles'),
+        ageRight: Math.round(age.right),
+        rowContentRight: Math.round(row.right - parseFloat(getComputedStyle(el).paddingRight)),
+      };
+    }));
+    for (const column of columns) {
+      expect(column.name).toBe(columns[0].name);
+      expect(column.email).toBe(columns[0].email);
+      expect(column.roles).toBe(columns[0].roles);
+      expect(Math.abs(column.ageRight - column.rowContentRight)).toBeLessThanOrEqual(1);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/admin/calendars');
+    const mobileRow = page.locator('.admin-table tbody tr').first();
+    await expect(mobileRow).toBeVisible();
+    const alignment = await mobileRow.evaluate((tr) => {
+      const yearCell = tr.querySelector('.calendar-year')!;
+      const range = document.createRange();
+      range.selectNodeContents(yearCell);
+      return {
+        year: Math.round(range.getBoundingClientRect().left),
+        url: Math.round(tr.querySelector('.calendar-url-link')!.getBoundingClientRect().left),
+      };
+    });
+    expect(Math.abs(alignment.year - alignment.url)).toBeLessThanOrEqual(1);
+  });
+});

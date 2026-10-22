@@ -65,6 +65,7 @@
                   [id]="'feature-id-' + feature.id"
                   [checked]="isEnabled(feature.id)"
                   (change)="onToggle(feature.id, $event.checked)"
+                  [hideIcon]="true"
                   color="primary"
                   [attr.data-testid]="'feature-toggle-' + feature.id">
                   <span class="feature-label">{{ feature.label }}</span>

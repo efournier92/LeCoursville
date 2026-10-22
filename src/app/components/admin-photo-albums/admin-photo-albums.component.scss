@@ -90,7 +90,7 @@
   }
 
   mat-card-actions {
-    padding: 0 4px 4px;
+    padding: 14px 4px;
     min-height: 0;
   }
 }
@@ -340,4 +340,8 @@
 .filter-sort-btn,
 .album-new-btn {
   height: 36px;
+}
+
+.admin-sort-control .filter-sort-btn {
+  padding-right: 14px;
 }

@@ -34,16 +34,9 @@
   white-space: nowrap;
 }
 
-// Below the mobile card breakpoint the URL gets its own full-width line.
+// Mobile keeps the shared label/value columns so URL lines up with YEAR.
 .admin-table td.calendar-url-cell {
-  @media (max-width: 600px) {
-    display: block;
-
-    &::before {
-      display: block;
-      margin-bottom: 2px;
-    }
-  }
+  min-width: 0;
 }
 
 .form-section {
@@ -58,13 +51,6 @@
   .full-width {
     width: 100%;
     margin-bottom: 16px;
-  }
-
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 8px;
   }
 }
 

@@ -1,9 +1,10 @@
 @use 'src/app/styles/admin-forms' as *;
 @use 'src/app/styles/admin-data' as *;
 
-// Card surface spans the content grid; fields stay in a readable 640px column.
+// Card spans the grid; cap and center the field column so it does not trail dead space.
 .audio-album-upload-form {
   max-width: 640px;
+  margin: 0 auto;
 }
 
 .admin-upload-checkbox {

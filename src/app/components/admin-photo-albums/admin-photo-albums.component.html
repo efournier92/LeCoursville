@@ -15,9 +15,12 @@
     <input matInput placeholder="Search albums" [ngModel]="searchTerm"
       (ngModelChange)="onSearchChange($event)" aria-label="Search albums" />
   </mat-form-field>
-  <button mat-stroked-button class="filter-sort-btn" admin-filter-actions [matMenuTriggerFor]="sortMenu">
-    Sort: {{ sortType === 'recent' ? 'Recent' : 'Title' }}
-  </button>
+  <div class="admin-sort-control" admin-filter-actions>
+    <button mat-button class="admin-sort-trigger filter-sort-btn" [matMenuTriggerFor]="sortMenu">
+      Sort: {{ sortType === 'recent' ? 'Recent' : 'Title' }}
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </div>
   <button mat-stroked-button class="album-new-btn" admin-filter-actions (click)="onCreateEmptyAlbum()">
     <mat-icon>add</mat-icon> New Album
   </button>

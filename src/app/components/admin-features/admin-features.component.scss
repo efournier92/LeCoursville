@@ -54,6 +54,11 @@
 
   mat-slide-toggle {
     flex-shrink: 0;
+    // M3 emits a null handle-width, pinning the thumb left; 28px restores full travel.
+    --mat-slide-toggle-handle-width: 28px;
+    --mat-slide-toggle-handle-height: 24px;
+    --mat-slide-toggle-selected-handle-horizontal-margin: 0;
+    --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0;
   }
 
   .feature-label {
@@ -65,6 +70,7 @@
     margin-left: auto;
     font-size: 0.8125rem;
     color: var(--color-ink-2);
+    text-align: right;
   }
 }
 
@@ -92,4 +98,16 @@
   margin: 0;
   color: var(--color-ink-2);
   font-size: 0.875rem;
+}
+
+@media (max-width: 600px) {
+  .feature-row {
+    gap: 12px;
+  }
+
+  .feature-changed {
+    margin-left: auto;
+    white-space: nowrap;
+    text-align: right;
+  }
 }

@@ -88,9 +88,22 @@
 - C-20261022-80 | 2026-10-22 | maintainability | low | high | addressed | Dead subtitle input and unused spacing tokens | removed
 - C-20261022-81 | 2026-10-22 | maintainability | low | high | rejected | Redundant reset-link security test | kept as the HTTP-layer assertion
 
+- C-20261022-82 | 2026-10-22 | visual | high | high | addressed | Feature-flag knobs never travelled; state was color plus a glyph only | M3 emits a null handle width; thumb restored
+- C-20261022-83 | 2026-10-22 | visual | medium | high | addressed | Sort control rendered as three detached fragments | one bordered pill with a seated direction toggle
+- C-20261022-84 | 2026-10-22 | visual | medium | high | addressed | Media library card carried an unexplained dark left strip | removed; 1px border only
+- C-20261022-85 | 2026-10-22 | visual | medium | high | addressed | Recovery account rows started at ragged x positions | fixed column grid, right-aligned timestamps
+- C-20261022-86 | 2026-10-22 | visual | medium | high | addressed | Primary CTA position migrated between sibling pages | Add/Update now in the title-bar actions slot
+- C-20261022-87 | 2026-10-22 | visual | medium | high | addressed | Media upload form left half the card empty | centered capped form column
+- C-20261022-88 | 2026-10-22 | visual | medium | high | addressed | Mobile flag timestamps crowded the label with dead space right | right-aligned to the card edge
+- C-20261022-89 | 2026-10-22 | visual | medium | high | addressed | Mobile calendar YEAR and URL used different value columns | one value column
+- C-20261022-90 | 2026-10-22 | visual | low | high | addressed | Recovery mobile label/value treatment differed from siblings | label-left rows
+- C-20261022-91 | 2026-10-22 | visual | low | high | addressed | Album card footer icon row was cramped | balanced 14px padding
+
 ## Rebuttals
 
-  rebuttal | addressed | `npx ng build --configuration=e2e` | initial 822.93 kB raw / 133.32 kB transfer, lazy admin/media/calendar chunks
-  rebuttal | addressed | `CI=true npm test -- --watch=false` | 77 files, 419 tests passed
+  rebuttal | addressed | `npm run e2e:gate` | unit 419; chromium 188, webkit 188, firefox 188 passed, 0 failed, 0 skipped
+  rebuttal | addressed | `npx ng build --configuration=e2e` | initial 822.93 kB raw / 133.32 kB transfer; admin 352.60 kB, media 962.49 kB, calendar 104.23 kB lazy
   rebuttal | addressed | `npm --prefix functions test` | 8 files, 112 tests passed
-  rebuttal | escalated | `docs/critique` | C-48, C-50, C-51, C-71 are human decisions, recorded in the session questions log
+  rebuttal | addressed | `/tmp/af-final/features-desktop.png` | knob travels right in ON state; screenshots for 9 fixes captured
+  rebuttal | escalated | `docs/critique` | C-48, C-50, C-51, C-71 are human decisions, recorded in `design_specs/2026-10-22_admin_open_questions.md`
+  rebuttal | addressed | `database.rules.json:149` | referee noted the C-48 pointer was stale; substance unchanged
