@@ -1,18 +1,19 @@
 import { test, expect } from '../helpers/fixture';
 import { login, E2E_USERS } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
-import { readDb, writeDb } from '../helpers/admin-db';
+import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin', () => {
-  test('users page lists the seeded users', async ({ page }) => {
+  test('users page lists the seeded users in a table', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/users');
-    await expect(page.locator('app-user-edit').first()).toBeVisible({ timeout: 20000 });
-    const names = await page.locator('input[name="user-name"]').evaluateAll((els) =>
-      els.map((e) => (e as HTMLInputElement).value),
-    );
+    const table = page.getByTestId('admin-users-table');
+    await expect(table).toBeVisible({ timeout: 20000 });
+    const rows = table.locator('tbody tr');
+    await expect(rows).toHaveCount(5);
+    const names = await rows.locator('td[data-label="Name"]').allTextContents();
     expect(names).toEqual(
       expect.arrayContaining(['Admin User', 'Regular User', 'Other User', 'Staff Admin', 'Sparse User']),
     );
@@ -46,27 +47,25 @@ test.describe('admin', () => {
 
     await login(page, 'admin');
     await page.goto('/admin/users');
-    const emailInputs = page.locator('input[name="user-email"]');
-    await expect(emailInputs).toHaveCount(5, { timeout: 20000 });
-    const emails = await emailInputs.evaluateAll((elements) =>
-      elements.map((element) => (element as HTMLInputElement).value),
-    );
-    const index = emails.indexOf('user@e2e.local');
-    expect(index).toBeGreaterThanOrEqual(0);
-    const card = page.locator('app-user-edit').nth(index);
-    await expect(card).toBeVisible();
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+    const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+    await expect(row).toBeVisible();
     const before = await readDb(`users/${uid}`);
 
     try {
-      await card.getByRole('checkbox', { name: 'Admin', exact: true }).click();
-      await card.getByRole('button', { name: 'Save' }).click();
-      const dialog = page.getByRole('dialog');
-      await expect(dialog).toContainText('Change access?');
+      await row.getByRole('button', { name: 'Edit' }).click();
+      const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      await expect(editor).toBeVisible();
+      await editor.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await editor.getByRole('button', { name: 'Save' }).click();
+      const dialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
       await expect(dialog).toContainText('Give Regular User admin access?');
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
 
       expect(await readDb(`users/${uid}`)).toEqual(before);
+      await editor.getByRole('button', { name: 'Cancel' }).click();
     } finally {
       await writeDb(`users/${uid}`, before);
     }
@@ -228,6 +227,37 @@ test.describe('admin', () => {
     await page.goto('/admin/calendars');
     const year = new Date().getFullYear().toString();
     await expect(page.getByText(year).first()).toBeVisible();
+  });
+
+  test('media library header sits with the list and dates render zero-padded ISO', async ({ page }) => {
+    const id = `e2e-media-date-${Date.now()}`;
+    await writeDb(`media/${id}`, {
+      id,
+      title: 'E2E Dated Album',
+      artist: 'E2E Artist',
+      date: '2026-6-30',
+      folderName: '',
+      fileName: '',
+      isSticky: false,
+      isHidden: false,
+      listing: [],
+      urls: { download: 'https://example.test/album', icon: '' },
+      type: 'audio-album',
+      format: 'collection/audio',
+      dateUpdated: Date.now(),
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/media');
+      await page.getByRole('tab', { name: 'Audio Album' }).click();
+
+      await expect(page.getByText('Library').first()).toBeVisible();
+      const item = page.locator('.media-list-item').filter({ hasText: 'E2E Dated Album' });
+      await expect(item.locator('.media-details-date')).toHaveText('2026-06-30');
+    } finally {
+      await deleteDb(`media/${id}`);
+    }
   });
 
   test('uploads page lists the pre-seeded approved upload', async ({ page }) => {

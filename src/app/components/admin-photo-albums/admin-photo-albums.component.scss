@@ -185,20 +185,6 @@
   font-size: 0.875rem;
 }
 
-.album-edit-form-section {
-  margin: 0 0 16px;
-}
-
-.album-edit-card {
-  padding: 16px;
-  background: var(--color-surface);
-
-  mat-form-field {
-    width: 100%;
-    min-width: 320px;
-  }
-}
-
 // Fields sit on white sheets, so they need their own white fill and hairline to
 // stay readable against the toolbar frost and card surface.
 :host ::ng-deep .mat-mdc-form-field {
@@ -221,13 +207,16 @@
 .album-photos-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
 
   h2 {
+    min-width: 0;
     margin: 0;
     font-size: 1.25rem;
     color: var(--color-ink);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -236,8 +225,29 @@
   font-size: 0.9rem;
 }
 
-.album-photos-spacer {
-  flex: 1;
+.album-photos-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+
+  .mat-mdc-button-base {
+    height: 36px;
+  }
+}
+
+@media (max-width: 600px) {
+  .album-photos-actions {
+    flex: 1 0 100%;
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+
+    .mat-mdc-button-base {
+      width: 100%;
+    }
+  }
 }
 
 .admin-photo-grid {
@@ -313,11 +323,6 @@
   }
 }
 
-.album-delete-btn {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
 :host {
   display: block;
   width: 100%;
@@ -325,25 +330,14 @@
 
 .admin-photo-albums-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   padding-bottom: 24px;
 }
 
-@media (max-width: 600px) {
-  // Search takes its own row; secondary actions share one 8px-gap row and the
-  // primary action closes the stack full width.
-  :host .albums-toolbar ::ng-deep .page-toolbar-content {
-    width: 100%;
-    gap: 8px;
-  }
+.album-search-field {
+  width: 100%;
+}
 
-  .album-search-field {
-    flex: 1 0 100%;
-  }
-
-  .album-upload-btn {
-    order: 3;
-    flex: 1 0 100%;
-  }
+.filter-sort-btn,
+.album-new-btn {
+  height: 36px;
 }

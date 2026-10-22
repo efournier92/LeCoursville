@@ -1,5 +1,32 @@
+// Dressed outlined field: white fill, hairline, compact 44px box. One shared
+// class so pages stop re-declaring the Material token recipe.
 .admin-upload-input {
   width: 100%;
+  --mat-form-field-container-height: 44px;
+  --mat-form-field-container-vertical-padding: 10px;
+  --mat-form-field-outlined-outline-color: var(--color-border);
+  --mat-form-field-outlined-label-text-color: var(--color-ink-2);
+  --mat-form-field-outlined-input-text-placeholder-color: var(--color-ink-2);
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background: var(--color-surface);
+    border-radius: var(--radius-input);
+  }
+
+  ::ng-deep .mdc-floating-label {
+    font-style: normal;
+    color: var(--color-ink-2);
+  }
+
+  ::ng-deep .mdc-floating-label:not(.mdc-floating-label--float-above) {
+    font-size: 0.875rem;
+  }
+
+  ::ng-deep input::placeholder,
+  ::ng-deep textarea::placeholder {
+    color: var(--color-ink-2);
+    font-style: normal;
+  }
 }
 
 .admin-header {

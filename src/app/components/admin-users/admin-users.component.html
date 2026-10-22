@@ -1,8 +1,10 @@
-<div class="admin-users-component-container">
+<div class="admin-page admin-users-component-container">
 
-  <app-page-toolbar title="Users">
-    <mat-form-field class="filter-users-form-field">
-      <mat-label>Filter</mat-label>
+  <app-page-toolbar title="Users"></app-page-toolbar>
+
+  <app-admin-filter-bar>
+    <mat-form-field class="filter-users-form-field" admin-filter-search>
+      <mat-label>Search</mat-label>
       <input
         matInput
         type="text"
@@ -14,7 +16,7 @@
         <button
           matSuffix
           mat-icon-button
-          aria-label="Clear filter"
+          aria-label="Clear search"
           (click)="onFilterQueryChange('')"
           >
           <mat-icon>close</mat-icon>
@@ -22,53 +24,43 @@
       }
     </mat-form-field>
 
-    <div class="admin-users-sort-buttons">
+    <div class="admin-users-sort-buttons" admin-filter-actions>
       <button
         mat-button
+        data-testid="admin-users-sort"
         [matMenuTriggerFor]="menu"
         >
-        Sort By: {{ getSortPropertyText() }}
+        Sort: {{ getSortPropertyText() }}
+        <mat-icon>{{ isSortDescending() ? 'arrow_drop_down' : 'arrow_drop_up' }}</mat-icon>
       </button>
       <button
-        mat-button
+        mat-icon-button
+        data-testid="admin-users-sort-direction"
         aria-label="Reverse sort direction"
         (click)="reverseDisplayedUsersSortOrder()"
         >
-        @if (!isSortDescending()) {
-          <mat-icon>arrow_drop_up</mat-icon>
-        }
-        @if (isSortDescending()) {
-          <mat-icon>arrow_drop_down</mat-icon>
-        }
+        <mat-icon>swap_vert</mat-icon>
       </button>
     </div>
     <mat-menu #menu="matMenu">
-      <button
-        mat-menu-item
-        (click)="sortByDateLastActive()"
-        >
-        Date Last Active
+      <button mat-menu-item (click)="sortByDateLastActive()">
+        <mat-icon>{{ isActiveSort('dateLastActive') ? 'check' : '' }}</mat-icon>
+        <span>Date Last Active</span>
       </button>
-      <button
-        mat-menu-item
-        (click)="sortByName()"
-        >
-        Name
+      <button mat-menu-item (click)="sortByName()">
+        <mat-icon>{{ isActiveSort('name') ? 'check' : '' }}</mat-icon>
+        <span>Name</span>
       </button>
-      <button
-        mat-menu-item
-        (click)="sortByEmail()"
-        >
-        Email
+      <button mat-menu-item (click)="sortByEmail()">
+        <mat-icon>{{ isActiveSort('email') ? 'check' : '' }}</mat-icon>
+        <span>Email</span>
       </button>
-      <button
-        mat-menu-item
-        (click)="sortByDateRegistered()"
-        >
-        Date Registered
+      <button mat-menu-item (click)="sortByDateRegistered()">
+        <mat-icon>{{ isActiveSort('dateRegistered') ? 'check' : '' }}</mat-icon>
+        <span>Date Registered</span>
       </button>
     </mat-menu>
-  </app-page-toolbar>
+  </app-admin-filter-bar>
 
   @if (state === 'loading') {
     <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading users">
@@ -80,10 +72,10 @@
   }
 
   @if (state === 'error') {
-    <app-load-error
-      message="We couldn't load the user list."
-      (retry)="retry()"
-      />
+    <div class="admin-error" role="alert">
+      We couldn't load the user list.
+      <button mat-button type="button" (click)="retry()">Retry</button>
+    </div>
   }
 
   @if (state === 'ready') {
@@ -95,38 +87,79 @@
         hint="Users will appear here once they sign in."
         />
     } @else {
-      <div class="admin-user-card-container">
-        @for (cardUser of displayedUsers; track cardUser.id) {
-          <app-user-edit
-            [userOnCard]="cardUser"
-            [isAdminMode]="true"
-            (cancelEditClickedEvent)="updateUser(cardUser)"
-            >
-          </app-user-edit>
-        }
-      </div>
+      <mat-card class="admin-surface users-table-card">
+        <table class="admin-table" data-testid="admin-users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Last Active</th>
+              <th>Registered</th>
+              <th>Roles</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rowUser of displayedUsers; track rowUser.id) {
+              <tr>
+                <td data-label="Name">{{ rowUser.name || '—' }}</td>
+                <td data-label="Email">{{ rowUser.email }}</td>
+                <td data-label="Last Active">{{ rowUser.dateLastActive | date:'yyyy-MM-dd' }}</td>
+                <td data-label="Registered">{{ rowUser.dateRegistered | date:'yyyy-MM-dd' }}</td>
+                <td data-label="Roles">
+                  @for (role of userRoles(rowUser); track role) {
+                    <span class="role-badge" [class]="'role-badge role-badge-' + role.toLowerCase()">{{ role }}</span>
+                  } @empty {
+                    <span class="admin-muted">—</span>
+                  }
+                </td>
+                <td data-label="" class="user-actions">
+                  <button
+                    mat-icon-button
+                    aria-label="Edit"
+                    (click)="openEditor(rowUser)"
+                    >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    aria-label="Delete"
+                    (click)="deleteUser(rowUser)"
+                    >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  @if (deleteErrors[rowUser.id]) {
+                    <div class="row-error" role="alert">{{ deleteErrors[rowUser.id] }}</div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
 
-      <div class="admin-pagination">
-        <span>{{ showingRange }}</span>
-        <div class="pager admin-pager">
-          <button
-            mat-button
-            type="button"
-            [disabled]="pageIndex <= 1"
-            (click)="previousPage()"
-            >
-            Prev
-          </button>
-          <button
-            mat-button
-            type="button"
-            [disabled]="pageIndex >= pageCount"
-            (click)="nextPage()"
-            >
-            Next
-          </button>
+        <div class="admin-pagination users-pagination">
+          <span>{{ showingRange }}</span>
+          <div class="pager admin-pager">
+            <button
+              mat-button
+              type="button"
+              [disabled]="pageIndex <= 1"
+              (click)="previousPage()"
+              >
+              Prev
+            </button>
+            <button
+              mat-button
+              type="button"
+              [disabled]="pageIndex >= pageCount"
+              (click)="nextPage()"
+              >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      </mat-card>
     }
   }
 </div>

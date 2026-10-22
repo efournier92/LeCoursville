@@ -1,21 +1,9 @@
 @use 'src/app/styles/admin-data' as *;
 
-.admin-people-import-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 24px;
-}
-
-
 // Card base
 .import-card,
 .preview-card,
 .result-card {
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-
   mat-card-header {
     padding: 16px 24px 0;
 
@@ -24,12 +12,6 @@
       justify-content: space-between;
       align-items: flex-start;
       width: 100%;
-
-      mat-card-title {
-        font-size: 20px;
-        font-weight: 500;
-        margin-bottom: 4px;
-      }
 
       mat-card-subtitle {
         font-size: 14px;

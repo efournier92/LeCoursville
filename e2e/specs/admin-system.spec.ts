@@ -5,6 +5,85 @@ import { deleteDb, readDb, writeDb } from '../helpers/admin-db';
 test.describe('admin system surfaces', () => {
   test.afterEach(async ({ collector }) => collector.assertClean());
 
+  test('users: the table renders the contract columns and seeded rows', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+
+    const table = page.getByTestId('admin-users-table');
+    await expect(table).toBeVisible({ timeout: 20000 });
+    const headers = await table.locator('thead th').allTextContents();
+    expect(headers).toEqual(['Name', 'Email', 'Last Active', 'Registered', 'Roles', '']);
+
+    const rows = table.locator('tbody tr');
+    await expect(rows).toHaveCount(5);
+    const regular = rows.filter({ hasText: 'user@e2e.local' });
+    await expect(regular).toContainText('Regular User');
+    await expect(regular).toContainText('Member');
+    await expect(page.locator('.admin-pagination')).toContainText('Showing 1-5 of 5');
+  });
+
+  test('users: Edit opens the editor dialog and Cancel closes it unchanged', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+    const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+
+    await row.getByRole('button', { name: 'Edit' }).click();
+    const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+    await expect(editor).toBeVisible();
+    await expect(editor.locator('input[name="user-name"]')).toHaveValue('Regular User');
+
+    await editor.getByRole('button', { name: 'Cancel' }).click();
+    await expect(editor).toHaveCount(0);
+    await expect(row).toBeVisible();
+  });
+
+  test('users: Delete asks for confirmation and Cancel keeps the row', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+    const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+
+    await row.getByRole('button', { name: 'Delete' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Delete user?');
+    await expect(dialog).toContainText('Delete Regular User? This cannot be undone.');
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(row).toBeVisible();
+  });
+
+  test('users: search and sort survive navigating away and back', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+
+    await page.getByTestId('admin-users-filter').fill('Sparse');
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(page).toHaveURL(/[?&]q=Sparse/);
+
+    await page.getByTestId('admin-users-sort').click();
+    await page.getByRole('menuitem', { name: 'Name' }).click();
+    await expect(page).toHaveURL(/[?&]sort=name/);
+    await expect(page.getByTestId('admin-users-sort')).toContainText('Sort: Name');
+
+    await page.getByTestId('admin-nav-link-calendars').click();
+    await expect(page).toHaveURL(/\/admin\/calendars$/);
+    await page.goBack();
+
+    await expect(page).toHaveURL(/\/admin\/users\?/);
+    await expect(page.getByTestId('admin-users-filter')).toHaveValue('Sparse');
+    await expect(page.getByTestId('admin-users-sort')).toContainText('Sort: Name');
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+  });
+
   test('calendars: delete dialog names the year and cancel keeps the row', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/calendars');

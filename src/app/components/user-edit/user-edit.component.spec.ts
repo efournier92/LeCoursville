@@ -167,17 +167,49 @@ describe('UserEditComponent', () => {
     );
   });
 
-  it('does not write an audit row when the user save fails', async () => {
+  it('surfaces a save failure and does not write an audit row or emit saved', async () => {
     const user = makeUser();
     component.userOnCard = user;
     component.ngOnInit();
     confirmDialog.confirm.mockResolvedValue(true);
     adminService.updateUser.mockRejectedValueOnce(new Error('write failed'));
     user.roles.admin = true;
+    const saved = vi.fn();
+    component.userSavedEvent.subscribe(saved);
 
-    await expect(component.onSaveUser(user)).rejects.toThrow('write failed');
+    await component.onSaveUser(user);
 
+    expect(component.saveError).toContain('Could not save Ada Lovelace: write failed');
     expect(adminService.addRoleAudit).not.toHaveBeenCalled();
+    expect(saved).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a delete failure without emitting the close event', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.ngOnInit();
+    confirmDialog.confirm.mockResolvedValue(true);
+    adminService.deleteUser.mockRejectedValueOnce(new Error('permission denied'));
+    const cancelled = vi.fn();
+    component.cancelEditClickedEvent.subscribe(cancelled);
+
+    await component.onDeleteUser(user);
+
+    expect(component.deleteError).toContain('Could not delete Ada Lovelace: permission denied');
+    expect(cancelled).not.toHaveBeenCalled();
+  });
+
+  it('emits saved after a successful admin-mode save', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.isAdminMode = true;
+    component.ngOnInit();
+    const saved = vi.fn();
+    component.userSavedEvent.subscribe(saved);
+
+    await component.onSaveUser(user);
+
+    expect(saved).toHaveBeenCalledTimes(1);
   });
 
   it('commits the working copy to the input user on a confirmed save', async () => {

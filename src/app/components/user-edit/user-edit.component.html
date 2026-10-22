@@ -1,70 +1,45 @@
-@if (userSignedIn?.id) {
-  <mat-card
-    class="user-card mat-elevation-z6"
-    >
-    <form>
-      <mat-form-field class="user-edit-form-field w-100">
-        <mat-label>Name</mat-label>
-        <input
-          matInput
-          name="user-name"
-          [(ngModel)]="formUser.name"
-          />
-      </mat-form-field>
-      <mat-form-field class="user-edit-form-field w-100">
-        <mat-label>Email</mat-label>
-        <input
-          matInput
-          type="email"
-          name="user-email"
-          [(ngModel)]="formUser.email"
-          />
-      </mat-form-field>
-      <div class="user-edit-display-container">
-        <div class="user-edit-field-group">
-          <div class="user-edit-display-field">
-            <div class="user-edit-display-label">Last Active</div>
-            <div class="user-edit-display-value">{{ formUser.dateLastActive | date:'yyyy-MM-dd' }}</div>
-          </div>
-          <div class="user-edit-display-field user-edit-display-right">
-            <div class="user-edit-display-label">Registered</div>
-            <div class="user-edit-display-value">{{ formUser.dateRegistered | date:'yyyy-MM-dd' }}</div>
-          </div>
-        </div>
-      </div>
-      @if (isSuperUser()) {
-        <div
-          class="user-roles-container mt-3"
+@if (userSignedIn?.id && formUser) {
+  @if (isAdminMode) {
+    <h2 mat-dialog-title>Edit user</h2>
+    <div mat-dialog-content class="user-edit-dialog-body">
+      <form>
+        <ng-container [ngTemplateOutlet]="userFields"></ng-container>
+      </form>
+    </div>
+    <div mat-dialog-actions align="end" class="user-card-footer-actions">
+      <button
+        mat-button
+        class="admin-form-action-button admin-form-action-button-cancel"
+        color="accent"
+        (click)="onCancelEdit()"
+        >
+        <span>Cancel</span>
+      </button>
+      @if (userSignedIn?.roles?.super) {
+        <button
+          mat-stroked-button
+          class="admin-form-action-button admin-form-action-button-delete"
+          color="warn"
+          (click)="onDeleteUser(formUser)"
           >
-          <mat-checkbox
-            name="user-roles-user"
-            [(ngModel)]="formUser.roles.user"
-            >
-            User
-          </mat-checkbox>
-          <mat-checkbox
-            name="user-roles-admin"
-            [(ngModel)]="formUser.roles.admin"
-            [disabled]="formUser.roles.super"
-            (change)="onAdminChange(formUser)"
-            >
-            Admin
-          </mat-checkbox>
-          <mat-checkbox
-            name="user-roles-super"
-            [(ngModel)]="formUser.roles.super"
-            (change)="onSuperChange(formUser)"
-            >
-            Super
-          </mat-checkbox>
-        </div>
+          <span>Delete</span>
+        </button>
       }
-      @if (isAdminMode) {
-        <div class="user-edit-id-caption">{{ formUser.id }}</div>
-      }
-    </form>
-    <mat-card-footer class="user-card-footer-actions m-0 mt-4">
-      @if (!isAdminMode) {
+      <button
+        mat-flat-button
+        class="admin-form-action-button admin-form-action-button-upload"
+        color="primary"
+        (click)="onSaveUser(formUser)"
+        >
+        <span>Save</span>
+      </button>
+    </div>
+  } @else {
+    <mat-card class="user-card mat-elevation-z6">
+      <form>
+        <ng-container [ngTemplateOutlet]="userFields"></ng-container>
+      </form>
+      <mat-card-footer class="user-card-footer-actions m-0 mt-4">
         <button
           mat-button
           class="admin-form-action-button admin-form-action-button-cancel col m-2"
@@ -73,25 +48,88 @@
           >
           <span>Cancel</span>
         </button>
-      }
-      <button
-        mat-flat-button
-        class="admin-form-action-button admin-form-action-button-upload col m-2"
-        color="primary"
-        (click)="onSaveUser(formUser)"
-        >
-        <span>Save</span>
-      </button>
-      @if (userSignedIn?.roles?.super) {
         <button
-          mat-stroked-button
-          class="admin-form-action-button admin-form-action-button-delete col m-2"
-          color="warn"
-          (click)="onDeleteUser(formUser)"
+          mat-flat-button
+          class="admin-form-action-button admin-form-action-button-upload col m-2"
+          color="primary"
+          (click)="onSaveUser(formUser)"
           >
-          <span>Delete</span>
+          <span>Save</span>
         </button>
-      }
-    </mat-card-footer>
-  </mat-card>
+        @if (userSignedIn?.roles?.super) {
+          <button
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-delete col m-2"
+            color="warn"
+            (click)="onDeleteUser(formUser)"
+            >
+            <span>Delete</span>
+          </button>
+        }
+      </mat-card-footer>
+    </mat-card>
+  }
 }
+
+<ng-template #userFields>
+  <mat-form-field class="user-edit-form-field w-100">
+    <mat-label>Name</mat-label>
+    <input
+      matInput
+      name="user-name"
+      [(ngModel)]="formUser.name"
+      />
+  </mat-form-field>
+  <mat-form-field class="user-edit-form-field w-100">
+    <mat-label>Email</mat-label>
+    <input
+      matInput
+      type="email"
+      name="user-email"
+      [(ngModel)]="formUser.email"
+      />
+  </mat-form-field>
+  <div class="user-edit-display-container">
+    <div class="user-edit-field-group">
+      <div class="user-edit-display-field">
+        <div class="user-edit-display-label">Last Active</div>
+        <div class="user-edit-display-value">{{ formUser.dateLastActive | date:'yyyy-MM-dd' }}</div>
+      </div>
+      <div class="user-edit-display-field user-edit-display-right">
+        <div class="user-edit-display-label">Registered</div>
+        <div class="user-edit-display-value">{{ formUser.dateRegistered | date:'yyyy-MM-dd' }}</div>
+      </div>
+    </div>
+  </div>
+  @if (isSuperUser()) {
+    <div class="user-roles-container mt-3">
+      <mat-checkbox name="user-roles-user" [(ngModel)]="formUser.roles.user">
+        User
+      </mat-checkbox>
+      <mat-checkbox
+        name="user-roles-admin"
+        [(ngModel)]="formUser.roles.admin"
+        [disabled]="formUser.roles.super"
+        (change)="onAdminChange(formUser)"
+        >
+        Admin
+      </mat-checkbox>
+      <mat-checkbox
+        name="user-roles-super"
+        [(ngModel)]="formUser.roles.super"
+        (change)="onSuperChange(formUser)"
+        >
+        Super
+      </mat-checkbox>
+    </div>
+  }
+  @if (isAdminMode) {
+    <div class="user-edit-id-caption">{{ formUser.id }}</div>
+  }
+  @if (saveError) {
+    <div class="user-edit-error" role="alert">{{ saveError }}</div>
+  }
+  @if (deleteError) {
+    <div class="user-edit-error" role="alert">{{ deleteError }}</div>
+  }
+</ng-template>

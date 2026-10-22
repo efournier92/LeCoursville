@@ -1,74 +1,31 @@
 @use 'src/app/styles/admin-forms' as *;
+@use 'src/app/styles/admin-data' as *;
 
-.action-error {
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid var(--color-error);
-  border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
-  color: var(--color-ink);
-  font-size: 0.875rem;
-}
-
-.admin-media-upload-divider {
-  margin-top: 22px;
-}
-
-.admin-media-upload-or-container {
-  text-align: center;
-  width: 100%;
-}
-
-.admin-media-upload-or-span {
-  color: var(--color-ink-2);
-  text-align: center;
-  width: 100%;
-}
-
+// Card surface spans the content grid; fields stay in a readable 640px column.
 .audio-album-upload-form {
-  width: 100%;
   max-width: 640px;
 }
 
-// Card surface spans the content grid; fields stay in a readable 640px column.
-mat-card {
-  width: 100%;
-  margin: 0;
-  padding: 16px;
-  box-sizing: border-box;
-  background: var(--color-surface);
+.admin-upload-checkbox {
+  display: block;
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+
+  .admin-form-action-button {
+    width: 112px;
+    height: 36px;
+    margin-top: 0;
+  }
 }
 
 .admin-media-list-container {
   width: 100%;
-}
-
-.admin-upload-input {
-  --mat-form-field-container-height: 44px;
-  --mat-form-field-container-vertical-padding: 10px;
-  --mat-form-field-outlined-outline-color: var(--color-border);
-  --mat-form-field-outlined-label-text-color: var(--color-ink-2);
-  --mat-form-field-outlined-input-text-placeholder-color: var(--color-ink-2);
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background: var(--color-surface);
-    border-radius: var(--radius-input);
-  }
-
-  ::ng-deep .mdc-floating-label {
-    font-style: normal;
-    color: var(--color-ink-2);
-  }
-
-  ::ng-deep .mdc-floating-label:not(.mdc-floating-label--float-above) {
-    font-size: 0.875rem;
-  }
-
-  ::ng-deep input::placeholder,
-  ::ng-deep textarea::placeholder {
-    color: var(--color-ink-2);
-    font-style: normal;
-  }
 }
 
 button.admin-form-action-button-cancel {
@@ -81,6 +38,8 @@ button.admin-form-action-button-delete {
   border-color: var(--color-error);
 }
 
-.optional-field {
-  font-style: italic;
+:host {
+  display: block;
+  overflow-x: hidden;
+  max-width: 100%;
 }

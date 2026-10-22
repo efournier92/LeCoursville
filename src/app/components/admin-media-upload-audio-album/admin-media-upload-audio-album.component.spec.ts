@@ -76,6 +76,6 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
     fixture.detectChanges();
 
     expect(component.album.id).toBe('a1');
-    expect(fixture.nativeElement.querySelector('.action-error').textContent).toContain('Couldn');
+    expect(fixture.nativeElement.querySelector('.admin-error').textContent).toContain('Couldn');
   });
 });

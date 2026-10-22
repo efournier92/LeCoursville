@@ -16,9 +16,12 @@ export class UserEditComponent implements OnInit, OnChanges {
   @Input() isAdminMode = false;
 
   @Output() cancelEditClickedEvent = new EventEmitter();
+  @Output() userSavedEvent = new EventEmitter<void>();
 
   userSignedIn: User;
   formUser: User;
+  saveError = '';
+  deleteError = '';
   private originalRoles = { admin: false, super: false };
 
   constructor(
@@ -75,6 +78,7 @@ export class UserEditComponent implements OnInit, OnChanges {
   }
 
   async onSaveUser(user: User): Promise<void> {
+    this.saveError = '';
     if (user.roles?.super) {
       user.roles.admin = true;
     }
@@ -91,25 +95,48 @@ export class UserEditComponent implements OnInit, OnChanges {
         return;
       }
     }
+    try {
+      await this.updateUser(user);
+      if (changes.messages.length > 0) {
+        await this.recordRoleChange(user);
+        this.originalRoles = {
+          admin: user.roles?.admin === true,
+          super: user.roles?.super === true,
+        };
+      }
+    } catch (error) {
+      this.saveError = `Could not save ${this.displayName(user)}: ${this.errorMessage(error)}`;
+      return;
+    }
     this.commitToInput(user);
-    await this.updateUser(user);
-    if (changes.messages.length > 0) {
-      await this.recordRoleChange(user);
-      this.originalRoles = {
-        admin: user.roles?.admin === true,
-        super: user.roles?.super === true,
-      };
+    this.userSavedEvent.emit();
+  }
+
+  async onDeleteUser(user: User): Promise<void> {
+    this.deleteError = '';
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete user?',
+      message: `Delete ${this.displayName(user)}? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await this.adminService.deleteUser(user);
+    } catch (error) {
+      this.deleteError = `Could not delete ${this.displayName(user)}: ${this.errorMessage(error)}`;
+      return;
     }
     if (this.isAdminMode) {
       this.emitCancelEditEvent();
     }
   }
 
-  onDeleteUser(user: User): Promise<void> {
-    return this.deleteUser(user);
-  }
-
   onCancelEdit(): void {
+    this.saveError = '';
+    this.deleteError = '';
     this.resetForm();
     this.emitCancelEditEvent();
   }
@@ -175,16 +202,8 @@ export class UserEditComponent implements OnInit, OnChanges {
     });
   }
 
-  private async deleteUser(user: User): Promise<void> {
-    const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete user?',
-      message: `Delete ${this.displayName(user)}? This cannot be undone.`,
-      confirmLabel: 'Delete',
-      destructive: true,
-    });
-    if (confirmed) {
-      this.adminService.deleteUser(user);
-    }
+  private errorMessage(error: unknown): string {
+    return (error as Error)?.message || 'Unknown error';
   }
 
   private emitCancelEditEvent(): void {

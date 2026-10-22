@@ -106,6 +106,18 @@ export class MediaListComponent implements OnInit, OnChanges {
     return this.isAdminMode || media?.isHidden !== true;
   }
 
+  /** Normalizes stored `Y-M-D` (or `Y:M:D`) to the zero-padded ISO form. */
+  formatDate(date: string): string {
+    if (!date) {
+      return '';
+    }
+    const match = date.trim().match(/^(\d{4})[-:/](\d{1,2})[-:/](\d{1,2})$/);
+    if (!match) {
+      return date;
+    }
+    return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+  }
+
   onImageLoaded(media: any): void {
     media.isIconLoaded = true;
   }

@@ -55,7 +55,7 @@ export class AdminService {
     return this.rtdb.object(`roleAudit/${id}`).set(record);
   }
 
-  deleteUser(user: User): void {
-    this.rtdb.object(`/users/${user.id}`).remove();
+  deleteUser(user: User): Promise<void> {
+    return this.rtdb.object(`/users/${user.id}`).remove();
   }
 }

@@ -14,7 +14,9 @@
     },
     "messages": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true"
+      "$id": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid) || (data.exists() && (data.child('authorId').val() === auth.uid || (newData.child('authorId').val() === data.child('authorId').val() && newData.child('authorName').val() === data.child('authorName').val() && newData.child('title').val() === data.child('title').val() && newData.child('body').val() === data.child('body').val() && newData.child('messageType').val() === data.child('messageType').val() && newData.child('dateSent').val() === data.child('dateSent').val() && newData.child('attachmentId').val() === data.child('attachmentId').val() && newData.child('attachmentType').val() === data.child('attachmentType').val() && newData.child('attachmentUrl').val() === data.child('attachmentUrl').val() && newData.child('isDeleted').val() === data.child('isDeleted').val() && newData.child('isSticky').val() === data.child('isSticky').val() && newData.child('isSaved').val() === data.child('isSaved').val() && newData.child('isReply').val() === data.child('isReply').val() && newData.child('replyLevel').val() === data.child('replyLevel').val() && newData.child('attribution').val() === data.child('attribution').val() && newData.child('yearWritten').val() === data.child('yearWritten').val()))))"
+      }
     },
     "photos": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
@@ -26,13 +28,14 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "media": {
-      ".read": "true",
+      ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "users": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       "$uid": {
+        ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true)",
         ".write": "$uid === auth.uid && ((!data.exists() && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && data.child('roles/user').val() === newData.child('roles/user').val() && data.child('roles/admin').val() === newData.child('roles/admin').val() && data.child('roles/super').val() === newData.child('roles/super').val()))"
       }
     },
@@ -45,7 +48,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
     "clans": {
-      ".read": "true",
+      ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "families": {
@@ -69,7 +72,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
       ".indexOn": ["status"],
       "$id": {
-        ".write": "!data.exists() && newData.child('status').val() === 'pending'"
+        ".write": "!data.exists() && newData.child('status').val() === 'pending' && newData.child('path').val() !== null && newData.child('path').val().matches(/^userUploads\\//) && !newData.child('path').val().matches(/\\.\\./) && !newData.child('path').val().matches(/\\\\/) && (newData.child('url').val() === null || newData.child('url').val() === '')"
       }
     },
     "recoveryRequests": {

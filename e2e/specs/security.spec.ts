@@ -26,6 +26,37 @@ const TINY_PNG = Buffer.from(
   'base64',
 );
 
+const STORAGE_ORIGIN = 'http://127.0.0.1:9199';
+const STORAGE_BUCKET = 'lecoursville-dev.appspot.com';
+
+function storageUrl(path: string): string {
+  return `http://localhost:9199/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}?alt=media`;
+}
+
+async function putStorageObject(path: string): Promise<void> {
+  const res = await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o?uploadType=media&name=${encodeURIComponent(path)}`,
+    { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: TINY_PNG },
+  );
+  if (!res.ok) {
+    throw new Error(`storage seed ${path} -> HTTP ${res.status}`);
+  }
+}
+
+async function deleteStorageObject(path: string): Promise<void> {
+  await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}`,
+    { method: 'DELETE' },
+  ).catch(() => undefined);
+}
+
+async function storageObjectStatus(path: string): Promise<number> {
+  const res = await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}`,
+  );
+  return res.status;
+}
+
 // Security pass, emulator scope. Findings that are out of scope (console
 // rules, password-reset email delivery) are listed in the morning report, not
 // tested here.
@@ -398,6 +429,287 @@ test.describe('security', () => {
       expect(await superRead.json()).toEqual(record);
     } finally {
       await deleteDb(`roleAudit/${id}`);
+    }
+  });
+
+  test('rules: a client-created upload must be pending, under userUploads, and url-free', async () => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const key = `security-upload-${Date.now()}`;
+    const put = (body: Record<string, unknown>) =>
+      fetch(
+        `http://localhost:9000/userUploads/${key}.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+        { method: 'PUT', body: JSON.stringify(body) },
+      );
+    const base = {
+      id: key,
+      status: 'pending',
+      path: `userUploads/${key}/file.png`,
+      fileName: 'file.png',
+      fileType: 'image/png',
+    };
+
+    try {
+      // An arbitrary URL would survive into the admin preview.
+      expect((await put({ ...base, url: 'https://evil.example/x.png' })).status).not.toBe(200);
+      // A path outside the uploads prefix would let approval copy/delete other data.
+      expect((await put({ ...base, path: 'photos/album-1/photo1.png' })).status).not.toBe(200);
+      expect((await put({ ...base, path: 'userUploads/../photos/x.png' })).status).not.toBe(200);
+      // A client cannot self-approve.
+      expect((await put({ ...base, status: 'approved' })).status).not.toBe(200);
+
+      const valid = await put(base);
+      expect(valid.ok).toBe(true);
+      expect(await readDb<Record<string, unknown>>(`userUploads/${key}`)).toMatchObject({
+        status: 'pending',
+        path: base.path,
+      });
+    } finally {
+      await deleteDb(`userUploads/${key}`);
+    }
+  });
+
+  test('upload trust: rejecting an upload touches its path, never an attacker-authored url', async ({ page }) => {
+    const key = `security-trust-${Date.now()}`;
+    const uploadPath = `userUploads/${key}/attack.png`;
+    const victimPath = 'photos/album-1/photo1.png';
+    await putStorageObject(uploadPath);
+    await writeDb(`userUploads/${key}`, {
+      id: key,
+      url: storageUrl(victimPath),
+      path: uploadPath,
+      dateAdded: Date.now(),
+      eventName: 'Security probe',
+      status: 'pending',
+      uploader: { name: 'Probe', email: 'probe@e2e.local' },
+      fileName: 'attack.png',
+      fileType: 'image/png',
+      fileSize: TINY_PNG.length,
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/uploads');
+      const row = page.locator('tr', { hasText: 'attack.png' }).first();
+      await expect(row).toBeVisible();
+      await row.getByRole('button', { name: 'Reject attack.png' }).click();
+      await page.getByRole('button', { name: 'Reject upload' }).click();
+
+      await expect.poll(() => storageObjectStatus(uploadPath)).toBe(404);
+      expect(await storageObjectStatus(victimPath)).toBe(200);
+      await expect.poll(() => readDb(`userUploads/${key}`)).toBeNull();
+    } finally {
+      if ((await storageObjectStatus(victimPath)) !== 200) {
+        await putStorageObject(victimPath);
+      }
+      await deleteDb(`userUploads/${key}`);
+      await deleteStorageObject(uploadPath);
+    }
+  });
+
+  test('rules: messages deny forged authors, edits, and deletes of another user', async ({ page }) => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const uidFor = (email: string) =>
+      Object.entries(users).find(([, value]) => value?.email === email)?.[0] as string;
+    const userUid = uidFor(E2E_USERS.user.email);
+    const adminUid = uidFor(E2E_USERS.admin.email);
+    const ownKey = `security-own-${Date.now()}`;
+    const forgedKey = `security-forged-${Date.now()}`;
+    const seeded = (await readDb<Record<string, any>>('messages/msg-1')) ?? null;
+    expect(seeded).toBeTruthy();
+    const base = `http://localhost:9000/messages`;
+    const auth = `ns=lecoursville-dev-default-rtdb&auth=${token}`;
+
+    try {
+      const forged = await fetch(`${base}/${forgedKey}.json?${auth}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: forgedKey,
+          authorId: adminUid,
+          authorName: 'Admin User',
+          title: 'Forged',
+          body: 'Forged by another identity',
+          messageType: 'chat',
+          isReply: false,
+          replyLevel: 0,
+          likes: [],
+          replies: [],
+          dateSent: new Date().toISOString(),
+        }),
+      });
+      expect(forged.status).not.toBe(200);
+
+      const own = await fetch(`${base}/${ownKey}.json?${auth}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: ownKey,
+          authorId: userUid,
+          authorName: 'Regular User',
+          title: 'Own message',
+          body: 'Written by its author',
+          messageType: 'chat',
+          isReply: false,
+          replyLevel: 0,
+          likes: [],
+          replies: [],
+          dateSent: new Date().toISOString(),
+        }),
+      });
+      expect(own.ok).toBe(true);
+
+      // Editing another user's content is denied and leaves the record intact.
+      const edit = await fetch(`${base}/msg-1.json?${auth}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ...seeded, body: 'hijacked' }),
+      });
+      expect(edit.status).not.toBe(200);
+      expect((await readDb<Record<string, any>>('messages/msg-1'))?.body).toBe(seeded.body);
+
+      const remove = await fetch(`${base}/msg-1.json?${auth}`, { method: 'DELETE' });
+      expect(remove.status).not.toBe(200);
+      expect(await readDb('messages/msg-1')).not.toBeNull();
+
+      // Likes and replies legitimately write another author's record; only the
+      // interactive fields may change.
+      const liked = await fetch(`${base}/msg-1.json?${auth}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          ...seeded,
+          likes: [{ userId: userUid, userName: 'Regular User' }],
+        }),
+      });
+      expect(liked.ok).toBe(true);
+
+      const ownDelete = await fetch(`${base}/${ownKey}.json?${auth}`, { method: 'DELETE' });
+      expect(ownDelete.ok).toBe(true);
+    } finally {
+      await writeDb('messages/msg-1', seeded);
+      await deleteDb(`messages/${ownKey}`);
+      await deleteDb(`messages/${forgedKey}`);
+    }
+  });
+
+  test('rules: users is own-record or super, not the authenticated roster', async () => {
+    const userToken = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const staffToken = await idToken(E2E_USERS.staff.email, E2E_USERS.staff.password);
+    const superToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const uidFor = (email: string) =>
+      Object.entries(users).find(([, value]) => value?.email === email)?.[0] as string;
+    const userUid = uidFor(E2E_USERS.user.email);
+    const adminUid = uidFor(E2E_USERS.admin.email);
+
+    const read = (path: string, token: string) =>
+      fetch(`http://localhost:9000/${path}.json?ns=lecoursville-dev-default-rtdb&auth=${token}`);
+
+    expect((await read(`users/${userUid}`, userToken)).ok).toBe(true);
+    expect((await read(`users/${adminUid}`, userToken)).status).not.toBe(200);
+    expect((await read('users', staffToken)).status).not.toBe(200);
+    expect((await read(`users/${userUid}`, staffToken)).status).not.toBe(200);
+    expect((await read('users', superToken)).ok).toBe(true);
+  });
+
+  test('rules: media and clans require authentication', async () => {
+    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    for (const node of ['media', 'clans']) {
+      const anonymous = await fetch(
+        `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb`,
+      );
+      expect(anonymous.status).not.toBe(200);
+
+      const authenticated = await fetch(
+        `http://localhost:9000/${node}.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+      );
+      expect(authenticated.ok).toBe(true);
+    }
+  });
+
+  test('reset link: an alternate contact is only emailed when the admin opts in', async () => {
+    const token = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
+    const stamp = Date.now();
+    const noSendId = `security-reset-nosend-${stamp}`;
+    const sendId = `security-reset-send-${stamp}`;
+    const noSendAlt = `security-nosend-${stamp}@e2e.local`;
+    const sendAlt = `security-send-${stamp}@e2e.local`;
+    const email = E2E_USERS.user.email;
+    const call = (requestId: string, extra: Record<string, unknown> = {}) =>
+      fetch(
+        'http://127.0.0.1:5001/lecoursville-dev/us-central1/adminGenerateResetLink',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            data: {
+              requestId,
+              email,
+              reason: 'security regression',
+              continueUrl: 'http://localhost:5000/auth/action',
+              ...extra,
+            },
+          }),
+        },
+      );
+    const auditFor = async (requestId: string) => {
+      const all = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+      return Object.values(all).find(
+        (entry) => entry?.requestId === requestId && entry?.action === 'generate_reset_link',
+      ) as Record<string, any> | undefined;
+    };
+    const cleanup = async () => {
+      for (const id of [noSendId, sendId]) {
+        await deleteDb(`recoveryRequests/${id}`);
+        const all = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+        for (const [key, entry] of Object.entries(all)) {
+          if (entry?.requestId === id) {
+            await deleteDb(`recoveryAudit/${key}`);
+          }
+        }
+      }
+      for (const mail of await findOutboundEmails('recovery_link')) {
+        if (mail.to === noSendAlt || mail.to === sendAlt) {
+          await deleteDb(`outboundEmails/${mail.key}`);
+        }
+      }
+    };
+
+    await writeDb(`recoveryRequests/${noSendId}`, {
+      id: noSendId,
+      email,
+      alternateContact: noSendAlt,
+      status: 'open',
+      createdAt: stamp,
+      updatedAt: stamp,
+    });
+    await writeDb(`recoveryRequests/${sendId}`, {
+      id: sendId,
+      email,
+      alternateContact: sendAlt,
+      status: 'open',
+      createdAt: stamp,
+      updatedAt: stamp,
+    });
+
+    try {
+      const denied = await call(noSendId);
+      expect(denied.ok).toBe(true);
+      const deniedBody = await denied.json();
+      expect(deniedBody.result.link).toContain('oobCode');
+      expect(deniedBody.result.emailed).toBe(false);
+      expect(await findOutboundEmails('recovery_link', { to: noSendAlt })).toEqual([]);
+      await expect.poll(async () => (await auditFor(noSendId))?.emailStatus).toBe('skipped');
+      expect((await auditFor(noSendId))?.emailed).toBe(false);
+
+      const optedIn = await call(sendId, { emailAlternateContact: true });
+      expect(optedIn.ok).toBe(true);
+      const optedInBody = await optedIn.json();
+      expect(optedInBody.result.emailed).toBe(true);
+      await expect
+        .poll(async () => (await findOutboundEmails('recovery_link', { to: sendAlt })).length)
+        .toBeGreaterThan(0);
+      await expect.poll(async () => (await auditFor(sendId))?.emailStatus).toBe('sent');
+      expect((await auditFor(sendId))?.emailed).toBe(true);
+    } finally {
+      await cleanup();
     }
   });
 });

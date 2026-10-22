@@ -69,6 +69,7 @@ import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.c
 import { PersonDetailModalComponent } from "./components/person-detail-modal/person-detail-modal.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
+import { AdminFilterBarComponent } from "./components/shared/admin-filter-bar/admin-filter-bar.component";
 import { PersonTreeComponent } from "./components/shared/person-tree/person-tree.component";
 import { AdminPeopleImportComponent } from "./components/admin-people-import/admin-people-import.component";
 import { AdminFamiliesComponent } from "./components/admin-families/admin-families.component";
@@ -148,6 +149,7 @@ import { AdminRecoveryComponent } from "./components/admin-recovery/admin-recove
         LvLoadErrorComponent,
         NoResultsMessageComponent,
         PageToolbarComponent,
+        AdminFilterBarComponent,
         PhotoUploadProgressComponent,
         NgxExtendedPdfViewerModule,
         ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi()), { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: "outline" } }] })

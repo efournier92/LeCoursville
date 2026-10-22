@@ -15,6 +15,96 @@
   color: var(--color-ink-2);
 }
 
+// The admin shell owns width and gutters: pages only lay out their content.
+.admin-page {
+  width: 100%;
+  min-width: 0;
+}
+
+// One surface for every admin card, table container, form card, and state.
+.admin-surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+// Absorbs the five per-page `.action-error` copies.
+.admin-error {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  background: rgba(179, 38, 30, 0.08);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+.admin-card-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+// Filter row shell, driven by app-admin-filter-bar. Search left, actions right.
+.admin-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--filter-bar-height);
+  padding: 8px 16px;
+  box-sizing: border-box;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+
+  @media (max-width: 600px) {
+    height: auto;
+    min-height: 52px;
+    max-height: 96px;
+    flex-wrap: wrap;
+    align-content: center;
+  }
+}
+
+.admin-filter-search {
+  display: flex;
+  align-items: center;
+  order: 1;
+  flex: 1 1 auto;
+  max-width: 420px;
+  min-width: 0;
+  height: 36px;
+
+  @media (max-width: 600px) {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+.admin-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  order: 2;
+  margin-left: auto;
+  flex: 0 0 auto;
+  height: 36px;
+  // Same 36px control language as the title bar.
+  --mat-button-text-container-height: 36px;
+  --mat-button-filled-container-height: 36px;
+  --mat-button-outlined-container-height: 36px;
+  --mat-button-protected-container-height: 36px;
+  --mat-button-tonal-container-height: 36px;
+  --mat-button-toggle-height: 36px;
+  --mat-icon-button-state-layer-size: 36px;
+
+  @media (max-width: 600px) {
+    flex: 1 1 100%;
+  }
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -29,6 +119,10 @@
 
   th {
     @include admin-eyebrow;
+  }
+
+  tbody td {
+    height: 44px;
   }
 
   tbody tr:hover {
@@ -65,6 +159,7 @@
       gap: 12px;
       padding: 6px 0;
       border-bottom: none;
+      height: auto;
 
       &::before {
         content: attr(data-label);
@@ -85,6 +180,23 @@
   align-items: center;
   padding-top: 12px;
   font-size: 0.8rem;
+  color: var(--color-ink-2);
+
+  .pager {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// Card footer: "Showing x-y of z" left, Prev/Next right. No floating pager.
+.admin-pagination-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
   color: var(--color-ink-2);
 
   .pager {

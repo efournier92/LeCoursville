@@ -14,6 +14,7 @@ interface RecoveryRequest {
   name?: string;
   status: string;
   createdAt: number;
+  alternateContact?: string;
 }
 
 describe('AdminRecoveryComponent', () => {
@@ -196,6 +197,47 @@ describe('AdminRecoveryComponent', () => {
     });
   });
 
+  it('emails the alternate contact only when the checkbox is checked', async () => {
+    const withAlternate: RecoveryRequest = {
+      ...request,
+      alternateContact: 'alt@example.test',
+    };
+    requestsStream = of([withAlternate]);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recovery-email-alternate"]')).toBeTruthy();
+    component.reasons[withAlternate.id] = 'locked out';
+    confirmSpy.and.returnValue(Promise.resolve(true));
+    cloudFunctions.adminGenerateResetLink.and.returnValue(
+      Promise.resolve({ data: { link: 'https://example.test/reset', emailed: false } }),
+    );
+
+    await component.generate(withAlternate);
+    expect(cloudFunctions.adminGenerateResetLink).toHaveBeenCalledWith({
+      requestId: withAlternate.id,
+      email: withAlternate.email,
+      reason: 'locked out',
+    });
+
+    component.emailAlternate[withAlternate.id] = true;
+    await component.generate(withAlternate);
+    expect(cloudFunctions.adminGenerateResetLink).toHaveBeenCalledWith({
+      requestId: withAlternate.id,
+      email: withAlternate.email,
+      reason: 'locked out',
+      emailAlternateContact: true,
+    });
+  });
+
+  it('shows the email-alternate checkbox only when an alternate contact exists', () => {
+    requestsStream = of([request]);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recovery-email-alternate"]')).toBeNull();
+  });
+
   it('shows a retryable error instead of empty when secondary streams fail', () => {
     auditStream = throwError(() => new Error('offline'));
     accountsStream = throwError(() => new Error('offline'));
@@ -225,7 +267,7 @@ describe('AdminRecoveryComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.recovery-row').length).toBe(1);
   });
 
-  it('renders every recipient in the bounded list', () => {
+  it('paginates the recipient list with a card footer', () => {
     const many = Array.from({ length: 12 }, (_, i) => `person${i}@example.test`);
     recipientsStream = of(many);
     fixture = TestBed.createComponent(AdminRecoveryComponent);
@@ -233,6 +275,60 @@ describe('AdminRecoveryComponent', () => {
     fixture.detectChanges();
 
     expect(component.recipients.length).toBe(12);
-    expect(fixture.nativeElement.querySelectorAll('.recipient-row').length).toBe(12);
+    expect(fixture.nativeElement.querySelectorAll('.recipient-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelector('.admin-pagination').textContent).toContain('Showing 1-10 of 12');
+
+    component.nextRecipientsPage();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.recipient-row').length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.admin-pagination').textContent).toContain('Showing 11-12 of 12');
+  });
+
+  it('paginates requests and audit rows with the shared footer', () => {
+    const requests = Array.from({ length: 12 }, (_, i) => ({
+      ...request,
+      id: `request-${i}`,
+      createdAt: Date.now() - i,
+    }));
+    const audits = Array.from({ length: 12 }, (_, i) => ({
+      action: 'generate_reset_link',
+      actorEmail: 'admin@example.test',
+      createdAt: Date.now() - i,
+    }));
+    requestsStream = of(requests);
+    auditStream = of(audits);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.recovery-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelectorAll('.audit-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-recovery-list"] .admin-pagination').textContent)
+      .toContain('Showing 1-10 of 12');
+
+    component.nextRequestsPage();
+    component.nextAuditPage();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.recovery-row').length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('.audit-row').length).toBe(2);
+  });
+
+  it('marks Reason as required and explains the disabled Generate button', () => {
+    requestsStream = of([request]);
+    fixture = TestBed.createComponent(AdminRecoveryComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const reason = fixture.nativeElement.querySelector('[data-testid="admin-recovery-reason"]') as HTMLInputElement;
+    expect(reason.required).toBe(true);
+    expect(fixture.nativeElement.querySelector('.reason-hint').textContent)
+      .toContain('Enter a reason');
+
+    component.reasons[request.id] = 'locked out';
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.reason-hint')).toBeNull();
   });
 });

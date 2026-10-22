@@ -1,232 +1,248 @@
-<div class="admin-families-container">
-  <app-page-toolbar title="Families">
-    @if (!isAdding && !editingFamily && !isCsvPreview) {
-      <button mat-flat-button color="primary" (click)="onAdd()">
-        <mat-icon>add</mat-icon>
-        Add Family
+<div class="admin-page">
+<app-page-toolbar title="Families"></app-page-toolbar>
+
+<p class="admin-intro">
+  Manage family groups and their display colors, or import several at once from a CSV.
+</p>
+
+@if (!isAdding && !editingFamily && !isCsvPreview) {
+  <div class="d-flex justify-content-end mb-3">
+    <button mat-flat-button color="primary" (click)="onAdd()">
+      <mat-icon>add</mat-icon>
+      Add Family
+    </button>
+  </div>
+}
+
+@if (actionError) {
+  <div class="admin-error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    {{ actionError }}
+  </div>
+}
+
+<mat-card class="admin-surface families-card">
+  <mat-card-content>
+    <div class="csv-upload-section">
+      <button
+        type="button"
+        class="upload-area"
+        [disabled]="state !== 'ready'"
+        (click)="csvInput.click()">
+        <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M12 13v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="m8 17 4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Upload CSV</span>
       </button>
-    }
-  </app-page-toolbar>
-
-  @if (actionError) {
-    <div class="write-error" role="alert">
-      <mat-icon>error_outline</mat-icon>
-      {{ actionError }}
+      <input #csvInput type="file" accept=".csv" (change)="onCsvFileSelected($event)" hidden />
+      @if (!selectedFileName) {
+        <span class="upload-hint">Supports Name, ID, Color_Hex columns</span>
+      }
+      @if (selectedFileName) {
+        <span class="upload-hint">{{ selectedFileName }}</span>
+      }
     </div>
-  }
 
-  <mat-card class="families-card">
-    <mat-card-content>
-      <div class="csv-upload-section">
-        <button type="button" class="upload-area" (click)="csvInput.click()">
-          <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-            <path d="M12 13v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="m8 17 4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>Upload CSV</span>
-        </button>
-        <input #csvInput type="file" accept=".csv" (change)="onCsvFileSelected($event)" hidden />
-        @if (!selectedFileName) {
-          <span class="upload-hint">Supports Name, ID, Color_Hex columns</span>
+    @if (isCsvPreview) {
+      <div class="csv-preview">
+        <div class="section-header">
+          <h4>CSV Preview</h4>
+          <span class="csv-count">{{ csvPreview.length }}</span>
+        </div>
+        @if (csvErrors.length > 0) {
+          <div class="csv-errors" role="alert">
+            @for (error of csvErrors; track error) {
+              <div class="error-item">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ error }}</span>
+              </div>
+            }
+          </div>
         }
-        @if (selectedFileName) {
-          <span class="upload-hint">{{ selectedFileName }}</span>
+        @if (importError) {
+          <div class="import-error admin-error" role="alert">
+            <mat-icon>error_outline</mat-icon>
+            {{ importError }}
+          </div>
+        }
+        @if (csvPreview.length > 0) {
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Sort Order</th>
+              <th>Hex</th>
+              <th>Color</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (family of csvPageData.items; track family) {
+              <tr>
+                <td data-label="Name" class="bold">{{ family.name }}</td>
+                <td data-label="Sort Order" class="mono">{{ family.sortOrder }}</td>
+                <td data-label="Hex" class="mono">{{ family.hexColor }}</td>
+                <td data-label="Color"><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="admin-pagination">
+          <span>{{ csvShowingRange }}</span>
+          <div class="pager admin-pager">
+            <button mat-button type="button" [disabled]="csvPage <= 1" (click)="previousCsvPage()">
+              Prev
+            </button>
+            <button mat-button type="button" [disabled]="csvPage >= csvPageData.pageCount" (click)="nextCsvPage()">
+              Next
+            </button>
+          </div>
+        </div>
+        <div class="csv-actions">
+          <button mat-button (click)="onCsvCancel()">Cancel</button>
+          <button mat-flat-button color="primary" (click)="onCsvConfirm()" [disabled]="csvErrors.length > 0">
+            <mat-icon>check</mat-icon>
+            Import {{ validCsvCount }} {{ validCsvCount === 1 ? 'family' : 'families' }}
+          </button>
+        </div>
         }
       </div>
+    }
 
-      @if (isCsvPreview) {
-        <div class="csv-preview">
-          <div class="section-header">
-            <h4>CSV Preview</h4>
-            <span class="csv-count">{{ csvPreview.length }}</span>
-          </div>
-          @if (csvErrors.length > 0) {
-            <div class="csv-errors" role="alert">
-              @for (error of csvErrors; track error) {
-                <div class="error-item">
-                  <mat-icon>error_outline</mat-icon>
-                  <span>{{ error }}</span>
-                </div>
-              }
-            </div>
-          }
-          @if (importError) {
-            <div class="import-error write-error" role="alert">
-              <mat-icon>error_outline</mat-icon>
-              {{ importError }}
-            </div>
-          }
-          @if (csvPreview.length > 0) {
-          <table class="admin-table">
+    @if (!isCsvPreview) {
+      @if (state === 'loading') {
+        <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading families">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      }
+
+      @if (state === 'error') {
+        <app-load-error
+          message="We couldn't load the family list."
+          (retry)="retry()"
+          />
+      }
+
+      @if (state === 'ready') {
+        @if (families.length === 0) {
+          <app-no-results-message
+            title="No families yet"
+            hint="Add your first family or upload a CSV."
+            />
+        } @else {
+          <table class="admin-table families-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>ID</th>
-                <th>Hex</th>
                 <th>Color</th>
+                <th>Name</th>
+                <th>Hex</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              @for (family of csvPageData.items; track family) {
+              @for (family of familyPageData.items; track family.id) {
                 <tr>
-                  <td data-label="Name" class="bold">{{ family.name }}</td>
-                  <td data-label="ID" class="mono">{{ family.id }}</td>
-                  <td data-label="Hex" class="mono">{{ family.hexColor }}</td>
-                  <td data-label="Color"><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
+                  <td data-label="Color">
+                    <div class="color-swatch" [style.background-color]="family.hexColor"></div>
+                  </td>
+                  <td data-label="Name" class="family-name">{{ family.name }}</td>
+                  <td data-label="Hex" class="family-hex">{{ family.hexColor }}</td>
+                  <td data-label="Actions">
+                    <div class="family-actions">
+                      <button
+                        mat-icon-button
+                        color="primary"
+                        [attr.aria-label]="'Edit ' + family.name"
+                        (click)="onEdit(family)"
+                        matTooltip="Edit"
+                        >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        mat-icon-button
+                        color="warn"
+                        [attr.aria-label]="'Delete ' + family.name"
+                        (click)="onDelete(family)"
+                        matTooltip="Delete"
+                        >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
           <div class="admin-pagination">
-            <span>{{ csvShowingRange }}</span>
+            <span>{{ familyShowingRange }}</span>
             <div class="pager admin-pager">
-              <button mat-button type="button" [disabled]="csvPage <= 1" (click)="previousCsvPage()">
+              <button mat-button type="button" [disabled]="familyPage <= 1" (click)="previousFamilyPage()">
                 Prev
               </button>
-              <button mat-button type="button" [disabled]="csvPage >= csvPageData.pageCount" (click)="nextCsvPage()">
+              <button
+                mat-button
+                type="button"
+                [disabled]="familyPage >= familyPageData.pageCount"
+                (click)="nextFamilyPage()"
+                >
                 Next
               </button>
             </div>
           </div>
-          <div class="csv-actions">
-            <button mat-button (click)="onCsvCancel()">Cancel</button>
-            <button mat-flat-button color="primary" (click)="onCsvConfirm()" [disabled]="csvErrors.length > 0">
-              <mat-icon>check</mat-icon>
-              Import {{ validCsvCount }} {{ validCsvCount === 1 ? 'family' : 'families' }}
-            </button>
-          </div>
-          }
-        </div>
+        }
       }
+    }
 
-      @if (!isCsvPreview) {
-        @if (state === 'loading') {
-          <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading families">
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        }
-
-        @if (state === 'error') {
-          <app-load-error
-            message="We couldn't load the family list."
-            (retry)="retry()"
-            />
-        }
-
-        @if (state === 'ready') {
-          @if (families.length === 0) {
-            <app-no-results-message
-              title="No families yet"
-              hint="Add your first family or upload a CSV."
-              />
-          } @else {
-            <table class="admin-table families-table">
-              <thead>
-                <tr>
-                  <th>Color</th>
-                  <th>Name</th>
-                  <th>Hex</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (family of familyPageData.items; track family.id) {
-                  <tr>
-                    <td data-label="Color">
-                      <div class="color-swatch" [style.background-color]="family.hexColor"></div>
-                    </td>
-                    <td data-label="Name" class="family-name">{{ family.name }}</td>
-                    <td data-label="Hex" class="family-hex">{{ family.hexColor }}</td>
-                    <td data-label="Actions">
-                      <div class="family-actions">
-                        <button
-                          mat-icon-button
-                          color="primary"
-                          [attr.aria-label]="'Edit ' + family.name"
-                          (click)="onEdit(family)"
-                          matTooltip="Edit"
-                          >
-                          <mat-icon>edit</mat-icon>
-                        </button>
-                        <button
-                          mat-icon-button
-                          color="warn"
-                          [attr.aria-label]="'Delete ' + family.name"
-                          (click)="onDelete(family)"
-                          matTooltip="Delete"
-                          >
-                          <mat-icon>delete</mat-icon>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-            <div class="admin-pagination">
-              <span>{{ familyShowingRange }}</span>
-              <div class="pager admin-pager">
-                <button mat-button type="button" [disabled]="familyPage <= 1" (click)="previousFamilyPage()">
-                  Prev
-                </button>
-                <button
-                  mat-button
-                  type="button"
-                  [disabled]="familyPage >= familyPageData.pageCount"
-                  (click)="nextFamilyPage()"
-                  >
-                  Next
+    @if (isAdding || editingFamily) {
+      <div class="form-section">
+        <mat-card class="admin-surface form-card">
+          <mat-card-content>
+            <h3 class="admin-card-title">{{ editingFamily ? 'Edit Family' : 'Add New Family' }}</h3>
+            <form (ngSubmit)="onSave()">
+              <mat-form-field class="full-width">
+                <mat-label>Sort Order</mat-label>
+                <input matInput [(ngModel)]="formData.sortOrder" name="sortOrder" />
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="formData.name" name="name" required />
+              </mat-form-field>
+              <div class="color-field">
+                <mat-form-field class="hex-input">
+                  <mat-label>Hex Color</mat-label>
+                  <input matInput [(ngModel)]="formData.hexColor" name="hexColor" required pattern="^#[0-9A-Fa-f]{6}$" />
+                </mat-form-field>
+                <div class="color-picker-wrapper">
+                  <input type="color" [(ngModel)]="formData.hexColor" name="hexColorPicker" class="color-picker" />
+                  <div class="color-preview-swatch" [style.background-color]="formData.hexColor"></div>
+                </div>
+              </div>
+              @if (formError) {
+                <div class="admin-error" role="alert">
+                  <mat-icon>error_outline</mat-icon>
+                  {{ formError }}
+                </div>
+              }
+              <div class="form-actions">
+                <button mat-button type="button" (click)="onCancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit">
+                  {{ editingFamily ? 'Update' : 'Add' }}
                 </button>
               </div>
-            </div>
-          }
-        }
-      }
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
 
-      @if (isAdding || editingFamily) {
-        <div class="form-section">
-          <mat-card class="form-card">
-            <mat-card-content>
-              <h3>{{ editingFamily ? 'Edit Family' : 'Add New Family' }}</h3>
-              <form (ngSubmit)="onSave()">
-                <mat-form-field class="full-width">
-                  <mat-label>ID</mat-label>
-                  <input matInput [(ngModel)]="formData.id" name="id" />
-                </mat-form-field>
-                <mat-form-field class="full-width">
-                  <mat-label>Name</mat-label>
-                  <input matInput [(ngModel)]="formData.name" name="name" required />
-                </mat-form-field>
-                <div class="color-field">
-                  <mat-form-field class="hex-input">
-                    <mat-label>Hex Color</mat-label>
-                    <input matInput [(ngModel)]="formData.hexColor" name="hexColor" required pattern="^#[0-9A-Fa-f]{6}$" />
-                  </mat-form-field>
-                  <div class="color-picker-wrapper">
-                    <input type="color" [(ngModel)]="formData.hexColor" name="hexColorPicker" class="color-picker" />
-                    <div class="color-preview-swatch" [style.background-color]="formData.hexColor"></div>
-                  </div>
-                </div>
-                @if (formError) {
-                  <div class="form-error" role="alert">
-                    <mat-icon>error_outline</mat-icon>
-                    {{ formError }}
-                  </div>
-                }
-                <div class="form-actions">
-                  <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                  <button mat-flat-button color="primary" type="submit">
-                    {{ editingFamily ? 'Update' : 'Add' }}
-                  </button>
-                </div>
-              </form>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+@if (importSummary) {
+  <div class="admin-surface import-summary" role="status" data-testid="families-import-summary">
+    {{ importSummaryMessage }}
+  </div>
+}
 </div>

@@ -288,6 +288,7 @@ test.describe('account recovery', () => {
       .filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
+    await row.getByTestId('admin-recovery-email-alternate').locator('input').check();
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
     await page
@@ -299,6 +300,7 @@ test.describe('account recovery', () => {
     await expect(linkEl).toBeVisible();
     const link = ((await linkEl.textContent()) ?? '').trim();
     expect(link).toContain('oobCode');
+    await expect(row.locator('.generated-emailed')).toContainText('Emailed to the alternate contact');
 
     await expect
       .poll(async () => (await findOutboundEmails('recovery_link', { to: alternate })).length, {
@@ -331,6 +333,47 @@ test.describe('account recovery', () => {
     } else {
       await expect(linkEl).toBeVisible();
     }
+  });
+
+  test('admin generates a reset link without emailing the alternate when unchecked', async ({ page }) => {
+    const accountEmail = E2E_USERS.other.email;
+    const alternate = `recovery-unchecked-alt-${Date.now()}@e2e.local`;
+    const marker = 'Recovery Unchecked';
+    await addRecoveryRequest(page, accountEmail, marker, alternate);
+
+    await expect
+      .poll(async () => (await requestsFor(accountEmail)).filter((r) => r.name === marker).length, {
+        timeout: 15000,
+      })
+      .toBe(1);
+    const [request] = (await requestsFor(accountEmail)).filter((r) => r.name === marker);
+    cleanup.push(`recoveryRequests/${request.key}`);
+
+    await login(page, 'admin');
+    await page.goto('/admin/recovery');
+    const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
+    await expect(row).toBeVisible();
+    await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
+    await expect(row.getByTestId('admin-recovery-email-alternate').locator('input')).not.toBeChecked();
+    await row.getByTestId('admin-recovery-generate').click();
+    await page
+      .locator('mat-dialog-container')
+      .getByRole('button', { name: 'Generate', exact: true })
+      .click();
+
+    const linkEl = row.getByTestId('admin-recovery-link');
+    await expect(linkEl).toBeVisible();
+    expect(((await linkEl.textContent()) ?? '').trim()).toContain('oobCode');
+    await expect(row.locator('.generated-emailed')).toContainText('Not emailed; copy the link yourself');
+    expect(await findOutboundEmails('recovery_link', { to: alternate })).toHaveLength(0);
+
+    const audit = (await readDb<Record<string, any>>('recoveryAudit')) ?? {};
+    for (const [key, value] of Object.entries(audit)) {
+      if (value?.requestId === request.key) {
+        cleanup.push(`recoveryAudit/${key}`);
+      }
+    }
+    await trackAlertRows(accountEmail);
   });
 
   test('admin marks a recovery request closed after confirming', async ({ page }) => {

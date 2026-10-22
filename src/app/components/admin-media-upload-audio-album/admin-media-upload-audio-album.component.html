@@ -1,41 +1,25 @@
 @if (user?.roles?.admin || user?.roles?.super) {
-  <div
-    class="w-100 d-flex flex-column"
-    >
-    <mat-card class="w-100 mat-elevation-z6">
-      @if (deleteError) {
-        <div class="action-error" role="alert">{{ deleteError }}</div>
-      }
-      <form class="audio-album-upload-form">
-        <mat-form-field class="admin-upload-input">
-          <mat-label>Title</mat-label>
-          <input
-            type="text"
-            matInput
-            name="albumTitle"
-            [(ngModel)]="album.title"
-            />
-        </mat-form-field>
-        <mat-form-field class="admin-upload-input">
-          <mat-label>Folder Name</mat-label>
-          <input
-            type="text"
-            matInput
-            name="albumFolderName"
-            [(ngModel)]="album.folderName"
-            />
-        </mat-form-field>
-        <!-- <mat-form-field class="admin-upload-input">
-        <mat-label class="optional-field">Artist</mat-label>
-        <input type="text" matInput name="albumArtist" [(ngModel)]="album.artist">
-      </mat-form-field> -->
+  <mat-card class="admin-surface admin-media-upload-form-container">
+    @if (deleteError) {
+      <div class="admin-error" role="alert">{{ deleteError }}</div>
+    }
+    <form class="audio-album-upload-form">
       <mat-form-field class="admin-upload-input">
-        <mat-label>Date</mat-label>
+        <mat-label>Title</mat-label>
         <input
           type="text"
           matInput
-          name="albumDate"
-          [(ngModel)]="album.date"
+          name="albumTitle"
+          [(ngModel)]="album.title"
+          />
+      </mat-form-field>
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Folder Name</mat-label>
+        <input
+          type="text"
+          matInput
+          name="albumFolderName"
+          [(ngModel)]="album.folderName"
           />
       </mat-form-field>
       @if (!isAlbumAlreadyUploaded()) {
@@ -55,57 +39,58 @@
         </mat-form-field>
       }
       <mat-checkbox
-        class="admin-upload-input mb-2"
+        class="admin-upload-checkbox"
         name="isSticky"
         [(ngModel)]="album.isSticky"
         >Is Sticky?</mat-checkbox
         >
-        <mat-checkbox
-          class="admin-upload-input"
-          name="isHidden"
-          [(ngModel)]="album.isHidden"
-          >Should Hide from Lists?</mat-checkbox
+      <mat-checkbox
+        class="admin-upload-checkbox"
+        name="isHidden"
+        [(ngModel)]="album.isHidden"
+        >Should Hide from Lists?</mat-checkbox
+        >
+      <div class="admin-form-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          class="admin-form-action-button admin-form-action-button-upload"
+          (click)="onUploadSelectedMedia()"
           >
-          <button
-            mat-flat-button
-            color="primary"
-            class="admin-form-action-button admin-form-action-button-upload w-100"
-            (click)="onUploadSelectedMedia()"
-            >
-            @if (!isAlbumAlreadyUploaded()) {
-              <span>Upload</span>
-            }
-            @if (isAlbumAlreadyUploaded()) {
-              <span>Update</span>
-            }
-          </button>
+          @if (!isAlbumAlreadyUploaded()) {
+            <span>Upload</span>
+          }
+          @if (isAlbumAlreadyUploaded()) {
+            <span>Update</span>
+          }
+        </button>
+        <button
+          mat-stroked-button
+          class="admin-form-action-button admin-form-action-button-cancel"
+          (click)="onCancelSelectedMedia(album)"
+          >
+          Clear
+        </button>
+        @if (album.id) {
           <button
             mat-stroked-button
-            class="admin-form-action-button admin-form-action-button-cancel w-100"
-            (click)="onCancelSelectedMedia(album)"
+            class="admin-form-action-button admin-form-action-button-delete"
+            (click)="onDeleteSelectedMedia(album)"
             >
-            Clear
+            Delete
           </button>
-          @if (album.id) {
-            <button
-              mat-stroked-button
-              class="admin-form-action-button admin-form-action-button-delete w-100"
-              (click)="onDeleteSelectedMedia(album)"
-              >
-              Delete
-            </button>
-          }
-        </form>
-      </mat-card>
-      <div class="admin-media-list-container">
-        @if (isUserAdmin()) {
-          <app-media-list
-            [mediaTypesToShow]="getAudioAlbumTypeId()"
-            [isAdminMode]="true"
-            (mediaClickEvent)="onMediaSelect($event)"
-            >
-          </app-media-list>
         }
       </div>
-    </div>
-  }
+    </form>
+  </mat-card>
+  <div class="admin-media-list-container">
+    @if (isUserAdmin()) {
+      <app-media-list
+        [mediaTypesToShow]="getAudioAlbumTypeId()"
+        [isAdminMode]="true"
+        (mediaClickEvent)="onMediaSelect($event)"
+        >
+      </app-media-list>
+    }
+  </div>
+}

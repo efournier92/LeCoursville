@@ -1,0 +1,11 @@
+<div class="admin-filter-bar">
+  <!-- Actions slot is declared first so its selector wins projection; CSS
+       order places it after the search column. -->
+  <div class="admin-filter-actions">
+    <ng-content select="[admin-filter-actions]"></ng-content>
+  </div>
+  <div class="admin-filter-search">
+    <ng-content select="[admin-filter-search]"></ng-content>
+    <ng-content></ng-content>
+  </div>
+</div>

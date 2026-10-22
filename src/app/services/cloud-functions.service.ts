@@ -34,6 +34,7 @@ export class CloudFunctionsService {
     requestId: string;
     email: string;
     reason: string;
+    emailAlternateContact?: boolean;
   }): Promise<unknown> {
     return httpsCallable(this.firebase.functions, "adminGenerateResetLink")({
       ...input,

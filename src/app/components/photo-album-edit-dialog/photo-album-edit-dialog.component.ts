@@ -8,6 +8,7 @@ import { PhotoAlbum } from 'src/app/models/photo-album';
 
 export interface PhotoAlbumEditDialogData {
   album: PhotoAlbum | null;
+  save: (title: string) => Promise<unknown>;
 }
 
 export type PhotoAlbumEditDialogResult =
@@ -30,6 +31,8 @@ export type PhotoAlbumEditDialogResult =
 })
 export class PhotoAlbumEditDialogComponent {
   title: string;
+  saving = false;
+  error: string | null = null;
 
   constructor(
     public dialogRef: MatDialogRef<PhotoAlbumEditDialogComponent, PhotoAlbumEditDialogResult>,
@@ -42,10 +45,21 @@ export class PhotoAlbumEditDialogComponent {
     this.dialogRef.close({ action: 'cancel' });
   }
 
-  onSave(): void {
-    if (!this.title.trim()) {
+  async onSave(): Promise<void> {
+    const title = this.title.trim();
+    if (!title || this.saving) {
       return;
     }
-    this.dialogRef.close({ action: 'save', title: this.title.trim() });
+    this.saving = true;
+    this.error = null;
+    try {
+      await this.data.save(title);
+      this.dialogRef.close({ action: 'save', title });
+    } catch {
+      // Keep the dialog open with the typed title so the admin can retry.
+      this.error = `Couldn’t save “${title}”. Please try again.`;
+    } finally {
+      this.saving = false;
+    }
   }
 }

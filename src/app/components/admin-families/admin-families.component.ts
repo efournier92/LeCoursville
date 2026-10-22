@@ -6,11 +6,15 @@ import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { paginate, Page, pageRange } from 'src/app/admin/pagination';
 
 interface ParsedFamily {
-  id: string;
+  sortOrder: string;
   name: string;
   hexColor: string;
-  sortOrder: string;
   errors: string[];
+}
+
+interface ImportSummary {
+  imported: number;
+  skipped: number;
 }
 
 type FamiliesState = 'loading' | 'ready' | 'error';
@@ -26,12 +30,13 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   families: Family[] = [];
   editingFamily: Family | null = null;
   isAdding = false;
-  formData = { id: '', name: '', hexColor: '#000000' };
+  formData = { sortOrder: '', name: '', hexColor: '#000000' };
   formError = '';
   actionError = '';
   csvPreview: ParsedFamily[] = [];
   csvErrors: string[] = [];
   importError = '';
+  importSummary: ImportSummary | null = null;
   isCsvPreview = false;
   selectedFileName: string | null = null;
 
@@ -71,6 +76,19 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
   get csvShowingRange(): string {
     return pageRange(this.csvPageData);
+  }
+
+  get importSummaryMessage(): string {
+    if (!this.importSummary) {
+      return '';
+    }
+    const { imported, skipped } = this.importSummary;
+    const importedLabel = imported === 1 ? 'family' : 'families';
+    if (skipped === 0) {
+      return `Imported ${imported} ${importedLabel}.`;
+    }
+    const skippedLabel = skipped === 1 ? 'duplicate' : 'duplicates';
+    return `Imported ${imported} ${importedLabel}, skipped ${skipped} ${skippedLabel}.`;
   }
 
   get validCsvCount(): number {
@@ -117,14 +135,14 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   onAdd(): void {
     this.isAdding = true;
     this.editingFamily = null;
-    this.formData = { id: '', name: '', hexColor: '#000000' };
+    this.formData = { sortOrder: '', name: '', hexColor: '#000000' };
     this.formError = '';
   }
 
   onEdit(family: Family): void {
     this.editingFamily = family;
     this.isAdding = false;
-    this.formData = { id: family.sortOrder, name: family.name, hexColor: family.hexColor };
+    this.formData = { sortOrder: family.sortOrder, name: family.name, hexColor: family.hexColor };
     this.formError = '';
   }
 
@@ -149,7 +167,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   async onSave(): Promise<void> {
     const name = this.formData.name.trim();
     const hexColor = this.formData.hexColor.trim();
-    const sortOrder = this.formData.id.trim();
+    const sortOrder = this.formData.sortOrder.trim();
 
     if (!name) {
       this.formError = 'Name is required';
@@ -193,13 +211,16 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   onCancel(): void {
     this.isAdding = false;
     this.editingFamily = null;
-    this.formData = { id: '', name: '', hexColor: '#000000' };
+    this.formData = { sortOrder: '', name: '', hexColor: '#000000' };
     this.formError = '';
   }
 
   // CSV IMPORT
 
   onCsvFileSelected(event: Event): void {
+    if (this.state !== 'ready') {
+      return;
+    }
     const input = event.target as HTMLInputElement;
     if (!input.files || !input.files[0]) return;
 
@@ -216,6 +237,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   private parseCsv(rawCsv: string): void {
     this.csvErrors = [];
     this.importError = '';
+    this.importSummary = null;
     this.csvPreview = [];
     this.csvPage = 1;
     this.isCsvPreview = false;
@@ -251,8 +273,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
       const name = this.getValue(values, headerMap, 'Name').trim();
       const hexColor = this.getValue(values, headerMap, 'Color_Hex').trim();
-      const familyId = this.getValue(values, headerMap, 'ID').trim();
-      const sortOrder = familyId;
+      const sortOrder = this.getValue(values, headerMap, 'ID').trim();
       const errors: string[] = [];
 
       if (!name) {
@@ -267,7 +288,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
         errors.push(`Row ${i + 1}: Color_Hex is required`);
       }
 
-      this.csvPreview.push({ id: familyId, name, hexColor: hexColor || '#808080', sortOrder, errors });
+      this.csvPreview.push({ sortOrder, name, hexColor: hexColor || '#808080', errors });
       if (errors.length > 0) {
         this.csvErrors.push(...errors);
       }
@@ -311,33 +332,60 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
   async onCsvConfirm(): Promise<void> {
     const validFamilies = this.csvPreview.filter(c => c.errors.length === 0);
-    const families: Family[] = [];
+    const knownNames = new Set(this.families.map(f => f.name.toLowerCase()));
+    const toCreate: Family[] = [];
+    let skipped = 0;
 
     for (const parsed of validFamilies) {
-      const exists = this.families.some(f => f.name.toLowerCase() === parsed.name.toLowerCase());
-      if (exists) continue;
-
-      families.push({
-        id: parsed.id || this.familyService.createPushId(),
+      const key = parsed.name.toLowerCase();
+      if (knownNames.has(key)) {
+        skipped++;
+        continue;
+      }
+      knownNames.add(key);
+      toCreate.push({
+        id: this.familyService.createPushId(),
         name: parsed.name,
         hexColor: parsed.hexColor,
         sortOrder: parsed.sortOrder,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       });
     }
 
     this.actionError = '';
     this.importError = '';
-    try {
-      await Promise.all(families.map(family => this.familyService.saveFamily(family)));
-      this.onCsvCancel();
-    } catch (error) {
-      this.importError = this.writeFailure('import families', error);
+    const results = await Promise.allSettled(
+      toCreate.map(family => this.familyService.saveFamily(family)),
+    );
+    const failedNames = new Set<string>();
+    let imported = 0;
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        imported++;
+      } else {
+        failedNames.add(toCreate[index].name.toLowerCase());
+      }
+    });
+    this.importSummary = { imported, skipped };
+
+    if (failedNames.size > 0) {
+      // Keep only the failed rows so a retry does not re-create committed ones.
+      this.csvPreview = this.csvPreview.filter(parsed => failedNames.has(parsed.name.toLowerCase()));
+      this.csvPage = 1;
+      this.importError = `Could not import ${failedNames.size} ${failedNames.size === 1 ? 'family' : 'families'}. Retry to try again.`;
+      return;
     }
+
+    this.resetPreview();
   }
 
   onCsvCancel(): void {
+    this.resetPreview();
+    this.importSummary = null;
+  }
+
+  private resetPreview(): void {
     this.csvPreview = [];
     this.csvErrors = [];
     this.importError = '';

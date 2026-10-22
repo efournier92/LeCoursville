@@ -3,26 +3,29 @@
   <div class="action-error" role="alert">{{ actionError }}</div>
 }
 <app-page-toolbar class="albums-toolbar" title="Photo Albums">
-  <mat-form-field class="album-search-field">
-    <input matInput placeholder="Search albums" [ngModel]="searchTerm"
-      (ngModelChange)="onSearchChange($event)" aria-label="Search albums" />
-  </mat-form-field>
-  <button mat-button class="album-sort-btn" [matMenuTriggerFor]="sortMenu">
-    Sort: {{ sortType === 'recent' ? 'Recent' : 'Title' }}
-  </button>
-  <mat-menu #sortMenu>
-    <button mat-menu-item (click)="onSortChange('recent')">Recent</button>
-    <button mat-menu-item (click)="onSortChange('title')">Title (A–Z)</button>
-  </mat-menu>
-  <button mat-stroked-button class="album-new-btn" (click)="onCreateEmptyAlbum()">
-    <mat-icon>add</mat-icon> New Album
-  </button>
   <button mat-flat-button color="primary" class="album-upload-btn" (click)="onUploadClick()">
     <mat-icon>create_new_folder</mat-icon> Upload Folder
   </button>
   <input #folderInput type="file" webkitdirectory multiple hidden
     (change)="onFolderPicked($event)" />
 </app-page-toolbar>
+
+<app-admin-filter-bar>
+  <mat-form-field class="album-search-field" admin-filter-search>
+    <input matInput placeholder="Search albums" [ngModel]="searchTerm"
+      (ngModelChange)="onSearchChange($event)" aria-label="Search albums" />
+  </mat-form-field>
+  <button mat-stroked-button class="filter-sort-btn" admin-filter-actions [matMenuTriggerFor]="sortMenu">
+    Sort: {{ sortType === 'recent' ? 'Recent' : 'Title' }}
+  </button>
+  <button mat-stroked-button class="album-new-btn" admin-filter-actions (click)="onCreateEmptyAlbum()">
+    <mat-icon>add</mat-icon> New Album
+  </button>
+</app-admin-filter-bar>
+<mat-menu #sortMenu>
+  <button mat-menu-item (click)="onSortChange('recent')">Recent</button>
+  <button mat-menu-item (click)="onSortChange('title')">Title (A–Z)</button>
+</mat-menu>
 
 <div class="upload-drop-zone"
   [class.drag-over]="isDragOver"
@@ -98,7 +101,7 @@
           <button mat-icon-button matTooltip="Rename" aria-label="Rename album" (click)="onEditAlbum(album)">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button matTooltip="Delete" aria-label="Delete album" (click)="onDeleteAlbum(album)">
+          <button mat-icon-button color="warn" matTooltip="Delete" aria-label="Delete album" (click)="onDeleteAlbum(album)">
             <mat-icon>delete</mat-icon>
           </button>
         </mat-card-actions>
@@ -116,11 +119,10 @@
     }
   </div>
   @if (pageData.total > 0) {
-    <div class="admin-pagination">
-      <span>{{ pageData.total }} album{{ pageData.total === 1 ? '' : 's' }}</span>
+    <div class="admin-pagination-footer">
+      <span>{{ showingRange }}</span>
       <div class="pager">
-        <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Previous</button>
-        <span>Page {{ pageData.page }} of {{ pageData.pageCount }}</span>
+        <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Prev</button>
         <button mat-button [disabled]="pageData.page >= pageData.pageCount" (click)="nextPage()">Next</button>
       </div>
     </div>
@@ -136,16 +138,17 @@
       </button>
       <h2>{{ selectedAlbum.title }}</h2>
       <span class="album-photos-count">{{ selectedAlbumPhotos.length }} photos</span>
-      <span class="album-photos-spacer"></span>
-      <button mat-stroked-button (click)="onAddMoreClick(selectedAlbum)">
-        <mat-icon>add_photo_alternate</mat-icon> Add Photos
-      </button>
-      <button mat-stroked-button (click)="onEditAlbum(selectedAlbum)">
-        <mat-icon>edit</mat-icon> Rename
-      </button>
-      <button mat-stroked-button class="album-delete-btn" (click)="onDeleteAlbum(selectedAlbum)">
-        <mat-icon>delete</mat-icon> Delete Album
-      </button>
+      <div class="album-photos-actions">
+        <button mat-stroked-button (click)="onAddMoreClick(selectedAlbum)">
+          <mat-icon>add_photo_alternate</mat-icon> Add Photos
+        </button>
+        <button mat-stroked-button (click)="onEditAlbum(selectedAlbum)">
+          <mat-icon>edit</mat-icon> Rename
+        </button>
+        <button mat-stroked-button color="warn" (click)="onDeleteAlbum(selectedAlbum)">
+          <mat-icon>delete</mat-icon> Delete Album
+        </button>
+      </div>
     </div>
     <div class="admin-photo-grid container-fluid">
       @for (photo of selectedAlbumPhotos; track photo) {
@@ -209,7 +212,7 @@
                       (click)="onSetAsCover(photo)"><mat-icon>star</mat-icon></button>
                     }
                     @if (!isEditingPhoto(photo)) {
-                      <button mat-icon-button matTooltip="Delete" aria-label="Delete photo"
+                      <button mat-icon-button color="warn" matTooltip="Delete" aria-label="Delete photo"
                         (click)="onDeletePhoto(photo)"><mat-icon>delete</mat-icon></button>
                       }
                       <a mat-icon-button matTooltip="Download" aria-label="Download photo" [href]="photo.url" [download]="photo.path" target="_blank">
@@ -219,29 +222,13 @@
                   </mat-card>
                 }
                 @if (selectedAlbumPhotos.length === 0) {
-                  <app-no-results-message searchTerm=""></app-no-results-message>
+                  <app-no-results-message
+                    title="No photos in this album"
+                    hint="Use Add Photos to add pictures to this album."
+                    [isCentered]="true">
+                  </app-no-results-message>
                 }
               </div>
-            </div>
-          }
-
-          @if (editingAlbumId) {
-            <div class="album-edit-form-section">
-              <mat-card class="album-edit-card">
-                <mat-card-header>
-                  <mat-card-title>Rename Album</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <mat-form-field>
-                    <mat-label>Album title</mat-label>
-                    <input matInput [(ngModel)]="editingTitle" required maxlength="80" />
-                  </mat-form-field>
-                </mat-card-content>
-                <mat-card-actions align="end">
-                  <button mat-button (click)="onCancelEdit()">Cancel</button>
-                  <button mat-flat-button color="primary" [disabled]="!editingTitle.trim()" (click)="onSaveEdit()">Save</button>
-                </mat-card-actions>
-              </mat-card>
             </div>
           }
 </div>

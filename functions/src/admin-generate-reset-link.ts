@@ -88,6 +88,9 @@ export const adminGenerateResetLink = onCall(
       throw new HttpsError("invalid-argument", "Invalid request.");
     }
 
+    // The alternate contact comes from the requester, so it is never a trusted
+    // destination. Mail it only when the admin asks for that send explicitly.
+    const emailAlternateContact = request.data?.emailAlternateContact === true;
     const alternateContact = requestRecord.alternateContact;
     if (
       typeof alternateContact === "string" &&
@@ -225,7 +228,11 @@ export const adminGenerateResetLink = onCall(
     }
 
     let emailed = false;
-    if (typeof alternateContact === "string" && alternateContact.includes("@")) {
+    if (
+      emailAlternateContact &&
+      typeof alternateContact === "string" &&
+      alternateContact.includes("@")
+    ) {
       const text = [
         "An administrator generated a password reset link for your LeCoursville account.",
         "",
@@ -251,19 +258,23 @@ export const adminGenerateResetLink = onCall(
         if (auditId) {
           await getDatabase()
             .ref(`recoveryAudit/${auditId}`)
-            .update({ emailStatus: "sent" });
+            .update({ emailStatus: "sent", emailed: true });
         }
       } catch (err) {
         if (auditId) {
           await getDatabase()
             .ref(`recoveryAudit/${auditId}`)
-            .update({ emailStatus: "failed", emailError: (err as Error).message });
+            .update({
+              emailStatus: "failed",
+              emailed: false,
+              emailError: (err as Error).message,
+            });
         }
       }
     } else if (auditId) {
       await getDatabase()
         .ref(`recoveryAudit/${auditId}`)
-        .update({ emailStatus: "skipped" });
+        .update({ emailStatus: "skipped", emailed: false });
     }
 
     return { ok: true, link, emailed };

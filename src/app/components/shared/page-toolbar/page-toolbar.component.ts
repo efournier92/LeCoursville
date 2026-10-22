@@ -10,4 +10,5 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 })
 export class PageToolbarComponent {
   @Input() title: string | null = null;
+  @Input() subtitle: string | null = null;
 }

@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { CloudFunctionsService } from 'src/app/services/cloud-functions.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
+import { paginate, Page, pageRange } from 'src/app/admin/pagination';
 
 interface RecoveryRequest {
   id: string;
@@ -84,8 +85,11 @@ interface GeneratedResult {
 export class AdminRecoveryComponent implements OnInit, OnDestroy {
   requests: RecoveryRequest[] = [];
   reasons: Record<string, string> = {};
+  emailAlternate: Record<string, boolean> = {};
   generated: Record<string, GeneratedResult> = {};
   errors: Record<string, string> = {};
+  copied: Record<string, boolean> = {};
+  copyErrors: Record<string, string> = {};
   generating: Record<string, boolean> = {};
   closing: Record<string, boolean> = {};
   recipients: string[] = [];
@@ -102,6 +106,11 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   auditLoadError = '';
   accountsLoadError = '';
   alertsLoadError = '';
+
+  readonly pageSize = 10;
+  requestsPage = 1;
+  recipientsPage = 1;
+  auditPage = 1;
 
   private requestsSub?: Subscription;
   private recipientsSub?: Subscription;
@@ -229,6 +238,54 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }
 
+  get requestPageData(): Page<RecoveryRequest> {
+    return paginate(this.visibleRequests, this.requestsPage, this.pageSize);
+  }
+
+  get requestShowingRange(): string {
+    return pageRange(this.requestPageData);
+  }
+
+  get recipientPageData(): Page<string> {
+    return paginate(this.recipients, this.recipientsPage, this.pageSize);
+  }
+
+  get recipientShowingRange(): string {
+    return pageRange(this.recipientPageData);
+  }
+
+  get auditPageData(): Page<RecoveryAuditEntry> {
+    return paginate(this.audit, this.auditPage, this.pageSize);
+  }
+
+  get auditShowingRange(): string {
+    return pageRange(this.auditPageData);
+  }
+
+  previousRequestsPage(): void {
+    this.requestsPage = Math.max(1, this.requestPageData.page - 1);
+  }
+
+  nextRequestsPage(): void {
+    this.requestsPage = Math.min(this.requestPageData.pageCount, this.requestPageData.page + 1);
+  }
+
+  previousRecipientsPage(): void {
+    this.recipientsPage = Math.max(1, this.recipientPageData.page - 1);
+  }
+
+  nextRecipientsPage(): void {
+    this.recipientsPage = Math.min(this.recipientPageData.pageCount, this.recipientPageData.page + 1);
+  }
+
+  previousAuditPage(): void {
+    this.auditPage = Math.max(1, this.auditPageData.page - 1);
+  }
+
+  nextAuditPage(): void {
+    this.auditPage = Math.min(this.auditPageData.pageCount, this.auditPageData.page + 1);
+  }
+
   /** Recent alerts and privileged audit actions, newest first, capped for a fast scan. */
   get activity(): ActivityItem[] {
     const fromAlerts = this.alerts
@@ -264,6 +321,12 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     return request.status === 'open' && (this.reasons[request.id] || '').trim().length > 0;
   }
 
+  reasonHint(request: RecoveryRequest): string {
+    return request.status === 'open'
+      ? 'Enter a reason to generate a reset link.'
+      : 'Only open requests can generate a reset link.';
+  }
+
   /** Resolved and closed rows are terminal; open and stale pending rows stay closable. */
   // minimalist: a fresh pending row is enabled too and the callable rejects it;
   // upgrade by mirroring the function's RECOVERY_LOCK_TTL_MS once it is shared.
@@ -293,10 +356,12 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     this.generating[request.id] = true;
     this.errors[request.id] = '';
     try {
+      const emailAlternateContact = this.emailAlternate[request.id] === true;
       const { data } = await this.cloudFunctions.adminGenerateResetLink({
         requestId: request.id,
         email: request.email,
         reason,
+        ...(emailAlternateContact ? { emailAlternateContact: true } : {}),
       }) as { data: { link: string; emailed: boolean } };
       this.generated[request.id] = { link: data.link, emailed: data.emailed, request };
     } catch (error) {
@@ -338,12 +403,25 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     }
   }
 
-  copyLink(link: string): void {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(link).catch(() => this.copyFallback(link));
-      return;
+  async copyLink(link: string, requestId: string): Promise<void> {
+    this.copyErrors[requestId] = '';
+    try {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(link);
+        } catch {
+          this.copyFallback(link);
+        }
+      } else {
+        this.copyFallback(link);
+      }
+      this.copied[requestId] = true;
+      setTimeout(() => {
+        this.copied[requestId] = false;
+      }, 2000);
+    } catch {
+      this.copyErrors[requestId] = 'Could not copy the link. Select it and copy manually.';
     }
-    this.copyFallback(link);
   }
 
   addRecipient(): void {
@@ -450,16 +528,20 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   }
 
   private copyFallback(link: string): void {
+    const textarea = document.createElement('textarea');
+    let copied = false;
     try {
-      const textarea = document.createElement('textarea');
       textarea.value = link;
       textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    } catch {
-      // Clipboard unavailable; the link stays visible for manual copy.
+      copied = document.execCommand('copy');
+    } finally {
+      textarea.remove();
+    }
+    if (!copied) {
+      throw new Error('Clipboard copy is unavailable.');
     }
   }
 }

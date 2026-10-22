@@ -142,14 +142,31 @@ describe("adminGenerateResetLink", () => {
     });
     authMock.users.set("user@example.com", { uid: "user-1" });
 
-    const result = await invoke(validData);
+    const result = await invoke({ ...validData, emailAlternateContact: true });
 
     expect(result).toMatchObject({ ok: true, emailed: true });
     const request = fakeDb.read("recoveryRequests/req-1") as Record<string, unknown>;
     expect(request.status).toBe("resolved");
     const audit = auditEntries().find((entry) => entry.action === "generate_reset_link");
-    expect(audit).toMatchObject({ emailStatus: "sent", targetUid: "user-1" });
+    expect(audit).toMatchObject({ emailStatus: "sent", targetUid: "user-1", emailed: true });
     expect(fakeDb.read("outboundEmails")).not.toBeNull();
+  });
+
+  it("returns the link without emailing the requester-supplied alternate contact", async () => {
+    await seedAdmin();
+    await seedRequest("req-1", {
+      email: "user@example.com",
+      alternateContact: "attacker@example.com",
+    });
+    authMock.users.set("user@example.com", { uid: "user-1" });
+
+    const result = await invoke(validData);
+
+    expect(result).toMatchObject({ ok: true, emailed: false });
+    expect(String((result as { link: string }).link)).toContain("oobCode");
+    expect(fakeDb.read("outboundEmails")).toBeNull();
+    const audit = auditEntries().find((entry) => entry.action === "generate_reset_link");
+    expect(audit).toMatchObject({ emailStatus: "skipped", emailed: false });
   });
 
   it("keeps the audit trail when the alternate-address email fails", async () => {
@@ -161,13 +178,17 @@ describe("adminGenerateResetLink", () => {
     authMock.users.set("user@example.com", { uid: "user-1" });
     vi.mocked(sendEmail).mockRejectedValueOnce(new Error("resend down"));
 
-    const result = await invoke(validData);
+    const result = await invoke({ ...validData, emailAlternateContact: true });
 
     expect(result).toMatchObject({ ok: true, emailed: false });
     const request = fakeDb.read("recoveryRequests/req-1") as Record<string, unknown>;
     expect(request.status).toBe("resolved");
     const audit = auditEntries().find((entry) => entry.action === "generate_reset_link");
-    expect(audit).toMatchObject({ emailStatus: "failed", emailError: "resend down" });
+    expect(audit).toMatchObject({
+      emailStatus: "failed",
+      emailed: false,
+      emailError: "resend down",
+    });
   });
 
   it("throws resource-exhausted and audits when the actor cap is reached", async () => {
@@ -250,7 +271,7 @@ describe("adminGenerateResetLink", () => {
     authMock.users.set("user@example.com", { uid: "user-1" });
     vi.mocked(writeAudit).mockRejectedValueOnce(new Error("audit down"));
 
-    const result = await invoke(validData);
+    const result = await invoke({ ...validData, emailAlternateContact: true });
 
     expect(result).toMatchObject({ ok: true, emailed: true });
     expect(String((result as { link: string }).link)).toContain("oobCode");

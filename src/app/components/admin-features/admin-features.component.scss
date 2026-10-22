@@ -1,60 +1,11 @@
 @use 'src/app/styles/admin-data' as *;
 
-.action-error {
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid var(--color-error);
-  border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
-  color: var(--color-ink);
-  font-size: 0.875rem;
-}
-
-.admin-features-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 24px;
-}
-
-.promoted-route-card,
-.features-card {
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-
-  mat-card-header {
-    margin-bottom: 16px;
-  }
-
-  mat-card-title {
-    color: var(--color-ink);
-  }
-
-  mat-card-subtitle {
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--color-ink-2);
-  }
-}
-
 .promoted-route-card {
   margin-bottom: 24px;
-
-  mat-card-title {
-    font-size: 20px;
-    font-weight: 600;
-  }
 
   .promoted-route-input {
     padding: 0 1em;
     margin-top: 8px;
-  }
-}
-
-.features-card {
-  mat-card-title {
-    font-size: 20px;
-    font-weight: 600;
   }
 }
 

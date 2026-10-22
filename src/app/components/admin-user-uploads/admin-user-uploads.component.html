@@ -1,7 +1,9 @@
 <div class="admin-uploads-container">
-  <app-page-toolbar class="uploads-toolbar" title="Uploads">
-    @if (filterStatus !== 'browser') {
-      <div class="gallery-segmented" role="group" aria-label="Filter uploads">
+  <app-page-toolbar class="uploads-toolbar" title="Uploads"></app-page-toolbar>
+
+  @if (filterStatus !== 'browser') {
+    <app-admin-filter-bar>
+      <div class="gallery-segmented" role="group" aria-label="Filter uploads" admin-filter-actions>
         <button
           class="gallery-segmented-btn"
           [class.active]="filterStatus === 'pending'"
@@ -17,17 +19,19 @@
           All ({{ allUploads.length }})
         </button>
       </div>
-      <button mat-stroked-button (click)="switchToStorageBrowser()">
+      <button mat-stroked-button class="filter-storage-btn" admin-filter-actions (click)="switchToStorageBrowser()">
         <mat-icon>folder_open</mat-icon>
         Storage
       </button>
-    } @else {
-      <button mat-stroked-button (click)="backToReview()">
+    </app-admin-filter-bar>
+  } @else {
+    <app-admin-filter-bar>
+      <button mat-stroked-button class="filter-storage-btn" admin-filter-actions (click)="backToReview()">
         <mat-icon>arrow_back</mat-icon>
         Review Queue
       </button>
-    }
-  </app-page-toolbar>
+    </app-admin-filter-bar>
+  }
 
   <mat-card class="uploads-card">
     <div class="uploads-body">
@@ -125,11 +129,10 @@
             }
           </tbody>
         </table>
-        <div class="admin-pagination">
-          <span>{{ pageData.total }} upload{{ pageData.total === 1 ? '' : 's' }}</span>
+        <div class="admin-pagination-footer">
+          <span>{{ showingRange }}</span>
           <div class="pager">
-            <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Previous</button>
-            <span>Page {{ pageData.page }} of {{ pageData.pageCount }}</span>
+            <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Prev</button>
             <button mat-button [disabled]="pageData.page >= pageData.pageCount" (click)="nextPage()">Next</button>
           </div>
         </div>

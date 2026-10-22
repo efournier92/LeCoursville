@@ -65,7 +65,7 @@ describe('AdminFamiliesComponent', () => {
     expect(component.formError).toBe('Name is required');
     expect(familyService.saveFamily).not.toHaveBeenCalled();
 
-    component.formData = { id: 'A', name: 'Smith', hexColor: 'nope' };
+    component.formData = { sortOrder: 'A', name: 'Smith', hexColor: 'nope' };
     component.onSave();
     expect(component.formError).toBe('Hex color must be in format #RRGGBB');
 
@@ -172,9 +172,50 @@ describe('AdminFamiliesComponent', () => {
 
     expect(component.csvPreview).toHaveLength(1);
     expect(component.csvErrors).toEqual([]);
-    expect(component.importError).toContain('boom');
-    expect(fixture.nativeElement.querySelector('.import-error[role="alert"]').textContent).toContain('boom');
+    expect(component.importError).toContain('Retry');
+    expect(fixture.nativeElement.querySelector('.import-error[role="alert"]').textContent).toContain('Retry');
     expect(fixture.nativeElement.querySelector('.csv-actions button:last-child').disabled).toBe(false);
+  });
+
+  it('reports imported and skipped-duplicate counts after an import', async () => {
+    settle([makeFamily(1, 'Smith')]);
+    (component as any).parseCsv([
+      'Name,ID,Color_Hex',
+      'Smith,fam-1,#112233',
+      'Jones,fam-2,#112233',
+    ].join('\n'));
+
+    await component.onCsvConfirm();
+    fixture.detectChanges();
+
+    expect(component.importSummary).toEqual({ imported: 1, skipped: 1 });
+    expect(fixture.nativeElement.querySelector('[data-testid="families-import-summary"]').textContent)
+      .toContain('Imported 1 family, skipped 1 duplicate.');
+    expect(component.csvPreview).toEqual([]);
+  });
+
+  it('retries only the rows that failed the first import', async () => {
+    familyService.saveFamily
+      .mockReturnValueOnce(Promise.reject(new Error('boom')))
+      .mockReturnValue(Promise.resolve());
+    (component as any).parseCsv([
+      'Name,ID,Color_Hex',
+      'Smith,fam-1,#112233',
+      'Jones,fam-2,#112233',
+    ].join('\n'));
+
+    await component.onCsvConfirm();
+    fixture.detectChanges();
+
+    expect(component.csvPreview).toHaveLength(1);
+    expect(component.csvPreview[0].name).toBe('Smith');
+
+    await component.onCsvConfirm();
+    fixture.detectChanges();
+
+    expect(familyService.saveFamily).toHaveBeenCalledTimes(3);
+    expect(component.csvPreview).toEqual([]);
+    expect(component.importSummary).toEqual({ imported: 1, skipped: 0 });
   });
 
   it('limits the CSV preview to 10 rows per page', () => {

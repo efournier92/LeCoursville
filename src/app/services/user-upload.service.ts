@@ -17,6 +17,9 @@ import { FirebaseService } from './firebase.service';
 import { RtdbService } from './rtdb.service';
 import { FireUploadTask } from './fire-upload-task';
 
+const UPLOADS_PREFIX = 'userUploads/';
+const SAFE_FILE_NAME = /^[A-Za-z0-9._-]+$/;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -59,6 +62,30 @@ export class UserUploadService {
     return name.replace(/[^a-zA-Z0-9]/g, '');
   }
 
+  /**
+   * Storage operations use the record's `path`, never its `url`: a URL is a
+   * client-authored string, while the path is constrained to the uploads tree
+   * by the RTDB rules.
+   */
+  private validatedUploadPath(upload: UserUpload): string {
+    const path = (upload.path || '').trim();
+    if (
+      !path.startsWith(UPLOADS_PREFIX) ||
+      path.includes('\0') ||
+      path.split('/').some(segment => segment === '' || segment === '.' || segment === '..')
+    ) {
+      throw new Error('Upload path is outside the uploads folder.');
+    }
+    return path;
+  }
+
+  private destinationFileName(fileName: string): string {
+    if (!SAFE_FILE_NAME.test(fileName)) {
+      throw new Error(`Unsafe upload file name: ${fileName}`);
+    }
+    return fileName;
+  }
+
   async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: FireUploadTask, uploadId: string }> {
     const uploadId = this.rtdb.createPushId();
     const now = new Date();
@@ -87,20 +114,11 @@ export class UserUploadService {
         console.error('Upload failed:', err);
       },
       complete: async () => {
-        const user = this.firebase.auth.currentUser;
-        let url = '';
-        if (user) {
-          try {
-            url = await getDownloadURL(storageRef);
-          } catch (e) {
-            console.error('Failed to resolve download URL:', e);
-          }
-        }
-        // No auth — skip getDownloadURL (would 403 on read since read requires
-        // auth); admin fills in the URL when they approve the upload.
+        // The create contract carries no URL: the admin derives the download
+        // URL from the validated path when they approve the upload.
         const upload: UserUpload = {
           id: uploadId,
-          url,
+          url: '',
           path,
           dateAdded: new Date(),
           eventName,
@@ -131,13 +149,12 @@ export class UserUploadService {
    */
   async approveUpload(upload: UserUpload): Promise<void> {
     const storageInstance = this.firebase.storage;
-    const fileName = upload.path.split('/').pop();
-    const pathParts = upload.path.split('/');
+    const sourcePath = this.validatedUploadPath(upload);
+    const pathParts = sourcePath.split('/');
+    const fileName = this.destinationFileName(pathParts[pathParts.length - 1]);
     const folderName = pathParts[1];
     const newPath = `photos/${folderName}/${fileName}`;
-    const sourceStorageRef = upload.url
-      ? ref(storageInstance, upload.url)
-      : ref(storageInstance, upload.path);
+    const sourceStorageRef = ref(storageInstance, sourcePath);
     const destStorageRef = ref(storageInstance, newPath);
     const blob = await getBlob(sourceStorageRef);
     await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
@@ -173,12 +190,14 @@ export class UserUploadService {
 
   async approveUploadToAlbum(upload: UserUpload, albumId: string): Promise<void> {
     const photoId = this.rtdb.createPushId();
-    const extension = upload.fileName?.split('.').pop() || 'jpg';
-    const newPath = `photos/${albumId}/${upload.fileName}`;
+    const sourcePath = this.validatedUploadPath(upload);
+    const fileName = this.destinationFileName(
+      upload.fileName || sourcePath.split('/').pop() || '',
+    );
+    const extension = fileName.split('.').pop() || 'jpg';
+    const newPath = `photos/${albumId}/${fileName}`;
     const storageInstance = this.firebase.storage;
-    const sourceStorageRef = upload.url
-      ? ref(storageInstance, upload.url)
-      : ref(storageInstance, upload.path);
+    const sourceStorageRef = ref(storageInstance, sourcePath);
     const destStorageRef = ref(storageInstance, newPath);
     const blob = await getBlob(sourceStorageRef);
     await uploadBytes(destStorageRef, blob, { contentType: upload.fileType || undefined });
@@ -210,14 +229,14 @@ export class UserUploadService {
   }
 
   async rejectUpload(upload: UserUpload): Promise<void> {
-    const storageRef = ref(this.firebase.storage, upload.url);
+    const storageRef = ref(this.firebase.storage, this.validatedUploadPath(upload));
     await deleteObject(storageRef);
     await this.rtdb.object(`${this.userUploadsRef}/${upload.id}`).remove();
   }
 
   async deleteUpload(upload: UserUpload): Promise<void> {
     try {
-      const storageRef = ref(this.firebase.storage, upload.url);
+      const storageRef = ref(this.firebase.storage, this.validatedUploadPath(upload));
       await deleteObject(storageRef);
     } catch (e) {
       console.warn('File already deleted from storage');

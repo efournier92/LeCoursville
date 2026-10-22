@@ -1,4 +1,9 @@
 .album-edit-field {
   width: 100%;
-  min-width: 320px;
+}
+
+.album-edit-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.8125rem;
 }

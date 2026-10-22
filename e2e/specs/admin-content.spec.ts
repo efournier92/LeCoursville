@@ -242,4 +242,50 @@ test.describe('admin content surfaces', () => {
     });
     expect(albumsOverflow.scrollWidth).toBeLessThanOrEqual(albumsOverflow.clientWidth + 1);
   });
+
+  test('390x844: filter rows and album drill-in actions stay reachable without overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+
+    const assertNoOverflow = async () => {
+      const content = await page.evaluate(() => {
+        const el = document.querySelector('.admin-content') as HTMLElement;
+        return { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+      });
+      expect(content.scrollWidth).toBeLessThanOrEqual(content.clientWidth + 1);
+    };
+
+    await page.goto('/admin/uploads');
+    const uploadsFilters = page.locator('.admin-filter-bar');
+    await expect(uploadsFilters).toBeVisible();
+    const segmentedHeight = await page
+      .locator('.gallery-segmented')
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(segmentedHeight).toBe(36);
+    await expect(page.getByRole('button', { name: 'Storage' })).toBeVisible();
+    await assertNoOverflow();
+
+    await page.goto('/admin/photo-albums');
+    await expect(page.locator('.admin-filter-bar')).toBeVisible();
+    await expect(page.getByLabel('Search albums')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New Album' })).toBeVisible();
+    await assertNoOverflow();
+
+    await page.locator('.admin-album-card', { hasText: 'E2E Album One' }).click();
+    await expect(page.locator('.album-photos-header')).toBeVisible();
+    for (const name of ['Add Photos', 'Rename', 'Delete Album']) {
+      const action = page.getByRole('button', { name });
+      await expect(action).toBeVisible();
+      const box = await action.boundingBox();
+      expect(box!.x + box!.width).toBeLessThanOrEqual(391);
+    }
+    await assertNoOverflow();
+
+    await page.getByRole('button', { name: 'Rename' }).click();
+    const renameDialog = page.locator('mat-dialog-container');
+    await expect(renameDialog.getByRole('heading', { name: 'Edit Album' })).toBeVisible();
+    await expect(renameDialog.getByLabel('Album title')).toHaveValue('E2E Album One');
+    await renameDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(renameDialog).toBeHidden();
+  });
 });

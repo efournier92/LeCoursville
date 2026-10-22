@@ -1,34 +1,8 @@
 @use 'src/app/styles/admin-data' as *;
 
-.admin-calendars-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 24px;
-}
-
 .calendars-card {
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-
   mat-card-content {
     padding: 16px 24px 24px;
-  }
-}
-
-.write-error {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
-  color: var(--color-error);
-  font-size: 13px;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
   }
 }
 
@@ -70,39 +44,14 @@
   margin-top: 24px;
 
   .form-card {
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-card);
-
     mat-card-content {
       padding: 24px;
-
-      h3 {
-        margin: 0 0 20px;
-        font-size: 18px;
-        font-weight: 500;
-      }
     }
   }
 
   .full-width {
     width: 100%;
     margin-bottom: 16px;
-  }
-
-  .form-error {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--color-error);
-    font-size: 13px;
-    margin-bottom: 16px;
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
   }
 
   .form-actions {

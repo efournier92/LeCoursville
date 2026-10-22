@@ -1,12 +1,7 @@
-.album-title-field {
-  width: 100%;
-  min-width: 320px;
-  --mat-form-field-outlined-outline-color: var(--color-border);
+@use 'src/app/styles/admin-forms' as *;
 
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background: var(--color-surface);
-    border-radius: var(--radius-input);
-  }
+mat-dialog-actions button {
+  height: 36px;
 }
 
 .upload-dialog-summary {

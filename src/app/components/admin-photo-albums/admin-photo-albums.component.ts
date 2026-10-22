@@ -14,10 +14,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
 import { PhotoAlbum } from 'src/app/models/photo-album';
-import { paginate, Page } from 'src/app/admin/pagination';
+import { paginate, pageRange, Page } from 'src/app/admin/pagination';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
+import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotoAlbumsService } from 'src/app/services/photo-albums.service';
 import { PhotosService, PhotoUpload } from 'src/app/services/photos.service';
@@ -28,7 +29,10 @@ import {
   AdminPhotoAlbumUploadDialogData,
   AdminPhotoAlbumUploadDialogResult,
 } from '../admin-photo-album-upload-dialog/admin-photo-album-upload-dialog.component';
-import { PhotoAlbumEditDialogComponent } from '../photo-album-edit-dialog/photo-album-edit-dialog.component';
+import {
+  PhotoAlbumEditDialogComponent,
+  PhotoAlbumEditDialogData,
+} from '../photo-album-edit-dialog/photo-album-edit-dialog.component';
 
 @Component({
     selector: 'app-admin-photo-albums',
@@ -50,6 +54,7 @@ import { PhotoAlbumEditDialogComponent } from '../photo-album-edit-dialog/photo-
     NoResultsMessageComponent,
     LvLoadErrorComponent,
     PageToolbarComponent,
+    AdminFilterBarComponent,
     PhotoUploadProgressComponent
 ]
 })
@@ -65,9 +70,6 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   page = 1;
   readonly pageSize = 12;
   skeletonIterations = [1, 2, 3, 4, 5, 6];
-
-  editingAlbumId: string | null = null;
-  editingTitle = '';
 
   // Per-album photo management (drill-in panel)
   selectedAlbum: PhotoAlbum | null = null;
@@ -180,6 +182,10 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
 
   get pageData(): Page<PhotoAlbum> {
     return paginate(this.getFilteredAlbums(), this.page, this.pageSize);
+  }
+
+  get showingRange(): string {
+    return pageRange(this.pageData);
   }
 
   onSearchChange(term: string): void {
@@ -343,36 +349,31 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
   }
 
   onEditAlbum(album: PhotoAlbum): void {
-    this.editingAlbumId = album.id;
-    this.editingTitle = album.title;
-  }
-
-  onSaveEdit(): void {
-    if (!this.editingAlbumId || !this.editingTitle.trim()) {
-      return;
-    }
-    const id = this.editingAlbumId;
-    const title = this.editingTitle.trim();
-    this.photoAlbumsService.updateAlbum(id, { title }).then(() => {
-      this.editingAlbumId = null;
-      this.editingTitle = '';
-    });
-  }
-
-  onCancelEdit(): void {
-    this.editingAlbumId = null;
-    this.editingTitle = '';
+    this.openAlbumEditDialog(album);
   }
 
   onCreateEmptyAlbum(): void {
-    this.dialog.open(PhotoAlbumEditDialogComponent, {
-      data: { album: null },
+    this.openAlbumEditDialog(null);
+  }
+
+  private openAlbumEditDialog(album: PhotoAlbum | null): void {
+    const data: PhotoAlbumEditDialogData = {
+      album,
+      save: async (title: string) => {
+        if (album) {
+          await this.photoAlbumsService.updateAlbum(album.id, { title });
+          if (this.selectedAlbum?.id === album.id) {
+            this.selectedAlbum = { ...this.selectedAlbum, title };
+          }
+          return;
+        }
+        const created = await this.photoAlbumsService.createAlbum(title);
+        this.analyticsService.logEvent('photo_album_create', { albumId: created.id, title: created.title });
+      },
+    };
+    this.dialog.open<PhotoAlbumEditDialogComponent, PhotoAlbumEditDialogData>(PhotoAlbumEditDialogComponent, {
+      data,
       width: '480px',
-    }).afterClosed().subscribe(async (result: any) => {
-      if (result?.action === 'save' && result.title) {
-        const album = await this.photoAlbumsService.createAlbum(result.title);
-        this.analyticsService.logEvent('photo_album_create', { albumId: album.id, title: album.title });
-      }
     });
   }
 

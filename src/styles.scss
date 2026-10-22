@@ -91,6 +91,18 @@ html {
   --shadow-frost: 0 8px 32px rgba(15, 23, 42, 0.07);
 }
 
+// Spacing scale and chrome metrics shared by admin layouts.
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --header-height: 64px;
+  --filter-bar-height: 56px;
+}
+
 // ── Material 3 theme (Angular Material 18+ token API) ─────────────────────────
 // Brand green primary, amber tertiary; M3 error palette covers `warn` states.
 // Typography is set to the app's own faces so every M3 component inherits them.

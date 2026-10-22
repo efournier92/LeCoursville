@@ -1,8 +1,7 @@
-<div class="admin-people-import-container">
+<div class="admin-page">
+<app-page-toolbar title="People"></app-page-toolbar>
 
-  <app-page-toolbar title="People Import"></app-page-toolbar>
-
-  <mat-card class="import-card">
+  <mat-card class="admin-surface import-card">
     <mat-card-content>
       <button type="button" class="upload-area" (click)="fileInput.click()">
         <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
@@ -34,7 +33,7 @@
 
   @if (validationErrors.length > 0) {
     <div class="validation-section">
-      <mat-card class="error-card">
+      <mat-card class="admin-surface error-card">
         <mat-card-content>
           <div class="validation-header">
             <mat-icon>error_outline</mat-icon>
@@ -53,7 +52,7 @@
 
   @if (validationWarnings.length > 0) {
     <div class="validation-section">
-      <mat-card class="warning-card">
+      <mat-card class="admin-surface warning-card">
         <mat-card-content>
           <div class="validation-header">
             <mat-icon>warning_amber</mat-icon>
@@ -72,9 +71,9 @@
 
   @if (importPreview) {
     <div class="preview-section">
-      <mat-card class="preview-card" [attr.aria-busy]="isImporting">
+      <mat-card class="admin-surface preview-card" [attr.aria-busy]="isImporting">
         <mat-card-header>
-          <mat-card-title>Import Preview</mat-card-title>
+          <mat-card-title class="admin-card-title">Import Preview</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           @if (skippedMissingId > 0) {
@@ -213,7 +212,7 @@
 
   @if (importResult) {
     <div class="result-section">
-      <mat-card class="result-card success">
+      <mat-card class="admin-surface result-card success">
         <mat-card-content>
           <div class="result-header">
             <mat-icon>check_circle</mat-icon>

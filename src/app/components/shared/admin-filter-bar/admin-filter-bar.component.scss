@@ -1,0 +1,17 @@
+@use 'src/app/styles/admin-data' as *;
+
+:host {
+  display: block;
+}
+
+// 36px control row: drop M3's phantom hint/error reserve so fields center in
+// the fixed bar instead of riding high.
+:host ::ng-deep .mat-mdc-form-field {
+  --mat-form-field-container-height: 36px;
+  --mat-form-field-container-vertical-padding: 6px;
+  align-self: center;
+
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}

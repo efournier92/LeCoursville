@@ -1,35 +1,16 @@
 @use 'src/app/styles/admin-data' as *;
 
-.admin-families-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 24px;
-}
-
 .families-card {
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-
   mat-card-content {
     padding: 16px 24px 24px;
   }
 }
 
-.write-error {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
-  color: var(--color-error);
-  font-size: 13px;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
+.import-summary {
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: var(--color-ink);
 }
 
 // CSV Upload Section
@@ -58,6 +39,11 @@
     font: inherit;
     cursor: pointer;
     padding: 16px;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
 
     .drop-zone-icon {
       width: 24px;
@@ -228,18 +214,8 @@
   margin-top: 24px;
 
   .form-card {
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-card);
-
     mat-card-content {
       padding: 24px;
-
-      h3 {
-        margin: 0 0 20px;
-        font-size: 18px;
-        font-weight: 500;
-      }
     }
   }
 
@@ -289,21 +265,6 @@
         border: 1px solid rgba(0, 0, 0, 0.1);
         margin-top: 8px;
       }
-    }
-  }
-
-  .form-error {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--color-error);
-    font-size: 13px;
-    margin-bottom: 16px;
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
     }
   }
 

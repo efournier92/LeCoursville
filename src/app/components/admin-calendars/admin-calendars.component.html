@@ -1,98 +1,100 @@
-<div class="admin-calendars-container">
-  <app-page-toolbar title="Calendars">
-    @if (!isAdding && !editingCalendar) {
-      <button mat-flat-button color="primary" (click)="onAdd()">
-        <mat-icon>add</mat-icon>
-        Add Calendar
-      </button>
-    }
-  </app-page-toolbar>
+<div class="admin-page">
+<app-page-toolbar title="Calendars"></app-page-toolbar>
 
-  <p class="admin-intro calendars-intro">
-    Map each year to the calendar PDF that visitors download. Add or edit a year below.
-  </p>
+<p class="admin-intro">
+  Map each year to the calendar PDF that visitors download. Add or edit a year below.
+</p>
 
-  @if (actionError) {
-    <div class="write-error" role="alert">
-      <mat-icon>error_outline</mat-icon>
-      {{ actionError }}
-    </div>
-  }
+@if (!isAdding && !editingCalendar) {
+  <div class="d-flex justify-content-end mb-3">
+    <button mat-flat-button color="primary" (click)="onAdd()">
+      <mat-icon>add</mat-icon>
+      Add Calendar
+    </button>
+  </div>
+}
 
-  <mat-card class="calendars-card">
-    <mat-card-content>
-      @if (loading) {
-        <div class="admin-skeleton-rows" data-testid="calendars-loading" aria-hidden="true">
-          @for (row of [1, 2, 3]; track row) {
-            <span></span>
-          }
-        </div>
-      } @else if (loadError) {
-        <app-load-error [message]="loadError" (retry)="loadCalendars()" />
-      } @else if (calendars.length === 0) {
-        <app-no-results-message
-          title="No calendars yet"
-          hint="Add a calendar PDF mapping to get started."
-          noun="calendars" />
-      } @else {
-        <table class="admin-table">
-          <thead>
+@if (actionError) {
+  <div class="admin-error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    {{ actionError }}
+  </div>
+}
+
+<mat-card class="admin-surface calendars-card">
+  <mat-card-content>
+    @if (loading) {
+      <div class="admin-skeleton-rows" data-testid="calendars-loading" aria-hidden="true">
+        @for (row of [1, 2, 3]; track row) {
+          <span></span>
+        }
+      </div>
+    } @else if (loadError) {
+      <app-load-error [message]="loadError" (retry)="loadCalendars()" />
+    } @else if (calendars.length === 0) {
+      <app-no-results-message
+        title="No calendars yet"
+        hint="Add a calendar PDF mapping to get started."
+        noun="calendars" />
+    } @else {
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>URL</th>
+            <th aria-label="Actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (calendar of calendars; track calendar.id) {
             <tr>
-              <th>Year</th>
-              <th>URL</th>
-              <th aria-label="Actions"></th>
+              <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
+              <td data-label="URL" class="calendar-url-cell calendar-url">{{ calendar.url }}</td>
+              <td data-label="" class="calendar-actions">
+                <button mat-icon-button color="primary" aria-label="Edit" matTooltip="Edit" (click)="onEdit(calendar)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" aria-label="Delete" matTooltip="Delete" (click)="onDelete(calendar)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (calendar of calendars; track calendar.id) {
-              <tr>
-                <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
-                <td data-label="URL" class="calendar-url-cell calendar-url">{{ calendar.url }}</td>
-                <td data-label="" class="calendar-actions">
-                  <button mat-icon-button color="primary" aria-label="Edit" matTooltip="Edit" (click)="onEdit(calendar)">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" aria-label="Delete" matTooltip="Delete" (click)="onDelete(calendar)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
+          }
+        </tbody>
+      </table>
+    }
 
-      @if (isAdding || editingCalendar) {
-        <div class="form-section">
-          <mat-card class="form-card">
-            <mat-card-content>
-              <h3>{{ editingCalendar ? 'Edit Calendar' : 'Add New Calendar' }}</h3>
-              <form (ngSubmit)="onSave()">
-                <mat-form-field class="full-width">
-                  <mat-label>Year (e.g. 2026)</mat-label>
-                  <input matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
-                </mat-form-field>
-                <mat-form-field class="full-width">
-                  <mat-label>Firebase Storage URL</mat-label>
-                  <input matInput [(ngModel)]="formData.url" name="url" required />
-                </mat-form-field>
-                @if (formError) {
-                  <div class="form-error" role="alert">
-                    <mat-icon>error_outline</mat-icon>
-                    {{ formError }}
-                  </div>
-                }
-                <div class="form-actions">
-                  <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                  <button mat-flat-button color="primary" type="submit">
-                    {{ editingCalendar ? 'Update' : 'Add' }}
-                  </button>
+    @if (isAdding || editingCalendar) {
+      <div class="form-section">
+        <mat-card class="admin-surface form-card">
+          <mat-card-content>
+            <h3 class="admin-card-title">{{ editingCalendar ? 'Edit Calendar' : 'Add New Calendar' }}</h3>
+            <form (ngSubmit)="onSave()">
+              <mat-form-field class="full-width">
+                <mat-label>Year (e.g. 2026)</mat-label>
+                <input matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Firebase Storage URL</mat-label>
+                <input matInput [(ngModel)]="formData.url" name="url" required />
+              </mat-form-field>
+              @if (formError) {
+                <div class="admin-error" role="alert">
+                  <mat-icon>error_outline</mat-icon>
+                  {{ formError }}
                 </div>
-              </form>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+              }
+              <div class="form-actions">
+                <button mat-button type="button" (click)="onCancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit">
+                  {{ editingCalendar ? 'Update' : 'Add' }}
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>
 </div>

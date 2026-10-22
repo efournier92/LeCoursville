@@ -36,6 +36,17 @@
   gap: 2px;
 }
 
+// The admin header is part of the list container, not a separate floating
+// toolbar, so it reads as the list's first row.
+.media-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .media-list-title {
   font-size: 20px;
   font-weight: 600;

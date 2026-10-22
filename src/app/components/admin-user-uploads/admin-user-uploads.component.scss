@@ -6,8 +6,6 @@
 // sheet below must share exactly the same width (toolbar-flush contract).
 .admin-uploads-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0 0 24px;
 }
 
@@ -21,9 +19,18 @@
   }
 }
 
-// C-21: the shared segmented control is 32px; this filter targets 44px.
+// The admin filter row uses 36px controls; the shared segmented pills are 32px.
+.gallery-segmented {
+  height: 36px;
+  padding: 0 4px;
+}
+
 .gallery-segmented-btn {
-  height: 44px;
+  height: 36px;
+}
+
+.filter-storage-btn {
+  height: 36px;
 }
 
 .action-error {
@@ -495,13 +502,6 @@
 }
 
 @media (max-width: 600px) {
-  // Filters and the storage toggle stay on one line at 390px.
-  :host .uploads-toolbar ::ng-deep .page-toolbar-content {
-    width: 100%;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
-
   .gallery-segmented-btn {
     padding: 0 10px;
   }

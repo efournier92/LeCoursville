@@ -18,10 +18,11 @@ import { PhotoAlbumPickerDialogComponent } from '../photo-album-picker-dialog/ph
 import { AnalyticsService } from '../../services/analytics.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
-import { paginate, Page } from '../../admin/pagination';
+import { paginate, pageRange, Page } from '../../admin/pagination';
 import { LvLoadErrorComponent } from '../load-error/load-error.component';
 import { NoResultsMessageComponent } from '../no-results-message/no-results-message.component';
 import { PageToolbarComponent } from '../shared/page-toolbar/page-toolbar.component';
+import { AdminFilterBarComponent } from '../shared/admin-filter-bar/admin-filter-bar.component';
 
 interface StorageFolder {
   name: string;
@@ -57,6 +58,7 @@ interface StorageFile {
         LvLoadErrorComponent,
         NoResultsMessageComponent,
         PageToolbarComponent,
+        AdminFilterBarComponent,
     ]
 })
 export class AdminUserUploadsComponent implements OnInit, OnDestroy {
@@ -149,6 +151,10 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
 
   get pageData(): Page<UserUpload> {
     return paginate(this.filteredUploads, this.page, this.pageSize);
+  }
+
+  get showingRange(): string {
+    return pageRange(this.pageData);
   }
 
   nextPage(): void {

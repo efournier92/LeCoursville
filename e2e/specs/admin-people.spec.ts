@@ -8,13 +8,14 @@ test.describe('admin people surfaces', () => {
     await login(page, 'admin');
     await page.goto('/admin/users');
 
-    await expect(page.locator('app-user-edit')).toHaveCount(5, { timeout: 20000 });
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
     const pagination = page.locator('.admin-pagination');
     await expect(pagination).toContainText('Showing 1-5 of 5');
 
     await page.getByTestId('admin-users-filter').fill('Sparse');
-    await expect(page.locator('app-user-edit')).toHaveCount(1);
-    await expect(page.locator('input[name="user-name"]')).toHaveValue('Sparse User');
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(table.locator('td[data-label="Name"]')).toHaveText('Sparse User');
     await expect(pagination).toContainText('Showing 1-1 of 1');
   });
 
@@ -41,7 +42,7 @@ test.describe('admin people surfaces', () => {
     await expect(page.locator('.families-table tbody tr')).toHaveCount(2, { timeout: 20000 });
 
     await page.getByRole('button', { name: 'Add Family' }).click();
-    await page.getByLabel('ID').fill('zeta-e2e');
+    await page.getByLabel('Sort Order').fill('zeta-e2e');
     await page.getByLabel('Name').fill('Zeta E2E');
     await page.getByLabel('Hex Color').fill('#123456');
     await page.getByRole('button', { name: 'Add', exact: true }).click();

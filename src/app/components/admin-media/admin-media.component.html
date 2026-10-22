@@ -1,32 +1,31 @@
-<div class="admin-media-component-container w-100">
+<div class="admin-page">
+<app-page-toolbar title="Media"></app-page-toolbar>
 
-  <app-page-toolbar title="Media"></app-page-toolbar>
+<p class="admin-intro">
+  Upload and manage family videos and audio albums.
+</p>
 
-  <p class="admin-intro media-intro">
-    Upload and manage family videos and audio albums.
-  </p>
+<mat-tab-group class="admin-media-upload-tab-group w-100" animationDuration="0ms">
+  <mat-tab label="Video">
+    <app-admin-media-upload-video></app-admin-media-upload-video>
+  </mat-tab>
 
-  <mat-tab-group class="admin-media-upload-tab-group w-100" animationDuration="0ms">
-    <mat-tab label="Video">
-      <app-admin-media-upload-video></app-admin-media-upload-video>
-    </mat-tab>
+  <mat-tab label="Audio Album">
+    <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
+  </mat-tab>
+</mat-tab-group>
 
-    <mat-tab label="Audio Album">
-      <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
-    </mat-tab>
-  </mat-tab-group>
+@for (success of successMessages; track success) {
+  <div class="media-upload-success-messages" role="status">
+    <span>{{ success }}</span>
+    <button type="button" class="message-dismiss" (click)="dismissSuccess(success)">Dismiss</button>
+  </div>
+}
 
-  @for (success of successMessages; track success) {
-    <div class="media-upload-success-messages" role="status">
-      <span>{{ success }}</span>
-      <button type="button" class="message-dismiss" (click)="dismissSuccess(success)">Dismiss</button>
-    </div>
-  }
-
-  @for (error of errorMessages; track error) {
-    <div class="media-upload-error-messages" role="alert">
-      <span>{{ error }}</span>
-      <button type="button" class="message-dismiss" (click)="dismissError(error)">Dismiss</button>
-    </div>
-  }
+@for (error of errorMessages; track error) {
+  <div class="admin-error media-upload-error-messages" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="message-dismiss" (click)="dismissError(error)">Dismiss</button>
+  </div>
+}
 </div>

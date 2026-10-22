@@ -25,7 +25,7 @@ const ROUTES: { route: string; url?: RegExp; content: (page: Page) => Locator }[
 // Admin routes use the same ready-state rule under the admin shell. Each
 // locator exists only after that page's data state resolves.
 const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
-  { route: '/admin/users', content: (p) => p.locator('app-user-edit').first() },
+  { route: '/admin/users', content: (p) => p.locator('[data-testid="admin-users-table"]') },
   { route: '/admin/families', content: (p) => p.locator('.admin-table').first() },
   { route: '/admin/people', content: (p) => p.locator('.import-card') },
   { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
