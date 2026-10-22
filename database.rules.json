@@ -139,7 +139,17 @@
     },
     "media": {
       ".read": "true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".indexOn": ["fileName", "folderName"]
+    },
+    "mediaUploads": {
+      ".read": false,
+      ".write": false,
+      ".indexOn": ["lastActivityAt"]
+    },
+    "mediaDeletions": {
+      ".read": false,
+      ".write": false
     },
     "users": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",

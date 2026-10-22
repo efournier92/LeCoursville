@@ -19,6 +19,110 @@ class Snapshot implements FakeSnapshot {
   }
 }
 
+function compareFieldValues(left: unknown, right: unknown): number {
+  if (typeof left === "number" && typeof right === "number") {
+    return left - right;
+  }
+  return String(left).localeCompare(String(right));
+}
+
+class FakeQuery {
+  constructor(
+    private readonly db: FakeDatabase,
+    private readonly path: string,
+    private readonly field: string,
+    private readonly value?: unknown,
+    private readonly startValue?: unknown,
+    private readonly endValue?: unknown,
+    private readonly limit: number | null = null
+  ) {}
+
+  equalTo(value: unknown): FakeQuery {
+    return new FakeQuery(
+      this.db,
+      this.path,
+      this.field,
+      value,
+      this.startValue,
+      this.endValue,
+      this.limit
+    );
+  }
+
+  startAt(value: unknown, _key?: string): FakeQuery {
+    return new FakeQuery(
+      this.db,
+      this.path,
+      this.field,
+      this.value,
+      value,
+      this.endValue,
+      this.limit
+    );
+  }
+
+  endAt(value: unknown): FakeQuery {
+    return new FakeQuery(
+      this.db,
+      this.path,
+      this.field,
+      this.value,
+      this.startValue,
+      value,
+      this.limit
+    );
+  }
+
+  limitToFirst(limit: number): FakeQuery {
+    return new FakeQuery(
+      this.db,
+      this.path,
+      this.field,
+      this.value,
+      this.startValue,
+      this.endValue,
+      limit
+    );
+  }
+
+  async get(): Promise<FakeSnapshot> {
+    const data = this.db.read(this.path);
+    if (!data || typeof data !== "object") {
+      return new Snapshot(null);
+    }
+    const rows = Object.entries(
+      data as Record<string, Record<string, unknown>>
+    ).filter(([, child]) => {
+      if (!child || typeof child !== "object") {
+        return false;
+      }
+      const fieldValue = child[this.field];
+      if (this.value !== undefined && fieldValue !== this.value) {
+        return false;
+      }
+      if (
+        this.startValue !== undefined &&
+        compareFieldValues(fieldValue, this.startValue) < 0
+      ) {
+        return false;
+      }
+      if (
+        this.endValue !== undefined &&
+        compareFieldValues(fieldValue, this.endValue) > 0
+      ) {
+        return false;
+      }
+      return true;
+    });
+    rows.sort((a, b) =>
+      compareFieldValues(a[1][this.field], b[1][this.field])
+    );
+    const limited = this.limit === null ? rows : rows.slice(0, this.limit);
+    const matches = Object.fromEntries(limited);
+    return new Snapshot(Object.keys(matches).length ? matches : null);
+  }
+}
+
 export class FakeRef {
   key: string | null;
 
@@ -62,6 +166,10 @@ export class FakeRef {
       this.db.write(this.path, {});
     }
     return new FakeRef(this.db, `${this.path}/${key}`, key);
+  }
+
+  orderByChild(field: string): FakeQuery {
+    return new FakeQuery(this.db, this.path, field);
   }
 }
 
