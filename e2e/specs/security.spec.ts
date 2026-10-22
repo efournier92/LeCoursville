@@ -277,26 +277,31 @@ test.describe('security', () => {
     expect(body?.error).toBeTruthy();
   });
 
-  test('non-admin callable invocation of adminGenerateResetLink is rejected', async () => {
-    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
-    const res = await fetch(
-      'http://127.0.0.1:5001/lecoursville-dev/us-central1/adminGenerateResetLink',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          data: {
-            requestId: 'non-admin-probe',
-            email: E2E_USERS.user.email,
-            reason: 'probe',
-            continueUrl: 'http://localhost:5000/auth/action',
-          },
-        }),
-      },
-    );
-    expect(res.status).toBe(403);
-    const body = await res.json().catch(() => null);
-    expect(body?.error?.status).toBe('PERMISSION_DENIED');
+  test('adminGenerateResetLink is super-only, not merely admin', async () => {
+    const call = (token: string) =>
+      fetch(
+        'http://127.0.0.1:5001/lecoursville-dev/us-central1/adminGenerateResetLink',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            data: {
+              requestId: 'non-super-probe',
+              email: E2E_USERS.user.email,
+              reason: 'probe',
+              continueUrl: 'http://localhost:5000/auth/action',
+            },
+          }),
+        },
+      );
+
+    for (const who of ['user', 'staff'] as const) {
+      const token = await idToken(E2E_USERS[who].email, E2E_USERS[who].password);
+      const res = await call(token);
+      expect(res.status).toBe(403);
+      const body = await res.json().catch(() => null);
+      expect(body?.error?.status).toBe('PERMISSION_DENIED');
+    }
   });
 
   test('recovery request rate limit caps writes but keeps the generic response', async () => {
@@ -432,39 +437,78 @@ test.describe('security', () => {
     }
   });
 
-  test('rules: a client-created upload must be pending, under userUploads, and url-free', async () => {
-    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+  test('rules: userUploads rejects client writes; the callable owns the record', async () => {
+    const userToken = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const adminToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
     const key = `security-upload-${Date.now()}`;
-    const put = (body: Record<string, unknown>) =>
+    const base = 'http://localhost:9000/userUploads';
+    const direct = (body: Record<string, unknown>, token?: string) =>
       fetch(
-        `http://localhost:9000/userUploads/${key}.json?ns=lecoursville-dev-default-rtdb&auth=${token}`,
+        `${base}/${key}.json?ns=lecoursville-dev-default-rtdb${token ? `&auth=${token}` : ''}`,
         { method: 'PUT', body: JSON.stringify(body) },
       );
-    const base = {
+    const baseRecord = {
       id: key,
       status: 'pending',
       path: `userUploads/${key}/file.png`,
       fileName: 'file.png',
       fileType: 'image/png',
+      url: '',
     };
 
     try {
-      // An arbitrary URL would survive into the admin preview.
-      expect((await put({ ...base, url: 'https://evil.example/x.png' })).status).not.toBe(200);
-      // A path outside the uploads prefix would let approval copy/delete other data.
-      expect((await put({ ...base, path: 'photos/album-1/photo1.png' })).status).not.toBe(200);
-      expect((await put({ ...base, path: 'userUploads/../photos/x.png' })).status).not.toBe(200);
-      // A client cannot self-approve.
-      expect((await put({ ...base, status: 'approved' })).status).not.toBe(200);
+      // The public page no longer needs a database identity: client writes are
+      // denied outright, authenticated or not.
+      expect((await direct(baseRecord)).status).not.toBe(200);
+      expect((await direct(baseRecord, userToken)).status).not.toBe(200);
+      // Even an admin client must keep the record id equal to its key; record
+      // creation belongs to the callable.
+      expect((await direct({ ...baseRecord, id: 'another-id' }, adminToken)).status)
+        .not.toBe(200);
 
-      const valid = await put(base);
-      expect(valid.ok).toBe(true);
-      expect(await readDb<Record<string, unknown>>(`userUploads/${key}`)).toMatchObject({
+      const call = await fetch(
+        'http://127.0.0.1:5001/lecoursville-dev/us-central1/createUserUpload',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: {
+              fileName: '../../attack name.png',
+              batchId: '../batch/name',
+              eventName: 'Security probe',
+              fileType: 'image/png',
+              fileSize: 10,
+              uploader: { name: 'Probe' },
+              id: 'attacker',
+              path: 'photos/album-1/photo1.png',
+              status: 'approved',
+              url: 'https://evil.example/x.png',
+            },
+          }),
+        },
+      );
+      expect(call.ok).toBe(true);
+      const body = await call.json();
+      const created = body.result as { id: string; path: string };
+      expect(created.id).toBeTruthy();
+      expect(created.path).toMatch(new RegExp(`^userUploads/${created.id}/`));
+      expect(created.path).not.toContain('..');
+      const record = await readDb<Record<string, unknown>>(`userUploads/${created.id}`);
+      expect(record).toMatchObject({
+        id: created.id,
+        path: created.path,
         status: 'pending',
-        path: base.path,
+        url: '',
       });
+      expect(record?.fileName).toBe('attack_name.png');
     } finally {
       await deleteDb(`userUploads/${key}`);
+      const all = (await readDb<Record<string, any>>('userUploads')) ?? {};
+      for (const [id, value] of Object.entries(all)) {
+        if (value?.uploader?.name === 'Probe' && value?.eventName === 'Security probe') {
+          await deleteDb(`userUploads/${id}`);
+        }
+      }
     }
   });
 
@@ -506,86 +550,186 @@ test.describe('security', () => {
     }
   });
 
-  test('rules: messages deny forged authors, edits, and deletes of another user', async ({ page }) => {
-    const token = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+  test('rules: messages deny forged authors, nested rewrites, and cross-author changes', async () => {
+    const userToken = await idToken(E2E_USERS.user.email, E2E_USERS.user.password);
+    const adminToken = await idToken(E2E_USERS.admin.email, E2E_USERS.admin.password);
     const users = (await readDb<Record<string, any>>('users')) ?? {};
     const uidFor = (email: string) =>
       Object.entries(users).find(([, value]) => value?.email === email)?.[0] as string;
     const userUid = uidFor(E2E_USERS.user.email);
     const adminUid = uidFor(E2E_USERS.admin.email);
-    const ownKey = `security-own-${Date.now()}`;
-    const forgedKey = `security-forged-${Date.now()}`;
+    const stamp = Date.now();
+    const ownKey = `security-own-${stamp}`;
+    const forgedKey = `security-forged-${stamp}`;
+    const replyKey = `security-reply-${stamp}`;
+    const adminReplyKey = `security-admin-reply-${stamp}`;
     const seeded = (await readDb<Record<string, any>>('messages/msg-1')) ?? null;
     expect(seeded).toBeTruthy();
-    const base = `http://localhost:9000/messages`;
-    const auth = `ns=lecoursville-dev-default-rtdb&auth=${token}`;
+    const base = 'http://localhost:9000/messages';
+    const query = (token?: string) =>
+      `ns=lecoursville-dev-default-rtdb${token ? `&auth=${token}` : ''}`;
+    const put = (path: string, body: unknown, token: string = userToken) =>
+      fetch(`${base}/${path}.json?${query(token)}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+    const patch = (path: string, body: unknown, token: string = userToken) =>
+      fetch(`${base}/${path}.json?${query(token)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+    const message = (id: string, authorId: string, authorName: string, extra = {}) => ({
+      id,
+      authorId,
+      authorName,
+      title: 'Security message',
+      body: 'Written by its author',
+      messageType: 'chat',
+      isReply: false,
+      replyLevel: 0,
+      likes: [],
+      replies: [],
+      dateSent: Date.now(),
+      isSticky: false,
+      isEditable: false,
+      isSaved: true,
+      isDeleted: false,
+      attachmentId: '',
+      attachmentType: '',
+      attachmentUrl: '',
+      ...extra,
+    });
+    const reply = (id: string, authorId: string, authorName: string, extra = {}) =>
+      message(id, authorId, authorName, { isReply: true, replyLevel: 1, ...extra });
 
     try {
-      const forged = await fetch(`${base}/${forgedKey}.json?${auth}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          id: forgedKey,
-          authorId: adminUid,
-          authorName: 'Admin User',
-          title: 'Forged',
-          body: 'Forged by another identity',
-          messageType: 'chat',
-          isReply: false,
-          replyLevel: 0,
-          likes: [],
-          replies: [],
-          dateSent: new Date().toISOString(),
-        }),
-      });
-      expect(forged.status).not.toBe(200);
+      // A member cannot create a message as someone else, and anonymous writes
+      // are denied entirely.
+      expect((await put(forgedKey, message(forgedKey, adminUid, 'Admin User'))).status).not.toBe(200);
+      expect(
+        (
+          await fetch(`${base}/${forgedKey}.json?${query()}`, {
+            method: 'PUT',
+            body: JSON.stringify(message(forgedKey, adminUid, 'Admin User')),
+          })
+        ).status,
+      ).not.toBe(200);
 
-      const own = await fetch(`${base}/${ownKey}.json?${auth}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          id: ownKey,
-          authorId: userUid,
-          authorName: 'Regular User',
-          title: 'Own message',
-          body: 'Written by its author',
-          messageType: 'chat',
-          isReply: false,
-          replyLevel: 0,
-          likes: [],
-          replies: [],
-          dateSent: new Date().toISOString(),
-        }),
-      });
-      expect(own.ok).toBe(true);
+      expect((await put(ownKey, message(ownKey, userUid, 'Regular User'))).ok).toBe(true);
 
-      // Editing another user's content is denied and leaves the record intact.
-      const edit = await fetch(`${base}/msg-1.json?${auth}`, {
-        method: 'PUT',
-        body: JSON.stringify({ ...seeded, body: 'hijacked' }),
-      });
-      expect(edit.status).not.toBe(200);
+      // Another member's body, author, and nested reply tree are all off limits.
+      expect(
+        (await put('msg-1', { ...seeded, body: 'hijacked' })).status,
+      ).not.toBe(200);
+      expect(
+        (
+          await put('msg-1', {
+            ...seeded,
+            replies: [{ ...reply('forged-nested', adminUid, 'Admin User') }],
+          })
+        ).status,
+      ).not.toBe(200);
+      expect((await fetch(`${base}/msg-1.json?${query(userToken)}`, { method: 'DELETE' })).status)
+        .not.toBe(200);
       expect((await readDb<Record<string, any>>('messages/msg-1'))?.body).toBe(seeded.body);
 
-      const remove = await fetch(`${base}/msg-1.json?${auth}`, { method: 'DELETE' });
-      expect(remove.status).not.toBe(200);
-      expect(await readDb('messages/msg-1')).not.toBeNull();
+      // An author cannot hand their own message to another identity.
+      expect((await patch(ownKey, { authorId: adminUid })).status).not.toBe(200);
+      expect((await readDb<Record<string, any>>(`messages/${ownKey}`))?.authorId).toBe(userUid);
 
-      // Likes and replies legitimately write another author's record; only the
-      // interactive fields may change.
-      const liked = await fetch(`${base}/msg-1.json?${auth}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          ...seeded,
-          likes: [{ userId: userUid, userName: 'Regular User' }],
-        }),
-      });
-      expect(liked.ok).toBe(true);
+      // Likes are child writes keyed by the liker, and only the liker.
+      await deleteDb(`messages/msg-1/likes/${userUid}`);
+      expect(
+        (
+          await put(`msg-1/likes/${userUid}`, {
+            userId: userUid,
+            userName: 'Regular User',
+          })
+        ).ok,
+      ).toBe(true);
+      expect(
+        (
+          await put(`msg-1/likes/${adminUid}`, {
+            userId: adminUid,
+            userName: 'Admin User',
+          })
+        ).status,
+      ).not.toBe(200);
 
-      const ownDelete = await fetch(`${base}/${ownKey}.json?${auth}`, { method: 'DELETE' });
-      expect(ownDelete.ok).toBe(true);
+      // Replies are child writes whose author is pinned to the caller.
+      expect((await put(`msg-1/replies/${replyKey}`, reply(replyKey, userUid, 'Regular User'))).ok)
+        .toBe(true);
+      expect(
+        (
+          await put(
+            `msg-1/replies/forged-reply`,
+            reply('forged-reply', adminUid, 'Admin User'),
+          )
+        ).status,
+      ).not.toBe(200);
+
+      // Admin-authored replies cannot be edited by a member.
+      expect(
+        (
+          await put(
+            `msg-1/replies/${adminReplyKey}`,
+            reply(adminReplyKey, adminUid, 'Admin User'),
+            adminToken,
+          )
+        ).ok,
+      ).toBe(true);
+      expect((await patch(`msg-1/replies/${adminReplyKey}`, { body: 'hijacked' })).status)
+        .not.toBe(200);
+
+      // Create constraints: id, sticky, author name, attachment URL, date.
+      expect(
+        (await put(`security-id-${stamp}`, message('different-id', userUid, 'Regular User'))).status,
+      ).not.toBe(200);
+      expect(
+        (
+          await put(
+            `security-sticky-${stamp}`,
+            message(`security-sticky-${stamp}`, userUid, 'Regular User', { isSticky: true }),
+          )
+        ).status,
+      ).not.toBe(200);
+      expect(
+        (
+          await put(
+            `security-name-${stamp}`,
+            message(`security-name-${stamp}`, userUid, 'n'.repeat(101)),
+          )
+        ).status,
+      ).not.toBe(200);
+      expect(
+        (
+          await put(
+            `security-url-${stamp}`,
+            message(`security-url-${stamp}`, userUid, 'Regular User', {
+              attachmentUrl: 'https://evil.example/x.png',
+            }),
+          )
+        ).status,
+      ).not.toBe(200);
+      expect(
+        (
+          await put(
+            `security-date-${stamp}`,
+            message(`security-date-${stamp}`, userUid, 'Regular User', {
+              dateSent: Date.now() - 25 * 60 * 60 * 1000,
+            }),
+          )
+        ).status,
+      ).not.toBe(200);
     } finally {
       await writeDb('messages/msg-1', seeded);
       await deleteDb(`messages/${ownKey}`);
       await deleteDb(`messages/${forgedKey}`);
+      await deleteDb(`messages/security-id-${stamp}`);
+      await deleteDb(`messages/security-sticky-${stamp}`);
+      await deleteDb(`messages/security-name-${stamp}`);
+      await deleteDb(`messages/security-url-${stamp}`);
+      await deleteDb(`messages/security-date-${stamp}`);
     }
   });
 

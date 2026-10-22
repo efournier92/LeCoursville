@@ -65,6 +65,41 @@ test.describe('chat', () => {
     await expect(page.getByText('Second seed — edited by e2e')).toBeVisible();
   });
 
+  test('like: user likes another author\'s message and it persists', async ({ page }) => {
+    await login(page, 'admin');
+    await setFeatureFlag(page, 'chat', true);
+    await page.getByRole('button', { name: 'Account' }).click();
+    await expect(page).toHaveURL('/');
+    await logout(page);
+    await login(page, 'user');
+    await page.goto('/chat');
+    const card = page.locator('.message-card-container', { hasText: 'Welcome to E2E' }).first();
+    await card.locator('.message-like-icon').first().click();
+    await page.keyboard.press('Escape');
+    await expect(card.locator('.message-likes-container')).toHaveText(/^\s*[1-9]\d*\s*$/);
+    await page.reload();
+    const reloaded = page.locator('.message-card-container', { hasText: 'Welcome to E2E' }).first();
+    await expect(reloaded.locator('.message-likes-container')).toHaveText(/^\s*[1-9]\d*\s*$/);
+  });
+
+  test('reply: user replies to another author\'s message and it persists', async ({ page }) => {
+    await login(page, 'admin');
+    await setFeatureFlag(page, 'chat', true);
+    await page.getByRole('button', { name: 'Account' }).click();
+    await expect(page).toHaveURL('/');
+    await logout(page);
+    await login(page, 'user');
+    await page.goto('/chat');
+    const card = page.locator('.message-card-container', { hasText: 'Welcome to E2E' }).first();
+    await card.getByText('Reply').first().click();
+    await card.getByTestId('chat-message-input').fill('E2E reply body');
+    await card.getByTestId('chat-send').click();
+    await page.getByRole('button', { name: 'Yes' }).click();
+    await expect(page.getByText('E2E reply body')).toBeVisible();
+    await page.reload();
+    await expect(page.getByText('E2E reply body')).toBeVisible();
+  });
+
   test('cross-user visibility: message sent by user is visible to other', async ({ page }) => {
     await login(page, 'admin');
     await setFeatureFlag(page, 'chat', true);

@@ -485,11 +485,21 @@
 .preview-info {
   padding: 16px 4px 4px;
 
-  h3 {
-    margin: 0 0 8px;
+  .preview-header h3 {
+    margin: 0 0 4px;
     font-size: 1.05rem;
     font-weight: 600;
     word-break: break-all;
+  }
+
+  .preview-subtitle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink);
   }
 
   .preview-meta {
@@ -498,6 +508,13 @@
     gap: 4px;
     font-size: 0.875rem;
     color: var(--color-ink-2);
+  }
+
+  .preview-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
   }
 }
 

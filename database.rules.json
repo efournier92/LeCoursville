@@ -15,7 +15,105 @@
     "messages": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       "$id": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid) || (data.exists() && (data.child('authorId').val() === auth.uid || (newData.child('authorId').val() === data.child('authorId').val() && newData.child('authorName').val() === data.child('authorName').val() && newData.child('title').val() === data.child('title').val() && newData.child('body').val() === data.child('body').val() && newData.child('messageType').val() === data.child('messageType').val() && newData.child('dateSent').val() === data.child('dateSent').val() && newData.child('attachmentId').val() === data.child('attachmentId').val() && newData.child('attachmentType').val() === data.child('attachmentType').val() && newData.child('attachmentUrl').val() === data.child('attachmentUrl').val() && newData.child('isDeleted').val() === data.child('isDeleted').val() && newData.child('isSticky').val() === data.child('isSticky').val() && newData.child('isSaved').val() === data.child('isSaved').val() && newData.child('isReply').val() === data.child('isReply').val() && newData.child('replyLevel').val() === data.child('replyLevel').val() && newData.child('attribution').val() === data.child('attribution').val() && newData.child('yearWritten').val() === data.child('yearWritten').val()))))"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid && newData.child('isSticky').val() === false && newData.child('isReply').val() !== true && newData.child('replies').val() === null && newData.child('likes').val() === null) || (data.exists() && newData.val() === null && data.child('authorId').val() === auth.uid))",
+        ".validate": "newData.child('id').val() === $id && (!data.exists() ? (newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && (newData.child('attachmentUrl').val() === null || newData.child('attachmentUrl').val() === '' || newData.child('attachmentUrl').val().matches(/^https:\\/\\/firebasestorage\\.googleapis\\.com\\/v0\\/b\\/[^\\/]+\\/o\\//) || newData.child('attachmentUrl').val().matches(/^http:\\/\\/(localhost|127\\.0\\.0\\.1):9199\\/v0\\/b\\/[^\\/]+\\/o\\//)) && newData.child('dateSent').isNumber() && newData.child('dateSent').val() >= now - 86400000 && newData.child('dateSent').val() <= now + 300000 && newData.child('isEditable').val() !== true) : true)",
+        "id": { ".write": false },
+        "authorId": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid && newData.val() === auth.uid))"
+        },
+        "authorName": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+        },
+        "title": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "body": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "attachmentId": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "attachmentType": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "attachmentUrl": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "isDeleted": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "isSaved": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "isEditable": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid)) && newData.val() !== true"
+        },
+        "isSticky": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid && newData.val() === root.child('messages').child($id).child('isSticky').val()))"
+        },
+        "attribution": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "yearWritten": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).exists() && root.child('messages').child($id).child('authorId').val() === auth.uid))"
+        },
+        "replies": {
+          "$replyId": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid && newData.child('isReply').val() === true && newData.child('isSticky').val() !== true && newData.child('replies').val() === null && newData.child('likes').val() === null) || (data.exists() && newData.val() === null && data.child('authorId').val() === auth.uid))",
+            ".validate": "newData.child('id').val() === $replyId && (!data.exists() ? (newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && (newData.child('attachmentUrl').val() === null || newData.child('attachmentUrl').val() === '' || newData.child('attachmentUrl').val().matches(/^https:\\/\\/firebasestorage\\.googleapis\\.com\\/v0\\/b\\/[^\\/]+\\/o\\//) || newData.child('attachmentUrl').val().matches(/^http:\\/\\/(localhost|127\\.0\\.0\\.1):9199\\/v0\\/b\\/[^\\/]+\\/o\\//)) && newData.child('dateSent').isNumber() && newData.child('dateSent').val() >= now - 86400000 && newData.child('dateSent').val() <= now + 300000 && newData.child('replyLevel').isNumber() && newData.child('replyLevel').val() >= 1 && newData.child('isEditable').val() !== true) : true)",
+            "authorId": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid && newData.val() === auth.uid))"
+            },
+            "authorName": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+            },
+            "title": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "body": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "attachmentId": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "attachmentType": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "attachmentUrl": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "isDeleted": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "isSaved": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "isEditable": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid)) && newData.val() !== true"
+            },
+            "isSticky": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid && newData.val() === root.child('messages').child($id).child('replies').child($replyId).child('isSticky').val()))"
+            },
+            "attribution": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "yearWritten": {
+              ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (root.child('messages').child($id).child('replies').child($replyId).exists() && root.child('messages').child($id).child('replies').child($replyId).child('authorId').val() === auth.uid))"
+            },
+            "likes": {
+              "$likeId": {
+                ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || ($likeId === auth.uid && ((!data.exists() && newData.child('userId').val() === auth.uid) || (data.exists() && data.child('userId').val() === auth.uid && newData.val() === null))))",
+                ".validate": "newData.child('userId').val() === $likeId && newData.child('userName').isString() && newData.child('userName').val().length <= 100"
+              }
+            }
+          }
+        },
+        "likes": {
+          "$likeId": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || ($likeId === auth.uid && ((!data.exists() && newData.child('userId').val() === auth.uid) || (data.exists() && data.child('userId').val() === auth.uid && newData.val() === null))))",
+            ".validate": "newData.child('userId').val() === $likeId && newData.child('userName').isString() && newData.child('userName').val().length <= 100"
+          }
+        }
       }
     },
     "photos": {
@@ -72,7 +170,8 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
       ".indexOn": ["status"],
       "$id": {
-        ".write": "!data.exists() && newData.child('status').val() === 'pending' && newData.child('path').val() !== null && newData.child('path').val().matches(/^userUploads\\//) && !newData.child('path').val().matches(/\\.\\./) && !newData.child('path').val().matches(/\\\\/) && (newData.child('url').val() === null || newData.child('url').val() === '')"
+        ".write": false,
+        ".validate": "newData.child('id').val() === $id"
       }
     },
     "recoveryRequests": {

@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { skip } from 'rxjs/operators';
 import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { _ } from 'core-js';
@@ -11,14 +13,15 @@ import { AudioAlbum } from 'src/app/models/media/audio-album';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AdminMediaComponent implements OnInit {
+export class AdminMediaComponent implements OnInit, OnDestroy {
   mediaTypes: string[] = ['Videos', 'Photos', 'Photo Album', 'Audio Track', 'Audio Album'];
   selectedMediaType: string;
   selectedFile: any;
-  successMessages: string[];
-  errorMessages: string[];
+  successMessages: string[] = [];
+  errorMessages: string[] = [];
   driveFolderId = '';
   album: AudioAlbum = new AudioAlbum();
+  private successSub: Subscription;
 
   constructor(
     private jsonService: JsonService,
@@ -27,11 +30,17 @@ export class AdminMediaComponent implements OnInit {
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
-    this.jsonService.successMessagesObservable.subscribe(
+    // The source is a BehaviorSubject; skip its retained value so re-entering
+    // the page does not replay a banner from an earlier visit.
+    this.successSub = this.jsonService.successMessagesObservable.pipe(skip(1)).subscribe(
       (messages: string[]) => {
         this.successMessages = messages;
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.successSub?.unsubscribe();
   }
 
   // PUBLIC METHODS

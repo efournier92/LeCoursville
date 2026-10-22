@@ -27,6 +27,9 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   filteredTotal = 0;
   deleteErrors: Record<string, string> = {};
   readonly pageSize = 10;
+  sortPropertyText = '';
+  activeSortKey = '';
+  private rolesByUserId = new Map<string, string[]>();
   private displayedPage: Page<User> = { items: [], total: 0, page: 1, pageCount: 1, pageSize: 10 };
 
   private usersSubscription?: Subscription;
@@ -125,6 +128,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     ].filter(Boolean);
   }
 
+  /** Cached per displayed row so the template never allocates on a CD tick. */
+  rolesFor(user: User): string[] {
+    return this.rolesByUserId.get(user.id) || [];
+  }
+
   isActiveSort(key: string): boolean {
     return this.sortSettings.activeSortProperty.key === key;
   }
@@ -157,7 +165,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   getSortPropertyText(): string {
-    return this.sortSettings.getSortPropertyByKey(this.sortSettings.activeSortProperty.key)?.title || '';
+    return this.sortPropertyText;
   }
 
   // HELPER METHODS
@@ -167,12 +175,20 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       this.sortSettings.reverseSortDirection();
     }
     this.sortSettings.activeSortProperty = this.sortSettings.getSortPropertyByKey(key);
+    this.syncSortPresentation();
     this.refreshDisplayedUsers();
     this.persistState();
   }
 
   private initializeSortSettings(): void {
     this.sortSettings = new SortSettingsForUsers();
+    this.syncSortPresentation();
+  }
+
+  private syncSortPresentation(): void {
+    this.activeSortKey = this.sortSettings.activeSortProperty.key;
+    this.sortPropertyText =
+      this.sortSettings.getSortPropertyByKey(this.activeSortKey)?.title || '';
   }
 
   private restoreState(): void {
@@ -196,6 +212,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     if (Number.isInteger(page) && page > 0) {
       this.pageIndex = page;
     }
+    this.syncSortPresentation();
   }
 
   private persistState(): void {
@@ -245,6 +262,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.pageIndex = page.page;
     this.filteredTotal = page.total;
     this.displayedUsers = page.items;
+    this.rolesByUserId = new Map(page.items.map(user => [user.id, this.userRoles(user)]));
   }
 
   private displayName(user: User): string {

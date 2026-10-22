@@ -9,7 +9,7 @@ import { FirebaseService } from '../../services/firebase.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { UserUpload } from '../../models/user-upload';
 
 describe('AdminUserUploadsComponent', () => {
@@ -19,6 +19,7 @@ describe('AdminUserUploadsComponent', () => {
   let confirmSpy: jasmine.Spy;
   let approveUpload: jasmine.Spy;
   let rejectUpload: jasmine.Spy;
+  let closePreview: jasmine.Spy;
 
   const upload = (id: string, status: UserUpload['status'] = 'pending'): UserUpload => {
     const item = new UserUpload();
@@ -34,6 +35,7 @@ describe('AdminUserUploadsComponent', () => {
     confirmSpy = jasmine.createSpy('confirm').and.returnValue(Promise.resolve(false));
     approveUpload = jasmine.createSpy('approveUpload').and.returnValue(Promise.resolve());
     rejectUpload = jasmine.createSpy('rejectUpload').and.returnValue(Promise.resolve());
+    closePreview = jasmine.createSpy('close');
 
     await TestBed.configureTestingModule({
       imports: [AdminUserUploadsComponent],
@@ -49,7 +51,7 @@ describe('AdminUserUploadsComponent', () => {
         },
         { provide: PhotoAlbumsService, useValue: { albums$: of([]) } },
         { provide: FirebaseService, useValue: { storage: {} } },
-        { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
+        { provide: MatDialog, useValue: { open: jasmine.createSpy('open').and.returnValue({ close: closePreview }) } },
         { provide: ConfirmDialogService, useValue: { confirm: confirmSpy } },
         { provide: AnalyticsService, useValue: { logEvent: jasmine.createSpy('logEvent') } },
         {
@@ -57,7 +59,12 @@ describe('AdminUserUploadsComponent', () => {
           useValue: { getAllFeatureFlags: () => of({ enablePhotoAlbums: { enabled: false } }) },
         },
       ],
-    }).compileComponents();
+    })
+    // The standalone component's imported MatDialogModule shadows the stub above.
+    .overrideComponent(AdminUserUploadsComponent, {
+      remove: { imports: [MatDialogModule] },
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(AdminUserUploadsComponent);
     component = fixture.componentInstance;
@@ -120,6 +127,44 @@ describe('AdminUserUploadsComponent', () => {
 
     await component.onReject(target);
     expect(rejectUpload).toHaveBeenCalledWith(target);
+  });
+
+  it('approves from the preview dialog and closes it after success', async () => {
+    const target = upload('u1');
+    uploads$.next([target]);
+    fixture.detectChanges();
+    (component as any).previewDialogRef = { close: closePreview };
+
+    await component.onApproveFromPreview(target);
+
+    expect(approveUpload).toHaveBeenCalledWith(target);
+    expect(closePreview).toHaveBeenCalled();
+  });
+
+  it('keeps the preview dialog open when approval fails', async () => {
+    const target = upload('u1');
+    uploads$.next([target]);
+    fixture.detectChanges();
+    (component as any).previewDialogRef = { close: closePreview };
+    approveUpload.and.returnValue(Promise.reject(new Error('denied')));
+
+    await component.onApproveFromPreview(target);
+
+    expect(component.pageError).toContain('Couldn');
+    expect(closePreview).not.toHaveBeenCalled();
+  });
+
+  it('rejects from the preview dialog and closes it after confirmation', async () => {
+    const target = upload('u1');
+    uploads$.next([target]);
+    fixture.detectChanges();
+    (component as any).previewDialogRef = { close: closePreview };
+    confirmSpy.and.returnValue(Promise.resolve(true));
+
+    await component.onRejectFromPreview(target);
+
+    expect(rejectUpload).toHaveBeenCalledWith(target);
+    expect(closePreview).toHaveBeenCalled();
   });
 
   it('paginates uploads at 10 per page and resets the page on filter change', () => {

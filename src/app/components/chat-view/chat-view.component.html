@@ -166,6 +166,7 @@
                 <app-chat-view
                   [message]="reply"
                   [parent]="message"
+                  [rootId]="rootId"
                   (updateParentEvent)="updateParent()"
                   >
                 </app-chat-view>
@@ -174,6 +175,7 @@
                 <app-chat-edit
                   [message]="reply"
                   [parent]="message"
+                  [rootId]="rootId"
                   (updateParentEvent)="updateParent()"
                   >
                 </app-chat-edit>

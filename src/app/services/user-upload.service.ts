@@ -14,6 +14,7 @@ import { Photo } from '../models/photo';
 import { AnalyticsService } from './analytics.service';
 import { PhotoAlbumsService } from './photo-albums.service';
 import { FirebaseService } from './firebase.service';
+import { CloudFunctionsService } from './cloud-functions.service';
 import { RtdbService } from './rtdb.service';
 import { FireUploadTask } from './fire-upload-task';
 
@@ -32,6 +33,7 @@ export class UserUploadService {
     private rtdb: RtdbService,
     private analytics: AnalyticsService,
     private photoAlbumsService: PhotoAlbumsService,
+    private cloudFunctions: CloudFunctionsService,
   ) {
     // Lazy and shared: userUploads is admin-only, so anonymous upload pages must never trigger this read.
     this.allUploads$ = this.rtdb.list<UserUpload>(this.userUploadsRef).valueChanges().pipe(
@@ -58,8 +60,18 @@ export class UserUploadService {
     this.getAllUploads().valueChanges().subscribe(callback);
   }
 
-  private sanitizeName(name: string): string {
-    return name.replace(/[^a-zA-Z0-9]/g, '');
+  /**
+   * Reduces a client-supplied value to one path segment. Public upload takes
+   * arbitrary names, so separators and traversal must never reach Storage.
+   */
+  private safeSegment(value: string | undefined, fallback: string): string {
+    const cleaned = (value || '')
+      .replace(/[\\/]+/g, '_')
+      .replace(/[^A-Za-z0-9._-]+/g, '_')
+      .replace(/^[._-]+/, '')
+      .replace(/[._-]+$/, '')
+      .slice(0, 120);
+    return cleaned && cleaned !== '.' && cleaned !== '..' ? cleaned : fallback;
   }
 
   /**
@@ -87,24 +99,28 @@ export class UserUploadService {
   }
 
   async uploadFile(file: File, eventName: string, uploader: UploaderInfo, uploaderName?: string, batchId?: string): Promise<{ task: FireUploadTask, uploadId: string }> {
-    const uploadId = this.rtdb.createPushId();
     const now = new Date();
     const datePart = now.toISOString().split('T')[0];
     const hrs = String(now.getHours()).padStart(2, '0');
     const mins = String(now.getMinutes()).padStart(2, '0');
     const secs = String(now.getSeconds()).padStart(2, '0');
-    let folderName: string;
-    if (batchId) {
-      folderName = batchId;
-    } else {
-      const timePart = hrs + mins + secs;
-      const dateFolder = `${datePart}-${timePart}`;
-      const sanitizedEvent = eventName ? `${this.sanitizeName(eventName)}_` : '';
-      const namePart = uploaderName ? `${this.sanitizeName(uploaderName)}_` : 'Anonymous_';
-      folderName = `${sanitizedEvent}${namePart}${dateFolder}`;
-    }
+    const safeEvent = this.safeSegment(eventName, '');
+    const safeUploader = this.safeSegment(uploaderName, 'Anonymous');
+    const safeBatch = batchId
+      ? this.safeSegment(batchId, '')
+      : `${safeEvent ? `${safeEvent}_` : ''}${safeUploader}_${datePart}-${hrs}${mins}${secs}`;
 
-    const path = `${this.userUploadsRef}/${folderName}/${file.name}`;
+    // The callable owns the path: the public page cannot write userUploads, so
+    // the record and its storage location are created together server-side.
+    const { id: uploadId, path } = await this.cloudFunctions.createUserUpload({
+      eventName: safeEvent,
+      uploader,
+      fileName: this.safeSegment(file.name, 'upload'),
+      fileType: file.type,
+      fileSize: file.size,
+      batchId: safeBatch,
+    });
+
     const storageRef = ref(this.firebase.storage, path);
     const task = uploadBytesResumable(storageRef, file);
 
@@ -113,27 +129,12 @@ export class UserUploadService {
       error: err => {
         console.error('Upload failed:', err);
       },
-      complete: async () => {
-        // The create contract carries no URL: the admin derives the download
-        // URL from the validated path when they approve the upload.
-        const upload: UserUpload = {
-          id: uploadId,
-          url: '',
-          path,
-          dateAdded: new Date(),
-          eventName,
-          status: 'pending',
-          uploader,
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        };
-        await this.rtdb.object(`${this.userUploadsRef}/${uploadId}`).set(upload);
+      complete: () => {
         this.analytics.logEvent('file_upload', {
           file_type: file.type,
           file_size: file.size,
-          event_name: eventName || 'none',
-          batch_id: batchId || 'single',
+          event_name: safeEvent || 'none',
+          batch_id: safeBatch || 'single',
         });
       },
     });

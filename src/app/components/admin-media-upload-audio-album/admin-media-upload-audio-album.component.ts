@@ -21,6 +21,9 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
   folderName: string;
   tracksString: string;
   deleteError: string | null = null;
+  formError: string | null = null;
+  uploadSuccess: string | null = null;
+  uploading = false;
 
   constructor(
     private authService: AuthService,
@@ -54,12 +57,28 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
     this.album = album;
   }
 
-  onUploadSelectedMedia(): void {
-    if (!this.isAlbumInputValid()) { return; }
+  async onUploadSelectedMedia(): Promise<void> {
+    const validationError = this.getAlbumInputError();
+    if (validationError) {
+      this.formError = validationError;
+      this.uploadSuccess = null;
+      return;
+    }
 
-    this.audioAlbumUploadService.upload(this.album, this.album.folderName, this.tracksString);
-
-    this.resetSelectedMedia();
+    const title = this.album.title;
+    this.formError = null;
+    this.uploadSuccess = null;
+    this.uploading = true;
+    try {
+      await this.audioAlbumUploadService.upload(this.album, this.album.folderName, this.tracksString);
+      this.resetSelectedMedia();
+      this.uploadSuccess = `Saved “${title}”.`;
+    } catch (error) {
+      console.error('Album upload failed:', error);
+      this.formError = `Couldn’t save “${title}”. Please try again.`;
+    } finally {
+      this.uploading = false;
+    }
   }
 
   async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
@@ -101,8 +120,11 @@ export class AdminMediaUploadAudioAlbumComponent implements OnInit {
 
   // HELPER METHODS
 
-  private isAlbumInputValid(): boolean {
-    return (!!this.album.title && !!this.album.folderName);
+  private getAlbumInputError(): string | null {
+    const missing: string[] = [];
+    if (!this.album.title) { missing.push('title'); }
+    if (!this.album.folderName) { missing.push('folder name'); }
+    return missing.length > 0 ? `Enter the ${missing.join(' and ')} before uploading.` : null;
   }
 
   private resetSelectedMedia(): void {

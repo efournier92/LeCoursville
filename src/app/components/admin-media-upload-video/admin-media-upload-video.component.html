@@ -52,23 +52,34 @@
         [(ngModel)]="video.isHidden"
         >Should Hide from Lists?</mat-checkbox
         >
+      @if (formError) {
+        <div class="admin-error" role="alert" data-testid="video-upload-error">{{ formError }}</div>
+      }
+      @if (uploadSuccess) {
+        <div class="admin-success" role="status" data-testid="video-upload-success">{{ uploadSuccess }}</div>
+      }
       <div class="admin-form-actions">
         <button
           mat-flat-button
           color="primary"
           class="admin-form-action-button admin-form-action-button-upload"
+          [disabled]="uploading"
           (click)="onUploadSelectedMedia()"
           >
-          @if (!video.id) {
+          @if (uploading) {
+            <span>Uploading…</span>
+          }
+          @if (!uploading && !video.id) {
             <span>Upload</span>
           }
-          @if (video.id) {
+          @if (!uploading && video.id) {
             <span>Update</span>
           }
         </button>
         <button
           mat-stroked-button
           class="admin-form-action-button admin-form-action-button-cancel"
+          [disabled]="uploading"
           (click)="onCancelSelectedMedia(video)"
           >
           Clear

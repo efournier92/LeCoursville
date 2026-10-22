@@ -40,9 +40,14 @@
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s;
 
-  &:hover {
+  &:hover,
+  &.drag-over {
     border-color: var(--color-ink-2);
     background-color: var(--color-surface-muted);
+  }
+
+  &.drag-over {
+    border-color: var(--color-brand-primary);
   }
 
   .drop-zone-icon {
@@ -179,6 +184,13 @@
   margin: 0 0 16px;
   color: var(--color-ink-2);
   font-size: 13px;
+}
+
+.preview-overwrite {
+  margin: 16px 0 0;
+  color: var(--color-accent-strong);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .preview-stats {
@@ -323,30 +335,10 @@
   }
 }
 
-.result-stats {
-  display: flex;
-  gap: 24px;
-
-  .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 600;
-          }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--color-ink-2);
-      margin-top: 4px;
-    }
-
-    &.created .stat-value { color: var(--color-brand-primary); }
-    &.updated .stat-value { color: var(--color-accent-strong); }
-    &.inactive .stat-value { color: var(--color-ink-2); }
-  }
+.result-summary {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: 14px;
 }
 
 // Last Import

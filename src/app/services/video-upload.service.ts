@@ -13,7 +13,7 @@ export class VideoUploadService {
     private pushIdService: PushIdService,
   ) { }
 
-  upload(video: Video): void {
+  async upload(video: Video): Promise<void> {
     if (!video.id) {
       video.id = this.pushIdService.create();
     }
@@ -22,7 +22,7 @@ export class VideoUploadService {
     video.urls.icon = this.getIconLocation(video.fileName);
     video.urls.download = this.getDownloadLocation(video.fileName);
 
-    this.mediaService.create(video);
+    await this.mediaService.create(video);
   }
 
   private getIconLocation(fileName: string): string {

@@ -41,12 +41,12 @@ export class MediaService {
     this.mediaSource.next(mediaFiles);
   }
 
-  create(media: UploadableMedia): void {
+  async create(media: UploadableMedia): Promise<void> {
     if (!media || !media.id) {
       media.id = this.rtdb.createPushId();
     }
 
-    this.rtdb.object(`media/${media.id}`).update(media as any);
+    await this.rtdb.object(`media/${media.id}`).update(media as any);
   }
 
   getMedia() {

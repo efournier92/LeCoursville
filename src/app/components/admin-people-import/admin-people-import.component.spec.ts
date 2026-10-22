@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Subject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
@@ -14,7 +14,12 @@ const CSV_ROW = 'p-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne';
 describe('AdminPeopleImportComponent', () => {
   let component: AdminPeopleImportComponent;
   let fixture: ComponentFixture<AdminPeopleImportComponent>;
-  let peopleService: { importPeople: ReturnType<typeof vi.fn> };
+  let peopleService: {
+    importPeople: ReturnType<typeof vi.fn>;
+    people$: Observable<Person[]>;
+    peopleLoaded$: Observable<boolean>;
+  };
+  let peopleLoaded: BehaviorSubject<boolean>;
   let clanService: {
     clans$: unknown;
     createPushId: ReturnType<typeof vi.fn>;
@@ -41,7 +46,12 @@ describe('AdminPeopleImportComponent', () => {
   };
 
   beforeEach(async () => {
-    peopleService = { importPeople: vi.fn() };
+    peopleLoaded = new BehaviorSubject(true);
+    peopleService = {
+      importPeople: vi.fn(),
+      people$: of([{ id: 'seed-person' } as Person]),
+      peopleLoaded$: peopleLoaded.asObservable(),
+    };
     clanService = {
       clans$: of([]),
       createPushId: vi.fn(() => 'clan-push'),
@@ -196,6 +206,49 @@ describe('AdminPeopleImportComponent', () => {
     expect(component.isImporting).toBe(false);
     expect(component.importResult).toEqual({ created: 1, updated: 0, inactive: 0, conflicts: [] });
     expect(component.parsedPeople).toHaveLength(0);
+  });
+
+  it('counts colliding IDs as updates and warns about the overwrite', () => {
+    component.parseCSV([
+      CSV_HEADERS,
+      'seed-person,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne',
+    ].join('\n'));
+    fixture.detectChanges();
+
+    expect(component.importPreview).toEqual({ total: 1, created: 0, updated: 1, inactive: 0 });
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-overwrite"]').textContent,
+    ).toContain('1 existing record will be overwritten');
+  });
+
+  it('keeps Confirm disabled until the people list has loaded', () => {
+    peopleLoaded.next(false);
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-confirm"]').disabled,
+    ).toBe(true);
+
+    peopleLoaded.next(true);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-confirm"]').disabled,
+    ).toBe(false);
+  });
+
+  it('summarizes the import result with pluralized counts', () => {
+    component.importResult = { created: 2, updated: 1, inactive: 0, conflicts: [] };
+    component['lastImportSkipped'] = 1;
+    fixture.detectChanges();
+
+    expect(component.importResultSummary).toBe(
+      '2 people created, 1 person updated, 1 row skipped, 0 errors.',
+    );
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="import-result-summary"]').textContent,
+    ).toContain('2 people created');
   });
 
   it('renders the import error and keeps the preview so it can be retried', () => {

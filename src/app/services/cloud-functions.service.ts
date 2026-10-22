@@ -1,6 +1,12 @@
 import { Injectable } from "@angular/core";
 import { httpsCallable } from "firebase/functions";
 import { FirebaseService } from "src/app/services/firebase.service";
+import { UploaderInfo } from "src/app/models/user-upload";
+
+export interface CreatedUserUpload {
+  id: string;
+  path: string;
+}
 
 @Injectable({
   providedIn: "root",
@@ -28,6 +34,21 @@ export class CloudFunctionsService {
     message?: string;
   }): Promise<unknown> {
     return httpsCallable(this.firebase.functions, "submitRecoveryRequest")(input);
+  }
+
+  createUserUpload(input: {
+    eventName?: string;
+    uploader: UploaderInfo;
+    fileName: string;
+    fileType?: string;
+    fileSize?: number;
+    batchId?: string;
+  }): Promise<CreatedUserUpload> {
+    const callable = httpsCallable<typeof input, CreatedUserUpload>(
+      this.firebase.functions,
+      "createUserUpload",
+    );
+    return callable(input).then(result => result.data);
   }
 
   adminGenerateResetLink(input: {

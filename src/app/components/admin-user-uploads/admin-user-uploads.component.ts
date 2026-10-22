@@ -40,6 +40,7 @@ interface StorageFile {
   downloadUrl: string | null;
   isImage: boolean;
   ref: any;
+  detailsLoaded?: boolean;
 }
 
 @Component({
@@ -95,6 +96,8 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   filesError: string | null = null;
 
   private subscriptions: Subscription[] = [];
+  /** Folder listings and their resolved URLs, so re-opening costs zero reads. */
+  private readonly folderCache = new Map<string, { files: StorageFile[]; capped: boolean }>();
 
   constructor(
     private userUploadService: UserUploadService,
@@ -169,27 +172,28 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     return this.allUploads.filter(u => u.status === 'pending').length;
   }
 
-  async onApprove(upload: UserUpload): Promise<void> {
+  async onApprove(upload: UserUpload): Promise<boolean> {
     this.pageError = null;
     let flags: any;
     try {
       flags = await firstValueFrom(this.featureFlagsService.getAllFeatureFlags());
     } catch {
       this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
-      return;
+      return false;
     }
     if (!flags['enablePhotoAlbums']?.enabled) {
       // Feature OFF: keep the pre-photo-albums approval behavior.
       this.processingIds.add(upload.id);
       try {
         await this.userUploadService.approveUpload(upload);
+        return true;
       } catch (error) {
         console.error('Approval failed:', error);
         this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
+        return false;
       } finally {
         this.processingIds.delete(upload.id);
       }
-      return;
     }
     const dialogRef = this.dialog.open(PhotoAlbumPickerDialogComponent, {
       data: {
@@ -201,7 +205,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     });
     const result = await firstValueFrom(dialogRef.afterClosed());
     if (!result) {
-      return;
+      return false;
     }
     let albumId: string;
     let mode: 'existing' | 'new';
@@ -215,7 +219,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
         mode = 'new';
       } catch {
         this.pageError = `Couldn’t create the album for “${upload.fileName}”. Please try again.`;
-        return;
+        return false;
       }
     }
     this.processingIds.add(upload.id);
@@ -226,15 +230,17 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
         albumId,
         mode,
       });
+      return true;
     } catch (error) {
       console.error('Approval failed:', error);
       this.pageError = `Couldn’t approve “${upload.fileName}”. Please try again.`;
+      return false;
     } finally {
       this.processingIds.delete(upload.id);
     }
   }
 
-  async onReject(upload: UserUpload): Promise<void> {
+  async onReject(upload: UserUpload): Promise<boolean> {
     this.pageError = null;
     const confirmed = await this.confirmDialog.confirm({
       title: 'Reject upload?',
@@ -243,14 +249,16 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
       destructive: true,
     });
     if (!confirmed) {
-      return;
+      return false;
     }
     this.processingIds.add(upload.id);
     try {
       await this.userUploadService.rejectUpload(upload);
+      return true;
     } catch (error) {
       console.error('Rejection failed:', error);
       this.pageError = `Couldn’t reject “${upload.fileName}”. Please try again.`;
+      return false;
     } finally {
       this.processingIds.delete(upload.id);
     }
@@ -267,6 +275,20 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   closePreviewDialog(): void {
     this.previewDialogRef?.close();
     this.previewDialogRef = null;
+  }
+
+  async onApproveFromPreview(upload: UserUpload): Promise<void> {
+    const approved = await this.onApprove(upload);
+    if (approved) {
+      this.closePreviewDialog();
+    }
+  }
+
+  async onRejectFromPreview(upload: UserUpload): Promise<void> {
+    const rejected = await this.onReject(upload);
+    if (rejected) {
+      this.closePreviewDialog();
+    }
   }
 
   setFilter(status: 'pending' | 'all'): void {
@@ -310,6 +332,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   loadFolders(): void {
+    this.folderCache.clear();
     this.isLoadingFolders = true;
     this.folderError = null;
     this.pendingFolders = [];
@@ -390,6 +413,14 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
   }
 
   async loadFilesInFolder(fullPath: string): Promise<void> {
+    const cached = this.folderCache.get(fullPath);
+    if (cached) {
+      this.currentFolderFiles = cached.files;
+      this.currentFolderFilesCapped = cached.capped;
+      this.isLoadingFiles = false;
+      this.filesError = null;
+      return;
+    }
     this.currentFolderFiles = [];
     this.currentFolderFilesCapped = false;
     this.isLoadingFiles = true;
@@ -397,9 +428,8 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     try {
       const storageRef = ref(this.firebase.storage, fullPath);
       const result = await list(storageRef, { maxResults: 200 });
-      this.currentFolderFilesCapped = !!result.nextPageToken;
-      const fileRefs = result.items;
-      const files: StorageFile[] = fileRefs.map(item => ({
+      const capped = !!result.nextPageToken;
+      const files: StorageFile[] = result.items.map(item => ({
         name: item.name,
         fullPath: item.fullPath,
         size: 0,
@@ -408,26 +438,50 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
         isImage: item.name.match(/\.(jpg|jpeg|png|gif|webp)$/i) !== null,
         ref: item,
       }));
-      await Promise.all(files.map(async (file) => {
-        try {
-          file.downloadUrl = await getDownloadURL(file.ref);
-        } catch {
-          file.downloadUrl = null;
-        }
-        try {
-          const metadata = await getMetadata(file.ref);
-          file.size = metadata.size;
-          file.contentType = metadata.contentType || '';
-        } catch {
-          file.size = 0;
-        }
-      }));
+      // Only the displayed folder resolves URLs; only thumbnails need one, and
+      // metadata waits for the lazy image load (or the icon card's render).
+      await Promise.all(files.map(file => this.prepareFile(file)));
       this.currentFolderFiles = files;
+      this.currentFolderFilesCapped = capped;
+      this.folderCache.set(fullPath, { files, capped });
     } catch (error) {
       console.error('Failed to list files:', error);
       this.filesError = 'Failed to load files in this folder. Check storage rules.';
     } finally {
       this.isLoadingFiles = false;
+    }
+  }
+
+  private async prepareFile(file: StorageFile): Promise<void> {
+    if (file.isImage) {
+      try {
+        file.downloadUrl = await getDownloadURL(file.ref);
+      } catch {
+        file.downloadUrl = null;
+        // No thumbnail will render, so read the size now rather than never.
+        await this.loadFileDetails(file);
+      }
+      return;
+    }
+    await this.loadFileDetails(file);
+  }
+
+  /** Called by the thumbnail's load event, so metadata is read only for shown files. */
+  onThumbnailLoaded(file: StorageFile): void {
+    this.loadFileDetails(file);
+  }
+
+  private async loadFileDetails(file: StorageFile): Promise<void> {
+    if (file.detailsLoaded) {
+      return;
+    }
+    file.detailsLoaded = true;
+    try {
+      const metadata = await getMetadata(file.ref);
+      file.size = metadata.size;
+      file.contentType = metadata.contentType || '';
+    } catch {
+      file.size = 0;
     }
   }
 

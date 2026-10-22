@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import {
   deleteObject,
@@ -23,7 +23,7 @@ export interface PhotoUpload {
 @Injectable({
   providedIn: 'root'
 })
-export class PhotosService {
+export class PhotosService implements OnDestroy {
   private readonly PHOTOS_PATH = 'photos';
 
   photoCount = 0;
@@ -36,24 +36,41 @@ export class PhotosService {
   private nonMessagePhotosSource = new BehaviorSubject<Photo[]>([]);
   public nonMessagePhotos$: Observable<Photo[]> = this.nonMessagePhotosSource.asObservable();
 
+  private userSub: Subscription;
+  private photosSub: Subscription;
+  private listenersForUserId: string | null = null;
+
   constructor(
     private firebase: FirebaseService,
     private rtdb: RtdbService,
     private auth: AuthService,
   ) {
-    this.auth.userObservable.subscribe(
+    this.userSub = this.auth.userObservable.subscribe(
       (user: User) => {
-        if (user) {
-          this.user = user;
-          this.rtdb.list<Photo>(this.PHOTOS_PATH).valueChanges().subscribe(
-            (photos: Photo[]) => {
-              this.updateAllPhotosEvent(photos);
-              this.nonMessagePhotosSource.next(photos.filter(p => !p.isMessageAttachment));
-            }
-          );
+        if (!user?.id) {
+          return;
         }
+        this.user = user;
+        // userObservable re-emits on every profile write; one RTDB listener per
+        // signed-in user is enough, and it must follow a different sign-in.
+        if (user.id === this.listenersForUserId) {
+          return;
+        }
+        this.listenersForUserId = user.id;
+        this.photosSub?.unsubscribe();
+        this.photosSub = this.rtdb.list<Photo>(this.PHOTOS_PATH).valueChanges().subscribe(
+          (photos: Photo[]) => {
+            this.updateAllPhotosEvent(photos);
+            this.nonMessagePhotosSource.next(photos.filter(p => !p.isMessageAttachment));
+          }
+        );
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
+    this.photosSub?.unsubscribe();
   }
 
   async updatePhoto(photo: Photo): Promise<void> {

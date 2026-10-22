@@ -4,33 +4,18 @@ import { AuthActionComponent } from 'src/app/components/auth-action/auth-action.
 import { AuthComponent } from 'src/app/components/auth/auth.component';
 import { ChatComponent } from 'src/app/components/chat/chat.component';
 import { ContactsComponent } from 'src/app/components/contacts/contacts.component';
-import { CalendarComponent } from 'src/app/components/calendar/calendar.component';
 import { PhotoShellComponent } from 'src/app/components/photo-shell/photo-shell.component';
 import { PhotoAlbumDetailComponent } from 'src/app/components/photo-album-detail/photo-album-detail.component';
 import { PhotoSlideshowComponent } from 'src/app/components/photo-slideshow/photo-slideshow.component';
-import { AdminComponent } from 'src/app/components/admin/admin.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
-import { AdminMediaComponent } from './components/admin-media/admin-media.component';
-import { AdminUsersComponent } from './components/admin-users/admin-users.component';
-import { AdminFeaturesComponent } from './components/admin-features/admin-features.component';
 import { FeatureDisabledComponent } from './components/feature-disabled/feature-disabled.component';
-import { MediaExplorerComponent } from 'src/app/components/media-explorer/media-explorer.component';
-import { MediaAudioComponent } from 'src/app/components/media-audio/media-audio.component';
-import { MediaVideoComponent } from './components/media-video/media-video.component';
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
 import { FeatureFlagGuard } from './services/feature-flag-guard.service';
 import { PhotoAlbumsFeatureGuard } from './services/photo-albums-feature.guard';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { PeopleComponent } from './components/people/people.component';
-import { AdminPeopleImportComponent } from './components/admin-people-import/admin-people-import.component';
-import { AdminFamiliesComponent } from './components/admin-families/admin-families.component';
-import { AdminCalendarsComponent } from './components/admin-calendars/admin-calendars.component';
 import { PublicUploadComponent } from './components/public-upload/public-upload.component';
-import { AdminUserUploadsComponent } from './components/admin-user-uploads/admin-user-uploads.component';
-import { AdminPhotoAlbumsComponent } from './components/admin-photo-albums/admin-photo-albums.component';
-import { AdminRecoveryComponent } from './components/admin-recovery/admin-recovery.component';
 import { SuperAdminGuard } from './services/super-admin.guard';
-import { ADMIN_ROUTE } from './admin/admin-nav';
 
 const routes: Routes =
   [
@@ -46,9 +31,9 @@ const routes: Routes =
     },
     {
       path: 'calendar',
-      component: CalendarComponent,
       canActivate: [AuthGuardService, FeatureFlagGuard],
       data: { featureId: 'calendar' },
+      loadChildren: () => import('./components/calendar/calendar.module').then(m => m.CalendarFeatureModule),
     },
     {
       path: 'chat',
@@ -94,71 +79,15 @@ const routes: Routes =
     },
     // MEDIA
     {
-      path: 'media/explorer',
-      component: MediaExplorerComponent,
-    },
-    {
-      path: 'media/audio',
-      component: MediaAudioComponent,
-      canActivate: [FeatureFlagGuard],
-      data: { featureId: 'music' },
-    },
-    {
-      path: 'media/video',
-      component: MediaVideoComponent,
-      canActivate: [FeatureFlagGuard],
-      data: { featureId: 'videos' },
+      path: 'media',
+      canActivate: [AuthGuardService],
+      loadChildren: () => import('./components/media/media.module').then(m => m.MediaFeatureModule),
     },
     // ADMIN
     {
       path: 'admin',
-      component: AdminComponent,
       canActivate: [AuthAdminGuardService, SuperAdminGuard],
-      children: [
-        {
-          path: ADMIN_ROUTE.media,
-          component: AdminMediaComponent,
-        },
-        {
-          path: ADMIN_ROUTE.photoAlbums,
-          component: AdminPhotoAlbumsComponent,
-          canActivate: [PhotoAlbumsFeatureGuard],
-          data: { fallbackUrl: '/admin' },
-        },
-        {
-          path: ADMIN_ROUTE.users,
-          component: AdminUsersComponent,
-        },
-        {
-          path: ADMIN_ROUTE.features,
-          component: AdminFeaturesComponent,
-        },
-        {
-          path: ADMIN_ROUTE.people,
-          component: AdminPeopleImportComponent,
-        },
-        {
-          path: ADMIN_ROUTE.families,
-          component: AdminFamiliesComponent,
-        },
-        {
-          path: ADMIN_ROUTE.calendars,
-          component: AdminCalendarsComponent,
-        },
-        {
-          path: ADMIN_ROUTE.uploads,
-          component: AdminUserUploadsComponent,
-        },
-        {
-          path: ADMIN_ROUTE.recovery,
-          component: AdminRecoveryComponent,
-        },
-        {
-          path: '',
-          redirectTo: 'users',
-          pathMatch: 'full'
-        },
-      ]
+      loadChildren: () => import('./components/admin/admin.module').then(m => m.AdminModule),
     },
     {
       path: 'feature-disabled',

@@ -1,4 +1,11 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Calendar } from 'src/app/models/calendar';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
@@ -12,6 +19,8 @@ import { RtdbService } from 'src/app/services/rtdb.service';
     standalone: false
 })
 export class AdminCalendarsComponent implements OnInit, OnDestroy {
+  @ViewChild('yearInput') yearInput?: ElementRef<HTMLInputElement>;
+
   calendars: Calendar[] = [];
   editingCalendar: Calendar | null = null;
   isAdding = false;
@@ -57,6 +66,7 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.editingCalendar = null;
     this.formData = { year: '', url: '' };
     this.formError = '';
+    this.focusFormStart();
   }
 
   onEdit(calendar: Calendar): void {
@@ -64,6 +74,7 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.isAdding = false;
     this.formData = { year: calendar.year, url: calendar.url };
     this.formError = '';
+    this.focusFormStart();
   }
 
   async onDelete(calendar: Calendar): Promise<void> {
@@ -104,6 +115,18 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.formError = '';
     this.actionError = '';
 
+    if (this.isAdding && this.calendars.some(calendar => calendar.year === year)) {
+      const replace = await this.confirmDialog.confirm({
+        title: 'Replace calendar?',
+        message: `A calendar already exists for ${year}. Replace its PDF mapping?`,
+        confirmLabel: 'Replace',
+        destructive: true,
+      });
+      if (!replace) {
+        return;
+      }
+    }
+
     try {
       if (this.isAdding) {
         const id = `cal-${year}`;
@@ -124,6 +147,17 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     this.editingCalendar = null;
     this.formData = { year: '', url: '' };
     this.formError = '';
+  }
+
+  private focusFormStart(): void {
+    // The Add button is removed when the form opens, so focus must land on the
+    // first field instead of being lost; the timeout waits for the form view.
+    setTimeout(() => {
+      const field = this.yearInput?.nativeElement;
+      if (!field) { return; }
+      field.scrollIntoView({ block: 'center' });
+      field.focus();
+    });
   }
 
   private writeFailure(action: string, error: unknown): string {

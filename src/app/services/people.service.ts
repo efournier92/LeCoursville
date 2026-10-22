@@ -17,11 +17,14 @@ export interface ImportResult {
 export class PeopleService {
   private peopleSource: BehaviorSubject<Person[]> = new BehaviorSubject([]);
   people$: Observable<Person[]> = this.peopleSource.asObservable();
+  private loadedSource: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  peopleLoaded$: Observable<boolean> = this.loadedSource.asObservable();
 
   constructor(private rtdb: RtdbService) {
     this.getPeople().valueChanges().subscribe(
       (people: Person[]) => {
         this.peopleSource.next(people);
+        this.loadedSource.next(true);
       }
     );
   }

@@ -50,23 +50,34 @@
         [(ngModel)]="album.isHidden"
         >Should Hide from Lists?</mat-checkbox
         >
+      @if (formError) {
+        <div class="admin-error" role="alert" data-testid="album-upload-error">{{ formError }}</div>
+      }
+      @if (uploadSuccess) {
+        <div class="admin-success" role="status" data-testid="album-upload-success">{{ uploadSuccess }}</div>
+      }
       <div class="admin-form-actions">
         <button
           mat-flat-button
           color="primary"
           class="admin-form-action-button admin-form-action-button-upload"
+          [disabled]="uploading"
           (click)="onUploadSelectedMedia()"
           >
-          @if (!isAlbumAlreadyUploaded()) {
+          @if (uploading) {
+            <span>Uploading…</span>
+          }
+          @if (!uploading && !isAlbumAlreadyUploaded()) {
             <span>Upload</span>
           }
-          @if (isAlbumAlreadyUploaded()) {
+          @if (!uploading && isAlbumAlreadyUploaded()) {
             <span>Update</span>
           }
         </button>
         <button
           mat-stroked-button
           class="admin-form-action-button admin-form-action-button-cancel"
+          [disabled]="uploading"
           (click)="onCancelSelectedMedia(album)"
           >
           Clear

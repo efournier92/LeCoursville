@@ -73,7 +73,7 @@
                 <td data-label="Preview">
                   <div class="upload-thumbnail">
                     @if (upload.fileType.startsWith('image/')) {
-                      <img [src]="upload.url" alt="" (error)="upload.url = null" />
+                      <img [src]="upload.url" alt="" loading="lazy" decoding="async" (error)="upload.url = null" />
                     }
                     @if (upload.fileType.startsWith('video/')) {
                       <video [src]="upload.url"></video>
@@ -100,7 +100,8 @@
                 }
                 <td data-label="">
                   <div class="upload-actions">
-                    <button mat-icon-button class="preview-btn" (click)="onPreview(upload)" matTooltip="Preview" aria-label="Preview">
+                    <button mat-icon-button class="preview-btn" (click)="onPreview(upload)" matTooltip="Preview"
+                      [attr.aria-label]="'Preview ' + upload.fileName">
                       <mat-icon>visibility</mat-icon>
                     </button>
                     <button mat-icon-button class="approve-btn" (click)="onApprove(upload)"
@@ -290,7 +291,7 @@
                 <div class="file-card">
                   <div class="file-thumbnail">
                     @if (file.isImage && file.downloadUrl) {
-                      <img [src]="file.downloadUrl" [alt]="file.name" loading="lazy" />
+                      <img [src]="file.downloadUrl" [alt]="file.name" loading="lazy" decoding="async" (load)="onThumbnailLoaded(file)" />
                     }
                     @if (!file.isImage || !file.downloadUrl) {
                       <mat-icon>insert_drive_file</mat-icon>
@@ -332,16 +333,37 @@
         <video [src]="previewUpload.url" controls></video>
       }
       <div class="preview-info">
-        <h3>{{ previewUpload.fileName }}</h3>
+        <div class="preview-header">
+          <h3>{{ previewUpload.fileName }}</h3>
+          <div class="preview-subtitle">
+            @if (getUploaderName(previewUpload)) {
+              <span>Uploaded by {{ getUploaderName(previewUpload) }}</span>
+            }
+            @if (previewUpload.eventName) {
+              <span>Event: {{ previewUpload.eventName }}</span>
+            }
+          </div>
+        </div>
         <div class="preview-meta">
-          @if (getUploaderName(previewUpload)) {
-            <span>Uploaded by {{ getUploaderName(previewUpload) }}</span>
-          }
-          @if (previewUpload.eventName) {
-            <span>Event: {{ previewUpload.eventName }}</span>
-          }
           <span>Size: {{ formatFileSize(previewUpload.fileSize) }}</span>
           <span>Added {{ previewUpload.dateAdded | date:'MMM d, yyyy, h:mm a' }}</span>
+        </div>
+        <div class="preview-actions">
+          <button
+            mat-stroked-button
+            class="preview-reject"
+            [disabled]="isProcessing(previewUpload.id)"
+            (click)="onRejectFromPreview(previewUpload)">
+            Reject
+          </button>
+          <button
+            mat-flat-button
+            color="primary"
+            class="preview-approve"
+            [disabled]="isProcessing(previewUpload.id) || previewUpload.status !== 'pending'"
+            (click)="onApproveFromPreview(previewUpload)">
+            Approve
+          </button>
         </div>
       </div>
     </div>

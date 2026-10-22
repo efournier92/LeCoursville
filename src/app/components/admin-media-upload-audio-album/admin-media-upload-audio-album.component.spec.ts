@@ -15,12 +15,14 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
   let fixture: ComponentFixture<AdminMediaUploadAudioAlbumComponent>;
   let confirmSpy: jasmine.Spy;
   let deleteMedia: jasmine.Spy;
+  let uploadAlbum: jasmine.Spy;
 
   const media = { id: 'a1', title: 'Reunion', folderName: 'reunion' } as UploadableMedia;
 
   beforeEach(async () => {
     confirmSpy = jasmine.createSpy('confirm').and.returnValue(Promise.resolve(false));
     deleteMedia = jasmine.createSpy('deleteMedia');
+    uploadAlbum = jasmine.createSpy('upload').and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       declarations: [ AdminMediaUploadAudioAlbumComponent ],
@@ -31,7 +33,7 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
           provide: AuthService,
           useValue: { userObservable: of({ roles: { user: true, admin: false, super: true } }) },
         },
-        { provide: AudioAlbumUploadService, useValue: { upload: jasmine.createSpy('upload') } },
+        { provide: AudioAlbumUploadService, useValue: { upload: uploadAlbum } },
         { provide: MediaService, useValue: { deleteMedia } },
         { provide: ConfirmDialogService, useValue: { confirm: confirmSpy } },
       ],
@@ -65,6 +67,41 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
 
     await component.onDeleteSelectedMedia(media);
     expect(deleteMedia).toHaveBeenCalledWith(media);
+  });
+
+  it('shows inline validation and keeps the form when the folder is missing', async () => {
+    component.album.title = 'Reunion';
+
+    await component.onUploadSelectedMedia();
+    fixture.detectChanges();
+
+    expect(uploadAlbum).not.toHaveBeenCalled();
+    expect(component.formError).toContain('folder name');
+    expect(component.album.title).toBe('Reunion');
+  });
+
+  it('keeps the form and shows an error when the upload fails', async () => {
+    uploadAlbum.and.returnValue(Promise.reject(new Error('denied')));
+    component.album.title = 'Reunion';
+    component.album.folderName = 'reunion';
+
+    await component.onUploadSelectedMedia();
+    fixture.detectChanges();
+
+    expect(component.uploading).toBe(false);
+    expect(component.album.title).toBe('Reunion');
+    expect(fixture.nativeElement.querySelector('[data-testid="album-upload-error"]').textContent).toContain('Couldn');
+  });
+
+  it('clears the form and confirms success after the upload resolves', async () => {
+    component.album.title = 'Reunion';
+    component.album.folderName = 'reunion';
+
+    await component.onUploadSelectedMedia();
+    fixture.detectChanges();
+
+    expect(component.album.title).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('[data-testid="album-upload-success"]').textContent).toContain('Saved');
   });
 
   it('keeps the selection and shows an alert when the delete fails', async () => {

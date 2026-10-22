@@ -204,7 +204,7 @@
             <form (ngSubmit)="onSave()">
               <mat-form-field class="full-width">
                 <mat-label>Sort Order</mat-label>
-                <input matInput [(ngModel)]="formData.sortOrder" name="sortOrder" />
+                <input #sortOrderInput matInput [(ngModel)]="formData.sortOrder" name="sortOrder" />
               </mat-form-field>
               <mat-form-field class="full-width">
                 <mat-label>Name</mat-label>

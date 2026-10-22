@@ -10,6 +10,16 @@
   display: block;
 }
 
+.admin-success {
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--color-brand-primary);
+  border-radius: var(--radius-sm);
+  background: rgba(45, 90, 39, 0.08);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
 .admin-form-actions {
   display: flex;
   flex-wrap: wrap;

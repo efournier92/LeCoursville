@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { combineLatest, Subscription } from 'rxjs';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
 import { ClanService } from 'src/app/services/clan.service';
 import { Clan } from 'src/app/models/clan';
@@ -19,7 +20,7 @@ interface ParsedPerson {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AdminPeopleImportComponent implements OnInit {
+export class AdminPeopleImportComponent implements OnInit, OnDestroy {
   parsedPeople: ParsedPerson[] = [];
   validationErrors: string[] = [];
   validationWarnings: string[] = [];
@@ -31,9 +32,16 @@ export class AdminPeopleImportComponent implements OnInit {
   selectedFileName: string | null = null;
   hasParsedFile = false;
   skippedMissingId = 0;
+  peopleReady = false;
+  isDragOver = false;
+  private lastImportSkipped = 0;
+  private lastImportErrors = 0;
+  private existingPeople: Person[] = [];
   private clansByNameMap: Map<string, Clan> = new Map();
   private clansFromDb: Clan[] = [];
   private pendingClans: Map<string, Clan> = new Map();
+  private peopleSub?: Subscription;
+  private clansSub?: Subscription;
 
   // Pagination
   readonly previewPageSize = 10;
@@ -45,10 +53,21 @@ export class AdminPeopleImportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.clanService.clans$.subscribe(clans => {
+    this.peopleSub = combineLatest([this.peopleService.people$, this.peopleService.peopleLoaded$])
+      .subscribe(([people, loaded]) => {
+        this.existingPeople = people;
+        this.peopleReady = loaded;
+        this.recomputePreview();
+      });
+    this.clansSub = this.clanService.clans$.subscribe(clans => {
       this.clansFromDb = clans || [];
       this.rebuildClansByNameMap();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.peopleSub?.unsubscribe();
+    this.clansSub?.unsubscribe();
   }
 
   parseCSV(rawCsv: string): void {
@@ -57,6 +76,7 @@ export class AdminPeopleImportComponent implements OnInit {
     this.parsedPeople = [];
     this.importPreview = null;
     this.importError = null;
+    this.importResult = null;
     this.hasParsedFile = true;
     this.previewPage = 1;
     this.skippedMissingId = 0;
@@ -101,13 +121,23 @@ export class AdminPeopleImportComponent implements OnInit {
     if (this.parsedPeople.length > 0) {
       this.resolveSpouses();
       this.computeParentIds();
-      this.importPreview = {
-        total: this.parsedPeople.length,
-        created: this.parsedPeople.length,
-        updated: 0,
-        inactive: 0
-      };
     }
+    this.recomputePreview();
+  }
+
+  private recomputePreview(): void {
+    if (this.parsedPeople.length === 0) {
+      this.importPreview = null;
+      return;
+    }
+    const existingIds = new Set(this.existingPeople.map(p => p.id));
+    const updated = this.parsedPeople.filter(p => existingIds.has(p.person.id)).length;
+    this.importPreview = {
+      total: this.parsedPeople.length,
+      created: this.parsedPeople.length - updated,
+      updated,
+      inactive: 0
+    };
   }
 
   private buildHeaderMap(headers: string[]): Record<string, number> {
@@ -422,10 +452,12 @@ export class AdminPeopleImportComponent implements OnInit {
   }
 
   confirmImport(): void {
-    if (this.parsedPeople.length === 0 || this.isImporting || this.validationErrors.length > 0) return;
+    if (this.parsedPeople.length === 0 || this.isImporting || this.validationErrors.length > 0 || !this.peopleReady) return;
 
     this.isImporting = true;
     this.importError = null;
+    this.lastImportSkipped = this.skippedMissingId;
+    this.lastImportErrors = this.validationErrors.length;
     const people = this.parsedPeople.map(p => p.person);
     const clans = Array.from(this.pendingClans.values());
 
@@ -491,8 +523,31 @@ export class AdminPeopleImportComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || !input.files[0]) return;
+    this.readFile(input.files[0]);
+  }
 
-    const file = input.files[0];
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    // dragleave also fires entering child nodes; only clear on the zone itself.
+    if (event.currentTarget === event.target) {
+      this.isDragOver = false;
+    }
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.readFile(file);
+    }
+  }
+
+  private readFile(file: File): void {
     this.selectedFileName = file.name;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -519,6 +574,15 @@ export class AdminPeopleImportComponent implements OnInit {
   get skippedSummary(): string {
     const rowLabel = this.skippedMissingId === 1 ? 'row' : 'rows';
     return `${this.skippedMissingId} ${rowLabel} skipped: missing ID`;
+  }
+
+  get importResultSummary(): string {
+    if (!this.importResult) return '';
+    const people = (n: number) => `${n} ${n === 1 ? 'person' : 'people'}`;
+    const rows = (n: number) => `${n} ${n === 1 ? 'row' : 'rows'}`;
+    const errors = (n: number) => `${n} ${n === 1 ? 'error' : 'errors'}`;
+    return `${people(this.importResult.created)} created, ${people(this.importResult.updated)} updated, `
+      + `${rows(this.lastImportSkipped)} skipped, ${errors(this.lastImportErrors)}.`;
   }
 
   get previewShowingRange(): string {

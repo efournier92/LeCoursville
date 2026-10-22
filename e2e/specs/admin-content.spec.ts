@@ -213,6 +213,82 @@ test.describe('admin content surfaces', () => {
     }
   });
 
+  test('uploads: the preview dialog names the uploader and event, and reject closes it', async ({ page }) => {
+    const uploadId = `e2e-preview-${Date.now()}`;
+    const fileName = `${uploadId}.png`;
+    const path = `userUploads/${fileName}`;
+
+    await putStorageObject(path);
+    await writeDb(`userUploads/${uploadId}`, {
+      id: uploadId,
+      url: storageUrl(path),
+      path,
+      dateAdded: Date.now(),
+      eventName: 'E2E Preview',
+      status: 'pending',
+      uploader: { name: 'Regular User', email: 'user@e2e.local' },
+      fileName,
+      fileType: 'image/png',
+      fileSize: TINY_PNG.length,
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/uploads');
+      await expect(page.getByRole('button', { name: `Preview ${fileName}` })).toBeVisible();
+
+      await page.getByRole('button', { name: `Preview ${fileName}` }).click();
+      const preview = page.locator('.upload-preview-dialog');
+      await expect(preview).toContainText('Uploaded by Regular User');
+      await expect(preview).toContainText('Event: E2E Preview');
+
+      await preview.getByRole('button', { name: 'Reject' }).click();
+      const confirm = page.locator('app-confirm-dialog');
+      await expect(confirm).toContainText('Reject upload?');
+      await confirm.getByRole('button', { name: 'Reject upload' }).click();
+
+      await expect(preview).toBeHidden();
+      await expect(page.getByText("You're all caught up")).toBeVisible();
+      await expect.poll(async () => readDb(`userUploads/${uploadId}`)).toBeNull();
+    } finally {
+      await deleteDb(`userUploads/${uploadId}`);
+      await deleteStorageObject(path);
+    }
+  });
+
+  test('calendars and families: Add focuses the first field; calendar links open safely in a new tab', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/calendars');
+
+    const year = new Date().getFullYear().toString();
+    const row = page.locator('.admin-table tbody tr').filter({ hasText: year });
+    await expect(row.getByRole('button', { name: `Edit ${year}` })).toBeVisible();
+    await expect(row.getByRole('button', { name: `Delete ${year}` })).toBeVisible();
+
+    const link = row.locator('a.calendar-url-link');
+    await expect(link).toHaveAttribute('target', '_blank');
+    expect(await link.getAttribute('rel')).toContain('noopener');
+    expect(await link.getAttribute('rel')).toContain('noreferrer');
+
+    await page.getByRole('button', { name: 'Add Calendar' }).click();
+    const yearInput = page.getByLabel('Year (e.g. 2026)');
+    await expect(yearInput).toBeFocused();
+    await yearInput.fill(year);
+    await page.getByLabel('Firebase Storage URL').fill('https://example.test/replacement.pdf');
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+
+    const confirm = page.locator('app-confirm-dialog');
+    await expect(confirm).toContainText(`A calendar already exists for ${year}`);
+    await confirm.getByRole('button', { name: 'Cancel' }).click();
+    await expect(confirm).toBeHidden();
+    await expect(yearInput).toHaveValue(year);
+
+    await page.goto('/admin/families');
+    await expect(page.locator('.families-table tbody tr')).toHaveCount(2, { timeout: 20000 });
+    await page.getByRole('button', { name: 'Add Family' }).click();
+    await expect(page.getByLabel('Sort Order')).toBeFocused();
+  });
+
   test('390x844: the uploads table becomes cards and the album grid is one column without overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, 'admin');

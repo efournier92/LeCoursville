@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Family } from 'src/app/models/family';
 import { FamilyService } from 'src/app/services/family.service';
@@ -27,6 +34,8 @@ type FamiliesState = 'loading' | 'ready' | 'error';
     standalone: false
 })
 export class AdminFamiliesComponent implements OnInit, OnDestroy {
+  @ViewChild('sortOrderInput') sortOrderInput?: ElementRef<HTMLInputElement>;
+
   families: Family[] = [];
   editingFamily: Family | null = null;
   isAdding = false;
@@ -137,6 +146,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
     this.editingFamily = null;
     this.formData = { sortOrder: '', name: '', hexColor: '#000000' };
     this.formError = '';
+    this.focusFormStart();
   }
 
   onEdit(family: Family): void {
@@ -144,6 +154,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
     this.isAdding = false;
     this.formData = { sortOrder: family.sortOrder, name: family.name, hexColor: family.hexColor };
     this.formError = '';
+    this.focusFormStart();
   }
 
   async onDelete(family: Family): Promise<void> {
@@ -392,6 +403,17 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
     this.isCsvPreview = false;
     this.selectedFileName = null;
     this.csvPage = 1;
+  }
+
+  private focusFormStart(): void {
+    // The Add button is removed when the form opens, so focus must land on the
+    // first field instead of being lost; the timeout waits for the form view.
+    setTimeout(() => {
+      const field = this.sortOrderInput?.nativeElement;
+      if (!field) { return; }
+      field.scrollIntoView({ block: 'center' });
+      field.focus();
+    });
   }
 
   private writeFailure(action: string, error: unknown): string {

@@ -49,12 +49,19 @@
           @for (calendar of calendars; track calendar.id) {
             <tr>
               <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
-              <td data-label="URL" class="calendar-url-cell calendar-url">{{ calendar.url }}</td>
+              <td data-label="URL" class="calendar-url-cell calendar-url">
+                <a
+                  [href]="calendar.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="calendar-url-link"
+                  [matTooltip]="calendar.url">{{ calendar.url }}</a>
+              </td>
               <td data-label="" class="calendar-actions">
-                <button mat-icon-button color="primary" aria-label="Edit" matTooltip="Edit" (click)="onEdit(calendar)">
+                <button mat-icon-button color="primary" [attr.aria-label]="'Edit ' + calendar.year" matTooltip="Edit" (click)="onEdit(calendar)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" aria-label="Delete" matTooltip="Delete" (click)="onDelete(calendar)">
+                <button mat-icon-button color="warn" [attr.aria-label]="'Delete ' + calendar.year" matTooltip="Delete" (click)="onDelete(calendar)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -72,7 +79,7 @@
             <form (ngSubmit)="onSave()">
               <mat-form-field class="full-width">
                 <mat-label>Year (e.g. 2026)</mat-label>
-                <input matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
+                <input #yearInput matInput [(ngModel)]="formData.year" name="year" maxlength="4" required />
               </mat-form-field>
               <mat-form-field class="full-width">
                 <mat-label>Firebase Storage URL</mat-label>

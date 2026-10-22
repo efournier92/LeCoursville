@@ -1,9 +1,18 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { deleteDb, readDb } from '../helpers/admin-db';
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('media', () => {
+  test('signed-out media routes redirect to sign-in', async ({ page }) => {
+    for (const route of ['/media/explorer', '/media/audio', '/media/video']) {
+      await page.goto(route);
+      await expect(page).toHaveURL('/');
+      await expect(page.getByTestId('auth-email')).toBeVisible();
+    }
+  });
+
   test('explorer lists the 3 seeded media entries', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
@@ -40,6 +49,54 @@ test.describe('media', () => {
     await page.goto('/media/explorer');
     await page.getByText('E2E Doc').first().click();
     await expect(page.locator('.doc-viewer-container').first()).toBeVisible({ timeout: 20000 });
+  });
+
+  test('video upload validates inline and keeps the entered values', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+
+    const form = page.locator('.admin-media-upload-upload-form');
+    await form.locator('input[name="videoTitle"]').fill('E2E Missing Fields');
+
+    await form.locator('.admin-form-action-button-upload').click();
+
+    await expect(page.getByTestId('video-upload-error')).toContainText('Enter the file name and date');
+    await expect(form.locator('input[name="videoTitle"]')).toHaveValue('E2E Missing Fields');
+  });
+
+  test('audio album upload validates inline instead of silently clearing', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+    await page.getByRole('tab', { name: 'Audio Album' }).click();
+
+    const form = page.locator('.audio-album-upload-form');
+    await form.locator('input[name="albumTitle"]').fill('E2E Album Missing Folder');
+    await form.locator('.admin-form-action-button-upload').click();
+
+    await expect(page.getByTestId('album-upload-error')).toContainText('folder name');
+    await expect(form.locator('input[name="albumTitle"]')).toHaveValue('E2E Album Missing Folder');
+  });
+
+  test('video upload clears the form only after the save succeeds', async ({ page }) => {
+    const id = `e2e-upload-${Date.now()}`;
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/media');
+
+      const form = page.locator('.admin-media-upload-upload-form');
+      await form.locator('input[name="videoTitle"]').fill('E2E Uploaded Video');
+      await form.locator('input[name="videoFileName"]').fill('e2e-uploaded.mp4');
+      await form.locator('input[name="videoDate"]').fill('2026');
+      await form.locator('input[name="videoId"]').fill(id);
+      await form.locator('.admin-form-action-button-upload').click();
+
+      await expect(page.getByTestId('video-upload-success')).toContainText('Saved');
+      await expect(form.locator('input[name="videoTitle"]')).toHaveValue('');
+      await expect.poll(async () => readDb(`media/${id}`)).not.toBeNull();
+    } finally {
+      await deleteDb(`media/${id}`);
+    }
   });
 
   test('admin media upload cards use the shared surface and action row', async ({ page }) => {

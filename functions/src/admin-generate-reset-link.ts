@@ -5,7 +5,6 @@ import { FROM_ADDRESS, RESEND_API_KEY, REGION } from "./config";
 import {
   RECOVERY_LOCK_TTL_MS,
   compareAndSet,
-  isAdmin,
   isAllowedContinueUrl,
   isValidEmail,
   rateLimit,
@@ -37,8 +36,11 @@ export const adminGenerateResetLink = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "Sign in required.");
     }
-    if (!(await isAdmin(uid))) {
-      throw new HttpsError("permission-denied", "Admin access required.");
+    // The recovery area and its rules are super-only, so an admin role is not
+    // enough to mint a credential.
+    const superRole = await getDatabase().ref(`users/${uid}/roles/super`).get();
+    if (superRole.val() !== true) {
+      throw new HttpsError("permission-denied", "Super admin access required.");
     }
 
     if (!(await rateLimit("adminResetLinks", uid, 20, 3600000))) {

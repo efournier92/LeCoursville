@@ -29,6 +29,7 @@ import { AnalyticsService } from "src/app/services/analytics.service";
 export abstract class MessageEditComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
+  @Input() rootId: string;
 
   @Output() updateParentEvent: EventEmitter<object> = new EventEmitter();
   @Output() cancelEditEvent: EventEmitter<object> = new EventEmitter();
@@ -87,13 +88,16 @@ export abstract class MessageEditComponent implements OnInit {
           this.saveMessageWithPhoto(newMessage);
           return;
         }
+        const isNew = !newMessage.isSaved;
         newMessage = this.markMessageSaved(newMessage);
         newMessage.id = newMessage.id || this.rtdb.createPushId();
         if (newMessage.isReply) {
-          if (this.parent) {
-            this.updateParent();
-          }
-        } else if (!newMessage.id) {
+          this.messageService.saveReply(
+            this.rootId || this.parent?.id || newMessage.id,
+            newMessage,
+            isNew,
+          );
+        } else if (isNew) {
           this.messageService.create(newMessage);
         } else {
           this.messageService.updateMessage(newMessage);
@@ -139,12 +143,16 @@ export abstract class MessageEditComponent implements OnInit {
       if (confirmedAction) {
         if (this.message.replies && this.message.replies.length !== 0) {
           this.message.isDeleted = true;
+          this.messageService.updateMessage(this.message);
         } else if (this.message.isReply) {
+          this.messageService.deleteReply(
+            this.rootId || this.parent?.id || this.message.id,
+            this.message.id,
+          );
           let i = 0;
           for (const reply of this.parent.replies) {
             if (reply.id === this.message.id) {
               this.parent.replies.splice(i, 1);
-              this.updateParent();
             }
             i += 1;
           }
@@ -174,6 +182,7 @@ export abstract class MessageEditComponent implements OnInit {
       if (confirmedAction) {
         this.message.isDeleted = false;
         this.message.isEditable = false;
+        this.messageService.updateMessage(this.message);
       }
     });
 
@@ -220,8 +229,14 @@ export abstract class MessageEditComponent implements OnInit {
       }
       message.attachmentUrl = url;
       message.attachmentType = uploadFileType;
+      const isNew = !message.isSaved;
       message = this.markMessageSaved(message);
-      this.messageService.create(message);
+      message.id = message.id || this.rtdb.createPushId();
+      if (isNew) {
+        this.messageService.create(message);
+      } else {
+        this.messageService.updateMessage(message);
+      }
       this.isSaving = false;
     });
   }

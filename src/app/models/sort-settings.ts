@@ -130,7 +130,9 @@ export abstract class SortSettings {
   }
 
   doesValueIncludeQuery(value: string): boolean {
-    return value.toLowerCase().includes(this.activeFilterQuery.toLocaleLowerCase());
+    // Sortable values are not all strings (dateSent is epoch millis), so
+    // coerce rather than assume a toLowerCase() receiver.
+    return String(value ?? '').toLowerCase().includes(this.activeFilterQuery.toLocaleLowerCase());
   }
 
   reverseSortDirection(): void {

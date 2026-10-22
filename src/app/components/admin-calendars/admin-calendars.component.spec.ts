@@ -108,6 +108,51 @@ describe('AdminCalendarsComponent', () => {
     expect(removeSpy).toHaveBeenCalled();
   });
 
+  it('warns before replacing an existing year and writes nothing when cancelled', async () => {
+    fixture.detectChanges();
+    calendars$.next([calendar('2026')]);
+    fixture.detectChanges();
+    confirmSpy.and.returnValue(Promise.resolve(false));
+
+    component.onAdd();
+    component.formData = { year: '2026', url: 'https://example.test/replacement.pdf' };
+    await component.onSave();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(rtdb.object).not.toHaveBeenCalled();
+    expect(component.isAdding).toBe(true);
+  });
+
+  it('replaces an existing year after the warning is confirmed', async () => {
+    fixture.detectChanges();
+    calendars$.next([calendar('2026')]);
+    fixture.detectChanges();
+    confirmSpy.and.returnValue(Promise.resolve(true));
+
+    component.onAdd();
+    component.formData = { year: '2026', url: 'https://example.test/replacement.pdf' };
+    await component.onSave();
+
+    expect((rtdb.object('/calendars/cal-2026') as any).set).toHaveBeenCalled();
+  });
+
+  it('renders the URL as a safe new-tab link and names row actions by year', () => {
+    fixture.detectChanges();
+    calendars$.next([calendar('2026')]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('.calendar-url-link') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('https://example.test/2026.pdf');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
+    expect(link.getAttribute('rel')).toContain('noreferrer');
+
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('.calendar-actions button') as NodeListOf<HTMLElement>,
+    ).map((button) => button.getAttribute('aria-label'));
+    expect(labels).toEqual(['Edit 2026', 'Delete 2026']);
+  });
+
   it('reports an invalid year in a role="alert" region', () => {
     component.isAdding = true;
     component.formData = { year: '26', url: 'https://example.test/x.pdf' };

@@ -15,37 +15,39 @@ export class AudioAlbumUploadService {
     private pushIdService: PushIdService,
   ) { }
 
-  upload(album: AudioAlbum, folderName: string, tracksString: string): void {
+  async upload(album: AudioAlbum, folderName: string, tracksString: string): Promise<void> {
     album.urls.download = this.getHostedZipLocation(folderName);
     album.urls.icon = this.getAlbumCoverLocation(folderName);
     album.artist = '';
 
+    const writes: Promise<void>[] = [];
     let tracksArray: string[];
     if (!album?.id) {
       album.id = this.pushIdService.create();
       tracksArray = this.getTracksArrayFromString(tracksString);
       const allTracks = this.createTracksFromFileNames(tracksArray, folderName, album?.urls?.icon, album?.artist, album?.date);
-      album.listing = this.uploadAudioTracks(allTracks);
+      album.listing = this.uploadAudioTracks(allTracks, writes);
     }
 
     album.dateUpdated = new Date();
+    writes.push(this.mediaService.create(album));
 
-    this.mediaService.create(album);
+    await Promise.all(writes);
   }
 
-  private uploadAudioTracks(tracks: UploadableMedia[]) {
+  private uploadAudioTracks(tracks: UploadableMedia[], writes: Promise<void>[]) {
     const ids = [];
 
     tracks.forEach((track: AudioTrack) => {
-      const trackId = this.uploadAudioTrack(track);
+      const trackId = this.uploadAudioTrack(track, writes);
       ids.push(trackId);
     });
 
     return ids;
   }
 
-  private uploadAudioTrack(track: AudioTrack) {
-    this.mediaService.create(track);
+  private uploadAudioTrack(track: AudioTrack, writes: Promise<void>[]) {
+    writes.push(this.mediaService.create(track));
 
     return track.id;
   }

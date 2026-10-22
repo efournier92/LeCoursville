@@ -30,7 +30,7 @@
         data-testid="admin-users-sort"
         [matMenuTriggerFor]="menu"
         >
-        Sort: {{ getSortPropertyText() }}
+        Sort: {{ sortPropertyText }}
         <mat-icon>{{ isSortDescending() ? 'arrow_drop_down' : 'arrow_drop_up' }}</mat-icon>
       </button>
       <button
@@ -44,19 +44,19 @@
     </div>
     <mat-menu #menu="matMenu">
       <button mat-menu-item (click)="sortByDateLastActive()">
-        <mat-icon>{{ isActiveSort('dateLastActive') ? 'check' : '' }}</mat-icon>
+        <mat-icon>{{ activeSortKey === 'dateLastActive' ? 'check' : '' }}</mat-icon>
         <span>Date Last Active</span>
       </button>
       <button mat-menu-item (click)="sortByName()">
-        <mat-icon>{{ isActiveSort('name') ? 'check' : '' }}</mat-icon>
+        <mat-icon>{{ activeSortKey === 'name' ? 'check' : '' }}</mat-icon>
         <span>Name</span>
       </button>
       <button mat-menu-item (click)="sortByEmail()">
-        <mat-icon>{{ isActiveSort('email') ? 'check' : '' }}</mat-icon>
+        <mat-icon>{{ activeSortKey === 'email' ? 'check' : '' }}</mat-icon>
         <span>Email</span>
       </button>
       <button mat-menu-item (click)="sortByDateRegistered()">
-        <mat-icon>{{ isActiveSort('dateRegistered') ? 'check' : '' }}</mat-icon>
+        <mat-icon>{{ activeSortKey === 'dateRegistered' ? 'check' : '' }}</mat-icon>
         <span>Date Registered</span>
       </button>
     </mat-menu>
@@ -107,7 +107,7 @@
                 <td data-label="Last Active">{{ rowUser.dateLastActive | date:'yyyy-MM-dd' }}</td>
                 <td data-label="Registered">{{ rowUser.dateRegistered | date:'yyyy-MM-dd' }}</td>
                 <td data-label="Roles">
-                  @for (role of userRoles(rowUser); track role) {
+                  @for (role of rolesFor(rowUser); track role) {
                     <span class="role-badge" [class]="'role-badge role-badge-' + role.toLowerCase()">{{ role }}</span>
                   } @empty {
                     <span class="admin-muted">—</span>

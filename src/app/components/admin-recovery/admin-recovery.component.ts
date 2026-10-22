@@ -84,6 +84,7 @@ interface GeneratedResult {
 })
 export class AdminRecoveryComponent implements OnInit, OnDestroy {
   requests: RecoveryRequest[] = [];
+  visibleRequests: RecoveryRequest[] = [];
   reasons: Record<string, string> = {};
   emailAlternate: Record<string, boolean> = {};
   generated: Record<string, GeneratedResult> = {};
@@ -147,6 +148,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
     this.requestsSub = this.rtdb.list<RecoveryRequest>('recoveryRequests').valueChanges().subscribe({
       next: requests => {
         this.requests = [...requests].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        this.rebuildVisibleRequests();
         this.requestsLoading = false;
       },
       error: () => {
@@ -227,14 +229,15 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
   /**
    * Every stored request stays visible regardless of status (C-04: an abandoned
    * pending row must stay actable). Generated rows are merged in only if the
-   * live list does not already carry that id.
+   * live list does not already carry that id. Rebuilt on data change, not per
+   * change-detection pass.
    */
-  get visibleRequests(): RecoveryRequest[] {
+  private rebuildVisibleRequests(): void {
     const knownIds = new Set(this.requests.map(request => request.id));
     const generatedOnly = Object.values(this.generated)
       .map(result => result.request)
       .filter(request => !knownIds.has(request.id));
-    return [...this.requests, ...generatedOnly]
+    this.visibleRequests = [...this.requests, ...generatedOnly]
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }
 
@@ -364,6 +367,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
         ...(emailAlternateContact ? { emailAlternateContact: true } : {}),
       }) as { data: { link: string; emailed: boolean } };
       this.generated[request.id] = { link: data.link, emailed: data.emailed, request };
+      this.rebuildVisibleRequests();
     } catch (error) {
       this.errors[request.id] = (error as Error)?.message || 'Failed to generate reset link.';
     } finally {

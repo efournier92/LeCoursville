@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { deleteDb, writeDb } from '../helpers/admin-db';
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
@@ -75,6 +76,7 @@ test.describe('admin people surfaces', () => {
 
     await expect(page.getByText('Import Preview')).toBeVisible();
     await expect(page.getByText('To Create').first()).toBeVisible();
+    await expect(page.getByTestId('import-confirm')).toBeEnabled();
 
     const headers = await page.locator('.preview-card .admin-table thead th').allTextContents();
     expect(headers).toEqual([
@@ -114,6 +116,80 @@ test.describe('admin people surfaces', () => {
       )
       .toBe(true);
     await expect(page.getByText('Import Complete')).toBeVisible({ timeout: 15000 });
+  });
+
+  test('a re-import with one colliding ID warns about the overwrite and shows real counts', async ({ page }) => {
+    const collisionId = 'people-e2e-collision';
+    const newId = 'people-e2e-collision-new';
+    await writeDb(`people/${collisionId}`, {
+      id: collisionId,
+      name: { firstGiven: 'Existing', last: 'Record' },
+      clanId: 'clan-1',
+      isLiving: true,
+      generationNumber: 1,
+      parentIds: [],
+      addresses: [],
+      emails: [],
+      phones: [],
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/people');
+
+      const csv = [
+        'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
+        `${collisionId},Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne`,
+        `${newId},Yuri,Yuri,Zimmerman,1991-02-16,1,TRUE,124 E2E St,Mignonne`,
+      ].join('\n');
+
+      await page.getByTestId('import-file').setInputFiles({
+        name: 'people.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from(csv),
+      });
+
+      await expect(page.getByText('Import Preview')).toBeVisible();
+      await expect(page.locator('.stat.created .stat-value')).toHaveText('1');
+      await expect(page.locator('.stat.updated .stat-value')).toHaveText('1');
+      await expect(page.getByTestId('import-overwrite')).toContainText(
+        '1 existing record will be overwritten',
+      );
+      await expect(page.getByTestId('import-confirm')).toBeEnabled();
+
+      await page.getByTestId('import-confirm').click();
+      await expect(page.getByText('Import Complete')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('import-result-summary')).toContainText('1 person created');
+      await expect(page.getByTestId('import-result-summary')).toContainText('1 person updated');
+    } finally {
+      await deleteDb(`people/${collisionId}`);
+      await deleteDb(`people/${newId}`);
+    }
+  });
+
+  test('the CSV drop zone opens the file picker from the keyboard', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+
+    const zone = page.locator('.upload-area');
+    await zone.focus();
+    await expect(zone).toBeFocused();
+
+    const chooserPromise = page.waitForEvent('filechooser');
+    await page.keyboard.press('Enter');
+    const chooser = await chooserPromise;
+    const csv = [
+      'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
+      'people-e2e-keyboard,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne',
+    ].join('\n');
+    await chooser.setFiles({
+      name: 'keyboard.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv),
+    });
+
+    await expect(page.getByText('Import Preview')).toBeVisible();
+    await expect(page.getByTestId('import-file')).toHaveCount(1);
   });
 
   test('families render as cards at 390px with no horizontal overflow', async ({ page }) => {

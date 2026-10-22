@@ -21,6 +21,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null);
   sidenavOpen = false;
   private sidenavSub: Subscription;
+  private userSub: Subscription;
+  private flagsSub: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -33,7 +35,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToUserObservable();
     this.setVersion();
-    this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
+    this.flagsSub = this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
       this.navGroups = this.buildNavGroups(flags);
       this.isNavReady = true;
     });
@@ -41,6 +43,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
+    this.flagsSub?.unsubscribe();
     this.sidenavSub?.unsubscribe();
   }
 
@@ -52,7 +56,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToUserObservable(): void {
-    this.authService.userObservable.subscribe(
+    this.userSub = this.authService.userObservable.subscribe(
       (user: User) => this.user = user
     );
   }

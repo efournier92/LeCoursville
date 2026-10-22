@@ -6,6 +6,7 @@ import { User } from 'src/app/models/user';
 import { HighlightService } from 'src/app/services/highlight.service';
 import { Highlight } from 'src/app/models/highlight';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { MessageService } from 'src/app/services/message.service';
 import { MessageConstants } from 'src/app/constants/message-constants';
 
 @Component({
@@ -18,6 +19,7 @@ import { MessageConstants } from 'src/app/constants/message-constants';
 export abstract class MessageViewComponent implements OnInit {
   @Input() message: Message;
   @Input() parent: Message;
+  @Input() rootId: string;
 
   @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
 
@@ -32,6 +34,7 @@ export abstract class MessageViewComponent implements OnInit {
     public authService: AuthService,
     public highlightService: HighlightService,
     public analyticsService: AnalyticsService,
+    private messageService: MessageService,
   ) { }
 
   ngOnInit(): void {
@@ -61,10 +64,8 @@ export abstract class MessageViewComponent implements OnInit {
     }
 
     this.message.likes.push(new Like(this.user));
+    this.messageService.addLike(this.messagePath(), this.message.likes[this.message.likes.length - 1]);
     this.trigger.openMenu();
-    this.trigger.menuClosed.subscribe(
-      () => this.updateParent()
-    );
     this.likers = this.getLikers();
 
     this.analyticsService.logEvent('_view_message_like', {
@@ -123,6 +124,13 @@ export abstract class MessageViewComponent implements OnInit {
   }
 
   // HELPER METHODS
+
+  private messagePath(): string {
+    const rootId = this.rootId || this.message.id;
+    return this.message.id === rootId
+      ? `messages/${rootId}`
+      : `messages/${rootId}/replies/${this.message.id}`;
+  }
 
   private initializeMessageData() {
     this.likers = this.getLikers();

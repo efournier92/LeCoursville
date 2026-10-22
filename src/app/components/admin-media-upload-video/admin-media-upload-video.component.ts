@@ -19,6 +19,9 @@ export class AdminMediaUploadVideoComponent implements OnInit {
   video: Video = new Video();
   user: User;
   deleteError: string | null = null;
+  formError: string | null = null;
+  uploadSuccess: string | null = null;
+  uploading = false;
 
   constructor(
     private authService: AuthService,
@@ -47,12 +50,28 @@ export class AdminMediaUploadVideoComponent implements OnInit {
     return [ MediaConstants.VIDEO.id ];
   }
 
-  onUploadSelectedMedia(): void {
-    if (!this.isValidVideoInput()) { return; }
+  async onUploadSelectedMedia(): Promise<void> {
+    const validationError = this.getVideoInputError();
+    if (validationError) {
+      this.formError = validationError;
+      this.uploadSuccess = null;
+      return;
+    }
 
-    this.videoUploadService.upload(this.video);
-
-    this.resetSelectedMedia();
+    const title = this.video.title;
+    this.formError = null;
+    this.uploadSuccess = null;
+    this.uploading = true;
+    try {
+      await this.videoUploadService.upload(this.video);
+      this.resetSelectedMedia();
+      this.uploadSuccess = `Saved “${title}”.`;
+    } catch (error) {
+      console.error('Video upload failed:', error);
+      this.formError = `Couldn’t save “${title}”. Please try again.`;
+    } finally {
+      this.uploading = false;
+    }
   }
 
   async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
@@ -82,8 +101,17 @@ export class AdminMediaUploadVideoComponent implements OnInit {
 
   // HELPER METHODS
 
-  private isValidVideoInput(): boolean {
-    return !!this.video.title && !!this.video.date && !!this.video.fileName;
+  private getVideoInputError(): string | null {
+    const missing: string[] = [];
+    if (!this.video.title) { missing.push('title'); }
+    if (!this.video.fileName) { missing.push('file name'); }
+    if (!this.video.date) { missing.push('date'); }
+    return missing.length > 0 ? `Enter the ${this.joinList(missing)} before uploading.` : null;
+  }
+
+  private joinList(items: string[]): string {
+    if (items.length <= 1) { return items.join(''); }
+    return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
   }
 
   private resetSelectedMedia(): void {

@@ -30,6 +30,7 @@
           <app-chat-view
             [message]="message"
             [parent]="message"
+            [rootId]="message.id"
             (updateParentEvent)="updateMessages($event)"
             (cancelEditEvent)="cancelEdit($event)"
           ></app-chat-view>
@@ -38,6 +39,7 @@
           <app-chat-edit
             [message]="message"
             [parent]="message"
+            [rootId]="message.id"
             (updateParentEvent)="updateMessages($event)"
             (cancelEditEvent)="cancelEdit($event)"
           ></app-chat-edit>

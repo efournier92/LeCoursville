@@ -21,7 +21,7 @@ vi.mock("./helpers", async (importOriginal) => {
 });
 
 import { adminGenerateResetLink } from "./admin-generate-reset-link";
-import { compareAndSet, isAdmin, sendEmail, writeAudit } from "./helpers";
+import { compareAndSet, sendEmail, writeAudit } from "./helpers";
 import { authMock, fakeDb, resetFakeState } from "./test-support";
 
 const adminAuth = {
@@ -34,8 +34,8 @@ function invoke(data: Record<string, unknown>, auth: unknown = adminAuth) {
   return adminGenerateResetLink.run({ data, auth, rawRequest: {} } as never);
 }
 
-async function seedAdmin(uid = "admin-1") {
-  await fakeDb.ref(`users/${uid}/roles/admin`).set(true);
+async function seedSuper(uid = "admin-1") {
+  await fakeDb.ref(`users/${uid}/roles/super`).set(true);
 }
 
 async function seedRequest(id: string, value: Record<string, unknown>) {
@@ -74,26 +74,26 @@ describe("adminGenerateResetLink", () => {
     });
   });
 
-  it("rejects a non-admin caller", async () => {
+  it("rejects a caller without the super role", async () => {
     await expect(invoke(validData)).rejects.toMatchObject({
       code: "permission-denied",
     });
   });
 
   it("rejects a request-less mint", async () => {
-    await seedAdmin();
+    await seedSuper();
     await expect(invoke({ ...validData, requestId: "" })).rejects.toMatchObject({
       code: "invalid-argument",
     });
   });
 
   it("rejects a missing request record", async () => {
-    await seedAdmin();
+    await seedSuper();
     await expect(invoke(validData)).rejects.toMatchObject({ code: "not-found" });
   });
 
   it("rejects when the payload email differs from the request email", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", { email: "other@example.com" });
     await expect(invoke(validData)).rejects.toMatchObject({
       code: "invalid-argument",
@@ -101,7 +101,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("rejects an already-handled request", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", { email: "user@example.com", status: "closed" });
     await expect(invoke(validData)).rejects.toMatchObject({
       code: "failed-precondition",
@@ -109,7 +109,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("rejects a malformed alternate contact before minting", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "not-an-email@bad",
@@ -121,7 +121,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("reports a missing auth user, audits the failure, and reopens the request", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", { email: "user@example.com" });
 
     await expect(invoke(validData)).rejects.toMatchObject({ code: "not-found" });
@@ -135,7 +135,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("mints for an admin, resolves the request, and audits the send", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "alt@example.com",
@@ -153,7 +153,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("returns the link without emailing the requester-supplied alternate contact", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "attacker@example.com",
@@ -170,7 +170,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("keeps the audit trail when the alternate-address email fails", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "alt@example.com",
@@ -192,7 +192,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("throws resource-exhausted and audits when the actor cap is reached", async () => {
-    await seedAdmin();
+    await seedSuper();
     await fakeDb
       .ref("rateLimits/adminResetLinks/admin-1")
       .set({ windowStart: Date.now(), count: 20 });
@@ -206,7 +206,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("writes one breach audit under sustained admin blocking", async () => {
-    await seedAdmin();
+    await seedSuper();
     await fakeDb
       .ref("rateLimits/adminResetLinks/admin-1")
       .set({ windowStart: Date.now(), count: 20 });
@@ -222,16 +222,15 @@ describe("adminGenerateResetLink", () => {
     ).toHaveLength(1);
   });
 
-  it("treats a missing or false role as non-admin", async () => {
-    expect(await isAdmin("nobody")).toBe(false);
-    await fakeDb.ref("users/u1/roles/admin").set(false);
-    expect(await isAdmin("u1")).toBe(false);
-    await fakeDb.ref("users/u1/roles/admin").set(true);
-    expect(await isAdmin("u1")).toBe(true);
+  it("rejects a plain admin caller", async () => {
+    await fakeDb.ref("users/admin-1/roles/admin").set(true);
+    await expect(invoke(validData)).rejects.toMatchObject({
+      code: "permission-denied",
+    });
   });
 
   it("re-locks a stale pending request abandoned by a crashed mint", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       status: "pending",
@@ -248,7 +247,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("refuses to steal a fresh pending lock", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       status: "pending",
@@ -263,7 +262,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("still returns the minted link when the audit write fails", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "alt@example.com",
@@ -285,7 +284,7 @@ describe("adminGenerateResetLink", () => {
   });
 
   it("records a resolve race but still returns the minted link", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       email: "user@example.com",
       alternateContact: "alt@example.com",

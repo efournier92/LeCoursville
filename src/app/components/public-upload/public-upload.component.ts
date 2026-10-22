@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { UserUploadService } from '../../services/user-upload.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { FireUploadTask } from '../../services/fire-upload-task';
 
 interface UploadItem {
   file: File;
@@ -251,13 +252,26 @@ export class PublicUploadComponent implements OnInit, OnDestroy {
       item.status = 'uploading';
       item.progress = 0;
 
-      const { task } = await this.userUploadService.uploadFile(
-        item.file,
-        this.suggestedEvent,
-        { anonymousId: this.generateAnonymousId() },
-        sanitizedName,
-        batchId
-      );
+      let task: FireUploadTask;
+      try {
+        ({ task } = await this.userUploadService.uploadFile(
+          item.file,
+          this.suggestedEvent,
+          { anonymousId: this.generateAnonymousId() },
+          sanitizedName,
+          batchId
+        ));
+      } catch (err) {
+        item.status = 'error';
+        item.error = 'Failed to upload. Please try again.';
+        this.analyticsService.logEvent('upload_file_error', {
+          file_name: item.file.name,
+          file_type: item.file.type,
+          error_message: (err as { message?: string })?.message || 'unknown',
+        });
+        this.checkComplete(++completed, total);
+        continue;
+      }
 
       task.percentageChanges().subscribe({
         next: (percent) => {
