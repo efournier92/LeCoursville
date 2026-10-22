@@ -46,11 +46,23 @@
           <div
             class="media-component-container"
             >
-            <app-video-player-drive-iframe
-              [video]="selectedMedia"
-              [events]="eventsSubject.asObservable()"
-              >
-            </app-video-player-drive-iframe>
+            @if (isExternalDriveUrl(selectedMedia)) {
+              <app-video-player-drive-iframe
+                [video]="selectedMedia"
+                [events]="eventsSubject.asObservable()"
+                >
+              </app-video-player-drive-iframe>
+            } @else {
+              <video
+                data-testid="native-video-player"
+                class="video-element"
+                controls
+                preload="metadata"
+                [src]="selectedMedia.urls.download"
+                [attr.poster]="selectedMedia.urls.icon || null"
+                >
+              </video>
+            }
           </div>
         }
         @if (isDocument(selectedMedia)) {

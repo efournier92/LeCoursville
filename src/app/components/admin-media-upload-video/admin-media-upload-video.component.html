@@ -1,45 +1,140 @@
 @if (user?.roles?.admin || user?.roles?.super) {
   <mat-card class="admin-surface admin-media-upload-form-container">
+    <h2 #videoCardHeading class="admin-card-title" tabindex="-1">Video upload</h2>
+
     @if (deleteError) {
-      <div class="admin-error" role="alert">{{ deleteError }}</div>
+      <div class="admin-error" role="alert" aria-live="assertive">{{ deleteError }}</div>
     }
+
     <form class="admin-media-upload-upload-form">
+      @if (showsFileControls()) {
+        <label
+          class="media-drop-zone"
+          for="videoFileInput"
+          (dragover)="onDragOver($event)"
+          (drop)="onVideoDrop($event)"
+          >
+          <span class="media-drop-zone-title">Video file</span>
+          <span class="media-drop-zone-hint">Drop an MP4 here or choose a file.</span>
+          <input
+            #videoFileInput
+            id="videoFileInput"
+            class="media-file-input"
+            type="file"
+            accept="video/mp4,.mp4"
+            data-testid="video-file-input"
+            aria-label="Video file"
+            (change)="onVideoFileChange($event)"
+            />
+        </label>
+        @if (selectedVideoFile) {
+          <p class="media-file-name">{{ selectedVideoFile.name }}</p>
+        }
+      }
+
       <mat-form-field class="admin-upload-input">
         <mat-label>Title</mat-label>
         <input
+          #titleInput
           type="text"
           matInput
           name="videoTitle"
           [(ngModel)]="video.title"
           />
       </mat-form-field>
-      <mat-form-field class="admin-upload-input">
-        <mat-label>File Name</mat-label>
-        <input
-          type="text"
-          matInput
-          name="videoFileName"
-          [(ngModel)]="video.fileName"
-          />
-      </mat-form-field>
+
       <mat-form-field class="admin-upload-input">
         <mat-label>Date</mat-label>
         <input
+          #dateInput
           type="text"
           matInput
           name="videoDate"
           [(ngModel)]="video.date"
           />
       </mat-form-field>
-      <mat-form-field class="admin-upload-input">
-        <mat-label>ID</mat-label>
-        <input
-          type="text"
-          matInput
-          name="videoId"
-          [(ngModel)]="video.id"
-          />
-      </mat-form-field>
+
+      @if (!isEditing()) {
+        <mat-form-field class="admin-upload-input">
+          <mat-label>Storage name</mat-label>
+          <input
+            #storageNameInput
+            type="text"
+            matInput
+            name="videoStorageName"
+            [(ngModel)]="storageName"
+            />
+        </mat-form-field>
+      }
+
+      <div
+        class="media-path-preview"
+        data-testid="video-path-preview"
+        [attr.data-provisional]="pathProvisional ? 'true' : null"
+        [class.is-provisional]="pathProvisional"
+        >
+        <span class="media-path-label">S3 path</span>
+        <span class="media-path-value">{{ previewVideoKey() }}</span>
+        <span class="media-path-value">{{ previewIconKey() }}</span>
+        @if (pathProvisional) {
+          <span class="media-path-status">Provisional</span>
+        }
+      </div>
+
+      @if (showsFileControls()) {
+        <div class="media-thumbnail-controls">
+          @if (thumbnailPreviewUrl) {
+            <img
+              data-testid="video-thumbnail-preview"
+              class="media-thumbnail-preview"
+              [src]="thumbnailPreviewUrl"
+              alt="Selected video thumbnail"
+              />
+          }
+          <label class="media-control-label" for="videoThumbnailTime">Thumbnail frame</label>
+          <input
+            id="videoThumbnailTime"
+            class="media-thumbnail-range"
+            type="range"
+            name="videoThumbnailTime"
+            min="0"
+            [max]="durationSeconds || 0"
+            step="0.1"
+            [(ngModel)]="thumbnailTime"
+            (ngModelChange)="onThumbnailTimeChange($event)"
+            [disabled]="uploading"
+            />
+          <label class="media-control-label" for="videoThumbnailInput">Choose thumbnail image</label>
+          <input
+            #thumbnailInput
+            id="videoThumbnailInput"
+            class="media-file-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            data-testid="video-thumbnail-input"
+            (change)="onThumbnailFileChange($event)"
+            />
+        </div>
+      }
+
+      @if (isEditing()) {
+        <mat-form-field class="admin-upload-input">
+          <mat-label>Duration</mat-label>
+          <input
+            type="text"
+            matInput
+            name="videoDuration"
+            [(ngModel)]="video.duration"
+            />
+        </mat-form-field>
+        <mat-checkbox
+          class="admin-upload-checkbox"
+          name="replaceVideoFile"
+          [(ngModel)]="replaceFile"
+          >Replace video file</mat-checkbox
+          >
+      }
+
       <mat-checkbox
         class="admin-upload-checkbox"
         name="isSticky"
@@ -52,14 +147,36 @@
         [(ngModel)]="video.isHidden"
         >Should Hide from Lists?</mat-checkbox
         >
+
       @if (formError) {
-        <div class="admin-error" role="alert" data-testid="video-upload-error">{{ formError }}</div>
+        <div
+          class="admin-error"
+          role="alert"
+          aria-live="assertive"
+          data-testid="video-upload-error"
+          >{{ formError }}</div
+          >
       }
       @if (uploadSuccess) {
-        <div class="admin-success" role="status" data-testid="video-upload-success">{{ uploadSuccess }}</div>
+        <div
+          class="admin-success"
+          role="status"
+          aria-live="polite"
+          data-testid="video-upload-success"
+          >{{ uploadSuccess }}</div
+          >
       }
+      <div
+        class="admin-upload-progress"
+        role="status"
+        aria-live="polite"
+        data-testid="video-upload-progress"
+        >{{ progressMessage }}</div
+        >
+
       <div class="admin-form-actions">
         <button
+          type="button"
           mat-flat-button
           color="primary"
           class="admin-form-action-button admin-form-action-button-upload"
@@ -67,35 +184,74 @@
           (click)="onUploadSelectedMedia()"
           >
           @if (uploading) {
-            <span>Uploading…</span>
+            <span>Uploading...</span>
           }
-          @if (!uploading && !video.id) {
+          @if (!uploading && !isEditing()) {
             <span>Upload</span>
           }
-          @if (!uploading && video.id) {
+          @if (!uploading && isEditing()) {
             <span>Update</span>
           }
         </button>
-        <button
-          mat-stroked-button
-          class="admin-form-action-button admin-form-action-button-cancel"
-          [disabled]="uploading"
-          (click)="onCancelSelectedMedia(video)"
-          >
-          Clear
-        </button>
-        @if (video.id) {
+
+        @if (uploading) {
           <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-cancel"
+            (click)="onCancelUpload()"
+            >
+            Cancel
+          </button>
+        } @else {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-cancel"
+            (click)="onClearForm()"
+            >
+            Clear
+          </button>
+        }
+
+        @if (isEditing()) {
+          <button
+            type="button"
             mat-stroked-button
             class="admin-form-action-button admin-form-action-button-delete"
+            [disabled]="uploading"
             (click)="onDeleteSelectedMedia(video)"
             >
             Delete
           </button>
         }
+
+        @if (finalizeFailed) {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-retry"
+            [disabled]="uploading"
+            (click)="onRetryFinalize()"
+            >
+            Retry
+          </button>
+        }
+
+        @if (resumeBatch && !uploading) {
+          <button
+            type="button"
+            mat-stroked-button
+            class="admin-form-action-button admin-form-action-button-resume"
+            (click)="onResumeUpload()"
+            >
+            Resume upload
+          </button>
+        }
       </div>
     </form>
   </mat-card>
+
   <div class="admin-media-list-container">
     <app-media-list
       [mediaTypesToShow]="getVideoTypeId()"

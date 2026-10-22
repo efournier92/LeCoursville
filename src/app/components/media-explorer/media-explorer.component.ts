@@ -178,6 +178,12 @@ export class MediaExplorerComponent implements OnInit {
     return selectedMedia?.type === MediaConstants.VIDEO.id;
   }
 
+  isExternalDriveUrl(selectedMedia: UploadableMedia): boolean {
+    return !!selectedMedia?.urls?.download?.startsWith(
+      'https://drive.google.com/',
+    );
+  }
+
   isDocument(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.DOC.id;
   }

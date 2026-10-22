@@ -1,5 +1,5 @@
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { UploadableMedia } from 'src/app/models/media/media';
+import { MediaStorage, UploadableMedia } from 'src/app/models/media/media';
 
 export class AudioTrack implements UploadableMedia {
   id: string;
@@ -15,6 +15,7 @@ export class AudioTrack implements UploadableMedia {
   isSticky: boolean = false;
   isHidden: boolean = false;
   listing: any[] = [];
+  storage?: MediaStorage;
 
   constructor(id?: string, title?: string, artist?: string, date?: string) {
     this.id = id;

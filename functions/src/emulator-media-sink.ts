@@ -159,6 +159,11 @@ export async function emulatorMediaSinkHandler(
     return;
   }
 
+  if (method === "DELETE") {
+    res.status(objects.delete(key) ? 204 : 404).end();
+    return;
+  }
+
   if (method === "HEAD") {
     const record = objects.get(key);
     if (!record) {

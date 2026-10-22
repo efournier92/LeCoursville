@@ -2,6 +2,18 @@ import { Injectable } from "@angular/core";
 import { httpsCallable } from "firebase/functions";
 import { FirebaseService } from "src/app/services/firebase.service";
 import { UploaderInfo } from "src/app/models/user-upload";
+import type {
+  CreateMediaUploadRequest,
+  CreateMediaUploadResponse,
+  DeleteMediaRequest,
+  DeleteMediaResponse,
+  FinalizeMediaUploadRequest,
+  FinalizeMediaUploadResponse,
+  ResumeMediaUploadRequest,
+  ResumeMediaUploadResponse,
+  UpdateMediaMetadataRequest,
+  UpdateMediaMetadataResponse,
+} from "src/app/services/media-upload.service";
 
 export interface CreatedUserUpload {
   id: string;
@@ -69,5 +81,45 @@ export class CloudFunctionsService {
 
   closeRecoveryRequest(input: { requestId: string; reason?: string }): Promise<unknown> {
     return httpsCallable(this.firebase.functions, "closeRecoveryRequest")(input);
+  }
+
+  createMediaUpload(input: CreateMediaUploadRequest): Promise<CreateMediaUploadResponse> {
+    const callable = httpsCallable<CreateMediaUploadRequest, CreateMediaUploadResponse>(
+      this.firebase.functions,
+      "createMediaUpload",
+    );
+    return callable(input).then(result => result.data);
+  }
+
+  resumeMediaUpload(input: ResumeMediaUploadRequest): Promise<ResumeMediaUploadResponse> {
+    const callable = httpsCallable<ResumeMediaUploadRequest, ResumeMediaUploadResponse>(
+      this.firebase.functions,
+      "resumeMediaUpload",
+    );
+    return callable(input).then(result => result.data);
+  }
+
+  finalizeMediaUpload(input: FinalizeMediaUploadRequest): Promise<FinalizeMediaUploadResponse> {
+    const callable = httpsCallable<FinalizeMediaUploadRequest, FinalizeMediaUploadResponse>(
+      this.firebase.functions,
+      "finalizeMediaUpload",
+    );
+    return callable(input).then(result => result.data);
+  }
+
+  updateMediaMetadata(input: UpdateMediaMetadataRequest): Promise<UpdateMediaMetadataResponse> {
+    const callable = httpsCallable<UpdateMediaMetadataRequest, UpdateMediaMetadataResponse>(
+      this.firebase.functions,
+      "updateMediaMetadata",
+    );
+    return callable(input).then(result => result.data);
+  }
+
+  deleteMedia(input: DeleteMediaRequest): Promise<DeleteMediaResponse> {
+    const callable = httpsCallable<DeleteMediaRequest, DeleteMediaResponse>(
+      this.firebase.functions,
+      "deleteMedia",
+    );
+    return callable(input).then(result => result.data);
   }
 }

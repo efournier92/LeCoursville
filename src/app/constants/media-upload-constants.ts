@@ -1,0 +1,1 @@
+export const BROWSER_ZIP_MAX_BYTES = 524288000;

@@ -62,6 +62,58 @@ function pngBytes() {
   );
 }
 
+// Tiny valid H.264 MP4s, embedded so the seed stays offline and deterministic.
+const FIXTURE_MP4_B64 = 'AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAANKbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAA+gAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAnV0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAA+gAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAPoAAAAAAABAAAAAAHtbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAoAAAAKABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABmG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAVhzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFExhdmM2My4xLjEwMiBsaWJ4MjY0AAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAe/+EAFmdCwB7ZHsBEAAADAAQAAAMAUDxYuSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAABaoAAAAAAAAABhzdHRzAAAAAAAAAAEAAAAKAAAEAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAAKAAAAAQAAADxzdHN6AAAAAAAAAAAAAAAKAAACgwAAAAkAAAAKAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAABRzdGNvAAAAAAAAAAEAAAN6AAAAYXVkdGEAAABZbWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAsaWxzdAAAACSpdG9vAAAAHGRhdGEAAAABAAAAAExhdmY2My4xLjEwMgAAAAhmcmVlAAAC3W1kYXQAAAJxBgX//23cRem95tlIt5Ys2CDZI+7veDI2NCAtIGNvcmUgMTY1IHIzMjIyIGIzNTYwNWEgLSBILjI2NC9NUEVHLTQgQVZDIGNvZGVjIC0gQ29weWxlZnQgMjAwMy0yMDI1IC0gaHR0cDovL3d3dy52aWRlb2xhbi5vcmcveDI2NC5odG1sIC0gb3B0aW9uczogY2FiYWM9MCByZWY9MyBkZWJsb2NrPTE6MDowIGFuYWx5c2U9MHgxOjB4MTExIG1lPWhleCBzdWJtZT03IHBzeT0xIHBzeV9yZD0xLjAwOjAuMDAgbWl4ZWRfcmVmPTEgbWVfcmFuZ2U9MTYgY2hyb21hX21lPTEgdHJlbGxpcz0xIDh4OGRjdD0wIGNxbT0wIGRlYWR6b25lPTIxLDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PS0yIHRocmVhZHM9MSBsb29rYWhlYWRfdGhyZWFkcz0xIHNsaWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWluZWRfaW50cmE9MCBiZnJhbWVzPTAgd2VpZ2h0cD0wIGtleWludD0yNTAga2V5aW50X21pbj0xMCBzY2VuZWN1dD00MCBpbnRyYV9yZWZyZXNoPTAgcmNfbG9va2FoZWFkPTQwIHJjPWNyZiBtYnRyZWU9MSBjcmY9MjMuMCBxY29tcD0wLjYwIHFwbWluPTAgcXBtYXg9NjkgcXBzdGVwPTQgaXBfcmF0aW89MS40MCBhcT0xOjEuMDAAgAAAAApliIQP8mKAAMPuAAAABUGaOB/qAAAABkGaVAf6gAAAAAVBmmA/1AAAAAVBmoA/1AAAAAVBmqA/1AAAAAVBmsA/1AAAAAVBmuA/1AAAAAVBmwA71AAAAAVBmyA31A==';
+const FIXTURE_2_MP4_B64 = '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';
+
+function fixtureMp4Bytes() {
+  return Buffer.from(FIXTURE_MP4_B64, 'base64');
+}
+
+/** MPEG1 Layer III 128kbps 44.1kHz stereo frames; header only, silent body. */
+function silentMp3Frames(count = 3) {
+  const frameLength = Math.floor((144 * 128000) / 44100);
+  const frame = Buffer.alloc(frameLength);
+  frame[0] = 0xff;
+  frame[1] = 0xfb;
+  frame[2] = 0x90;
+  frame[3] = 0x00;
+  return Buffer.concat(Array.from({ length: count }, () => frame));
+}
+
+/** ID3v2.3 tag with one APIC frame holding the PNG fixture, then silent frames. */
+function id3CoverMp3Bytes() {
+  const content = Buffer.concat([
+    Buffer.from([0x00]), // ISO-8859-1 text encoding
+    Buffer.from('image/png\0', 'latin1'),
+    Buffer.from([0x03]), // front cover
+    Buffer.from([0x00]), // empty description terminator
+    pngBytes(),
+  ]);
+  const frameHeader = Buffer.alloc(10);
+  frameHeader.write('APIC', 0, 'latin1');
+  frameHeader.writeUInt32BE(content.length, 4);
+  const frames = Buffer.concat([frameHeader, content]);
+  const tagHeader = Buffer.alloc(10);
+  tagHeader.write('ID3', 0, 'latin1');
+  tagHeader[3] = 3;
+  tagHeader[4] = 0;
+  tagHeader[5] = 0;
+  const size = frames.length;
+  tagHeader[6] = (size >> 21) & 0x7f;
+  tagHeader[7] = (size >> 14) & 0x7f;
+  tagHeader[8] = (size >> 7) & 0x7f;
+  tagHeader[9] = size & 0x7f;
+  return Buffer.concat([tagHeader, frames, silentMp3Frames()]);
+}
+
+/** A valid empty zip: just the end-of-central-directory record. */
+function zipBytes() {
+  const buf = Buffer.alloc(22);
+  buf.writeUInt32LE(0x06054b50, 0);
+  return buf;
+}
+
 /** ~0.5s of 8kHz 8-bit mono silence, valid WAV. */
 function wavBytes() {
   const sampleRate = 8000;
@@ -293,6 +345,17 @@ async function main() {
       urls: { download: 'https://drive.google.com/file/d/e2efixture/preview', icon: '' },
       type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:30',
     },
+    // Legacy non-Drive record with no storage block: exercises the native player
+    // and the database-only delete path.
+    'media-video-s3': {
+      id: 'media-video-s3', title: 'E2E S3 Video', artist: '', date: '2026',
+      folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
+      urls: {
+        download: 'http://localhost:5000/assets/e2e-fixtures/fixture.mp4',
+        icon: 'http://localhost:5000/assets/e2e-fixtures/fixture.png',
+      },
+      type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:05',
+    },
   };
 
   const tree = {
@@ -356,7 +419,16 @@ async function main() {
   fs.writeFileSync(path.join(fixtureDir, 'fixture.png'), pngBytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture.wav'), wavBytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture.pdf'), pdfBytes());
-  out.push('hosting fixtures: fixture.png, fixture.wav, fixture.pdf');
+  fs.writeFileSync(path.join(fixtureDir, 'fixture.mp4'), fixtureMp4Bytes());
+  fs.writeFileSync(path.join(fixtureDir, 'fixture-2.mp4'), Buffer.from(FIXTURE_2_MP4_B64, 'base64'));
+  fs.writeFileSync(path.join(fixtureDir, '01-fixture.mp3'), id3CoverMp3Bytes());
+  fs.writeFileSync(path.join(fixtureDir, '02-fixture.mp3'), id3CoverMp3Bytes());
+  fs.writeFileSync(path.join(fixtureDir, 'fixture-noart.mp3'), silentMp3Frames());
+  fs.writeFileSync(path.join(fixtureDir, 'fixture.zip'), zipBytes());
+  out.push(
+    'hosting fixtures: fixture.png, fixture.wav, fixture.pdf, fixture.mp4, fixture-2.mp4, '
+      + '01-fixture.mp3, 02-fixture.mp3, fixture-noart.mp3, fixture.zip',
+  );
 
   // 5. Storage uploads (photo fixtures, 2 per album). The storage emulator is
   // only present when the caller's `--only` list includes it; skip otherwise so

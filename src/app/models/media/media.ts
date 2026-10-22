@@ -1,3 +1,17 @@
+export interface MediaStorage {
+  managed: true;
+  key?: string;
+  iconKey?: string;
+  folder?: string;
+  coverKey?: string;
+  zipKey?: string;
+  trackKeys?: string[];
+  albumId?: string;
+  bytes?: number;
+  contentType?: string;
+  batchId: string;
+}
+
 export interface UploadableMedia {
   id: string;
   title: string;
@@ -12,4 +26,5 @@ export interface UploadableMedia {
   type: string;
   format: string;
   dateUpdated: Date;
+  storage?: MediaStorage;
 }

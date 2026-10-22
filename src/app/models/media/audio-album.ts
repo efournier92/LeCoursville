@@ -1,5 +1,5 @@
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { UploadableMedia } from 'src/app/models/media/media';
+import { MediaStorage, UploadableMedia } from 'src/app/models/media/media';
 
 export class AudioAlbum implements UploadableMedia {
   id: string;
@@ -15,6 +15,7 @@ export class AudioAlbum implements UploadableMedia {
   format: string;
   dateUpdated: Date;
   fileName: string = '';
+  storage?: MediaStorage;
 
   constructor(
     id?: string,

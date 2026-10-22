@@ -1,5 +1,5 @@
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { UploadableMedia } from 'src/app/models/media/media';
+import { MediaStorage, UploadableMedia } from 'src/app/models/media/media';
 
 export class Video implements UploadableMedia {
   id: string;
@@ -16,6 +16,7 @@ export class Video implements UploadableMedia {
   artist: string = '';
   folderName: string = '';
   listing: any[] = [];
+  storage?: MediaStorage;
 
   constructor(
     id: string = '',

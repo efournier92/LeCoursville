@@ -1,119 +1,461 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Observable, of } from 'rxjs';
+import { vi } from 'vitest';
 
 import { AdminMediaUploadVideoComponent } from './admin-media-upload-video.component';
 import { AuthService } from 'src/app/services/auth.service';
+import { CloudFunctionsService } from 'src/app/services/cloud-functions.service';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
-import { MediaService } from 'src/app/services/media.service';
-import { VideoUploadService } from 'src/app/services/video-upload.service';
-import { UploadableMedia } from 'src/app/models/media/media';
+import {
+  ClientMediaUploadTicket,
+  MediaUploadService,
+  UploadProgress,
+} from 'src/app/services/media-upload.service';
+import { Video } from 'src/app/models/media/video';
+
+const DUPLICATE =
+  'A record named "Video/my-trip.mp4" already exists. Delete it or choose a different name.';
+const BATCH = 'batch-1';
+
+function mp4(name = 'My-Trip_2026.mp4', size = 10): File {
+  return new File([new Uint8Array(size)], name, { type: 'video/mp4' });
+}
+
+function jpeg(): Blob {
+  return new Blob(['jpeg'], { type: 'image/jpeg' });
+}
+
+function ticket(role: 'video' | 'thumbnail' = 'video'): ClientMediaUploadTicket {
+  return {
+    role,
+    key: role === 'video' ? 'Video/my-trip.mp4' : 'Video/Icons/my-trip.jpg',
+    mode: 'single',
+    url: `https://s3.example/${role}`,
+    method: 'PUT',
+    headers: {},
+    expiresAt: Date.now() + 900000,
+    batchId: BATCH,
+  };
+}
+
+function record(overrides: Partial<Video> = {}): Video {
+  const video = new Video();
+  video.id = 'v1';
+  video.title = 'Old';
+  video.date = '2020';
+  video.duration = '3:45';
+  video.fileName = 'old.mp4';
+  video.urls = { download: '', icon: '' };
+  video.storage = {
+    managed: true,
+    key: 'Video/old.mp4',
+    iconKey: 'Video/Icons/old.jpg',
+    batchId: 'old-batch',
+  };
+  return Object.assign(video, overrides);
+}
+
+async function flushMicrotasks(times = 12): Promise<void> {
+  for (let index = 0; index < times; index++) {
+    await Promise.resolve();
+  }
+}
 
 describe('AdminMediaUploadVideoComponent', () => {
   let component: AdminMediaUploadVideoComponent;
   let fixture: ComponentFixture<AdminMediaUploadVideoComponent>;
-  let confirmSpy: jasmine.Spy;
-  let deleteMedia: jasmine.Spy;
-  let uploadVideo: jasmine.Spy;
-
-  const media = { id: 'v1', title: 'Reunion', fileName: 'reunion.mp4' } as UploadableMedia;
+  let mediaUpload: MediaUploadService;
+  let cloud: Record<string, ReturnType<typeof vi.fn>>;
+  let confirm: ReturnType<typeof vi.fn>;
+  let createObjectUrl: unknown;
+  let revokeObjectUrl: unknown;
 
   beforeEach(async () => {
-    confirmSpy = jasmine.createSpy('confirm').and.returnValue(Promise.resolve(false));
-    deleteMedia = jasmine.createSpy('deleteMedia');
-    uploadVideo = jasmine.createSpy('upload').and.returnValue(Promise.resolve());
+    sessionStorage.clear();
+    createObjectUrl = (URL as any).createObjectURL;
+    revokeObjectUrl = (URL as any).revokeObjectURL;
+    (URL as any).createObjectURL = vi.fn(() => 'blob:preview');
+    (URL as any).revokeObjectURL = vi.fn();
+
+    cloud = {
+      createMediaUpload: vi.fn().mockResolvedValue({
+        batchId: BATCH,
+        keys: { video: { key: 'Video/server-x.mp4', iconKey: 'Video/Icons/server-x.jpg' } },
+        firstAsset: { role: 'video' },
+      }),
+      resumeMediaUpload: vi.fn().mockResolvedValue({ uploads: [ticket()] }),
+      finalizeMediaUpload: vi.fn().mockResolvedValue({ id: 'media-1', record: {} }),
+      updateMediaMetadata: vi.fn().mockResolvedValue({ record: {} }),
+      deleteMedia: vi.fn().mockResolvedValue({ id: 'v1', objectsDeleted: 1 }),
+    };
+    confirm = vi.fn().mockResolvedValue(true);
 
     await TestBed.configureTestingModule({
-      declarations: [ AdminMediaUploadVideoComponent ],
+      declarations: [AdminMediaUploadVideoComponent],
       schemas: [NO_ERRORS_SCHEMA],
+      imports: [HttpClientTestingModule],
       providers: [
         {
           provide: AuthService,
-          useValue: { userObservable: of({ roles: { user: true, admin: false, super: true } }) },
+          useValue: { userObservable: of({ id: 'u1', roles: { admin: true } }) },
         },
-        { provide: VideoUploadService, useValue: { upload: uploadVideo } },
-        { provide: MediaService, useValue: { deleteMedia } },
-        { provide: ConfirmDialogService, useValue: { confirm: confirmSpy } },
+        { provide: CloudFunctionsService, useValue: cloud },
+        { provide: ConfirmDialogService, useValue: { confirm } },
       ],
-    })
-    .compileComponents();
-  });
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(AdminMediaUploadVideoComponent);
     component = fixture.componentInstance;
+    mediaUpload = TestBed.inject(MediaUploadService);
+    vi.spyOn(mediaUpload, 'putSingle').mockReturnValue(
+      of<UploadProgress>({ loaded: 10, total: 10, percent: 100 }),
+    );
+    vi.spyOn(mediaUpload, 'putParts').mockReturnValue(
+      of<UploadProgress>({ loaded: 10, total: 10, percent: 100 }),
+    );
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  afterEach(() => {
+    (URL as any).createObjectURL = createObjectUrl;
+    (URL as any).revokeObjectURL = revokeObjectUrl;
+    sessionStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  function readyToUpload(): void {
+    component.selectedVideoFile = mp4();
+    component.video.title = 'My Trip';
+    component.video.date = '2026';
+    component.storageName = 'my-trip';
+    (component as any).thumbnailBlob = jpeg();
+  }
+
+  it('creates and defaults the date to the current year', () => {
     expect(component).toBeTruthy();
+    expect(component.video.date).toBe(String(new Date().getFullYear()));
   });
 
-  it('renders the form for a super without the admin flag', () => {
-    expect(fixture.nativeElement.querySelector('.admin-media-upload-upload-form')).not.toBeNull();
-  });
-
-  it('does not delete the video when the confirmation is cancelled', async () => {
-    await component.onDeleteSelectedMedia(media);
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(deleteMedia).not.toHaveBeenCalled();
-  });
-
-  it('deletes the video after a destructive confirmation', async () => {
-    confirmSpy.and.returnValue(Promise.resolve(true));
-
-    await component.onDeleteSelectedMedia(media);
-    expect(deleteMedia).toHaveBeenCalledWith(media);
-  });
-
-  it('shows inline validation and keeps the form when required fields are missing', async () => {
-    component.video.title = 'Reunion';
-    component.video.fileName = 'reunion.mp4';
-
-    await component.onUploadSelectedMedia();
-    fixture.detectChanges();
-
-    expect(uploadVideo).not.toHaveBeenCalled();
-    expect(component.formError).toContain('date');
-    expect(component.video.title).toBe('Reunion');
-    expect(fixture.nativeElement.querySelector('[data-testid="video-upload-error"]').textContent).toContain('date');
-  });
-
-  it('keeps the form and shows an error when the upload fails', async () => {
-    uploadVideo.and.returnValue(Promise.reject(new Error('denied')));
-    component.video.title = 'Reunion';
-    component.video.fileName = 'reunion.mp4';
+  it('validates every message and preserves the form state', async () => {
+    component.video.title = 'Keep me';
     component.video.date = '2026';
+    component.storageName = 'keep-me';
 
     await component.onUploadSelectedMedia();
-    fixture.detectChanges();
+    expect(component.formError).toBe('Choose an MP4 file.');
+    expect(component.video.title).toBe('Keep me');
 
-    expect(component.uploading).toBe(false);
-    expect(component.video.title).toBe('Reunion');
-    expect(fixture.nativeElement.querySelector('[data-testid="video-upload-error"]').textContent).toContain('Couldn');
+    component.selectedVideoFile = mp4();
+    component.video.title = '';
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe('Enter the title before uploading.');
+
+    component.video.title = 'Keep me';
+    component.video.date = '';
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe('Enter the date before uploading.');
+
+    component.video.date = '2026';
+    component.storageName = '';
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe('Enter a storage name.');
+
+    component.storageName = 'Not Valid';
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe(
+      'Use only lowercase letters, numbers, and single dashes in the storage name.',
+    );
+
+    component.storageName = 'keep-me';
+    (component as any).thumbnailBlob = null;
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe('Choose a thumbnail image.');
+    expect(component.video.title).toBe('Keep me');
   });
 
-  it('clears the form and confirms success after the upload resolves', async () => {
-    component.video.title = 'Reunion';
-    component.video.fileName = 'reunion.mp4';
-    component.video.date = '2026';
+  it('rejects a non-MP4 file and a file larger than 2 GB', async () => {
+    await component.onVideoFileSelected(
+      new File(['x'], 'fixture.wav', { type: 'audio/wav' }),
+    );
+    expect(component.formError).toBe('Choose an MP4 file.');
+
+    const huge = { name: 'huge.mp4', type: 'video/mp4', size: 2147483649 } as File;
+    await component.onVideoFileSelected(huge);
+    expect(component.formError).toBe('That file is larger than 2 GB.');
+  });
+
+  it('prefills the title and the storage name from the dropped filename', async () => {
+    vi.spyOn(component as any, 'loadSelectedVideo').mockResolvedValue(undefined);
+
+    await component.onVideoFileSelected(mp4('My-Trip_2026.mp4'));
+
+    expect(component.video.title).toBe('My Trip 2026');
+    expect(component.storageName).toBe('my-trip-2026');
+    expect(component.video.date).toBe(String(new Date().getFullYear()));
+
+    component.video.title = 'Custom title';
+    await component.onVideoFileSelected(mp4('another-file.mp4'));
+    expect(component.video.title).toBe('Custom title');
+  });
+
+  it('populates the preview after a successful frame capture', async () => {
+    const blob = jpeg();
+    vi.spyOn(component as any, 'createVideoElement').mockResolvedValue({
+      duration: 100,
+      videoWidth: 1280,
+      videoHeight: 720,
+    });
+    vi.spyOn(component as any, 'captureInitialFrame').mockResolvedValue(blob);
+
+    await component.onVideoFileSelected(mp4());
+
+    expect(component.thumbnailBlob).toBe(blob);
+    expect(component.thumbnailPreviewUrl).toBeTruthy();
+    expect(component.video.duration).toBe('1:40');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-thumbnail-preview"]'),
+    ).not.toBeNull();
+  });
+
+  it('requires the manual override when frame capture fails', async () => {
+    vi.spyOn(component as any, 'createVideoElement').mockResolvedValue({
+      duration: Number.NaN,
+      videoWidth: 0,
+      videoHeight: 0,
+    });
+
+    await component.onVideoFileSelected(mp4());
+
+    expect(component.captureFailed).toBe(true);
+    expect(component.formError).toBe(
+      'Automatic thumbnail failed. Choose a thumbnail image.',
+    );
+
+    component.video.title = 'My Trip';
+    component.storageName = 'my-trip';
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe('Choose a thumbnail image.');
+  });
+
+  it('switches the path preview from provisional to the ticket keys', async () => {
+    readyToUpload();
+    component.storageName = 'my-trip';
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'down',
+    });
 
     await component.onUploadSelectedMedia();
-    fixture.detectChanges();
 
+    expect(component.pathProvisional).toBe(false);
+    expect(component.previewVideoKey()).toBe('Video/server-x.mp4');
+    expect(component.previewIconKey()).toBe('Video/Icons/server-x.jpg');
+    fixture.detectChanges();
+    const preview = fixture.nativeElement.querySelector(
+      '[data-testid="video-path-preview"]',
+    );
+    expect(preview.textContent).toContain('Video/server-x.mp4');
+    expect(preview.getAttribute('data-provisional')).toBeNull();
+  });
+
+  it('resets the form and clears the session-storage batch after success', async () => {
+    readyToUpload();
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.uploadSuccess).toBe('Saved "My Trip".');
     expect(component.video.title).toBe('');
-    expect(fixture.nativeElement.querySelector('[data-testid="video-upload-success"]').textContent).toContain('Saved');
+    expect(component.storageName).toBe('');
+    expect(component.thumbnailBlob).toBeNull();
+    expect(component.pathProvisional).toBe(true);
+    expect(sessionStorage.getItem(`mediaUploadBatch:${BATCH}`)).toBeNull();
   });
 
-  it('keeps the selection and shows an alert when the delete fails', async () => {
-    confirmSpy.and.returnValue(Promise.resolve(true));
-    deleteMedia.and.returnValue(Promise.reject(new Error('denied')));
-    component.onMediaSelect(media as any);
+  it('keeps the form and shows the duplicate message', async () => {
+    readyToUpload();
+    cloud.createMediaUpload.mockRejectedValueOnce({
+      code: 'functions/already-exists',
+      message: DUPLICATE,
+    });
 
-    await component.onDeleteSelectedMedia(media);
+    await component.onUploadSelectedMedia();
+
+    expect(component.formError).toBe(DUPLICATE);
+    expect(component.video.title).toBe('My Trip');
+    expect(component.storageName).toBe('my-trip');
+    expect(component.uploadSuccess).toBeNull();
+  });
+
+  it('keeps the retry path and message after a finalize failure', async () => {
+    readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'down',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.finalizeFailed).toBe(true);
+    expect(component.formError).toBe(
+      'The file uploaded but the record could not be saved. Choose Retry to finish saving.',
+    );
+    expect(component.video.title).toBe('My Trip');
+
+    await component.onRetryFinalize();
+    expect(cloud.finalizeMediaUpload).toHaveBeenCalledTimes(2);
+    expect(cloud.createMediaUpload).toHaveBeenCalledTimes(1);
+    expect(component.uploadSuccess).toBe('Saved "My Trip".');
+  });
+
+  it('hides file controls in edit mode and saves duration through the callable', async () => {
+    component.onMediaSelect(record());
     fixture.detectChanges();
 
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-file-input"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('input[name="videoStorageName"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-thumbnail-input"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('mat-checkbox[name="replaceVideoFile"]'),
+    ).not.toBeNull();
+
+    component.video.title = 'New title';
+    component.video.duration = '4:00';
+    await component.onUploadSelectedMedia();
+
+    expect(cloud.createMediaUpload).not.toHaveBeenCalled();
+    expect(cloud.updateMediaMetadata).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mediaId: 'v1',
+        title: 'New title',
+        duration: '4:00',
+      }),
+    );
+    expect(component.uploadSuccess).toBe('Saved "New title".');
+  });
+
+  it('replaces a file without a thumbnail and keeps the storage name', async () => {
+    component.onMediaSelect(record());
+    component.replaceFile = true;
+    vi.spyOn(component as any, 'loadSelectedVideo').mockResolvedValue(undefined);
+
+    await component.onVideoFileSelected(mp4('new-file.mp4'));
+    await component.onUploadSelectedMedia();
+
+    const request = cloud.createMediaUpload.mock.calls[0][0];
+    expect(request.kind).toBe('video');
+    expect(request.mode).toBe('replace');
+    expect(request.mediaId).toBe('v1');
+    expect(request.video.storageName).toBe('old');
+    expect('thumbnail' in request.video).toBe(false);
+    expect(cloud.resumeMediaUpload).toHaveBeenCalledTimes(1);
+    expect(cloud.resumeMediaUpload).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'video' }),
+    );
+  });
+
+  it('cancels the batch when an upload is canceled', async () => {
+    readyToUpload();
+    vi.spyOn(mediaUpload, 'putSingle').mockReturnValue(
+      new Observable<UploadProgress>(() => {}),
+    );
+    const upload = component.onUploadSelectedMedia();
+    await flushMicrotasks();
+    expect(component.batchId).toBe(BATCH);
+
+    await component.onCancelUpload();
+
+    expect(cloud.deleteMedia).toHaveBeenCalledWith({ batchId: BATCH });
+    expect(component.uploading).toBe(false);
+    void upload;
+  });
+
+  it('reports the nothing-removed message when object deletion fails', async () => {
+    component.onMediaSelect(record());
+    cloud.deleteMedia.mockRejectedValueOnce({
+      code: 'functions/failed-precondition',
+      message: 'Could not delete "Video/old.mp4". Retry the delete.',
+    });
+
+    await component.onDeleteSelectedMedia(component.video);
+
+    expect(component.deleteError).toBe(
+      'Could not delete "Old". Nothing was removed. Retry the delete.',
+    );
     expect(component.video.id).toBe('v1');
-    expect(fixture.nativeElement.querySelector('.admin-error').textContent).toContain('Couldn');
+    expect(component.uploadSuccess).toBeNull();
+  });
+
+  it('reports success after a managed delete', async () => {
+    component.onMediaSelect(record());
+
+    await component.onDeleteSelectedMedia(component.video);
+
+    expect(cloud.deleteMedia).toHaveBeenCalledWith({ mediaId: 'v1' });
+    expect(component.uploadSuccess).toBe('Deleted "Old".');
+  });
+
+  it('offers Resume upload for a session-storage batch', async () => {
+    sessionStorage.setItem(
+      `mediaUploadBatch:resume-1`,
+      JSON.stringify({
+        batchId: 'resume-1',
+        kind: 'video',
+        mode: 'create',
+        storageName: 'resume-video',
+        folderName: '',
+        createdAt: Date.now(),
+      }),
+    );
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    expect(component.resumeBatch?.batchId).toBe('resume-1');
+    expect(
+      fixture.nativeElement.querySelector('.admin-form-action-button-resume')
+        .textContent,
+    ).toContain('Resume upload');
+
+    await component.onResumeUpload();
+    expect(cloud.finalizeMediaUpload).toHaveBeenCalledWith(
+      expect.objectContaining({ batchId: 'resume-1' }),
+    );
+    expect(component.uploadSuccess).toContain('Saved');
+  });
+
+  it('labels every control and exposes live progress and error regions', () => {
+    const element = fixture.nativeElement as HTMLElement;
+    const labels = Array.from(element.querySelectorAll('mat-label')).map(label =>
+      label.textContent.trim(),
+    );
+    expect(labels).toContain('Title');
+    expect(labels).toContain('Date');
+    expect(labels).toContain('Storage name');
+    expect(element.querySelector('label[for="videoFileInput"]')).not.toBeNull();
+    expect(
+      element.querySelector('label[for="videoThumbnailTime"]').textContent,
+    ).toContain('Thumbnail frame');
+    expect(
+      element.querySelector('label[for="videoThumbnailInput"]').textContent,
+    ).toContain('Choose thumbnail image');
+    expect(
+      element.querySelector('[data-testid="video-upload-progress"]').getAttribute('role'),
+    ).toBe('status');
+
+    component.formError = 'Choose an MP4 file.';
+    fixture.detectChanges();
+    expect(
+      element
+        .querySelector('[data-testid="video-upload-error"]')
+        .getAttribute('role'),
+    ).toBe('alert');
   });
 });

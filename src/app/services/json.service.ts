@@ -3,11 +3,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
 import { UploadableMedia } from 'src/app/models/media/media';
-import { Video } from 'src/app/models/media/video';
-import { Doc } from 'src/app/models/media/doc';
-import { MediaService } from 'src/app/services/media.service';
 import { MediaConstants } from '../constants/media-constants';
-import { PushIdFactory } from './push-id.service';
 import { AudioAlbum } from '../models/media/audio-album';
 import { AudioTrack } from '../models/media/audio-track';
 
@@ -19,10 +15,6 @@ export class JsonService {
 
   private successMessagesSource: BehaviorSubject<string[]> = new BehaviorSubject([]);
   successMessagesObservable: Observable<string[]> = this.successMessagesSource.asObservable();
-
-  constructor(
-    private mediaService: MediaService,
-  ) { }
 
   isValidJson(input: string): JsonValidationResponse {
     const response = new JsonValidationResponse();
@@ -109,10 +101,6 @@ export class JsonService {
   }
 
   uploadAudioTrack(track: AudioTrack) {
-    // const track = new Media();
-
-    this.mediaService.create(track);
-
     return track.id;
   }
 
@@ -131,8 +119,6 @@ export class JsonService {
     // let album = this.constructMediaObject(mediaFile, new AudioAlbum());
 
     album.listing = this.uploadAudioTracks(album.listing);
-
-    this.mediaService.create(album);
   }
 
   private extractDriveAssetIdFromUrl(url: string): string {

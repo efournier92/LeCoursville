@@ -249,6 +249,20 @@ describe("createMediaUpload", () => {
     });
   });
 
+  it("reports the record duplicate when both the record and its object exist", async () => {
+    await seedAdmin();
+    await fakeDb.ref("media/dup-both").set({ fileName: "dup-both.mp4" });
+    adapter.head.mockResolvedValue({ exists: true });
+
+    await expect(
+      invoke(videoData({ storageName: "dup-both" }))
+    ).rejects.toMatchObject({
+      code: "already-exists",
+      message:
+        'A record named "Video/dup-both.mp4" already exists. Delete it or choose a different name.',
+    });
+  });
+
   it("requires a managed video record to replace and reuses the icon without a thumbnail", async () => {
     await seedAdmin();
     const storageName = "replace-me";

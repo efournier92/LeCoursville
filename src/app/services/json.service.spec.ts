@@ -39,19 +39,17 @@ describe('JsonService', () => {
   });
 
   describe('audio track upload', () => {
-    it('creates each track via MediaService and returns their ids', () => {
+    it('returns each track id without writing a media record', () => {
       const track1 = new AudioTrack('track-1', 'Song One', 'Artist');
       const track2 = new AudioTrack('track-2', 'Song Two', 'Artist');
 
       const ids = service.uploadAudioTracks([track1, track2]);
 
       expect(ids).toEqual(['track-1', 'track-2']);
-      expect(mediaServiceSpy.create).toHaveBeenCalledTimes(2);
-      expect(mediaServiceSpy.create).toHaveBeenCalledWith(track1);
-      expect(mediaServiceSpy.create).toHaveBeenCalledWith(track2);
+      expect(mediaServiceSpy.create).not.toHaveBeenCalled();
     });
 
-    it('uploads an audio album with its tracks', () => {
+    it('orders an album listing without writing a media record', () => {
       const album: any = {
         id: 'album-1',
         title: 'Live Session',
@@ -60,7 +58,8 @@ describe('JsonService', () => {
 
       service.uploadAudioAlbum(album);
 
-      expect(mediaServiceSpy.create).toHaveBeenCalledWith(album);
+      expect(album.listing).toEqual(['track-a']);
+      expect(mediaServiceSpy.create).not.toHaveBeenCalled();
     });
   });
 });

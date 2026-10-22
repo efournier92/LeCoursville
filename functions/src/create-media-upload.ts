@@ -124,6 +124,14 @@ async function assertNoCreateCollision(
   value: string,
   displayKey: string
 ): Promise<void> {
+  // A record is the stronger signal: its objects are expected to exist, so a
+  // re-upload attempt must report the duplicate record, not an orphan object.
+  const match = await db.ref("media").orderByChild(field).equalTo(value).get();
+  if (match.exists()) {
+    throw alreadyExists(
+      `A record named "${displayKey}" already exists. Delete it or choose a different name.`
+    );
+  }
   for (const key of keys) {
     const head = await adapter.head(key);
     if (head.exists) {
@@ -131,12 +139,6 @@ async function assertNoCreateCollision(
         `An orphan file named "${key}" exists. Choose a different name; the storage sweep will remove it later.`
       );
     }
-  }
-  const match = await db.ref("media").orderByChild(field).equalTo(value).get();
-  if (match.exists()) {
-    throw alreadyExists(
-      `A record named "${displayKey}" already exists. Delete it or choose a different name.`
-    );
   }
 }
 

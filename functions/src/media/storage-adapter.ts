@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import { deleteSinkObjects, sinkHead } from "../emulator-media-sink";
 import {
   MEDIA_AWS_ACCESS_KEY_ID,
   MEDIA_AWS_REGION,
@@ -385,21 +384,42 @@ const emulatorAdapter: StorageAdapter = {
     return multipartUnsupported();
   },
 
+  // The functions emulator runs each function in its own worker process, so the
+  // sink's module map is only reachable over HTTP, never by importing it.
   async head(key) {
-    const head = sinkHead(key);
-    return head
-      ? {
-          exists: true,
-          size: head.size,
-          contentType: head.contentType,
-          etag: head.etag,
-          metadata: head.metadata,
-        }
-      : { exists: false };
+    const response = await fetch(emulatorMediaUrl(key), { method: "HEAD" });
+    if (response.status === 404) {
+      return { exists: false };
+    }
+    if (!response.ok) {
+      throw new Error(`emulatorMediaSink HEAD "${key}" -> HTTP ${response.status}`);
+    }
+    const batch = response.headers.get("x-amz-meta-upload-batch");
+    const metadata: Record<string, string> = {};
+    if (batch) {
+      metadata["upload-batch"] = batch;
+    }
+    return {
+      exists: true,
+      size: Number(response.headers.get("content-length") ?? "0"),
+      contentType: response.headers.get("content-type") ?? undefined,
+      etag: response.headers.get("etag") ?? undefined,
+      metadata,
+    };
   },
 
   async deleteMany(keys) {
-    return { deleted: deleteSinkObjects(keys), warnings: [] };
+    let deleted = 0;
+    const warnings: string[] = [];
+    for (const key of keys) {
+      const response = await fetch(emulatorMediaUrl(key), { method: "DELETE" });
+      if (response.status === 204) {
+        deleted += 1;
+      } else if (response.status !== 404) {
+        warnings.push(`Could not delete "${key}".`);
+      }
+    }
+    return { deleted, warnings };
   },
 
   async invalidate() {
