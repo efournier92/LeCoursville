@@ -5,6 +5,11 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261022-18 | 2026-10-22 | [question] | rules/deploy | Real AWS prerequisites remain human-only: IAM policy, bucket CORS, lifecycle rule, five media secrets, both dev origins, and real cold-start p95 | docs/handoffs/2026-10-22_MediaUploadPipelineImplementation.md
+- D-20261022-17 | 2026-10-22 | [trap] | media/routing | Playwright route.fetch on an XHR file PUT needs postData; losing the response is tested by failing the finalize callable instead | e2e/specs/media.spec.ts:1069
+- D-20261022-16 | 2026-10-22 | [decision] | media/routing | Emulator binds no MEDIA secrets, so cold starts make zero Secret Manager requests; production binds all five | functions/src/create-media-upload.ts:41
+- D-20261022-15 | 2026-10-22 | [decision] | media/routing | Create-mode video requires a thumbnail; finalize releases its claim on failure; cancel is ticketed-only; multipart writes carry complete-time conditions | functions/src/finalize-media-upload.ts:558
+- D-20261022-14 | 2026-10-22 | [outcome] | media/routing | Media upload pipeline shipped in five local commits; gate green with 217 e2e per browser, 501 unit, and 244 functions tests | docs/critique/2026-10-22_MediaUploadImplementation.md
 - D-20261022-12 | 2026-10-22 | [decision] | media/routing | Media uploads use presigned S3 PUTs with server-derived keys, transactional finalize, multipart, and object-first delete | docs/specs/2026-10-22_MediaUploadPipeline.md
 - D-20261022-13 | 2026-10-22 | [outcome] | media/routing | Media upload spec redteam converged with 31 findings; 28 addressed, 3 rejected with evidence, no human decisions left | docs/critique/2026-10-22_MediaUploadPipeline.md
 - D-20261022-01 | 2026-10-22 | [outcome] | admin/ui | Full gate green after the final wave: 196 e2e per browser and 421 unit tests | `npm run e2e:gate`
