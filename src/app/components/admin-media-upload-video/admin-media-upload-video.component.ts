@@ -41,6 +41,8 @@ const FINALIZE_FAILURE =
   'The file uploaded but the record could not be saved. Choose Retry to finish saving.';
 const CANCEL_CLEANUP_FAILURE =
   'Upload canceled, but cleanup failed. The storage sweep will remove the file.';
+const RESUME_FILE_MESSAGE =
+  'Choose the missing MP4 file, then choose Resume upload.';
 
 @Component({
   selector: 'app-admin-media-upload-video',
@@ -86,6 +88,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
   private previewObjectUrl: string | null = null;
   private cancelRequested = false;
   private cancelReject?: (reason?: unknown) => void;
+  private resumeMissingKey: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -100,7 +103,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
       () => {},
     );
     const pending = this.mediaUpload.pendingBatch();
-    this.resumeBatch = pending?.kind === 'video' ? pending : null;
+    if (pending?.kind === 'video') {
+      this.resumeBatch = pending;
+      this.applyBatchMetadata(pending);
+    }
   }
 
   ngOnDestroy(): void {
@@ -125,6 +131,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
 
   previewIconKey(): string {
     return this.authoritativeKeys?.iconKey ?? videoIconKey(this.storageName);
+  }
+
+  showsPathPreview(): boolean {
+    return !this.isEditing() || !!this.authoritativeKeys;
   }
 
   getVideoTypeId(): string[] {
@@ -175,7 +185,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     this.uploadSuccess = null;
     this.selectedVideoFile = file;
     this.replaceFile = this.replaceFile || this.isEditing();
-    this.storageName = this.isEditing()
+    this.storageName = this.isEditing() || this.resumeBatch
       ? this.storageName
       : videoStorageName(file.name);
     if (!this.video.title?.trim()) {
@@ -254,6 +264,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     if (this.uploading) {
       return;
     }
+    if (this.resumeBatch && !this.isEditing()) {
+      await this.onResumeUpload();
+      return;
+    }
     if (this.isEditing() && !this.replaceFile) {
       await this.saveMetadata();
       return;
@@ -295,6 +309,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
         return;
       }
       this.formError = this.uploadErrorMessage(error);
+      this.keepResumeBatch();
       this.focusFirstInvalid();
     } finally {
       this.uploading = false;
@@ -329,43 +344,47 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     if (!batch || this.uploading) {
       return;
     }
-    this.storageName = batch.storageName || this.storageName;
     this.uploading = true;
     this.formError = null;
     this.uploadSuccess = null;
     this.progressMessage = 'Saving record...';
     try {
       await this.finalizeBatch(batch.batchId);
-      const title = this.video.title.trim() || batch.storageName;
-      this.resetForm();
-      this.uploadSuccess = `Saved "${title}".`;
-      this.focusHeading();
+      this.finishResume(batch);
     } catch (error) {
       const code = (error as { code?: string })?.code;
-      if (code === 'upload-not-found' && this.selectedVideoFile) {
+      if (code === 'upload-not-found') {
+        this.resumeMissingKey = this.missingKey(error);
+        if (!this.canUploadMissingFile(batch)) {
+          this.formError = RESUME_FILE_MESSAGE;
+          this.focusFirstInvalid();
+          return;
+        }
         try {
           this.finalizeFailed = false;
-          await this.uploadAssets(batch.batchId);
+          await this.uploadMissingFile(batch);
           await this.finalizeUpload(batch.batchId);
-          const title = this.video.title.trim() || batch.storageName;
-          this.resetForm();
-          this.uploadSuccess = `Saved "${title}".`;
-          this.focusHeading();
+          this.finishResume(batch);
         } catch {
-          this.finalizeFailed = true;
-          this.formError = FINALIZE_FAILURE;
+          this.formError = RESUME_FILE_MESSAGE;
+          this.focusFirstInvalid();
         }
-      } else if (code === 'upload-not-found') {
-        this.formError = 'Choose an MP4 file.';
-        this.focusFirstInvalid();
       } else {
         this.finalizeFailed = true;
         this.formError = FINALIZE_FAILURE;
+        this.focusHeading();
       }
     } finally {
       this.uploading = false;
       this.progressMessage = '';
     }
+  }
+
+  private finishResume(batch: StoredMediaBatch): void {
+    const title = this.video.title.trim() || batch.storageName;
+    this.resetForm();
+    this.uploadSuccess = `Saved "${title}".`;
+    this.focusHeading();
   }
 
   async onCancelUpload(): Promise<void> {
@@ -471,6 +490,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     const response = await this.mediaUpload.createBatch(request);
     this.batchId = response.batchId;
     this.resumeBatch = null;
+    this.rememberVideoBatch(response.batchId);
     if (this.cancelRequested) {
       await this.mediaUpload.cancelBatch(response.batchId);
       this.mediaUpload.clearBatchState(response.batchId);
@@ -602,6 +622,101 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
         duration: this.video.duration || '',
       },
     });
+  }
+
+  private rememberVideoBatch(batchId: string): void {
+    this.mediaUpload.rememberBatch({
+      batchId,
+      kind: 'video',
+      mode: this.isEditing() && this.replaceFile ? 'replace' : 'create',
+      storageName: this.storageName,
+      folderName: '',
+      createdAt: Date.now(),
+      metadata: {
+        title: this.video.title?.trim() ?? '',
+        date: this.video.date ?? '',
+        isSticky: !!this.video.isSticky,
+        isHidden: !!this.video.isHidden,
+        duration: this.video.duration || '',
+      },
+    });
+  }
+
+  private applyBatchMetadata(batch: StoredMediaBatch): void {
+    if (batch.storageName) {
+      this.storageName = batch.storageName;
+    }
+    const metadata = batch.metadata;
+    if (!metadata) {
+      return;
+    }
+    this.video.title = metadata.title;
+    this.video.date = metadata.date || this.currentYear();
+    this.video.isSticky = metadata.isSticky;
+    this.video.isHidden = metadata.isHidden;
+    if (metadata.duration !== undefined) {
+      this.video.duration = metadata.duration;
+    }
+  }
+
+  private keepResumeBatch(): void {
+    if (!this.batchId) {
+      return;
+    }
+    const pending = this.mediaUpload.pendingBatch();
+    if (pending?.batchId === this.batchId) {
+      this.resumeBatch = pending;
+    }
+  }
+
+  private canUploadMissingFile(batch: StoredMediaBatch): boolean {
+    const role = this.missingRole(batch);
+    if (role === 'video') {
+      return !!this.selectedVideoFile;
+    }
+    if (role === 'thumbnail') {
+      return !!this.thumbnailBlob;
+    }
+    return false;
+  }
+
+  private async uploadMissingFile(batch: StoredMediaBatch): Promise<void> {
+    const role = this.missingRole(batch);
+    const file =
+      role === 'video'
+        ? this.selectedVideoFile
+        : role === 'thumbnail'
+          ? this.thumbnailFile()
+          : null;
+    if (!role || !file) {
+      throw new MediaUploadError(RESUME_FILE_MESSAGE, 'upload-not-found');
+    }
+    const [ticket] = await this.mediaUpload.resume(batch.batchId, role);
+    if (!ticket) {
+      throw new MediaUploadError(RESUME_FILE_MESSAGE, 'upload-not-found');
+    }
+    this.showProgress(role, null);
+    await this.uploadTicket(ticket, file, role);
+  }
+
+  private missingRole(batch: StoredMediaBatch): 'video' | 'thumbnail' | null {
+    const key = this.resumeMissingKey;
+    if (!key) {
+      return null;
+    }
+    if (key === videoKey(batch.storageName)) {
+      return 'video';
+    }
+    if (key === videoIconKey(batch.storageName)) {
+      return 'thumbnail';
+    }
+    return null;
+  }
+
+  private missingKey(error: unknown): string | null {
+    const message = (error as { message?: string })?.message ?? '';
+    const match = message.match(/for "([^"]+)"/);
+    return match ? match[1] : null;
   }
 
   private async saveMetadata(): Promise<void> {
@@ -846,6 +961,8 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     this.captureFailed = false;
     this.replaceFile = false;
     this.finalizeFailed = false;
+    this.resumeBatch = null;
+    this.resumeMissingKey = null;
     this.batchId = null;
     this.authoritativeKeys = null;
     this.pathProvisional = true;

@@ -18,6 +18,8 @@ import { Video } from 'src/app/models/media/video';
 const DUPLICATE =
   'A record named "Video/my-trip.mp4" already exists. Delete it or choose a different name.';
 const BATCH = 'batch-1';
+const RESUME_FILE_MESSAGE =
+  'Choose the missing MP4 file, then choose Resume upload.';
 
 function mp4(name = 'My-Trip_2026.mp4', size = 10): File {
   return new File([new Uint8Array(size)], name, { type: 'video/mp4' });
@@ -429,6 +431,171 @@ describe('AdminMediaUploadVideoComponent', () => {
       expect.objectContaining({ batchId: 'resume-1' }),
     );
     expect(component.uploadSuccess).toContain('Saved');
+  });
+
+  it('persists and restores the typed video metadata for a pending batch', async () => {
+    readyToUpload();
+    component.video.isSticky = true;
+    component.video.isHidden = true;
+    component.video.duration = '1:40';
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'down',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    const stored = JSON.parse(sessionStorage.getItem(`mediaUploadBatch:${BATCH}`) as string);
+    expect(stored).toMatchObject({
+      batchId: BATCH,
+      kind: 'video',
+      mode: 'create',
+      storageName: 'my-trip',
+      metadata: {
+        title: 'My Trip',
+        date: '2026',
+        isSticky: true,
+        isHidden: true,
+        duration: '1:40',
+      },
+    });
+
+    component.ngOnInit();
+
+    expect(component.video.title).toBe('My Trip');
+    expect(component.video.date).toBe('2026');
+    expect(component.video.duration).toBe('1:40');
+    expect(component.storageName).toBe('my-trip');
+  });
+
+  it('finalizes a resumed video with the typed title and date, not the slug and current year', async () => {
+    sessionStorage.setItem(
+      'mediaUploadBatch:resume-meta',
+      JSON.stringify({
+        batchId: 'resume-meta',
+        kind: 'video',
+        mode: 'create',
+        storageName: 'resume-video',
+        folderName: '',
+        createdAt: Date.now(),
+        metadata: {
+          title: 'Typed Title',
+          date: '1999',
+          isSticky: false,
+          isHidden: false,
+          duration: '2:05',
+        },
+      }),
+    );
+    component.ngOnInit();
+
+    await component.onResumeUpload();
+
+    expect(cloud.finalizeMediaUpload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        batchId: 'resume-meta',
+        metadata: expect.objectContaining({
+          title: 'Typed Title',
+          date: '1999',
+          duration: '2:05',
+        }),
+      }),
+    );
+    expect(component.uploadSuccess).toBe('Saved "Typed Title".');
+  });
+
+  it('asks for the missing file, uploads it on the same batch, and never creates a new one', async () => {
+    const batch = {
+      batchId: 'resume-missing',
+      kind: 'video',
+      mode: 'create',
+      storageName: 'resume-video',
+      folderName: '',
+      createdAt: Date.now(),
+      metadata: {
+        title: 'Typed Title',
+        date: '1999',
+        isSticky: false,
+        isHidden: false,
+        duration: '2:05',
+      },
+    };
+    sessionStorage.setItem('mediaUploadBatch:resume-missing', JSON.stringify(batch));
+    component.ngOnInit();
+    const missing = {
+      code: 'functions/failed-precondition',
+      message:
+        'Upload not found or invalid for "Video/resume-video.mp4". Upload the file again.',
+    };
+    cloud.finalizeMediaUpload
+      .mockRejectedValueOnce(missing)
+      .mockRejectedValueOnce(missing);
+
+    await component.onResumeUpload();
+
+    expect(component.formError).toBe(RESUME_FILE_MESSAGE);
+    expect(component.resumeBatch?.batchId).toBe('resume-missing');
+    expect(cloud.createMediaUpload).not.toHaveBeenCalled();
+
+    vi.spyOn(component as any, 'loadSelectedVideo').mockResolvedValue(undefined);
+    await component.onVideoFileSelected(mp4('resume-video.mp4'));
+
+    expect(component.storageName).toBe('resume-video');
+
+    await component.onUploadSelectedMedia();
+
+    expect(cloud.createMediaUpload).not.toHaveBeenCalled();
+    expect(cloud.resumeMediaUpload).toHaveBeenCalledWith(
+      expect.objectContaining({ batchId: 'resume-missing', role: 'video' }),
+    );
+    expect(cloud.finalizeMediaUpload).toHaveBeenCalledTimes(3);
+    expect(component.uploadSuccess).toBe('Saved "Typed Title".');
+  });
+
+  it('keeps the batch and offers Resume after an upload-stage failure', async () => {
+    readyToUpload();
+    cloud.resumeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'down',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(cloud.createMediaUpload).toHaveBeenCalledTimes(1);
+    expect(component.resumeBatch?.batchId).toBe(BATCH);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.admin-form-action-button-resume'),
+    ).not.toBeNull();
+
+    await component.onUploadSelectedMedia();
+
+    expect(cloud.createMediaUpload).toHaveBeenCalledTimes(1);
+    expect(component.uploadSuccess).toBe('Saved "My Trip".');
+  });
+
+  it('shows existing keys for managed records and hides the path for legacy records', () => {
+    component.onMediaSelect(record());
+    fixture.detectChanges();
+
+    const preview = fixture.nativeElement.querySelector(
+      '[data-testid="video-path-preview"]',
+    );
+    expect(preview).not.toBeNull();
+    expect(preview.textContent).toContain('Video/old.mp4');
+    expect(preview.textContent).toContain('Video/Icons/old.jpg');
+
+    const legacy = new Video();
+    legacy.id = 'v2';
+    legacy.title = 'Legacy';
+    legacy.fileName = 'legacy.mp4';
+    legacy.urls = { download: 'https://drive.google.com/file', icon: '' };
+    component.onMediaSelect(legacy);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-path-preview"]'),
+    ).toBeNull();
   });
 
   it('labels every control and exposes live progress and error regions', () => {

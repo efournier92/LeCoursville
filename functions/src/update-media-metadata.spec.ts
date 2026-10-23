@@ -6,7 +6,7 @@ vi.mock("firebase-admin/database", async () => {
 });
 
 import { updateMediaMetadata } from "./update-media-metadata";
-import { fakeDb, resetFakeState } from "./test-support";
+import { fakeDb, FakeRef, resetFakeState } from "./test-support";
 
 type RecordValue = Record<string, unknown>;
 
@@ -240,5 +240,62 @@ describe("updateMediaMetadata", () => {
       "track-1",
       "track-2",
     ]);
+  });
+
+  it("rejects a listing that references a missing track", async () => {
+    await seedAdmin();
+    await fakeDb.ref("media/album-1").set(albumRecord());
+    await fakeDb.ref("media/track-1").set(trackRecord("track-1", "First"));
+
+    await expect(
+      invoke({
+        mediaId: "album-1",
+        title: "New Album",
+        date: "2026",
+        isSticky: false,
+        isHidden: false,
+        listing: ["track-2", "track-1"],
+        trackTitles: ["Second Song", "First Song"],
+      })
+    ).rejects.toMatchObject({ code: "invalid-argument" });
+    expect(fakeDb.read("media/album-1/title")).toBe("Album");
+    expect(fakeDb.read("media/track-1/title")).toBe("First");
+  });
+
+  it("aborts when the listing changes inside the compare-and-set", async () => {
+    await seedAdmin();
+    await fakeDb.ref("media/album-1").set(albumRecord());
+    await fakeDb.ref("media/track-1").set(trackRecord("track-1", "First"));
+    await fakeDb.ref("media/track-2").set(trackRecord("track-2", "Second"));
+    const original = FakeRef.prototype.transaction;
+    let raced = false;
+    const spy = vi
+      .spyOn(FakeRef.prototype, "transaction")
+      .mockImplementation(async function (this: FakeRef, mutate) {
+        const path = (this as unknown as { path: string }).path;
+        if (path === "media/album-1" && !raced) {
+          raced = true;
+          await fakeDb.ref("media/album-1/listing").set(["track-2"]);
+          await fakeDb.ref("media/track-1").set(null);
+        }
+        return original.call(this, mutate);
+      });
+
+    await expect(
+      invoke({
+        mediaId: "album-1",
+        title: "New Album",
+        date: "2026",
+        isSticky: false,
+        isHidden: false,
+        listing: ["track-2", "track-1"],
+        trackTitles: ["Second Song", "First Song"],
+      })
+    ).rejects.toMatchObject({ code: "failed-precondition" });
+
+    expect(fakeDb.read("media/album-1/listing")).toEqual(["track-2"]);
+    expect(fakeDb.read("media/album-1/title")).toBe("Album");
+    expect(fakeDb.read("media/track-1")).toBeNull();
+    spy.mockRestore();
   });
 });

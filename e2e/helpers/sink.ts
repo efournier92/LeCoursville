@@ -58,6 +58,27 @@ export async function sinkHead(key: string): Promise<SinkHead | null> {
   };
 }
 
+export async function sinkPut(
+  key: string,
+  body: Buffer | Uint8Array,
+  options: { contentType?: string; batchId?: string } = {},
+): Promise<void> {
+  const headers: Record<string, string> = {
+    'content-type': options.contentType ?? 'application/octet-stream',
+  };
+  if (options.batchId) {
+    headers['x-amz-meta-upload-batch'] = options.batchId;
+  }
+  const response = await fetch(sinkUrl(key), {
+    method: 'PUT',
+    headers,
+    body: new Uint8Array(body),
+  });
+  if (!response.ok) {
+    throw new Error(`emulatorMediaSink PUT ${key} -> HTTP ${response.status}`);
+  }
+}
+
 export async function sinkGet(key: string): Promise<Buffer | null> {
   const response = await fetch(sinkUrl(key));
   if (response.status === 404) {

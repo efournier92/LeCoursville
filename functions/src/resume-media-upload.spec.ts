@@ -143,6 +143,57 @@ describe("resumeMediaUpload", () => {
     ).rejects.toMatchObject({ code: "invalid-argument" });
   });
 
+  it("rejects an invalid batch id before consuming rate limit", async () => {
+    await seedAdmin();
+    await fakeDb.ref("rateLimits/media-resume/admin-1").set({
+      windowStart: Date.now(),
+      count: 500,
+      previous: 0,
+    });
+
+    for (const batchId of ["../bad", "bad id", "a".repeat(129)]) {
+      await expect(
+        invoke({ batchId, role: "video" })
+      ).rejects.toMatchObject({
+        code: "invalid-argument",
+        message: "Invalid batch id.",
+      });
+    }
+  });
+
+  it("rejects more than one hundred requested part numbers", async () => {
+    await seedAdmin();
+    const partCount = 101;
+    const size = partCount * MULTIPART_PART_BYTES;
+    await seedBatch(
+      batch({
+        assets: [
+          {
+            role: "video",
+            key: videoKey("clip"),
+            contentType: "video/mp4",
+            size,
+            multipart: true,
+            uploadId: "upload-1",
+            parts: [],
+          },
+        ],
+      })
+    );
+
+    await expect(
+      invoke({
+        batchId: "batch-1",
+        role: "video",
+        partNumbers: Array.from({ length: 101 }, (_, index) => index + 1),
+      })
+    ).rejects.toMatchObject({
+      code: "invalid-argument",
+      message: "At most 100 part numbers can be requested at once.",
+    });
+    expect(adapter.presignParts).not.toHaveBeenCalled();
+  });
+
   it("rejects an unknown track index", async () => {
     await seedAdmin();
     await seedBatch(

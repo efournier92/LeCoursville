@@ -11,7 +11,10 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
-import { BROWSER_ZIP_MAX_BYTES } from 'src/app/constants/media-upload-constants';
+import {
+  BROWSER_ZIP_MAX_BYTES,
+  MAX_TRACK_BYTES,
+} from 'src/app/constants/media-upload-constants';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { User } from 'src/app/models/user';
@@ -41,7 +44,6 @@ import {
   uploadFailureMessage,
 } from 'src/app/services/media-upload.service';
 
-const MAX_TRACK_BYTES = 209715200;
 const COVER_MAX_WIDTH = 1000;
 const COVER_MAX_HEIGHT = 1000;
 const COVER_JPEG_QUALITY = 0.85;
@@ -86,7 +88,6 @@ export class AdminMediaUploadAudioAlbumComponent
   coverBlob: Blob | null = null;
   coverPreviewUrl: string | null = null;
   coverSource: CoverSource | null = null;
-  useOwnZip = false;
   manualZipFile: File | null = null;
   resumeBatch: StoredMediaBatch | null = null;
   resumeNeedsFiles = false;
@@ -126,6 +127,7 @@ export class AdminMediaUploadAudioAlbumComponent
   private pendingFocus: PendingFocus | null = null;
   private resumeMissingKey: string | null = null;
   private rowCounter = 0;
+  private ownZip = false;
 
   constructor(
     private authService: AuthService,
@@ -347,6 +349,21 @@ export class AdminMediaUploadAudioAlbumComponent
 
   needsManualZip(): boolean {
     return this.totalTrackBytes() > BROWSER_ZIP_MAX_BYTES;
+  }
+
+  get useOwnZip(): boolean {
+    return this.ownZip;
+  }
+
+  set useOwnZip(value: boolean) {
+    this.ownZip = value;
+    if (value) {
+      return;
+    }
+    this.manualZipFile = null;
+    if (this.zipInput) {
+      this.zipInput.nativeElement.value = '';
+    }
   }
 
   totalTrackBytes(): number {
@@ -884,6 +901,10 @@ export class AdminMediaUploadAudioAlbumComponent
   private uploadErrorMessage(error: unknown, folder: string): string {
     const code = (error as { code?: string })?.code;
     if (code === 'already-exists') {
+      const message = (error as { message?: string })?.message ?? '';
+      if (message.startsWith('An orphan file')) {
+        return message;
+      }
       return `A folder named "${folder}" already exists. Delete the existing album or choose a different folder name.`;
     }
     if (error instanceof MediaUploadError) {

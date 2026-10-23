@@ -358,6 +358,102 @@ describe("deleteMedia", () => {
     });
   });
 
+  it("rejects canceling a finalizing or finalized batch", async () => {
+    await seedAdmin();
+    for (const status of ["finalizing", "finalized"] as const) {
+      const batchId = `batch-${status}`;
+      await fakeDb.ref(`mediaUploads/${batchId}`).set({
+        kind: "video",
+        mode: "create",
+        mediaId: null,
+        uid: "admin-1",
+        createdAt: 1,
+        lastActivityAt: 1,
+        status,
+        assets: [],
+        resultId: null,
+        finalizedAt: null,
+      });
+
+      await expect(invoke({ batchId })).rejects.toMatchObject({
+        code: "failed-precondition",
+      });
+      expect(fakeDb.read(`mediaUploads/${batchId}`)).toBeTruthy();
+    }
+    expect(adapter.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("cancels a replace batch without deleting the live object", async () => {
+    await seedAdmin();
+    await fakeDb.ref("mediaUploads/batch-replace").set({
+      kind: "video",
+      mode: "replace",
+      mediaId: "rec-1",
+      uid: "admin-1",
+      createdAt: 1,
+      lastActivityAt: 1,
+      status: "ticketed",
+      assets: [
+        {
+          role: "video",
+          key: VIDEO_KEY,
+          contentType: "video/mp4",
+          size: 1000,
+          multipart: true,
+          uploadId: "upload-1",
+          parts: [],
+        },
+      ],
+      resultId: null,
+      finalizedAt: null,
+    });
+
+    await expect(invoke({ batchId: "batch-replace" })).resolves.toEqual({
+      batchId: "batch-replace",
+      objectsDeleted: 0,
+    });
+    expect(adapter.deleteMany).not.toHaveBeenCalled();
+    expect(adapter.abortMultipart).toHaveBeenCalledWith(VIDEO_KEY, "upload-1");
+    expect(fakeDb.read("mediaUploads/batch-replace")).toBeNull();
+  });
+
+  it("keeps a create batch when an object survives the delete", async () => {
+    await seedAdmin();
+    await fakeDb.ref("mediaUploads/batch-survivor").set({
+      kind: "video",
+      mode: "create",
+      mediaId: null,
+      uid: "admin-1",
+      createdAt: 1,
+      lastActivityAt: 1,
+      status: "ticketed",
+      assets: [
+        {
+          role: "video",
+          key: VIDEO_KEY,
+          contentType: "video/mp4",
+          size: 1000,
+          multipart: false,
+          uploadId: null,
+          parts: [],
+        },
+      ],
+      resultId: null,
+      finalizedAt: null,
+    });
+    adapter.head.mockImplementation(async (key: string) => ({
+      exists: key === VIDEO_KEY,
+    }));
+
+    await expect(
+      invoke({ batchId: "batch-survivor" })
+    ).rejects.toMatchObject({
+      code: "failed-precondition",
+      message: `Could not delete "${VIDEO_KEY}". Retry the delete.`,
+    });
+    expect(fakeDb.read("mediaUploads/batch-survivor")).toBeTruthy();
+  });
+
   it("rejects a non-admin caller and applies the rate limit", async () => {
     await fakeDb.ref("users/user-1/roles").set({ user: true });
     await fakeDb.ref("media/vid-1").set(legacyVideo());

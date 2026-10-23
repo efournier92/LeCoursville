@@ -324,6 +324,20 @@ describe("MediaUploadService", () => {
     expect(httpMock.match(() => true)).toEqual([]);
   });
 
+  it("preserves non-upload failed-precondition messages", async () => {
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: "functions/failed-precondition",
+      message: "Finalize already in progress.",
+    });
+
+    await expect(
+      service.finalize({ batchId: BATCH, metadata: { title: "T", date: "2026" } })
+    ).rejects.toMatchObject({
+      message: "Finalize already in progress.",
+      code: "failed-precondition",
+    });
+  });
+
   it("remembers a session batch and resumes only assets without a completion marker", async () => {
     cloud.createMediaUpload.mockResolvedValue({
       batchId: BATCH,

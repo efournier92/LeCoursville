@@ -28,7 +28,7 @@ import {
 } from "./media/config";
 import { videoIconKey, videoKey } from "./media/naming";
 import { getStorageAdapter } from "./media/storage-adapter";
-import { fakeDb, resetFakeState } from "./test-support";
+import { fakeDb, FakeRef, resetFakeState } from "./test-support";
 
 interface AdapterMock {
   head: ReturnType<typeof vi.fn>;
@@ -330,11 +330,38 @@ describe("createMediaUpload", () => {
     });
   });
 
+  it("requires a thumbnail when creating a video but not when replacing", async () => {
+    await seedAdmin();
+
+    await expect(
+      invoke(videoData({ thumbnail: undefined }))
+    ).rejects.toMatchObject({
+      code: "invalid-argument",
+      message: "A thumbnail is required when creating a video.",
+    });
+    expect(batchIds()).toHaveLength(0);
+
+    await fakeDb.ref("media/rec-1").set({
+      id: "rec-1",
+      type: "video",
+      storage: {
+        managed: true,
+        key: videoKey("my-video"),
+        iconKey: videoIconKey("my-video"),
+      },
+    });
+    const replace = videoData({ thumbnail: undefined });
+    replace.mode = "replace";
+    (replace as Record<string, unknown>).mediaId = "rec-1";
+    await expect(invoke(replace)).resolves.toMatchObject({
+      batchId: expect.any(String),
+    });
+  });
+
   it("starts multipart only above the threshold and records the upload id", async () => {
     await seedAdmin();
     const data = videoData({
       size: MULTIPART_THRESHOLD_BYTES + 1,
-      thumbnail: undefined,
     });
 
     const result = (await invoke(data)) as { batchId: string };
@@ -369,7 +396,7 @@ describe("createMediaUpload", () => {
     process.env.FUNCTIONS_EMULATOR = "true";
 
     const result = (await invoke(
-      videoData({ size: MULTIPART_THRESHOLD_BYTES + 1, thumbnail: undefined })
+      videoData({ size: MULTIPART_THRESHOLD_BYTES + 1 })
     )) as { batchId: string };
     expect(adapter.createMultipart).not.toHaveBeenCalled();
     const batch = fakeDb.read(`mediaUploads/${result.batchId}`) as {
@@ -437,8 +464,36 @@ describe("createMediaUpload", () => {
 
     adapter.createMultipart.mockRejectedValueOnce(new Error("multipart failed"));
     await expect(
-      invoke(videoData({ size: MULTIPART_THRESHOLD_BYTES + 1, thumbnail: undefined }))
+      invoke(videoData({ size: MULTIPART_THRESHOLD_BYTES + 1 }))
     ).rejects.toThrow("multipart failed");
     expect(batchIds()).toHaveLength(0);
+  });
+
+  it("aborts initiated multipart uploads when the batch write fails", async () => {
+    await seedAdmin();
+    const originalSet = FakeRef.prototype.set;
+    const setSpy = vi
+      .spyOn(FakeRef.prototype, "set")
+      .mockImplementation(async function (
+        this: FakeRef,
+        value: unknown
+      ): Promise<void> {
+        const path = (this as unknown as { path: string }).path;
+        if (path.startsWith("mediaUploads/")) {
+          throw new Error("batch write failed");
+        }
+        return originalSet.call(this, value);
+      });
+
+    await expect(
+      invoke(videoData({ size: MULTIPART_THRESHOLD_BYTES + 1 }))
+    ).rejects.toThrow("batch write failed");
+    expect(adapter.abortMultipart).toHaveBeenCalledWith(
+      videoKey("my-video"),
+      "upload-1"
+    );
+    expect(batchIds()).toHaveLength(0);
+
+    setSpy.mockRestore();
   });
 });

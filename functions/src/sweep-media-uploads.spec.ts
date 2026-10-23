@@ -182,6 +182,38 @@ describe("sweepMediaUploads", () => {
     });
   });
 
+  it("removes media records and rewrites the parent when completing a pending deletion", async () => {
+    const pending = deletion({
+      deletionId: "track-1",
+      mediaIds: ["track-1"],
+      keys: [KEY],
+      parentId: "album-1",
+      parentTrackKey: KEY,
+    });
+    await fakeDb.ref("media/track-1").set({
+      id: "track-1",
+      type: "audio-track",
+    });
+    await fakeDb.ref("media/album-1").set({
+      id: "album-1",
+      type: "audio-album",
+      listing: ["track-1", "track-2"],
+      storage: { trackKeys: [KEY, "Music/Albums/Le+Cours/02+Second.mp3"] },
+    });
+    await fakeDb.ref("mediaDeletions/track-1").set(pending);
+
+    await expect(
+      sweepPendingDeletion("track-1", pending)
+    ).resolves.toEqual({ objectsDeleted: 1, completed: true });
+
+    expect(fakeDb.read("media/track-1")).toBeNull();
+    expect(fakeDb.read("media/album-1/listing")).toEqual(["track-2"]);
+    expect(fakeDb.read("media/album-1/storage/trackKeys")).toEqual([
+      "Music/Albums/Le+Cours/02+Second.mp3",
+    ]);
+    expect(fakeDb.read("mediaDeletions/track-1/status")).toBe("completed");
+  });
+
   it("never touches objects that no swept batch references", async () => {
     const now = Date.now();
     const stale = batch({

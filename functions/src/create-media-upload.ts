@@ -38,13 +38,15 @@ import {
   type StorageAdapter,
 } from "./media/storage-adapter";
 
-const MEDIA_SECRETS = [
-  MEDIA_AWS_REGION,
-  MEDIA_AWS_ACCESS_KEY_ID,
-  MEDIA_AWS_SECRET_ACCESS_KEY,
-  MEDIA_S3_BUCKET,
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
-];
+const MEDIA_SECRETS = isMediaEmulator()
+  ? []
+  : [
+    MEDIA_AWS_REGION,
+    MEDIA_AWS_ACCESS_KEY_ID,
+    MEDIA_AWS_SECRET_ACCESS_KEY,
+    MEDIA_S3_BUCKET,
+    MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
+  ];
 
 const REPLACE_REJECTED = "This record cannot be replaced.";
 const ALBUM_REPLACE_REJECTED =
@@ -205,6 +207,10 @@ export const createMediaUpload = onCall(
       const iconKey = videoIconKey(storageName);
       let batchIconKey = iconKey;
 
+      if (mode === "create" && thumbnailSize === null) {
+        throw invalid("A thumbnail is required when creating a video.");
+      }
+
       if (mode === "replace") {
         mediaId = typeof data.mediaId === "string" ? data.mediaId : "";
         if (!mediaId) {
@@ -363,7 +369,21 @@ export const createMediaUpload = onCall(
       resultId: null,
       finalizedAt: null,
     };
-    await db.ref(`mediaUploads/${batchId}`).set(batch);
+    await db.ref(`mediaUploads/${batchId}`).set(batch).catch(async (err) => {
+      for (const asset of assets) {
+        if (asset.multipart && asset.uploadId) {
+          try {
+            await adapter.abortMultipart(asset.key, asset.uploadId);
+          } catch (abortErr) {
+            console.error(
+              "Could not abort an upload after a batch write failure",
+              abortErr
+            );
+          }
+        }
+      }
+      throw err;
+    });
 
     return { batchId, keys, firstAsset };
   }

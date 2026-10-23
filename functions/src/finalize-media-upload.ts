@@ -1,3 +1,4 @@
+import type { Database } from "firebase-admin/database";
 import { getDatabase } from "firebase-admin/database";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "./config";
@@ -29,13 +30,15 @@ import {
   type StorageAdapter,
 } from "./media/storage-adapter";
 
-const MEDIA_SECRETS = [
-  MEDIA_AWS_REGION,
-  MEDIA_AWS_ACCESS_KEY_ID,
-  MEDIA_AWS_SECRET_ACCESS_KEY,
-  MEDIA_S3_BUCKET,
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
-];
+const MEDIA_SECRETS = isMediaEmulator()
+  ? []
+  : [
+    MEDIA_AWS_REGION,
+    MEDIA_AWS_ACCESS_KEY_ID,
+    MEDIA_AWS_SECRET_ACCESS_KEY,
+    MEDIA_S3_BUCKET,
+    MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
+  ];
 
 const REPLACE_REJECTED = "This record cannot be replaced.";
 
@@ -43,6 +46,7 @@ interface MediaStorageRecord {
   managed?: boolean;
   key?: string;
   iconKey?: string;
+  batchId?: string;
 }
 
 interface MediaRecord {
@@ -81,6 +85,54 @@ function capFor(role: MediaBatchAsset["role"]): number {
 
 function normalizeEtag(value: string): string {
   return value.trim().replace(/^W\//, "").replace(/^"|"$/g, "");
+}
+
+function isPreconditionFailed(err: unknown): boolean {
+  const error = err as {
+    name?: string;
+    $metadata?: { httpStatusCode?: number };
+  };
+  return (
+    error?.name === "PreconditionFailed" ||
+    error?.$metadata?.httpStatusCode === 412
+  );
+}
+
+async function releaseFinalizeClaim(
+  db: Database,
+  batchId: string
+): Promise<void> {
+  try {
+    await db.ref(`mediaUploads/${batchId}`).update({
+      status: "ticketed",
+      lastActivityAt: Date.now(),
+    });
+  } catch (err) {
+    console.error("Could not release the finalize claim", err);
+  }
+}
+
+async function assertNoCreateDuplicate(
+  db: Database,
+  field: "fileName" | "folderName",
+  value: string,
+  display: string,
+  batchId: string
+): Promise<void> {
+  const snapshot = await db
+    .ref("media")
+    .orderByChild(field)
+    .equalTo(value)
+    .get();
+  const records = (snapshot.val() ?? {}) as Record<string, MediaRecord>;
+  for (const record of Object.values(records)) {
+    if (record?.storage?.batchId !== batchId) {
+      throw new HttpsError(
+        "already-exists",
+        `A record named "${display}" already exists. Delete it or choose a different name.`
+      );
+    }
+  }
 }
 
 function clientPartsFor(
@@ -143,7 +195,8 @@ async function verifyObject(
 async function verifyMultipart(
   adapter: StorageAdapter,
   asset: MediaBatchAsset,
-  clientParts: ClientPart[]
+  clientParts: ClientPart[],
+  mode: "create" | "replace"
 ): Promise<void> {
   if (!asset.uploadId) {
     throw uploadInvalid(asset.key);
@@ -183,13 +236,35 @@ async function verifyMultipart(
       throw uploadInvalid(asset.key);
     }
   }
-  await adapter.completeMultipart({
-    key: asset.key,
-    uploadId: asset.uploadId,
-    parts: [...byNumber.entries()]
-      .sort(([a], [b]) => a - b)
-      .map(([partNumber, etag]) => ({ partNumber, etag })),
-  });
+
+  let condition: { ifMatch?: string; ifNoneMatch?: boolean };
+  if (mode === "replace") {
+    const live = await adapter.head(asset.key);
+    if (!live.exists || !live.etag) {
+      throw uploadInvalid(asset.key);
+    }
+    condition = { ifMatch: live.etag };
+  } else {
+    condition = { ifNoneMatch: true };
+  }
+
+  try {
+    await adapter.completeMultipart({
+      key: asset.key,
+      uploadId: asset.uploadId,
+      parts: [...byNumber.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([partNumber, etag]) => ({ partNumber, etag })),
+      ...condition,
+    });
+  } catch (err) {
+    if (isPreconditionFailed(err)) {
+      throw failed(
+        `Could not complete the upload for "${asset.key}" because the file changed. Upload the file again.`
+      );
+    }
+    throw err;
+  }
 }
 
 export const finalizeMediaUpload = onCall(
@@ -257,213 +332,232 @@ export const finalizeMediaUpload = onCall(
       throw failed("Finalize already in progress.");
     }
     const batch = claimed.value;
-
-    const trackAssets = batch.assets.filter((asset) => asset.role === "track");
-    const videoAsset = batch.assets.find((asset) => asset.role === "video");
-    const thumbnailAsset = batch.assets.find(
-      (asset) => asset.role === "thumbnail"
-    );
-    const coverAsset = batch.assets.find((asset) => asset.role === "cover");
-    const zipAsset = batch.assets.find((asset) => asset.role === "zip");
-    if (trackAssets.length > MAX_TRACKS_PER_ALBUM) {
-      throw new HttpsError("invalid-argument", "Too many tracks.");
-    }
-
-    const metadata = normalizeMetadata(data.metadata);
-    const trackTitles = normalizeTrackTitles(
-      data.trackTitles,
-      trackAssets.length
-    );
-
-    const adapter = getStorageAdapter();
-    for (const asset of batch.assets) {
-      if (asset.multipart) {
-        const trackIndex =
-          asset.role === "track" ? trackAssets.indexOf(asset) : undefined;
-        await verifyMultipart(
-          adapter,
-          asset,
-          clientPartsFor(data.parts, asset.role, trackIndex)
-        );
-      }
-      await verifyObject(adapter, asset, batchId);
-    }
-
-    const baseUrl = mediaBaseUrl();
-    const sink = isMediaEmulator();
-    const finalizedAt = Date.now();
-    const now = Date.now();
-    const updates: Record<string, unknown> = {};
-
-    let recordId: string;
-    let record: Record<string, unknown>;
-
-    if (batch.kind === "video") {
-      if (!videoAsset) {
-        throw failed("Upload batch is incomplete.");
-      }
-      const storageName = videoAsset.key.slice(
-        "Video/".length,
-        -".mp4".length
+    try {
+      const trackAssets = batch.assets.filter((asset) => asset.role === "track");
+      const videoAsset = batch.assets.find((asset) => asset.role === "video");
+      const thumbnailAsset = batch.assets.find(
+        (asset) => asset.role === "thumbnail"
       );
-      const iconKey = thumbnailAsset
-        ? thumbnailAsset.key
-        : `Video/Icons/${storageName}.jpg`;
-
-      if (batch.mode === "replace") {
-        if (!batch.mediaId) {
-          throw failed(REPLACE_REJECTED);
-        }
-        const existing = ((await db.ref(`media/${batch.mediaId}`).get()).val() ??
-          null) as MediaRecord | null;
-        const storage = existing?.storage;
-        if (
-          !existing ||
-          existing.type !== "video" ||
-          storage?.managed !== true ||
-          storage.key !== videoAsset.key ||
-          storage.iconKey !== iconKey
-        ) {
-          throw failed(REPLACE_REJECTED);
-        }
-        recordId = batch.mediaId;
-      } else {
-        const id = db.ref("media").push().key;
-        if (!id) {
-          throw new HttpsError("internal", "Could not create a media id.");
-        }
-        recordId = id;
+      const coverAsset = batch.assets.find((asset) => asset.role === "cover");
+      const zipAsset = batch.assets.find((asset) => asset.role === "zip");
+      if (trackAssets.length > MAX_TRACKS_PER_ALBUM) {
+        throw new HttpsError("invalid-argument", "Too many tracks.");
       }
 
-      record = {
-        id: recordId,
-        title: metadata.title,
-        artist: "",
-        date: metadata.date,
-        fileName: `${storageName}.mp4`,
-        folderName: "",
-        urls: {
-          download: mediaUrl(baseUrl, videoAsset.key, sink),
-          icon: mediaUrl(baseUrl, iconKey, sink),
-        },
-        type: "video",
-        format: "video/mp4",
-        dateUpdated: now,
-        duration: metadata.duration,
-        isSticky: metadata.isSticky,
-        isHidden: metadata.isHidden,
-        listing: [],
-        storage: {
-          managed: true,
-          key: videoAsset.key,
-          iconKey,
-          bytes: videoAsset.size,
-          contentType: videoAsset.contentType,
-          batchId,
-        },
-      };
-      updates[`media/${recordId}`] = record;
+      const metadata = normalizeMetadata(data.metadata);
+      const trackTitles = normalizeTrackTitles(
+        data.trackTitles,
+        trackAssets.length
+      );
 
-      if (batch.mode === "replace") {
-        await db.ref().update({
-          ...updates,
-          [`mediaUploads/${batchId}/status`]: "finalized",
-          [`mediaUploads/${batchId}/resultId`]: recordId,
-          [`mediaUploads/${batchId}/finalizedAt`]: finalizedAt,
-        });
-        try {
-          await adapter.invalidate([videoAsset.key, iconKey]);
-        } catch (err) {
-          console.error("Could not invalidate media paths", err);
+      const adapter = getStorageAdapter();
+      for (const asset of batch.assets) {
+        if (asset.multipart) {
+          const trackIndex =
+            asset.role === "track" ? trackAssets.indexOf(asset) : undefined;
+          await verifyMultipart(
+            adapter,
+            asset,
+            clientPartsFor(data.parts, asset.role, trackIndex),
+            batch.mode
+          );
         }
-        return { id: recordId, record };
+        await verifyObject(adapter, asset, batchId);
       }
-    } else {
-      if (!coverAsset || !zipAsset) {
-        throw failed("Upload batch is incomplete.");
-      }
-      const coverKey = coverAsset.key;
-      const folder = coverKey
-        .replace(/^Music\/Albums\/Covers\//, "")
-        .replace(/\.jpg$/, "");
-      const folderPath = `Music/Albums/${folder}`;
-      const albumIcon = mediaUrl(baseUrl, coverKey, sink);
-      const albumId = db.ref("media").push().key;
-      if (!albumId) {
-        throw new HttpsError("internal", "Could not create a media id.");
-      }
-      const trackIds = trackAssets.map(() => {
-        const id = db.ref("media").push().key;
-        if (!id) {
-          throw new HttpsError("internal", "Could not create a media id.");
-        }
-        return id;
-      });
 
-      trackAssets.forEach((asset, index) => {
-        const fileName = asset.key.slice(`${folderPath}/`.length);
-        updates[`media/${trackIds[index]}`] = {
-          id: trackIds[index],
-          title: trackTitles[index],
+      const baseUrl = mediaBaseUrl();
+      const sink = isMediaEmulator();
+      const finalizedAt = Date.now();
+      const now = Date.now();
+      const updates: Record<string, unknown> = {};
+
+      let recordId: string;
+      let record: Record<string, unknown>;
+
+      if (batch.kind === "video") {
+        if (!videoAsset) {
+          throw failed("Upload batch is incomplete.");
+        }
+        const storageName = videoAsset.key.slice(
+          "Video/".length,
+          -".mp4".length
+        );
+        const iconKey = thumbnailAsset
+          ? thumbnailAsset.key
+          : `Video/Icons/${storageName}.jpg`;
+
+        if (batch.mode === "replace") {
+          if (!batch.mediaId) {
+            throw failed(REPLACE_REJECTED);
+          }
+          const existing = ((await db.ref(`media/${batch.mediaId}`).get()).val() ??
+            null) as MediaRecord | null;
+          const storage = existing?.storage;
+          if (
+            !existing ||
+            existing.type !== "video" ||
+            storage?.managed !== true ||
+            storage.key !== videoAsset.key ||
+            storage.iconKey !== iconKey
+          ) {
+            throw failed(REPLACE_REJECTED);
+          }
+          recordId = batch.mediaId;
+        } else {
+          await assertNoCreateDuplicate(
+            db,
+            "fileName",
+            `${storageName}.mp4`,
+            videoAsset.key,
+            batchId
+          );
+          const id = db.ref("media").push().key;
+          if (!id) {
+            throw new HttpsError("internal", "Could not create a media id.");
+          }
+          recordId = id;
+        }
+
+        record = {
+          id: recordId,
+          title: metadata.title,
           artist: "",
           date: metadata.date,
-          urls: {
-            download: mediaUrl(baseUrl, asset.key, sink),
-            icon: albumIcon,
-          },
-          type: "audio-track",
-          format: "audio/mpeg",
-          fileName,
+          fileName: `${storageName}.mp4`,
           folderName: "",
+          urls: {
+            download: mediaUrl(baseUrl, videoAsset.key, sink),
+            icon: mediaUrl(baseUrl, iconKey, sink),
+          },
+          type: "video",
+          format: "video/mp4",
           dateUpdated: now,
-          isSticky: false,
-          isHidden: false,
+          duration: metadata.duration,
+          isSticky: metadata.isSticky,
+          isHidden: metadata.isHidden,
           listing: [],
           storage: {
             managed: true,
-            key: asset.key,
-            albumId,
-            bytes: asset.size,
-            contentType: asset.contentType,
+            key: videoAsset.key,
+            iconKey,
+            bytes: videoAsset.size,
+            contentType: videoAsset.contentType,
             batchId,
           },
         };
-      });
+        updates[`media/${recordId}`] = record;
 
-      record = {
-        id: albumId,
-        title: metadata.title,
-        artist: "",
-        date: metadata.date,
-        folderName: folder,
-        urls: {
-          download: mediaUrl(baseUrl, zipAsset.key, sink),
-          icon: albumIcon,
-        },
-        type: "audio-album",
-        format: "collection/audio",
-        dateUpdated: now,
-        isSticky: metadata.isSticky,
-        isHidden: metadata.isHidden,
-        listing: trackIds,
-        storage: {
-          managed: true,
-          folder: folderPath,
-          coverKey,
-          zipKey: zipAsset.key,
-          trackKeys: trackAssets.map((asset) => asset.key),
-          batchId,
-        },
-      };
-      updates[`media/${albumId}`] = record;
-      recordId = albumId;
+        if (batch.mode === "replace") {
+          await db.ref().update({
+            ...updates,
+            [`mediaUploads/${batchId}/status`]: "finalized",
+            [`mediaUploads/${batchId}/resultId`]: recordId,
+            [`mediaUploads/${batchId}/finalizedAt`]: finalizedAt,
+          });
+          try {
+            await adapter.invalidate([videoAsset.key, iconKey]);
+          } catch (err) {
+            console.error("Could not invalidate media paths", err);
+          }
+          return { id: recordId, record };
+        }
+      } else {
+        if (!coverAsset || !zipAsset) {
+          throw failed("Upload batch is incomplete.");
+        }
+        const coverKey = coverAsset.key;
+        const folder = coverKey
+          .replace(/^Music\/Albums\/Covers\//, "")
+          .replace(/\.jpg$/, "");
+        const folderPath = `Music/Albums/${folder}`;
+        await assertNoCreateDuplicate(
+          db,
+          "folderName",
+          folder,
+          folder,
+          batchId
+        );
+        const albumIcon = mediaUrl(baseUrl, coverKey, sink);
+        const albumId = db.ref("media").push().key;
+        if (!albumId) {
+          throw new HttpsError("internal", "Could not create a media id.");
+        }
+        const trackIds = trackAssets.map(() => {
+          const id = db.ref("media").push().key;
+          if (!id) {
+            throw new HttpsError("internal", "Could not create a media id.");
+          }
+          return id;
+        });
+
+        trackAssets.forEach((asset, index) => {
+          const fileName = asset.key.slice(`${folderPath}/`.length);
+          updates[`media/${trackIds[index]}`] = {
+            id: trackIds[index],
+            title: trackTitles[index],
+            artist: "",
+            date: metadata.date,
+            urls: {
+              download: mediaUrl(baseUrl, asset.key, sink),
+              icon: albumIcon,
+            },
+            type: "audio-track",
+            format: "audio/mpeg",
+            fileName,
+            folderName: "",
+            dateUpdated: now,
+            isSticky: false,
+            isHidden: false,
+            listing: [],
+            storage: {
+              managed: true,
+              key: asset.key,
+              albumId,
+              bytes: asset.size,
+              contentType: asset.contentType,
+              batchId,
+            },
+          };
+        });
+
+        record = {
+          id: albumId,
+          title: metadata.title,
+          artist: "",
+          date: metadata.date,
+          folderName: folder,
+          urls: {
+            download: mediaUrl(baseUrl, zipAsset.key, sink),
+            icon: albumIcon,
+          },
+          type: "audio-album",
+          format: "collection/audio",
+          dateUpdated: now,
+          isSticky: metadata.isSticky,
+          isHidden: metadata.isHidden,
+          listing: trackIds,
+          storage: {
+            managed: true,
+            folder: folderPath,
+            coverKey,
+            zipKey: zipAsset.key,
+            trackKeys: trackAssets.map((asset) => asset.key),
+            batchId,
+          },
+        };
+        updates[`media/${albumId}`] = record;
+        recordId = albumId;
+      }
+
+      updates[`mediaUploads/${batchId}/status`] = "finalized";
+      updates[`mediaUploads/${batchId}/resultId`] = recordId;
+      updates[`mediaUploads/${batchId}/finalizedAt`] = finalizedAt;
+      await db.ref().update(updates);
+
+      return { id: recordId, record };
+    } catch (err) {
+      await releaseFinalizeClaim(db, batchId);
+      throw err;
     }
-
-    updates[`mediaUploads/${batchId}/status`] = "finalized";
-    updates[`mediaUploads/${batchId}/resultId`] = recordId;
-    updates[`mediaUploads/${batchId}/finalizedAt`] = finalizedAt;
-    await db.ref().update(updates);
-
-    return { id: recordId, record };
   }
 );

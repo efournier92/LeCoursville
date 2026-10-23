@@ -1,1 +1,2 @@
 export const BROWSER_ZIP_MAX_BYTES = 524288000;
+export const MAX_TRACK_BYTES = 209715200;

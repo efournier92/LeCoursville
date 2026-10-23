@@ -414,6 +414,47 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
     expect(component.uploadSuccess).toBeNull();
   });
 
+  it('passes through orphan-object messages and rewrites record duplicates', async () => {
+    await readyToUpload();
+    const orphan =
+      'An orphan file named "Music/Albums/Le+Cours/" exists. Choose a different name; the storage sweep will remove it later.';
+    cloud.createMediaUpload.mockRejectedValueOnce({
+      code: 'functions/already-exists',
+      message: orphan,
+    });
+
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe(orphan);
+
+    cloud.createMediaUpload.mockRejectedValueOnce({
+      code: 'functions/already-exists',
+      message: 'server variant',
+    });
+
+    await component.onUploadSelectedMedia();
+    expect(component.formError).toBe(FOLDER_DUPLICATE);
+  });
+
+  it('clears the manual zip and its input when the override is unchecked', async () => {
+    await readyToUpload();
+    component.useOwnZip = true;
+    const manual = new File([new Uint8Array(999)], 'mine.zip', {
+      type: 'application/zip',
+    });
+    component.onZipFileSelected(manual);
+    const input = { nativeElement: { value: 'C:\\fakepath\\mine.zip' } };
+    (component as any).zipInput = input;
+
+    component.useOwnZip = false;
+
+    expect(component.manualZipFile).toBeNull();
+    expect(input.nativeElement.value).toBe('');
+
+    await component.onUploadSelectedMedia();
+
+    expect(cloud.createMediaUpload.mock.calls[0][0].album.zip.size).toBe(3);
+  });
+
   it('keeps the retry path after a finalize failure', async () => {
     await readyToUpload();
     cloud.finalizeMediaUpload.mockRejectedValueOnce({

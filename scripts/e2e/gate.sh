@@ -13,14 +13,15 @@ echo "=== Unit tests ==="
 CI=true npm test -- --watch=false
 
 echo "=== Building functions ==="
-npm --prefix functions install --no-audit --no-fund
+npm --prefix functions ci --no-audit --no-fund
 npm --prefix functions run build
 
 echo "=== Starting emulators + seeding + running Playwright ==="
+mkdir -p .gate-results
 # One fresh seed per browser project: the RTDB emulator state persists across
 # projects in a single `playwright test` run, and mutation tests (chat edits,
 # uploads, created records) would otherwise bleed into the next project's
 # assertions. Re-seeding keeps every project deterministic.
 firebase emulators:exec --project lecoursville-dev \
   --only auth,database,storage,hosting,functions \
-  "node scripts/e2e/seed.mjs && npx playwright test --project=chromium && node scripts/e2e/seed.mjs && npx playwright test --project=webkit && node scripts/e2e/seed.mjs && npx playwright test --project=firefox"
+  "node scripts/e2e/seed.mjs && npx playwright test --project=chromium && cp test-results/e2e-results.json .gate-results/chromium.json && node scripts/e2e/seed.mjs && npx playwright test --project=webkit && cp test-results/e2e-results.json .gate-results/webkit.json && node scripts/e2e/seed.mjs && npx playwright test --project=firefox && cp test-results/e2e-results.json .gate-results/firefox.json"

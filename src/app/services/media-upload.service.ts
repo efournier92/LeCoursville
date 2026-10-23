@@ -172,6 +172,7 @@ export interface StoredMediaBatch {
     date: string;
     isSticky: boolean;
     isHidden: boolean;
+    duration?: string;
   };
   trackTitles?: string[];
   trackFileNames?: string[];
@@ -242,7 +243,7 @@ export function mapMediaError(
       if (/Upload not found/i.test(message)) {
         return new MediaUploadError(message, "upload-not-found");
       }
-      return new MediaUploadError(uploadFailureMessage(context.fileName), code);
+      return new MediaUploadError(message || uploadFailureMessage(context.fileName), code);
     default:
       return new MediaUploadError(uploadFailureMessage(context.fileName), code || "upload-failed");
   }

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { test, expect, Page, Locator } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { deleteDb, readDb, writeDb } from '../helpers/admin-db';
-import { sinkGet, sinkHead, sinkUrl } from '../helpers/sink';
+import { sinkGet, sinkHead, sinkPut, sinkUrl } from '../helpers/sink';
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
@@ -210,6 +210,35 @@ async function findBatchForAsset(key: string): Promise<string | null> {
     (batch?.assets ?? []).some((asset) => asset?.key === key),
   );
   return entry?.[0] ?? null;
+}
+
+interface UploadBatch {
+  status?: string;
+  assets?: Array<{ role?: string; key?: string; size?: number }>;
+}
+
+async function readBatchForAsset(
+  key: string,
+): Promise<{ id: string; batch: UploadBatch } | null> {
+  const id = await findBatchForAsset(key);
+  if (!id) {
+    return null;
+  }
+  const batch = await readDb<UploadBatch>(`mediaUploads/${id}`);
+  return batch ? { id, batch } : null;
+}
+
+async function batchesForFolder(folder: string): Promise<string[]> {
+  const folderPath = `Music/Albums/${folder}`;
+  const batches =
+    (await readDb<Record<string, { assets?: Array<{ key?: string }> }>>('mediaUploads')) ?? {};
+  return Object.entries(batches)
+    .filter(([, batch]) =>
+      (batch?.assets ?? []).some(
+        (asset) => typeof asset?.key === 'string' && asset.key.startsWith(`${folderPath}/`),
+      ),
+    )
+    .map(([id]) => id);
 }
 
 /**
@@ -1033,6 +1062,153 @@ test.describe('media', () => {
       }
     } finally {
       await page.unroute(/emulatorMediaSink/);
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('video resume after reload saves the typed metadata', async ({ page }) => {
+    const stamp = Date.now();
+    const storageName = `e2e-resume-video-${stamp}`;
+    const title = `E2E Resume Video ${stamp}`;
+    const key = `Video/${storageName}.mp4`;
+    const iconKey = `Video/Icons/${storageName}.jpg`;
+    let created: MediaRecord | null = null;
+    let batchId: string | null = null;
+
+    // Let both PUTs land, then fail the finalize response once. The reload has
+    // complete objects and only needs the persisted metadata to finish.
+    await page.route(/finalizeMediaUpload/, async (route) => {
+      await route.fulfill({
+        status: 500,
+        headers: {
+          'access-control-allow-origin': 'http://localhost:5000',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ error: { status: 'INTERNAL', message: 'forced failure' } }),
+      });
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/media');
+      const form = await prepareVideo(page);
+      await form.locator('input[name="videoTitle"]').fill(title);
+      await form.locator('input[name="videoDate"]').fill('2026');
+      await form.locator('input[name="videoStorageName"]').fill(storageName);
+      await form.locator('.admin-form-action-button-upload').click();
+
+      await expect(page.getByTestId('video-upload-error')).toContainText('record could not be saved');
+      await expect.poll(async () => (await readBatchForAsset(key))?.id ?? null).not.toBeNull();
+      batchId = (await readBatchForAsset(key))?.id ?? null;
+      expect((await sinkHead(key))?.size).toBeGreaterThan(0);
+      expect((await sinkHead(iconKey))?.size).toBeGreaterThan(0);
+
+      await page.reload();
+      await page.unroute(/finalizeMediaUpload/);
+      const resume = page.getByRole('button', { name: 'Resume upload' });
+      await expect(resume).toBeVisible();
+      await resume.click();
+
+      await expect(page.getByTestId('video-upload-success')).toContainText(
+        `Saved "${title}".`,
+      );
+      created = await waitForRecordByKey(storageName);
+      expect(created.title).toBe(title);
+      expect(created.date).toBe('2026');
+    } finally {
+      await page.unroute(/finalizeMediaUpload/);
+      await cleanupRecord(created?.id, batchId);
+    }
+  });
+
+  test('album resume after reload asks for a missing track and finishes after reselect', async ({
+    page,
+  }) => {
+    const title = `E2E Album resume missing ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const keys = albumKeys(folder);
+    const missingKey = keys.track('02-fixture.mp3');
+    let batchId: string | null = null;
+
+    // Abort before the sink sees the bytes, so the asset is genuinely missing.
+    await page.route(/emulatorMediaSink/, async (route, request) => {
+      if (
+        request.method() !== 'PUT' ||
+        new URL(request.url()).searchParams.get('key') !== missingKey
+      ) {
+        await route.continue();
+        return;
+      }
+      await route.abort('failed');
+    });
+
+    try {
+      await openAlbumUpload(page);
+      const card = await prepareAlbum(page, { title });
+      await card.locator('.admin-form-action-button-upload').click();
+      await expect(card.getByTestId('album-upload-error')).toBeVisible();
+      await expect(card.locator('.admin-form-action-button-upload')).toHaveText('Upload');
+
+      await expect
+        .poll(async () => (await readBatchForAsset(missingKey))?.id ?? null)
+        .not.toBeNull();
+      batchId = (await readBatchForAsset(missingKey))?.id ?? null;
+      expect(await sinkHead(missingKey)).toBeNull();
+
+      await page.unroute(/emulatorMediaSink/);
+      await page.reload();
+      await page.getByRole('tab', { name: 'Audio Album' }).click();
+
+      const resume = page.getByRole('button', { name: 'Resume upload' });
+      await expect(resume).toBeVisible();
+      await resume.click();
+      await expect(card.getByTestId('album-upload-error')).toContainText(
+        'Some album files are missing. Select the tracks again, then choose Resume upload.',
+      );
+
+      await card.getByTestId('album-tracks-input').setInputFiles(ALBUM_TRACKS.map(fixturePath));
+      await expect(card.locator('.album-track-row')).toHaveCount(2);
+      await resume.click();
+
+      await expect(page.getByTestId('album-upload-success')).toContainText(
+        `Saved album "${title}".`,
+      );
+      const album = await waitForAlbum(folder);
+      expect(album.listing?.length).toBe(2);
+      expect(album.storage?.trackKeys).toEqual([
+        keys.track('01-fixture.mp3'),
+        keys.track('02-fixture.mp3'),
+      ]);
+      expect(await batchesForFolder(folder)).toEqual([batchId]);
+      for (const id of album.listing as string[]) {
+        const track = await readDb<MediaRecord>(`media/${id}`);
+        expect(await sinkHead(track?.storage?.key as string)).not.toBeNull();
+      }
+    } finally {
+      await page.unroute(/emulatorMediaSink/);
+      await cleanupAlbumFolder(folder);
+    }
+  });
+
+  test('album upload passes through the orphan-object message', async ({ page }) => {
+    const title = `E2E Album orphan ${Date.now()}`;
+    const folder = albumFolderFor(title);
+    const coverKey = albumKeys(folder).cover;
+
+    await sinkPut(coverKey, Buffer.from('orphan-cover'), { contentType: 'image/jpeg' });
+
+    try {
+      await openAlbumUpload(page);
+      const card = await prepareAlbum(page, { title });
+      await card.locator('.admin-form-action-button-upload').click();
+
+      await expect(card.getByTestId('album-upload-error')).toHaveText(
+        `An orphan file named "${coverKey}" exists. Choose a different name; the storage sweep will remove it later.`,
+      );
+      expect(await findAlbumByFolder(folder)).toBeNull();
+      expect(await batchesForFolder(folder)).toEqual([]);
+    } finally {
+      await fetch(sinkUrl(coverKey), { method: 'DELETE' });
       await cleanupAlbumFolder(folder);
     }
   });

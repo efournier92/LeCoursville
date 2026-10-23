@@ -1,7 +1,7 @@
 import { getDatabase } from "firebase-admin/database";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { REGION } from "./config";
-import type { MediaDeletion } from "./delete-media";
+import { completeDeletionRecords, type MediaDeletion } from "./delete-media";
 import type { MediaUploadBatch } from "./media/batch";
 import {
   MEDIA_AWS_ACCESS_KEY_ID,
@@ -10,16 +10,19 @@ import {
   MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
   MEDIA_S3_BUCKET,
   SWEEP_GRACE_MS,
+  isMediaEmulator,
 } from "./media/config";
 import { getStorageAdapter } from "./media/storage-adapter";
 
-const MEDIA_SECRETS = [
-  MEDIA_AWS_REGION,
-  MEDIA_AWS_ACCESS_KEY_ID,
-  MEDIA_AWS_SECRET_ACCESS_KEY,
-  MEDIA_S3_BUCKET,
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
-];
+const MEDIA_SECRETS = isMediaEmulator()
+  ? []
+  : [
+    MEDIA_AWS_REGION,
+    MEDIA_AWS_ACCESS_KEY_ID,
+    MEDIA_AWS_SECRET_ACCESS_KEY,
+    MEDIA_S3_BUCKET,
+    MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
+  ];
 
 const SWEEP_PAGE_SIZE = 100;
 
@@ -118,10 +121,10 @@ export async function sweepPendingDeletion(
     });
     return { objectsDeleted: deleted, completed: false };
   }
-  await db.ref(`mediaDeletions/${deletionId}`).update({
-    status: "completed",
-    failedKeys: [],
-  });
+  const removed = await completeDeletionRecords(db, deletionId, deletion);
+  if (!removed) {
+    return { objectsDeleted: deleted, completed: false };
+  }
   return { objectsDeleted: deleted, completed: true };
 }
 

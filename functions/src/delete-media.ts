@@ -11,19 +11,22 @@ import {
   MEDIA_AWS_SECRET_ACCESS_KEY,
   MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
   MEDIA_S3_BUCKET,
+  isMediaEmulator,
 } from "./media/config";
 import {
   getStorageAdapter,
   type StorageAdapter,
 } from "./media/storage-adapter";
 
-const MEDIA_SECRETS = [
-  MEDIA_AWS_REGION,
-  MEDIA_AWS_ACCESS_KEY_ID,
-  MEDIA_AWS_SECRET_ACCESS_KEY,
-  MEDIA_S3_BUCKET,
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
-];
+const MEDIA_SECRETS = isMediaEmulator()
+  ? []
+  : [
+    MEDIA_AWS_REGION,
+    MEDIA_AWS_ACCESS_KEY_ID,
+    MEDIA_AWS_SECRET_ACCESS_KEY,
+    MEDIA_S3_BUCKET,
+    MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
+  ];
 
 const RECORD_REMOVAL_WARNING =
   "Could not remove the media records. Retry the delete.";
@@ -55,6 +58,8 @@ export interface MediaDeletion {
   createdAt: number;
   status: "pending" | "completed";
   failedKeys: string[];
+  parentId?: string;
+  parentTrackKey?: string;
 }
 
 interface DeletionPlan {
@@ -81,6 +86,37 @@ async function loadRecord(
   id: string
 ): Promise<MediaRecord | null> {
   return ((await db.ref(`media/${id}`).get()).val() ?? null) as MediaRecord | null;
+}
+
+export async function completeDeletionRecords(
+  db: Database,
+  deletionId: string,
+  deletion: Pick<MediaDeletion, "mediaIds" | "parentId" | "parentTrackKey">
+): Promise<boolean> {
+  try {
+    const updates: Record<string, unknown> = {};
+    for (const id of deletion.mediaIds) {
+      updates[`media/${id}`] = null;
+    }
+    if (deletion.parentId) {
+      const parent = await loadRecord(db, deletion.parentId);
+      if (parent) {
+        updates[`media/${deletion.parentId}/listing`] = (
+          parent.listing ?? []
+        ).filter((id) => id !== deletionId);
+        updates[`media/${deletion.parentId}/storage/trackKeys`] = (
+          parent.storage?.trackKeys ?? []
+        ).filter((key) => key !== deletion.parentTrackKey);
+      }
+    }
+    updates[`mediaDeletions/${deletionId}/status`] = "completed";
+    updates[`mediaDeletions/${deletionId}/failedKeys`] = [];
+    await db.ref().update(updates);
+    return true;
+  } catch (err) {
+    console.error("Could not remove deleted media records", err);
+    return false;
+  }
 }
 
 async function planDeletion(
@@ -188,36 +224,25 @@ async function deleteObjects(
 async function finishDeletion(
   db: Database,
   adapter: StorageAdapter,
-  deletionId: string,
-  mediaIds: string[],
-  keys: string[],
-  parent: DeletionPlan["parent"],
+  deletion: MediaDeletion,
   deleted: number,
   warnings: string[]
 ): Promise<{ id: string; objectsDeleted: number; warnings: string[] }> {
-  try {
-    const updates: Record<string, unknown> = {};
-    for (const id of mediaIds) {
-      updates[`media/${id}`] = null;
-    }
-    if (parent) {
-      updates[`media/${parent.id}/listing`] = (
-        parent.record.listing ?? []
-      ).filter((id) => id !== deletionId);
-      updates[`media/${parent.id}/storage/trackKeys`] = (
-        parent.record.storage?.trackKeys ?? []
-      ).filter((key) => key !== parent.key);
-    }
-    updates[`mediaDeletions/${deletionId}/status`] = "completed";
-    updates[`mediaDeletions/${deletionId}/failedKeys`] = [];
-    await db.ref().update(updates);
-  } catch (err) {
-    console.error("Could not remove deleted media records", err);
+  const removed = await completeDeletionRecords(
+    db,
+    deletion.deletionId,
+    deletion
+  );
+  if (!removed) {
     warnings.push(RECORD_REMOVAL_WARNING);
-    return { id: deletionId, objectsDeleted: deleted, warnings };
+    return {
+      id: deletion.deletionId,
+      objectsDeleted: deleted,
+      warnings,
+    };
   }
-  await invalidate(adapter, keys, warnings);
-  return { id: deletionId, objectsDeleted: deleted, warnings };
+  await invalidate(adapter, deletion.keys, warnings);
+  return { id: deletion.deletionId, objectsDeleted: deleted, warnings };
 }
 
 async function resumeDeletion(
@@ -226,16 +251,7 @@ async function resumeDeletion(
   deletion: MediaDeletion
 ): Promise<{ id: string; objectsDeleted: number; warnings: string[] }> {
   const { deleted, warnings } = await deleteObjects(adapter, deletion.keys);
-  return finishDeletion(
-    db,
-    adapter,
-    deletion.deletionId,
-    deletion.mediaIds,
-    deletion.keys,
-    undefined,
-    deleted,
-    warnings
-  );
+  return finishDeletion(db, adapter, deletion, deleted, warnings);
 }
 
 async function deleteById(
@@ -273,18 +289,12 @@ async function deleteById(
     createdAt: Date.now(),
     status: "pending",
     failedKeys: [],
+    ...(plan.parent
+      ? { parentId: plan.parent.id, parentTrackKey: plan.parent.key }
+      : {}),
   };
   await db.ref(`mediaDeletions/${mediaId}`).set(ledger);
-  return finishDeletion(
-    db,
-    adapter,
-    mediaId,
-    plan.mediaIds,
-    plan.keys,
-    plan.parent,
-    deleted,
-    warnings
-  );
+  return finishDeletion(db, adapter, ledger, deleted, warnings);
 }
 
 async function cancelBatch(
@@ -298,8 +308,24 @@ async function cancelBatch(
   if (!batch || batch.uid !== uid) {
     throw failed("Upload batch not found.");
   }
-  const keys = batch.assets.map((asset) => asset.key);
-  const { deleted } = await adapter.deleteMany(keys);
+  if (batch.status !== "ticketed") {
+    throw failed("Only a ticketed upload can be canceled.");
+  }
+
+  if (batch.mode === "replace") {
+    for (const asset of batch.assets) {
+      if (asset.multipart && asset.uploadId) {
+        await adapter.abortMultipart(asset.key, asset.uploadId);
+      }
+    }
+    await db.ref(`mediaUploads/${batchId}`).set(null);
+    return { batchId, objectsDeleted: 0 };
+  }
+
+  const { deleted } = await deleteObjects(
+    adapter,
+    batch.assets.map((asset) => asset.key)
+  );
   for (const asset of batch.assets) {
     if (asset.multipart && asset.uploadId) {
       await adapter.abortMultipart(asset.key, asset.uploadId);

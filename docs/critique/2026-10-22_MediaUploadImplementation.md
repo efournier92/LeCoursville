@@ -1,0 +1,56 @@
+# Critique Ledger: Media Upload Implementation
+
+- Goal: redteam the implemented media upload pipeline against docs/specs/2026-10-22_MediaUploadPipeline.md, the diff since 31482105, and the gate evidence.
+- Started: 2026-10-22
+- Branch: feat/admin-facelift
+
+## Findings
+
+- C-20261022-01 | 2026-10-22 | security | high | high | addressed | Create If-None-Match and replace If-Match are unsigned and hoisted, so a PUT can overwrite an object. | functions/src/media/storage-adapter.ts:142
+  - rebuttal | addressed | storage-adapter.ts:143 | Conditional headers now sign and un-hoist; storage-adapter.spec.ts pins both modes.
+- C-20261022-02 | 2026-10-22 | data-integrity | high | high | addressed | Multipart complete has no If-Match or If-None-Match, so large uploads bypass conditional writes. | functions/src/media/storage-adapter.ts:255
+  - rebuttal | addressed | storage-adapter.ts:264 | Complete sends IfNoneMatch for create and IfMatch from a live HEAD for replace; tests cover both.
+- C-20261022-03 | 2026-10-22 | data-integrity | high | high | addressed | Create-mode video with no thumbnail writes a record whose icon object never existed. | functions/src/create-media-upload.ts:193
+  - rebuttal | addressed | create-media-upload.ts:203 | Create-mode video without a thumbnail is invalid-argument; test covers it.
+- C-20261022-04 | 2026-10-22 | reliability | high | high | addressed | A failed finalize sticks at finalizing; retry is blocked and the sweep later deletes the bytes. | functions/src/finalize-media-upload.ts:236
+  - rebuttal | addressed | finalize-media-upload.ts:556 | Post-claim errors release the batch to ticketed; a fail-once retry test passes.
+- C-20261022-05 | 2026-10-22 | data-integrity | high | high | addressed | Sweep marks a pending deletion completed without removing its records, leaving broken public records. | functions/src/sweep-media-uploads.ts:98
+  - rebuttal | addressed | sweep-media-uploads.ts:121 | Sweep calls completeDeletionRecords, which removes records and parent refs; test covers it.
+- C-20261022-06 | 2026-10-22 | security | high | high | addressed | Batch cancel can target finalizing, finalized, or replace batches and delete live objects. | functions/src/delete-media.ts:296
+  - rebuttal | addressed | delete-media.ts:308 | Cancel requires ticketed; replace cancel preserves objects; finalized cancel is rejected.
+- C-20261022-07 | 2026-10-22 | reliability | high | high | addressed | Video reload resume finalizes from a reset form, losing typed title and date. | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:327
+  - rebuttal | addressed | admin-media-upload-video.component.ts:628 | Video batches persist metadata and restore it on init; e2e proves the typed title survives reload resume.
+- C-20261022-08 | 2026-10-22 | reliability | high | medium | rejected | verifyObject deletes a mismatched object after the finalize claim, destroying the only copy. | functions/src/finalize-media-upload.ts:121
+  - rebuttal | rejected | docs/specs/2026-10-22_MediaUploadPipeline.md:649 | Spec requires deleting oversize and foreign objects; the claim release plus reselect keeps the retry honest.
+- C-20261022-09 | 2026-10-22 | data-integrity | high | medium | addressed | Album listing is a non-atomic read-modify-write shared by track delete and metadata update. | functions/src/delete-media.ts:199
+  - rebuttal | addressed | update-media-metadata.ts:107 | Update re-checks the listing in compareAndSet; delete reloads the parent before rewriting refs.
+- C-20261022-10 | 2026-10-22 | reliability | medium | high | addressed | Multipart starts before the batch write, so a failed write strands uploads no sweep can find. | functions/src/create-media-upload.ts:341
+  - rebuttal | addressed | create-media-upload.ts:348 | A failed batch write aborts every initiated multipart upload; test covers the cleanup.
+- C-20261022-11 | 2026-10-22 | reliability | medium | high | addressed | Upload failure orphans the batch; the next click re-sends every completed byte. | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:276
+  - rebuttal | addressed | admin-media-upload-video.component.ts:267 | Upload failure keeps the batch and the next click resumes it instead of creating a new one.
+- C-20261022-12 | 2026-10-22 | product | medium | high | addressed | Album orphan errors become folder duplicates for a missing record. | src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component.ts:884
+  - rebuttal | addressed | admin-media-upload-audio-album.component.ts:888 | Orphan messages pass through; e2e asserts the exact orphan text and no record.
+- C-20261022-13 | 2026-10-22 | product | medium | medium | addressed | Clearing Use my own zip keeps and uploads the old file. | src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component.ts:906
+  - rebuttal | addressed | admin-media-upload-audio-album.component.ts:906 | Unchecking the manual zip clears the file and input value; test covers the switch.
+- C-20261022-14 | 2026-10-22 | security | low | high | addressed | Client batchId reaches the rate-limit RTDB path before validation. | functions/src/resume-media-upload.ts:73
+  - rebuttal | addressed | resume-media-upload.ts:30 | Batch ids are checked against an allowlist regex before any rate-limit write.
+- C-20261022-15 | 2026-10-22 | data-integrity | medium | medium | addressed | updateMediaMetadata writes titles for listing ids without checking the track exists. | functions/src/update-media-metadata.ts:105
+  - rebuttal | addressed | update-media-metadata.ts:102 | Every listing id must resolve to an audio-track before any title write.
+- C-20261022-16 | 2026-10-22 | reliability | low | high | addressed | Part ticket requests above 100 are silently truncated with no continuation signal. | functions/src/resume-media-upload.ts:139
+  - rebuttal | addressed | resume-media-upload.ts:70 | More than 100 requested parts is invalid-argument instead of a silent truncation.
+- C-20261022-17 | 2026-10-22 | product | medium | high | addressed | The reload-resume e2e simulates a lost response, not a missing object. | e2e/specs/media.spec.ts:975
+  - rebuttal | addressed | e2e/specs/media.spec.ts:1142 | A new case aborts a track PUT before the sink, reselects files, and resumes; the lost-response case remains.
+- C-20261022-18 | 2026-10-22 | maintainability | medium | medium | rejected | The JsonService bulk-import husk survives with no-op media methods and a dead binding. | src/app/services/json.service.ts:34
+  - rebuttal | rejected | src/app/services/json.service.ts:55 | Every media write is gone; the remaining methods only mutate in-memory album listings and no template binds them.
+- C-20261022-19 | 2026-10-22 | product | low | high | addressed | Other failed-precondition errors become the generic connection message. | src/app/services/media-upload.service.ts:241
+  - rebuttal | addressed | media-upload.service.ts:241 | Non-upload failed-precondition messages now pass through; test covers Finalize already in progress.
+- C-20261022-20 | 2026-10-22 | correctness | medium | high | addressed | The gate overwrites one Playwright JSON artifact, so only the last browser has persisted evidence. | scripts/e2e/gate.sh:24
+  - rebuttal | addressed | scripts/e2e/gate.sh:20 | The gate copies each project JSON to .gate-results; chromium, webkit, and firefox artifacts all show 217 expected.
+- C-20261022-21 | 2026-10-22 | correctness | medium | high | addressed | gate.sh npm install leaves functions/package-lock.json modified after a clean run. | functions/package-lock.json:1
+  - rebuttal | addressed | scripts/e2e/gate.sh:16 | The gate now uses npm ci; a clean install leaves functions/package-lock.json byte-identical.
+- C-20261022-22 | 2026-10-22 | product | low | high | addressed | Editing a legacy or Drive video shows a fabricated S3 path. | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:137
+  - rebuttal | addressed | admin-media-upload-video.component.ts:137 | Unmanaged edit records hide the provisional path instead of inventing keys.
+- C-20261022-23 | 2026-10-22 | maintainability | low | high | addressed | Client media caps are split between constants and component values. | src/app/components/admin-media-upload-audio-album/admin-media-upload-audio-album.component.ts:44
+  - rebuttal | addressed | src/app/constants/media-upload-constants.ts:3 | The client track cap lives in the shared constants file and the component imports it.
+- C-20261022-24 | 2026-10-22 | reliability | medium | high | addressed | The emulator contacted Secret Manager for the five unset MEDIA secrets on each cold start. | functions/src/create-media-upload.ts:41
+  - rebuttal | addressed | functions/src/create-media-upload.ts:41 | Media secrets are bound only outside emulator mode; the gate log has zero Secret Manager requests.

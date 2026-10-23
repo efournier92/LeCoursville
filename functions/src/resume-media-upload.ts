@@ -12,19 +12,23 @@ import {
   MEDIA_AWS_SECRET_ACCESS_KEY,
   MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
   MEDIA_S3_BUCKET,
+  isMediaEmulator,
 } from "./media/config";
 import { getStorageAdapter } from "./media/storage-adapter";
 
-const MEDIA_SECRETS = [
-  MEDIA_AWS_REGION,
-  MEDIA_AWS_ACCESS_KEY_ID,
-  MEDIA_AWS_SECRET_ACCESS_KEY,
-  MEDIA_S3_BUCKET,
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
-];
+const MEDIA_SECRETS = isMediaEmulator()
+  ? []
+  : [
+    MEDIA_AWS_REGION,
+    MEDIA_AWS_ACCESS_KEY_ID,
+    MEDIA_AWS_SECRET_ACCESS_KEY,
+    MEDIA_S3_BUCKET,
+    MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
+  ];
 
 const ASSET_ROLES = new Set(["video", "thumbnail", "track", "cover", "zip"]);
 const MAX_PARTS_PER_CALL = 100;
+const BATCH_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 function invalid(message: string): HttpsError {
   return new HttpsError("invalid-argument", message);
@@ -40,6 +44,11 @@ function requestedPartNumbers(value: unknown, partCount: number): number[] {
   }
   if (!Array.isArray(value) || value.length === 0) {
     throw invalid("Invalid part numbers.");
+  }
+  if (value.length > MAX_PARTS_PER_CALL) {
+    throw invalid(
+      `At most ${MAX_PARTS_PER_CALL} part numbers can be requested at once.`
+    );
   }
   const seen = new Set<number>();
   const numbers: number[] = [];
@@ -73,6 +82,9 @@ export const resumeMediaUpload = onCall(
     const batchId = typeof data.batchId === "string" ? data.batchId : "";
     if (!batchId) {
       throw invalid("A batch id is required.");
+    }
+    if (!BATCH_ID_PATTERN.test(batchId)) {
+      throw invalid("Invalid batch id.");
     }
     if (!(await rateLimit("media-resume", uid, 500, 3600000))) {
       throw new HttpsError(

@@ -60,3 +60,6 @@ tags
 # firebase emulator debug logs
 firebase-debug.log
 database-debug.log
+
+# E2E gate per-browser result artifacts
+/.gate-results

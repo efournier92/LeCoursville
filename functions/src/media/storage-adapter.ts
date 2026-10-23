@@ -37,6 +37,8 @@ export interface StorageAdapter {
     key: string;
     uploadId: string;
     parts: Array<{ partNumber: number; etag: string }>;
+    ifMatch?: string;
+    ifNoneMatch?: boolean;
   }): Promise<void>;
   abortMultipart(key: string, uploadId: string): Promise<void>;
   head(key: string): Promise<{
@@ -139,10 +141,13 @@ const productionAdapter: StorageAdapter = {
     const headers = presignHeaders(input);
     const { PutObjectCommand } = await loadS3();
     const { getSignedUrl } = await loadPresigner();
-    const signableHeaders = new Set(["content-type", "x-amz-meta-upload-batch"]);
-    if (input.mode === "replace") {
-      signableHeaders.add("if-match");
-    }
+    const conditionalHeader =
+      input.mode === "replace" ? "if-match" : "if-none-match";
+    const signableHeaders = new Set([
+      "content-type",
+      "x-amz-meta-upload-batch",
+      conditionalHeader,
+    ]);
     const command = new PutObjectCommand({
       Bucket: bucketName(),
       Key: input.key,
@@ -156,7 +161,10 @@ const productionAdapter: StorageAdapter = {
       expiresIn: input.expiresInSeconds,
       signableHeaders,
       // Without this the presigner hoists the metadata into the query string, so S3 would not store it as x-amz-meta-upload-batch.
-      unhoistableHeaders: new Set(["x-amz-meta-upload-batch"]),
+      unhoistableHeaders: new Set([
+        "x-amz-meta-upload-batch",
+        conditionalHeader,
+      ]),
     });
     return {
       url,
@@ -256,6 +264,8 @@ const productionAdapter: StorageAdapter = {
             ETag: part.etag,
           })),
         },
+        ...(input.ifMatch ? { IfMatch: input.ifMatch } : {}),
+        ...(input.ifNoneMatch ? { IfNoneMatch: "*" } : {}),
       })
     );
   },

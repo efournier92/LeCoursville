@@ -111,7 +111,8 @@ function headFor(
   entries: Record<
     string,
     { size: number; contentType: string; batchId?: string; exists?: boolean }
-  >
+  >,
+  defaultBatchId = "batch-1"
 ): void {
   adapter.head.mockImplementation(async (key: string) => {
     const entry = entries[key];
@@ -123,7 +124,7 @@ function headFor(
       size: entry.size,
       contentType: entry.contentType,
       etag: '"etag"',
-      metadata: { "upload-batch": entry.batchId ?? "batch-1" },
+      metadata: { "upload-batch": entry.batchId ?? defaultBatchId },
     };
   });
 }
@@ -423,8 +424,175 @@ describe("finalizeMediaUpload", () => {
         { partNumber: 1, etag: '"a"' },
         { partNumber: 2, etag: '"b"' },
       ],
+      ifNoneMatch: true,
     });
     expect(mediaRecords()[result.id]).toBeTruthy();
+  });
+
+  it("completes a replace multipart upload against the live ETag", async () => {
+    await seedAdmin();
+    const size = MULTIPART_PART_BYTES + 10;
+    await fakeDb.ref("media/rec-1").set({
+      id: "rec-1",
+      type: "video",
+      storage: {
+        managed: true,
+        key: VIDEO_KEY,
+        iconKey: ICON_KEY,
+      },
+    });
+    await seedBatch(
+      videoBatch({
+        mode: "replace",
+        mediaId: "rec-1",
+        assets: [
+          asset("video", VIDEO_KEY, size, "video/mp4", {
+            multipart: true,
+            uploadId: "upload-1",
+          }),
+        ],
+      })
+    );
+    adapter.listParts.mockResolvedValue([
+      { partNumber: 1, size: MULTIPART_PART_BYTES, etag: '"a"' },
+      { partNumber: 2, size: 10, etag: '"b"' },
+    ]);
+    headFor({ [VIDEO_KEY]: { size, contentType: "video/mp4" } });
+
+    const result = (await invoke({
+      batchId: "batch-1",
+      metadata: METADATA,
+      parts: [
+        { role: "video", partNumber: 1, etag: '"a"' },
+        { role: "video", partNumber: 2, etag: '"b"' },
+      ],
+    })) as { id: string };
+
+    expect(adapter.completeMultipart).toHaveBeenCalledWith({
+      key: VIDEO_KEY,
+      uploadId: "upload-1",
+      parts: [
+        { partNumber: 1, etag: '"a"' },
+        { partNumber: 2, etag: '"b"' },
+      ],
+      ifMatch: '"etag"',
+    });
+    expect(result.id).toBe("rec-1");
+  });
+
+  it("maps a multipart 412 to a failed precondition and releases the claim", async () => {
+    await seedAdmin();
+    const size = MULTIPART_PART_BYTES + 10;
+    await seedBatch(
+      videoBatch({
+        assets: [
+          asset("video", VIDEO_KEY, size, "video/mp4", {
+            multipart: true,
+            uploadId: "upload-1",
+          }),
+        ],
+      })
+    );
+    adapter.listParts.mockResolvedValue([
+      { partNumber: 1, size: MULTIPART_PART_BYTES, etag: '"a"' },
+      { partNumber: 2, size: 10, etag: '"b"' },
+    ]);
+    headFor({ [VIDEO_KEY]: { size, contentType: "video/mp4" } });
+    adapter.completeMultipart.mockRejectedValue(
+      Object.assign(new Error("precondition failed"), {
+        name: "PreconditionFailed",
+        $metadata: { httpStatusCode: 412 },
+      })
+    );
+
+    await expect(
+      invoke({
+        batchId: "batch-1",
+        metadata: METADATA,
+        parts: [
+          { role: "video", partNumber: 1, etag: '"a"' },
+          { role: "video", partNumber: 2, etag: '"b"' },
+        ],
+      })
+    ).rejects.toMatchObject({
+      code: "failed-precondition",
+      message: `Could not complete the upload for "${VIDEO_KEY}" because the file changed. Upload the file again.`,
+    });
+    expect(fakeDb.read("mediaUploads/batch-1/status")).toBe("ticketed");
+  });
+
+  it("releases the claim after a verification failure so a retry succeeds", async () => {
+    await seedAdmin();
+    await seedBatch(videoBatch());
+    headFor({
+      [VIDEO_KEY]: { size: 1000, contentType: "video/mp4" },
+      [ICON_KEY]: { size: 500, contentType: "image/jpeg" },
+    });
+    adapter.head.mockResolvedValueOnce({ exists: false });
+
+    await expect(
+      invoke({ batchId: "batch-1", metadata: METADATA })
+    ).rejects.toMatchObject({ code: "failed-precondition" });
+    expect(fakeDb.read("mediaUploads/batch-1/status")).toBe("ticketed");
+    expect(
+      (fakeDb.read("mediaUploads/batch-1/lastActivityAt") as number) ?? 0
+    ).toBeGreaterThan(1);
+
+    const result = (await invoke({
+      batchId: "batch-1",
+      metadata: METADATA,
+    })) as { id: string };
+    expect(mediaRecords()[result.id]).toBeTruthy();
+    expect(fakeDb.read("mediaUploads/batch-1/status")).toBe("finalized");
+  });
+
+  it("rejects a create-mode record that already uses the same name", async () => {
+    await seedAdmin();
+    await seedBatch(videoBatch(), "batch-1");
+    await fakeDb.ref("media/dup-video").set({
+      id: "dup-video",
+      type: "video",
+      fileName: "clip.mp4",
+      storage: { managed: true, batchId: "other-batch" },
+    });
+    headFor({
+      [VIDEO_KEY]: { size: 1000, contentType: "video/mp4" },
+      [ICON_KEY]: { size: 500, contentType: "image/jpeg" },
+    });
+
+    await expect(
+      invoke({ batchId: "batch-1", metadata: METADATA })
+    ).rejects.toMatchObject({
+      code: "already-exists",
+      message:
+        'A record named "Video/clip.mp4" already exists. Delete it or choose a different name.',
+    });
+
+    await seedBatch(albumBatch(), "batch-2");
+    await fakeDb.ref("media/dup-album").set({
+      id: "dup-album",
+      type: "audio-album",
+      folderName: "Le+Cours",
+      storage: { managed: true, batchId: "other-batch" },
+    });
+    headFor({
+      "Music/Albums/Le+Cours/01+First.mp3": { size: 100, contentType: "audio/mpeg" },
+      "Music/Albums/Le+Cours/02+Second.mp3": { size: 200, contentType: "audio/mpeg" },
+      "Music/Albums/Covers/Le+Cours.jpg": { size: 50, contentType: "image/jpeg" },
+      "Music/Albums/Zips/Le+Cours.zip": { size: 300, contentType: "application/zip" },
+    }, "batch-2");
+
+    await expect(
+      invoke({
+        batchId: "batch-2",
+        metadata: { title: "Album", date: "2026" },
+        trackTitles: ["First Song", "Second Song"],
+      })
+    ).rejects.toMatchObject({
+      code: "already-exists",
+      message:
+        'A record named "Le+Cours" already exists. Delete it or choose a different name.',
+    });
   });
 
   it("writes a video record with derived URLs and no uploader field", async () => {

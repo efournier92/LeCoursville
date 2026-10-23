@@ -67,19 +67,21 @@
         </mat-form-field>
       }
 
-      <div
-        class="media-path-preview"
-        data-testid="video-path-preview"
-        [attr.data-provisional]="pathProvisional ? 'true' : null"
-        [class.is-provisional]="pathProvisional"
-        >
-        <span class="media-path-label">S3 path</span>
-        <span class="media-path-value">{{ previewVideoKey() }}</span>
-        <span class="media-path-value">{{ previewIconKey() }}</span>
-        @if (pathProvisional) {
-          <span class="media-path-status">Provisional</span>
-        }
-      </div>
+      @if (showsPathPreview()) {
+        <div
+          class="media-path-preview"
+          data-testid="video-path-preview"
+          [attr.data-provisional]="pathProvisional ? 'true' : null"
+          [class.is-provisional]="pathProvisional"
+          >
+          <span class="media-path-label">S3 path</span>
+          <span class="media-path-value">{{ previewVideoKey() }}</span>
+          <span class="media-path-value">{{ previewIconKey() }}</span>
+          @if (pathProvisional) {
+            <span class="media-path-status">Provisional</span>
+          }
+        </div>
+      }
 
       @if (showsFileControls()) {
         <div class="media-thumbnail-controls">
