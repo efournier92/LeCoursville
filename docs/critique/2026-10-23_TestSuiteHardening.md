@@ -1,0 +1,68 @@
+# Critique Ledger: Test Suite Hardening
+
+- Goal: pressure-test the current test suite against the pre-deploy regression-confidence bar in /Users/e/mnt/bnk/cs/lecoursville
+- Started: 2026-10-23
+- Branch: feat/admin-facelift
+
+## Findings
+
+- C-20261023-01 | 2026-10-23 | reliability | high | high | addressed | Baseline gate red under load: webkit media replace timed out at 16.5s; focused rerun passed in 2.8s | e2e/specs/media.spec.ts:554
+  - rebuttal | addressed | spec:Wave 2 §9 | diagnose the load flake, wait on the stored record before the toast, rerun the three-browser gate
+- C-20261023-02 | 2026-10-23 | correctness | high | high | addressed | Fixture registers no afterEach; 11 of 20 specs never call assertClean, so console errors cannot fail them | e2e/helpers/fixture.ts:9
+  - rebuttal | addressed | spec:Wave 1 §1 | the shared fixture registers afterEach assertClean for every importing spec
+- C-20261023-03 | 2026-10-23 | correctness | high | high | addressed | The /net::/ allowlist swallows every Chromium requestfailed text, so a dropped request passes clean | e2e/helpers/console.ts:28
+  - rebuttal | addressed | spec:Wave 1 §1 | remove net:: and keep only allowlist entries with a written reason
+- C-20261023-04 | 2026-10-23 | security | high | high | addressed | Emulator loads allow-all storage.rules while deploy ships storage.rules.prod, which no executed test covers | storage.rules:9
+  - rebuttal | addressed | spec:Wave 2 §2 | a separate prod-rules emulator pass executes storage.rules.prod once per gate
+- C-20261023-05 | 2026-10-23 | security | high | high | addressed | Prod rules allow any signed-in user create/delete on photos and videoScreenshots and delete on userUploads | storage.rules.prod:13
+  - rebuttal | addressed | spec:Wave 2 §2 | pin the current member and stranger boundaries and document the accepted risk per the user decision
+- C-20261023-06 | 2026-10-23 | reliability | high | high | addressed | Chat edits the seeded message with no restore; cross-user test depends on a prior test's created message | e2e/specs/chat.spec.ts:111
+  - rebuttal | addressed | spec:Wave 2 §5 | afterEach restores msg-2 and removes created messages; the cross-user test creates its own fixture
+- C-20261023-07 | 2026-10-23 | data-integrity | high | high | addressed | Expression create/edit assert text in place without reload, so a failed server write still passes | e2e/specs/expressions.spec.ts:34
+  - rebuttal | addressed | spec:Wave 2 §6 | reload before the assertion and restore the seeded text in finally
+- C-20261023-08 | 2026-10-23 | maintainability | high | high | addressed | 22 of 33 security tests are browserless REST and callable fetches run in all three browser projects | e2e/specs/security.spec.ts:209
+  - rebuttal | addressed | spec:Wave 2 §1 | rules-only tests move to a once-run rules project; callable duplicates move to functions specs
+- C-20261023-09 | 2026-10-23 | maintainability | high | high | addressed | admin.spec is pre-facelift smoke; features, users, families, CSV, and access tests are superseded elsewhere | e2e/specs/admin.spec.ts:261
+  - rebuttal | addressed | spec:Wave 2 §8 | delete the named ranges and keep the unique badge, drawer, skip link, redirect, and media tests
+- C-20261023-10 | 2026-10-23 | reliability | high | high | addressed | Flag restore is happy-path only and flags.ts races async load; a failed restore can leave chat ON | e2e/helpers/flags.ts:13
+  - rebuttal | addressed | spec:Wave 1 §1 and Wave 2 §8 | wait for the features skeleton, then restore in afterEach try/finally
+- C-20261023-11 | 2026-10-23 | correctness | medium | high | addressed | Role grant dialog-to-callable path unproven; only Edit then Cancel and direct callable fetch exist | e2e/specs/admin-system.spec.ts:119
+  - rebuttal | addressed | spec:Wave 2 §3 | UI grant and revoke test asserts the stored role and both audit rows
+- C-20261023-12 | 2026-10-23 | data-integrity | medium | high | addressed | Album delete cascade with photos untested; the e2e delete uses an empty album, so cascade cleanup is unproven | src/app/services/photo-albums.service.ts:60
+  - rebuttal | addressed | spec:Wave 2 §4 | seed album-3 with a photo and assert album, photo, and Storage removal
+- C-20261023-13 | 2026-10-23 | security | medium | high | addressed | Non-image public upload asserts acceptance, and prod storage checks size but not content type | e2e/specs/security.spec.ts:136
+  - rebuttal | addressed | spec:Wave 2 §10 | characterize acceptance with a stored record and Storage object, per the user decision
+- C-20261023-14 | 2026-10-23 | correctness | medium | high | addressed | No-file upload test asserts absence only plus a 500ms sleep; it passes if the page never mounted | e2e/specs/public-upload.spec.ts:55
+  - rebuttal | addressed | spec:Wave 2 §7 | assert the heading, wait for networkidle, then assert no request and no button
+- C-20261023-15 | 2026-10-23 | reliability | medium | high | addressed | Outbound walk collects for a fixed 600ms per route; later external fetches escape and false-green | e2e/specs/security.spec.ts:172
+  - rebuttal | addressed | spec:Wave 2 §7 | wait for each route content selector and networkidle instead of a timer
+- C-20261023-16 | 2026-10-23 | maintainability | medium | high | addressed | Reload stress reloads each route three times and holds the slowest slots; one reload keeps the contract | e2e/specs/loading.spec.ts:62
+  - rebuttal | addressed | spec:Wave 2 §8 | one reload per route in both reload-stress tests
+- C-20261023-17 | 2026-10-23 | maintainability | medium | high | addressed | account-recovery duplicates callable behavior owned by functions and asserts the console collector in one test | e2e/specs/account-recovery.spec.ts:223
+  - rebuttal | addressed | spec:Wave 2 §8 | delete the two callable duplicates and add a top-level collector afterEach
+- C-20261023-18 | 2026-10-23 | maintainability | medium | high | addressed | Reset opt-in, no-enumeration, and recovery-close coverage is duplicated across three specs and functions | e2e/specs/security.spec.ts:1283
+  - rebuttal | addressed | spec:Wave 2 §8 | keep one UI owner for each and delete the duplicates with named owners
+- C-20261023-19 | 2026-10-23 | maintainability | medium | medium | addressed | media.spec re-proves storage invariants owned by functions delete/finalize/resume; keep the UI action and toast | e2e/specs/media.spec.ts:570
+  - rebuttal | addressed | spec:Wave 2 §8 | keep the UI click and toast, drop the object-state asserts owned by functions
+- C-20261023-20 | 2026-10-23 | correctness | medium | high | addressed | media auth, batch, config, metadata, and update-alert-recipients have no spec; authorization and fan-out unproven | functions/src/media/batch.ts:1
+  - rebuttal | addressed | spec:Wave 1 §2 | add auth, metadata, config, and update-alert-recipients specs; exempt type-only batch with a reason
+- C-20261023-21 | 2026-10-23 | correctness | medium | medium | addressed | Addresses, family, clan, people, message, media, rtdb, cloud-functions, and message components have no spec | src/app/services/people.service.ts:32
+  - rebuttal | addressed | spec:Wave 1 §3 | add critical service specs and delete the unreachable wipe helper
+- C-20261023-22 | 2026-10-23 | maintainability | medium | high | addressed | 12 Angular component specs assert only expect(component).toBeTruthy(), proving wiring, not behavior | src/app/components/chat/chat.component.spec.ts:27
+  - rebuttal | addressed | spec:Wave 1 §4 | rewrite all 12 to assert the template behavior named in the spec table
+- C-20261023-23 | 2026-10-23 | reliability | low | high | addressed | The three 1s XSS sleeps are not load-bearing; a DOM non-execution assertion is stronger and deterministic | e2e/specs/security.spec.ts:117
+  - rebuttal | addressed | spec:Wave 2 §7 | wait for payload text, assert no injected element, assert the execution marker stays 0
+- C-20261023-24 | 2026-10-23 | reliability | low | medium | addressed | seed reuses existing auth users; a failed recovery password restore persists into later browser projects | scripts/e2e/seed.mjs:48
+  - rebuttal | addressed | spec:Wave 2 §11 | seed resets an existing user password and recovery restore runs in a non-throwing finally
+- C-20261023-25 | 2026-10-23 | correctness | low | high | addressed | Calendar month-nav asserts only that a label changed, not the expected month or direction | e2e/specs/calendar.spec.ts:29
+  - rebuttal | addressed | spec:Wave 2 §6 | assert the exact next month, then the original on previous, and restore
+- C-20261023-26 | 2026-10-23 | correctness | low | medium | addressed | Double-submit test swallows the second click, so it cannot distinguish a real guard from a no-op | e2e/specs/edge-cases.spec.ts:11
+  - rebuttal | addressed | spec:Wave 2 §6 | assert a disabled or saving state and exactly one auth request
+- C-20261023-27 | 2026-10-23 | maintainability | low | high | addressed | Feature-flags tests one and two visit the same seeded-OFF /chat page and duplicate the disabled assertions | e2e/specs/feature-flags.spec.ts:14
+  - rebuttal | addressed | spec:Wave 2 §8 | merge into one disabled-page test
+- C-20261023-28 | 2026-10-23 | correctness | low | medium | addressed | Author self-edit of a chat message is untested; only an admin editing a seeded message is covered | e2e/specs/chat.spec.ts:56
+  - rebuttal | addressed | spec:Wave 2 §5 | seed msg-4 as an editable author-owned message and add the self-edit test
+- C-20261023-29 | 2026-10-23 | maintainability | low | high | addressed | No coverage signal exists; istanbul-lib-instrument is installed but unused | package.json:4
+  - rebuttal | addressed | spec:Wave 3 §3 | attempt coverage without a new dependency; if unavailable, record it and use the risk matrix
+- C-20261023-30 | 2026-10-23 | correctness | medium | high | rejected | Claim that auth and chat bypass the fixture by importing @playwright/test is false | e2e/specs/auth.spec.ts:1
+  - rebuttal | rejected | e2e/specs/chat.spec.ts:1 | both import from helpers/fixture; the only raw import is a type-only Locator import
