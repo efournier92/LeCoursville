@@ -163,7 +163,7 @@ Exempt: `functions/src/media/batch.ts` is type-only with no runtime behavior. Do
 - A plain user returns `permission-denied`.
 - A super without admin returns `permission-denied` (the helper checks `roles/admin`).
 - `emails` must be an array, at most 25, each valid after trim and lowercase.
-- Empty or whitespace-only list writes `null` to `config/adminAlertRecipients`.
+- An empty list writes `null` to `config/adminAlertRecipients`; a whitespace-only entry is `invalid-argument` after trim.
 - A valid list writes trimmed lowercase emails.
 - Every success writes one `recoveryAudit` row with action `update_recipients`, the actor uid, and the token email.
 - Returns `{ ok: true }`.
@@ -186,7 +186,7 @@ Use `functions/src/test-support.ts` fake DB and the invocation pattern at `funct
 
 - `importPeople` dedupes repeated ids, preserves existing fields not present in the import, and sends one root update.
 - `getAncestors` stops on a cycle.
-- `getDescendants` includes spouses and excludes ids ending in `-S`.
+- `getDescendants` includes children and grandchildren and excludes ids ending in `-S`.
 - No test for `wipeAllPeopleAndCalendarEvents`; delete the method (see deletions).
 
 `src/app/services/message.service.spec.ts`:
@@ -212,10 +212,10 @@ Use `functions/src/test-support.ts` fake DB and the invocation pattern at `funct
 
 `src/app/services/photo-albums-feature.guard.spec.ts`:
 
-- Missing feature id allows.
-- Enabled flag allows.
-- Disabled flag redirects to `route.data.fallbackUrl` or `/photos`.
-- Waits for flags readiness and fails open only after the timeout.
+- A missing or disabled `enablePhotoAlbums` flag redirects to `route.data.fallbackUrl` or `/photos` (default OFF).
+- An enabled flag allows activation.
+- Waits for `flagsReady()` before deciding.
+- This guard has no timeout; do not assert fail-open behavior here.
 
 `src/app/services/media.service.spec.ts`:
 

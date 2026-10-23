@@ -29,13 +29,6 @@ export class PeopleService {
     );
   }
 
-  wipeAllPeopleAndCalendarEvents(): Promise<void> {
-    return Promise.all([
-      this.rtdb.object('people').remove(),
-      this.rtdb.object('calendarEvents').remove()
-    ]).then(() => {});
-  }
-
   getPeople() {
     return this.rtdb.list<Person>('people');
   }
