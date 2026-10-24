@@ -24,6 +24,10 @@ mutated state (feature flags especially — chat is seeded OFF), and use the
 console-error collector from `e2e/helpers/fixture.ts` (import `test` from
 there, not from `@playwright/test`).
 
+**Policy:** read `docs/testing/TEST_POLICY.md` before changing behavior.
+Every user-visible change adds or updates its e2e spec in the same change.
+Record the behavior assertion or red proof in the commit.
+
 ## The gate
 
 ```bash
