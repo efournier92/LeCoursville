@@ -24,9 +24,16 @@ test.describe('calendar', () => {
     await login(page, 'admin');
     await page.goto('/calendar');
     const monthLabel = page.locator('.calendar-month-label');
-    const before = (await monthLabel.textContent())?.trim();
+    const before = (await monthLabel.textContent())?.trim() ?? '';
+    const next = new Date();
+    next.setDate(1);
+    next.setMonth(next.getMonth() + 1);
+    const expectedNext = next.toLocaleString('en-US', { month: 'long' });
     await page.locator('.calendar-nav-btn').last().click();
-    await expect(monthLabel).not.toHaveText(before ?? '____');
+    await expect(monthLabel).toHaveText(expectedNext);
+    // Previous restores the month the test started on.
+    await page.locator('.calendar-nav-btn').first().click();
+    await expect(monthLabel).toHaveText(before);
   });
 
   test('printer view opens and shows the seeded year', async ({ page }) => {

@@ -31,6 +31,13 @@ async function deleteStorageObject(path: string): Promise<void> {
   ).catch(() => undefined);
 }
 
+async function storageObjectExists(path: string): Promise<boolean> {
+  const response = await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}`,
+  );
+  return response.ok;
+}
+
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin content surfaces', () => {
@@ -73,16 +80,51 @@ test.describe('admin content surfaces', () => {
 
     await throwaway.locator('button[matTooltip="Delete"]').click();
     const confirm = page.locator('app-confirm-dialog');
-    await expect(confirm).toBeVisible();
+    // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
+    await expect(confirm).toBeVisible({ timeout: 30_000 });
     await expect(confirm).toContainText('E2E Throwaway Album');
     await confirm.getByRole('button', { name: 'Cancel' }).click();
     await expect(confirm).toBeHidden();
     await expect(throwaway).toBeVisible();
 
     await throwaway.locator('button[matTooltip="Delete"]').click();
+    // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
+    await expect(confirm).toBeVisible({ timeout: 30_000 });
     await page.locator('app-confirm-dialog').getByRole('button', { name: 'Delete album' }).click();
     await expect(throwaway).toBeHidden();
     await expect(page.getByText('E2E Album One')).toBeVisible();
+  });
+
+  test('photo albums: deleting an album cascades to its photo record and Storage object', async ({ page }) => {
+    const albumsBefore = (await readDb<Record<string, any>>('photoAlbums')) ?? {};
+    const photosBefore = (await readDb<Record<string, any>>('photos')) ?? {};
+    expect(albumsBefore['album-3']).toBeTruthy();
+    expect(photosBefore['photo-3-1']).toBeTruthy();
+    expect(await storageObjectExists('photos/album-3/photo1.png')).toBe(true);
+
+    await login(page, 'admin');
+    await page.goto('/admin/photo-albums');
+    const card = page.locator('.admin-album-card', { hasText: 'E2E Delete Album' });
+    await expect(card).toBeVisible();
+
+    await card.locator('button[aria-label="Delete album"]').click();
+    const confirm = page.locator('app-confirm-dialog');
+    await expect(confirm).toContainText('E2E Delete Album');
+    await expect(confirm).toContainText('1 photo');
+    await confirm.getByRole('button', { name: 'Delete album' }).click();
+
+    await expect.poll(async () => readDb('photoAlbums/album-3')).toBeNull();
+    await expect.poll(async () => readDb('photos/photo-3-1')).toBeNull();
+    await expect
+      .poll(async () => storageObjectExists('photos/album-3/photo1.png'))
+      .toBe(false);
+
+    const albumsAfter = (await readDb<Record<string, any>>('photoAlbums')) ?? {};
+    const photosAfter = (await readDb<Record<string, any>>('photos')) ?? {};
+    delete albumsBefore['album-3'];
+    delete photosBefore['photo-3-1'];
+    expect(albumsAfter).toEqual(albumsBefore);
+    expect(photosAfter).toEqual(photosBefore);
   });
 
   test('uploads: pending and all filters, and a rejected upload is kept when the confirm is cancelled', async ({ page }) => {

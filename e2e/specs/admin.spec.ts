@@ -6,19 +6,6 @@ import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin', () => {
-  test('users page lists the seeded users in a table', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/users');
-    const table = page.getByTestId('admin-users-table');
-    await expect(table).toBeVisible({ timeout: 20000 });
-    const rows = table.locator('tbody tr');
-    await expect(rows).toHaveCount(5);
-    const names = await rows.locator('td[data-label="Name"]').allTextContents();
-    expect(names).toEqual(
-      expect.arrayContaining(['Admin User', 'Regular User', 'Other User', 'Staff Admin', 'Sparse User']),
-    );
-  });
-
   test('super admin sees the Admin link in the navbar', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
@@ -227,14 +214,6 @@ test.describe('admin', () => {
     await expect(nav).not.toBeVisible();
   });
 
-  test('non-super admin is redirected out of admin', async ({ page }) => {
-    await login(page, 'staff');
-    await page.goto('/admin/users');
-    await expect(page).toHaveURL(/\/calendar/);
-    await expect(page.locator('app-admin')).toHaveCount(0);
-    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
-  });
-
   test('photo albums nav follows its feature flag', async ({ page }) => {
     await login(page, 'admin');
     await setFeatureFlag(page, 'enablePhotoAlbums', false);
@@ -258,45 +237,11 @@ test.describe('admin', () => {
     ).toBeVisible();
   });
 
-  test('features page renders 9 toggles with chat OFF and others ON', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/features');
-    const ids = ['people', 'contacts', 'calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat'];
-    for (const id of ids) {
-      await expect(page.getByTestId(`feature-toggle-${id}`)).toBeVisible();
-    }
-    await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
-    await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('feature-toggle-enablePhotoAlbums').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
-  });
-
-  test('features page: toggle chat ON then OFF restores state', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/features');
-    const chatToggle = page.getByTestId('feature-toggle-chat');
-    const chatSwitch = chatToggle.locator('button[role="switch"]');
-    await expect(chatSwitch).toHaveAttribute('aria-checked', 'false');
-    try {
-      await chatSwitch.click();
-      await expect(chatSwitch).toHaveAttribute('aria-checked', 'true');
-    } finally {
-      await setFeatureFlag(page, 'chat', false);
-    }
-    await expect(chatSwitch).toHaveAttribute('aria-checked', 'false');
-  });
-
   test('families page lists the 2 seeded families', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/families');
     await expect(page.getByText('Mignonne').first()).toBeVisible();
     await expect(page.getByText('Denis').first()).toBeVisible();
-  });
-
-  test('calendars page lists the seeded calendar year', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/calendars');
-    const year = new Date().getFullYear().toString();
-    await expect(page.getByText(year).first()).toBeVisible();
   });
 
   test('media library header sits with the list and dates render zero-padded ISO', async ({ page }) => {
@@ -330,39 +275,4 @@ test.describe('admin', () => {
     }
   });
 
-  test('uploads page lists the pre-seeded approved upload', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/uploads');
-    // The review queue defaults to the pending filter; the seeded upload is approved.
-    await page.getByRole('button', { name: /All \(\d+\)/ }).click();
-    await expect(page.getByText('fixture.png').first()).toBeVisible();
-    await expect(page.getByText('Approved').first()).toBeVisible();
-  });
-
-  test('people import: CSV import previews and adds a person', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/people');
-    const csv = [
-      'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
-      'import-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne',
-    ].join('\n');
-    await page.locator('input[type="file"]').setInputFiles({
-      name: 'people.csv',
-      mimeType: 'text/csv',
-      buffer: Buffer.from(csv),
-    });
-    await expect(page.getByText('Import Preview')).toBeVisible();
-    await expect(page.getByText('To Create').first()).toBeVisible();
-    await page.getByRole('button', { name: 'Confirm Import' }).click();
-    await expect(page.getByText('Import Complete')).toBeVisible({ timeout: 15000 });
-    await page.goto('/people');
-    await expect(page.getByText('Zoe Zimmerman').first()).toBeVisible();
-  });
-
-  test('access denial: regular user cannot open /admin', async ({ page }) => {
-    await login(page, 'user');
-    await page.goto('/admin');
-    await expect(page).not.toHaveURL(/\/admin/);
-    await expect(page).toHaveURL(/\/calendar/);
-  });
 });

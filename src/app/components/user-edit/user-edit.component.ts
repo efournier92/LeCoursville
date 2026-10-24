@@ -79,14 +79,16 @@ export class UserEditComponent implements OnInit, OnChanges {
 
   async onSaveUser(user: User): Promise<void> {
     this.saveError = '';
-    if (user.roles?.super) {
-      user.roles.admin = true;
-    }
-    // Membership revoke is a ban: no privilege survives it, and the local
-    // object must match what the callable writes or the profile write races it.
-    if (user.roles && user.roles.user !== true) {
-      user.roles.admin = false;
-      user.roles.super = false;
+    if (user.roles) {
+      // The callable writes all three keys; without the same shape here the
+      // users rule sees null vs false for an omitted key and denies the profile write.
+      const superRole = user.roles.super === true;
+      const member = user.roles.user === true;
+      user.roles = {
+        user: member,
+        admin: member && (user.roles.admin === true || superRole),
+        super: member && superRole,
+      };
     }
     const changes = this.roleChanges(user);
     if (changes.messages.length > 0) {

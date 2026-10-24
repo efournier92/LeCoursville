@@ -21,8 +21,30 @@ export default defineConfig({
     locale: 'en-US',
   },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
-    { name: 'webkit', use: { browserName: 'webkit' } },
-    { name: 'firefox', use: { browserName: 'firefox' } },
+    {
+      name: 'rules',
+      testMatch: /(^|\/)rules\.spec\.ts$/,
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'storage-prod',
+      testMatch: /storage-rules\.spec\.ts$/,
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'chromium',
+      testIgnore: [/rules\.spec\.ts$/, /storage-rules\.spec\.ts$/],
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'webkit',
+      testIgnore: [/rules\.spec\.ts$/, /storage-rules\.spec\.ts$/],
+      use: { browserName: 'webkit' },
+    },
+    {
+      name: 'firefox',
+      testIgnore: [/rules\.spec\.ts$/, /storage-rules\.spec\.ts$/],
+      use: { browserName: 'firefox' },
+    },
   ],
 });

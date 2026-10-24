@@ -405,10 +405,10 @@ Any other create or edit flow that asserts only in-place text gains a reload bef
 
 Replace only when the replacement is at least as strong:
 
-- `e2e/specs/security.spec.ts:117`, `:131`: wait for the payload text to be visible, assert no injected element exists (`img[src="x"]` count 0), assert `window.__xss` is 0. Remove the sleep.
+- `e2e/specs/security.spec.ts:117`, `:131`: wait for the payload text to be visible, assert no rendered element carries an `onerror` attribute containing `__xss`, and assert `window.__xss` is 0. Angular sanitizes the handler but may keep an `img` element, so element absence is not the contract. Remove the sleep.
 - `e2e/specs/security.spec.ts:172`: after each `goto`, wait for the route content selector from `loading.spec.ts:8-23` and then `page.waitForLoadState('networkidle')`. Remove the 600ms sleep.
 - `e2e/specs/public-upload.spec.ts:55`: assert the Upload Files heading is visible, wait for `networkidle`, then assert the upload button count is 0 and no `:9199` request exists. Remove the 500ms sleep.
-- `e2e/specs/edge-cases.spec.ts:92`: wait for the imported `Probe` text, assert no injected image element, assert `window.__xss` is 0. Remove the sleep.
+- `e2e/specs/edge-cases.spec.ts:92`: wait for the imported `Probe` text, assert no rendered element carries an `onerror` attribute containing `__xss`, and assert `window.__xss` is 0. Remove the sleep.
 
 #### 8. Trim e2e fat
 

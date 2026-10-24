@@ -25,7 +25,6 @@ const ALLOWLIST = [
   /\[Emulator\]/,
   /ERR_ABORTED/,
   /drive\.google\.com/,
-  /net::/,
   /(?:127\.0\.0\.1|localhost):9099\//,
 ];
 

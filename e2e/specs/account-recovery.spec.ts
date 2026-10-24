@@ -20,6 +20,10 @@ test.beforeEach(() => {
   cleanup = [];
 });
 
+test.afterEach(async ({ collector }) => {
+  collector.assertClean();
+});
+
 test.afterEach(async () => {
   for (const path of cleanup.reverse()) {
     await deleteDb(path);
@@ -175,11 +179,10 @@ test.describe('account recovery', () => {
     }
   });
 
-  test('invalid reset code shows the error and resend, with a clean console', async ({ page, collector }) => {
+  test('invalid reset code shows the error and resend, with a clean console', async ({ page }) => {
     await page.goto('/auth/action?mode=resetPassword&oobCode=not-a-real-code');
     await expect(page.getByTestId('auth-action-error')).toBeVisible();
     await expect(page.getByTestId('auth-action-resend')).toBeVisible();
-    collector.assertClean();
   });
 
   test('a used reset code cannot be replayed', async ({ page }) => {
@@ -218,32 +221,6 @@ test.describe('account recovery', () => {
       await trackResets(email);
       await setUserPassword(email, SEEDED_PASSWORD);
     }
-  });
-
-  test('recovery request writes a request, an alert, and the alert email', async ({ page }) => {
-    const email = 'recovery-eight@e2e.local';
-    const alternate = 'recovery-eight-alt@e2e.local';
-    await addRecoveryRequest(page, email, 'Recovery Eight', alternate);
-
-    await expect
-      .poll(async () => (await requestsFor(email)).length, { timeout: 15000 })
-      .toBe(1);
-    for (const request of await requestsFor(email)) {
-      cleanup.push(`recoveryRequests/${request.key}`);
-    }
-
-    await expect.poll(async () => (await alertsFor(email)).length, { timeout: 15000 }).toBe(1);
-
-    await expect
-      .poll(
-        async () =>
-          (await findOutboundEmails('admin_alert', { to: E2E_USERS.admin.email })).some((mail) =>
-            (mail.text ?? '').includes(email),
-          ),
-        { timeout: 15000 },
-      )
-      .toBe(true);
-    await trackAlertRows(email);
   });
 
   test('recovery validation: required fields, then success without an alternate contact', async ({ page }) => {
@@ -597,31 +574,6 @@ test.describe('account recovery', () => {
     await expect(card.locator('.activity-row').filter({ hasText: email })).toBeVisible();
 
     await trackAlertRows(email);
-  });
-
-  test('admin sees a recovery attempt the global cap turned away', async ({ page }) => {
-    const email = `turned-away-${Date.now()}@e2e.local`;
-    const key = `denied-${Date.now()}`;
-    await writeDb(`recoveryAudit/${key}`, {
-      id: key,
-      action: 'recovery_attempt_denied',
-      function: 'submitRecoveryRequest',
-      layer: 'global',
-      targetEmail: email,
-      email,
-      name: 'Turned Away',
-      createdAt: Date.now(),
-    });
-    cleanup.push(`recoveryAudit/${key}`);
-
-    await login(page, 'admin');
-    await page.goto('/admin/recovery');
-    await expect(
-      page
-        .getByTestId('admin-recovery-activity')
-        .locator('.activity-row')
-        .filter({ hasText: email }),
-    ).toBeVisible();
   });
 
   test('a stale pending request stays visible and closable', async ({ page }) => {

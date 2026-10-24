@@ -24,6 +24,8 @@ admin.initializeApp({
 });
 
 const PASSWORD = 'E2e-pass-2026';
+const AUTH_EMULATOR = 'http://127.0.0.1:9099';
+const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
 
 const USERS = [
   { email: 'admin@e2e.local', name: 'Admin User', roles: { user: true, admin: true } },
@@ -47,10 +49,29 @@ async function ensureUser(email, name) {
   } catch (err) {
     if (err.code === 'auth/email-already-exists') {
       const user = await admin.auth().getUserByEmail(email);
+      // A long-lived emulator keeps users across runs; reset the password so a
+      // recovery test that changed it cannot leak into the next browser project.
+      await admin.auth().updateUser(user.uid, { password: PASSWORD });
       return user.uid;
     }
     throw err;
   }
+}
+
+/** Signs in over the auth emulator REST API; used to authenticate Storage writes. */
+async function idTokenFor(email) {
+  const res = await fetch(
+    `${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: PASSWORD, returnSecureToken: true }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`auth sign-in ${email} -> HTTP ${res.status}`);
+  }
+  return (await res.json()).idToken;
 }
 
 // --- Fixtures --------------------------------------------------------------
@@ -249,6 +270,7 @@ async function main() {
   const albums = {
     'album-1': { id: 'album-1', title: 'E2E Album One', coverPhotoId: 'photo-1-1', createdAt: now - 86400000, updatedAt: now - 86400000 },
     'album-2': { id: 'album-2', title: 'E2E Album Two', coverPhotoId: 'photo-2-1', createdAt: now, updatedAt: now },
+    'album-3': { id: 'album-3', title: 'E2E Delete Album', coverPhotoId: 'photo-3-1', createdAt: now, updatedAt: now },
   };
 
   const photos = {};
@@ -273,6 +295,22 @@ async function main() {
       };
     }
   }
+  photos['photo-3-1'] = {
+    id: 'photo-3-1',
+    dateAdded: new Date(now - 31 * 86400000),
+    path: 'photos/album-3/photo1.png',
+    extension: 'png',
+    url: photoBase('album-3', 1),
+    info: 'E2E photo 3-1',
+    location: 'E2E Studio',
+    year: year,
+    takenBy: 'E2E Tester',
+    uploadedBy: adminUid,
+    isYearCirca: false,
+    isEditable: false,
+    isMessageAttachment: false,
+    albumId: 'album-3',
+  };
 
   const messages = {
     'msg-1': {
@@ -297,6 +335,14 @@ async function main() {
       authorName: 'Regular User', authorId: userUid,
       isReply: false, replyLevel: 0, likes: [], replies: [],
       dateSent: new Date(now - 3 * 86400000), isEditable: false, isSaved: false,
+      isDeleted: false, isSticky: false, messageType: 'chat',
+    },
+    'msg-4': {
+      id: 'msg-4', title: 'Author Editable', body: 'E2E author editable',
+      attachmentId: '', attachmentType: '', attachmentUrl: '',
+      authorName: 'Regular User', authorId: userUid,
+      isReply: false, replyLevel: 0, likes: [], replies: [],
+      dateSent: new Date(now - 4 * 86400000), isEditable: false, isSaved: true,
       isDeleted: false, isSticky: false, messageType: 'chat',
     },
     'expr-1': {
@@ -430,25 +476,32 @@ async function main() {
       + '01-fixture.mp3, 02-fixture.mp3, fixture-noart.mp3, fixture.zip',
   );
 
-  // 5. Storage uploads (photo fixtures, 2 per album). The storage emulator is
-  // only present when the caller's `--only` list includes it; skip otherwise so
-  // an RTDB-only seed run does not fail on an unreachable port.
+  // 5. Storage uploads (photo fixtures). The storage emulator is only present
+  // when the caller's `--only` list includes it; skip otherwise so an
+  // RTDB-only seed run does not fail on an unreachable port.
   if (process.env.FIREBASE_STORAGE_EMULATOR_HOST) {
-    for (let i = 1; i <= 2; i++) {
-      for (let j = 1; j <= 2; j++) {
-        const name = `photos%2Falbum-${i}%2Fphoto${j}.png`;
-        const url = `http://localhost:${STORAGE_PORT}/v0/b/${BUCKET}/o?uploadType=media&name=${name}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'image/png' },
-          body: pngBytes(),
-        });
-        if (!res.ok) {
-          throw new Error(`storage upload ${name} -> HTTP ${res.status}`);
-        }
+    // storage.rules.prod requires a signed-in writer for photos, so authenticate
+    // the seed writes; the same seed then works under the open emulator rules.
+    const token = await idTokenFor('admin@e2e.local');
+    const objects = [
+      'photos/album-1/photo1.png',
+      'photos/album-1/photo2.png',
+      'photos/album-2/photo1.png',
+      'photos/album-2/photo2.png',
+      'photos/album-3/photo1.png',
+    ];
+    for (const name of objects) {
+      const url = `http://localhost:${STORAGE_PORT}/v0/b/${BUCKET}/o?uploadType=media&name=${encodeURIComponent(name)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/png', Authorization: `Bearer ${token}` },
+        body: pngBytes(),
+      });
+      if (!res.ok) {
+        throw new Error(`storage upload ${name} -> HTTP ${res.status}`);
       }
     }
-    out.push('storage uploads: 4 photos');
+    out.push(`storage uploads: ${objects.length} photos`);
   } else {
     out.push('storage uploads: skipped (storage emulator not running)');
   }

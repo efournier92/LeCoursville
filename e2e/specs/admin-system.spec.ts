@@ -55,6 +55,84 @@ test.describe('admin system surfaces', () => {
     }
   });
 
+  test('users: granting then revoking admin persists the role and writes one audit row per change', async ({ page }) => {
+    const startedAt = Date.now();
+    const users = (await readDb<Record<string, any>>('users')) ?? {};
+    const targetEntry = Object.entries(users).find(([, user]) => user?.email === 'user@e2e.local');
+    const adminEntry = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local');
+    expect(targetEntry).toBeTruthy();
+    expect(adminEntry).toBeTruthy();
+    const [uid, target] = targetEntry!;
+    const [adminUid] = adminEntry!;
+    const rolesBefore = target.roles;
+    expect(rolesBefore.super).not.toBe(true);
+    const auditBefore = (await readDb<Record<string, any>>('roleAudit')) ?? {};
+
+    const newAudits = async () =>
+      Object.entries((await readDb<Record<string, any>>('roleAudit')) ?? {}).filter(
+        ([key]) => !(key in auditBefore),
+      );
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/users');
+      const table = page.getByTestId('admin-users-table');
+      await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+      const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
+
+      await row.getByRole('button', { name: 'Edit Regular User' }).click();
+      const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      await expect(editor).toBeVisible();
+      await editor.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await editor.getByRole('button', { name: 'Save' }).click();
+      const grantDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
+      await expect(grantDialog).toContainText('Give Regular User admin access?');
+      await grantDialog.getByRole('button', { name: 'Save' }).click();
+      await expect(editor).toHaveCount(0);
+
+      await expect
+        .poll(async () => (await readDb<Record<string, any>>(`users/${uid}/roles`))?.admin)
+        .toBe(true);
+      await expect.poll(async () => (await newAudits()).length).toBe(1);
+      const grant = (await newAudits())[0][1];
+      expect(grant.actorId).toBe(adminUid);
+      expect(grant.targetId).toBe(uid);
+      expect(grant.targetEmail).toBe('user@e2e.local');
+      expect(grant.before).toEqual({ user: true, admin: false, super: false });
+      expect(grant.after).toEqual({ user: true, admin: true, super: false });
+      expect(grant.at).toBeGreaterThanOrEqual(startedAt);
+
+      await row.getByRole('button', { name: 'Edit Regular User' }).click();
+      const reopen = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      await expect(reopen).toBeVisible();
+      await reopen.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await reopen.getByRole('button', { name: 'Save' }).click();
+      const revokeDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
+      await expect(revokeDialog).toContainText('Remove admin access from Regular User?');
+      await revokeDialog.getByRole('button', { name: 'Save' }).click();
+      await expect(reopen).toHaveCount(0);
+
+      await expect
+        .poll(async () => (await readDb<Record<string, any>>(`users/${uid}/roles`))?.admin)
+        .toBe(false);
+      await expect.poll(async () => (await newAudits()).length).toBe(2);
+      const revoke = (await newAudits()).find(
+        ([, entry]) => entry?.before?.admin === true && entry?.after?.admin === false,
+      )?.[1];
+      expect(revoke).toBeTruthy();
+      expect(revoke.actorId).toBe(adminUid);
+      expect(revoke.targetId).toBe(uid);
+      expect(revoke.targetEmail).toBe('user@e2e.local');
+      expect(revoke.before).toEqual({ user: true, admin: true, super: false });
+      expect(revoke.after).toEqual({ user: true, admin: false, super: false });
+    } finally {
+      await writeDb(`users/${uid}/roles`, rolesBefore);
+      for (const [key] of await newAudits()) {
+        await deleteDb(`roleAudit/${key}`);
+      }
+    }
+  });
+
   test('users: pending uploads referencing the member are named in the delete confirmation', async ({ page }) => {
     const uploadKey = `e2e-pending-upload-${Date.now()}`;
     await writeDb(`userUploads/${uploadKey}`, {

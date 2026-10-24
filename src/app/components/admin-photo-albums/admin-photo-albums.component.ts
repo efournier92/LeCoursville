@@ -489,10 +489,13 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
       return;
     }
     this.isDeletingAlbum = true;
-    const photoIds = this.photos.filter(p => p.albumId === album.id).map(p => p.id);
+    const albumPhotos = this.photos.filter(p => p.albumId === album.id);
     try {
-      await this.photoAlbumsService.deleteAlbumCascade(album.id, photoIds);
-      this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: photoIds.length });
+      await this.photoAlbumsService.deleteAlbumCascade(album.id, albumPhotos.map(p => p.id));
+      for (const photo of albumPhotos) {
+        this.photosService.deletePhoto(photo);
+      }
+      this.analyticsService.logEvent('photo_album_delete', { albumId: album.id, photoCount: albumPhotos.length });
       // Only drop the drill-in panel once the cascade actually succeeded.
       if (this.selectedAlbum?.id === album.id) {
         this.closeAlbumPhotos();

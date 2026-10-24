@@ -20,11 +20,26 @@ npm --prefix functions run build
 echo "=== Functions tests ==="
 npm --prefix functions test 2>&1 | tee .gate-results/functions-tests.txt
 
+echo "=== Prod Storage rules pass ==="
+# A throwaway config points the Storage emulator at storage.rules.prod so the
+# gate exercises the deployed policy, not the open emulator rules.
+PROD_CONFIG=$(node scripts/e2e/prod-rules-config.mjs)
+firebase emulators:exec --project lecoursville-dev --config "$PROD_CONFIG" \
+  --only auth,database,storage,hosting,functions \
+  "node scripts/e2e/seed.mjs && npx playwright test --project=storage-prod"
+
 echo "=== Starting emulators + seeding + running Playwright ==="
-# One fresh seed per browser project: the RTDB emulator state persists across
-# projects in a single `playwright test` run, and mutation tests (chat edits,
-# uploads, created records) would otherwise bleed into the next project's
-# assertions. Re-seeding keeps every project deterministic.
+# A fresh emulator per browser project: the DB reseed alone is not enough
+# because Storage objects and emulator process state persist across projects
+# in one exec, and that accumulated state and load bleeds into late projects
+# as intermittent timeouts. Rules and chromium share one exec, reseeded
+# between them because the rules tests mutate DB state.
 firebase emulators:exec --project lecoursville-dev \
   --only auth,database,storage,hosting,functions \
-  "node scripts/e2e/seed.mjs && npx playwright test --project=chromium && cp test-results/e2e-results.json .gate-results/chromium.json && node scripts/e2e/seed.mjs && npx playwright test --project=webkit && cp test-results/e2e-results.json .gate-results/webkit.json && node scripts/e2e/seed.mjs && npx playwright test --project=firefox && cp test-results/e2e-results.json .gate-results/firefox.json"
+  "node scripts/e2e/seed.mjs && npx playwright test --project=rules && node scripts/e2e/seed.mjs && npx playwright test --project=chromium && cp test-results/e2e-results.json .gate-results/chromium.json"
+firebase emulators:exec --project lecoursville-dev \
+  --only auth,database,storage,hosting,functions \
+  "node scripts/e2e/seed.mjs && npx playwright test --project=webkit && cp test-results/e2e-results.json .gate-results/webkit.json"
+firebase emulators:exec --project lecoursville-dev \
+  --only auth,database,storage,hosting,functions \
+  "node scripts/e2e/seed.mjs && npx playwright test --project=firefox && cp test-results/e2e-results.json .gate-results/firefox.json"

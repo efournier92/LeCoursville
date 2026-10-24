@@ -1,17 +1,55 @@
 import { test, expect } from '../helpers/fixture';
-import { login, logout } from '../helpers/auth';
+import { login } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
+import { writeDb } from '../helpers/admin-db';
+
+// Chat is seeded OFF; the chat double-submit test turns it ON.
+test.afterEach(async () => {
+  await writeDb('features/chat/enabled', false);
+});
 
 test.describe('edge cases', () => {
-  test('double-submit auth: two rapid clicks produce one sign-in, no error', async ({ page }) => {
+  test('double-submit auth: one click disables submit and sends one sign-in', async ({ page }) => {
+    const authRequests: string[] = [];
+    page.on('request', (r) => {
+      const url = r.url();
+      if (url.includes(':9099') && url.includes('accounts:signInWithPassword')) {
+        authRequests.push(url);
+      }
+    });
     await page.goto('/');
     await page.getByTestId('auth-email').fill('admin@e2e.local');
     await page.getByTestId('auth-password').fill('E2e-pass-2026');
+    // The emulator can answer before a polling assertion observes the button,
+    // so record every state the control passes through, then click once.
+    await page.evaluate(() => {
+      const button = document.querySelector('[data-testid="auth-submit"]') as HTMLButtonElement;
+      const states: { disabled: boolean; saving: boolean }[] = [];
+      const record = () =>
+        states.push({
+          disabled: button.disabled,
+          saving: /Signing in/.test(button.textContent ?? ''),
+        });
+      record();
+      new MutationObserver(record).observe(button, {
+        attributes: true,
+        attributeFilter: ['disabled'],
+        childList: true,
+        subtree: true,
+      });
+      (window as any).__submitStates = states;
+    });
     await page.getByTestId('auth-submit').click();
-    await page.getByTestId('auth-submit').click({ force: true }).catch(() => {});
     await expect(page).toHaveURL(/\/calendar/);
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
     await expect(page.getByTestId('auth-error')).toHaveCount(0);
+    const states = await page.evaluate(
+      () => (window as any).__submitStates as { disabled: boolean; saving: boolean }[],
+    );
+    // The guard disables the control for the whole async sign-in, so no second
+    // submission could start; no force click is swallowed to prove it.
+    expect(states.some((state) => state.disabled || state.saving)).toBe(true);
+    expect(authRequests).toHaveLength(1);
   });
 
   test('double-submit chat: Send opens one confirm and saves exactly one message', async ({ page }) => {
@@ -27,8 +65,6 @@ test.describe('edge cases', () => {
     await expect(page.getByRole('heading', { name: 'Are You Sure?' })).toHaveCount(1);
     await page.getByRole('button', { name: 'Yes' }).click();
     await expect(page.getByText('E2E Double Title')).toHaveCount(1);
-    // Restore the seeded flag state for later spec files.
-    await setFeatureFlag(page, 'chat', false);
   });
 
   test('navigation race: rapid SPA route hops settle on the last route without errors', async ({ page }) => {
@@ -75,9 +111,10 @@ test.describe('edge cases', () => {
     await login(page, 'admin');
     // Seed-like person created via the import pipeline with an XSS name.
     await page.goto('/admin/people');
+    const payload = '<img src=x onerror=window.__xss=3>';
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Family',
-      'xss-1,<img src=x onerror=window.__xss=3>,<img src=x onerror=window.__xss=3>,Probe,1990-01-15,1,TRUE,Mignonne',
+      `xss-1,${payload},${payload},Probe,1990-01-15,1,TRUE,Mignonne`,
     ].join('\n');
     await page.locator('input[type="file"]').setInputFiles({
       name: 'xss.csv',
@@ -88,8 +125,16 @@ test.describe('edge cases', () => {
     await page.getByRole('button', { name: 'Confirm Import' }).click();
     await expect(page.getByText('Import Complete')).toBeVisible({ timeout: 15000 });
     await page.goto('/people');
-    await expect(page.getByText('Probe').first()).toBeVisible();
-    await page.waitForTimeout(1000);
+    // The payload must be visible as text; absence alone could mean it was dropped.
+    await expect(page.getByText(payload).first()).toBeVisible();
+    const handlers = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('*')).flatMap((el) =>
+        Array.from(el.attributes)
+          .filter((attr) => attr.name.toLowerCase() === 'onerror' && attr.value.includes('__xss'))
+          .map((attr) => attr.value),
+      ),
+    );
+    expect(handlers).toEqual([]);
     const xss = await page.evaluate(() => (window as any).__xss ?? 0);
     expect(xss).toBe(0);
   });

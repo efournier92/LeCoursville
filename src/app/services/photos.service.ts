@@ -85,8 +85,9 @@ export class PhotosService implements OnDestroy {
 
   deletePhoto(photo: Photo): void {
     this.rtdb.object(`${this.PHOTOS_PATH}/${photo.id}`).remove();
-    if (photo.url) {
-      deleteObject(ref(this.firebase.storage, photo.url)).catch(() => {});
+    const target = photo.path || photo.url;
+    if (target) {
+      deleteObject(ref(this.firebase.storage, target)).catch(() => {});
     }
   }
 

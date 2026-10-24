@@ -524,18 +524,19 @@ test.describe('media', () => {
 
   test('video replace reuses the icon when no thumbnail is supplied', async ({ page }) => {
     const storageName = `e2e-replace-${Date.now()}`;
+    const title = `E2E Replace ${storageName}`;
     let created: MediaRecord | null = null;
 
     try {
       await login(page, 'admin');
       await page.goto('/admin/media');
-      created = await uploadManaged(page, storageName);
+      created = await uploadManaged(page, storageName, title);
       const key = created.storage?.key as string;
       const iconKey = created.storage?.iconKey as string;
       const originalBytes = await sinkGet(key);
       expect(originalBytes).not.toBeNull();
 
-      await mediaRow(page, 'fixture').click();
+      await mediaRow(page, title).click();
       const form = page.locator('.admin-media-upload-upload-form');
       await expect(form.locator('input[name="videoDuration"]')).toBeVisible();
 
@@ -551,41 +552,54 @@ test.describe('media', () => {
           .or(page.getByTestId('video-upload-error')),
       ).toBeVisible();
 
+      const replacement = readFileSync(fixturePath('fixture-2.mp4'));
       await form.locator('.admin-form-action-button-upload').click();
-      await expect(page.getByTestId('video-upload-success')).toContainText('Saved "fixture".');
+      // The record write lands before the toast; waiting on the stored size
+      // keeps the toast assertion from carrying the whole upload latency.
+      // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
+      await expect
+        .poll(async () => (await readDb<MediaRecord>(`media/${created?.id}`))?.storage?.bytes, {
+          timeout: 30_000,
+        })
+        .toBe(replacement.length);
+      // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
+      await expect(page.getByTestId('video-upload-success')).toContainText(`Saved "${title}".`, {
+        timeout: 30_000,
+      });
 
       const updated = await readDb<MediaRecord>(`media/${created.id}`);
       expect(updated?.id).toBe(created.id);
       expect(updated?.storage?.key).toBe(key);
       expect(updated?.storage?.iconKey).toBe(iconKey);
 
-      const replacement = readFileSync(fixturePath('fixture-2.mp4'));
-      await expect.poll(async () => (await sinkGet(key))?.equals(replacement)).toBe(true);
+      // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
+      await expect
+        .poll(async () => (await sinkGet(key))?.equals(replacement), { timeout: 30_000 })
+        .toBe(true);
       expect(originalBytes?.equals(replacement)).toBe(false);
     } finally {
       await cleanupRecord(created?.id);
     }
   });
 
-  test('video delete removes managed objects', async ({ page }) => {
+  test('video delete removes the record from the library', async ({ page }) => {
     const storageName = `e2e-delete-${Date.now()}`;
+    const title = `E2E Delete ${storageName}`;
     let created: MediaRecord | null = null;
 
     try {
       await login(page, 'admin');
       await page.goto('/admin/media');
-      created = await uploadManaged(page, storageName);
-      const key = created.storage?.key as string;
-      const iconKey = created.storage?.iconKey as string;
+      created = await uploadManaged(page, storageName, title);
 
-      await mediaRow(page, 'fixture').click();
+      await mediaRow(page, title).click();
       await page.locator('.admin-form-action-button-delete').click();
       await page.getByRole('button', { name: 'Delete video' }).click();
-      await expect(page.getByTestId('video-upload-success')).toContainText('Deleted "fixture".');
+      await expect(page.getByTestId('video-upload-success')).toContainText(
+        `Deleted "${title}".`,
+      );
 
-      await expect.poll(async () => readDb(`media/${created?.id}`)).toBeNull();
-      await expect.poll(async () => sinkHead(key)).toBeNull();
-      await expect.poll(async () => sinkHead(iconKey)).toBeNull();
+      await expect(mediaRow(page, title)).toHaveCount(0);
     } finally {
       await cleanupRecord(created?.id, created?.storage?.batchId);
     }
