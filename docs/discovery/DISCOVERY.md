@@ -5,6 +5,12 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261023-06 | 2026-10-23 | [decision] | rules/deploy | Browserless rules tests run once in a rules project; callable behavior is owned by functions specs, never the x3 browser matrix | playwright.config.ts:25
+- D-20261023-05 | 2026-10-23 | [outcome] | admin/security | Two bugs fixed after the new tests exposed them: user-edit normalizes roles before the profile write, and album delete removes photo Storage objects | src/app/components/user-edit/user-edit.component.ts
+- D-20261023-04 | 2026-10-23 | [trap] | build/perf | WebKit and Firefox expect-timeouts under full-suite load pass focused in 2s; diagnose with --repeat-each loops before widening any wait | e2e/specs/admin-content.spec.ts:84
+- D-20261023-03 | 2026-10-23 | [trap] | build/perf | One shared emulators:exec bleeds Storage objects and emulator process state across browser projects; each browser project needs its own exec | scripts/e2e/gate.sh
+- D-20261023-02 | 2026-10-23 | [decision] | rules/deploy | Prod storage rules execute once per gate through a throwaway config; current member and stranger boundaries are pinned as accepted risk | e2e/specs/storage-rules.spec.ts
+- D-20261023-01 | 2026-10-23 | [outcome] | rules/deploy | Test suite hardening shipped: gate green with 187 e2e per browser, 11 once-run rules, 7 prod-storage tests, 573 unit, and 277 functions | docs/critique/2026-10-23_TestSuiteHardening.md
 - D-20261022-18 | 2026-10-22 | [question] | rules/deploy | Real AWS prerequisites remain human-only: IAM policy, bucket CORS, lifecycle rule, five media secrets, both dev origins, and real cold-start p95 | docs/handoffs/2026-10-22_MediaUploadPipelineImplementation.md
 - D-20261022-17 | 2026-10-22 | [trap] | media/routing | Playwright route.fetch on an XHR file PUT needs postData; losing the response is tested by failing the finalize callable instead | e2e/specs/media.spec.ts:1069
 - D-20261022-16 | 2026-10-22 | [decision] | media/routing | Emulator binds no MEDIA secrets, so cold starts make zero Secret Manager requests; production binds all five | functions/src/create-media-upload.ts:41
