@@ -172,8 +172,15 @@ sign_off() {
   echo "Review the report: open playwright-report/index.html"
   printf 'Type "deploy" to approve and continue, anything else to abort: '
   read -r approval
+  # Terminal emulators may deliver a CR, and bracketed paste wraps the text in
+  # ESC[200~ / ESC[201~. Strip both so a real "deploy" is not lost to control bytes.
+  approval=${approval//$'\r'/}
+  approval=${approval//$'\e[200~'/}
+  approval=${approval//$'\e[201~'/}
+  approval=${approval//[[:space:]]/}
   if [ "$approval" != "deploy" ]; then
     echo "Deploy aborted by user (gate was green; no deploy action ran)."
+    echo "Input received: $(printf '%s' "${approval}" | od -An -c | tr -s ' ')"
     exit 1
   fi
 }
