@@ -5,6 +5,7 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261025-05 | 2026-10-25 | [outcome] | media/routing | Infra decisions captured: dev bucket without CDN, `disabled` sentinel, scoped dev IAM, secret checks, admin-to-super risk | design_specs/2026-10-25_media_infra_decisions.md
 - D-20261025-04 | 2026-10-25 | [decision] | media/routing | Dev media lives in its own bucket and the `disabled` distribution sentinel switches the base URL to the bucket endpoint and skips invalidation; a missing value keeps the CDN so a bad secret cannot repoint prod | functions/src/media/config.ts:41
 - D-20261025-03 | 2026-10-25 | [outcome] | media/routing | Replace-mode finalize no longer deletes the live object: `verifyObject` deletes only in create mode, proven by a red test run against the HEAD file | functions/src/finalize-media-upload.ts:178
 - D-20261025-02 | 2026-10-25 | [trap] | rules/deploy | Production Storage rules allow unauthenticated `read, write` on every path, and production RTDB runs the 2026-10-04 ruleset because the 2026-10-10 tightening never deployed; the pre-deploy snapshots are hashed in `database-rules/2026-10-25/` | database-rules/README.md
