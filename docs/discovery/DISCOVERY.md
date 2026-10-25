@@ -5,6 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261025-04 | 2026-10-25 | [decision] | media/routing | Dev media lives in its own bucket and the `disabled` distribution sentinel switches the base URL to the bucket endpoint and skips invalidation; a missing value keeps the CDN so a bad secret cannot repoint prod | functions/src/media/config.ts:41
+- D-20261025-03 | 2026-10-25 | [outcome] | media/routing | Replace-mode finalize no longer deletes the live object: `verifyObject` deletes only in create mode, proven by a red test run against the HEAD file | functions/src/finalize-media-upload.ts:178
+- D-20261025-02 | 2026-10-25 | [trap] | rules/deploy | Production Storage rules allow unauthenticated `read, write` on every path, and production RTDB runs the 2026-10-04 ruleset because the 2026-10-10 tightening never deployed; the pre-deploy snapshots are hashed in `database-rules/2026-10-25/` | database-rules/README.md
+- D-20261025-01 | 2026-10-25 | [trap] | media/routing | Dev and prod share one media bucket, one CloudFront distribution, and one runtime IAM key, so a dev upload or delete can overwrite or remove live production objects by storage name and consumes the shared invalidation budget | functions/src/media/naming.ts:91
 - D-20261023-06 | 2026-10-23 | [decision] | rules/deploy | Browserless rules tests run once in a rules project; callable behavior is owned by functions specs, never the x3 browser matrix | playwright.config.ts:25
 - D-20261023-05 | 2026-10-23 | [outcome] | admin/security | Two bugs fixed after the new tests exposed them: user-edit normalizes roles before the profile write, and album delete removes photo Storage objects | src/app/components/user-edit/user-edit.component.ts
 - D-20261023-04 | 2026-10-23 | [trap] | build/perf | WebKit and Firefox expect-timeouts under full-suite load pass focused in 2s; diagnose with --repeat-each loops before widening any wait | e2e/specs/admin-content.spec.ts:84
