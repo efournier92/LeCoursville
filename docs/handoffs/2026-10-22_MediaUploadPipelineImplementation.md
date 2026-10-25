@@ -8,7 +8,7 @@ Done. All four spec phases are implemented and committed locally on `feat/admin-
 - Phase 1, backend: complete at `51cfa163`.
 - Phase 2, video UI and lifecycle: complete at `6671fe11`.
 - Phase 3, audio album UI and zip: complete at `d9199ed1`.
-- Phase 4, verification: complete at `c46d0beb`, with the full gate green on all three browsers.
+- Phase 4, verification: complete for the emulator half at `c46d0beb`, with the gate green on all three browsers at that commit. The real-bucket half is deferred: AWS prerequisites, real upload/replace/delete, and production cold-start p95 are `H3`, `H4`, and `H5` in `design_specs/2026-10-24_premerge_walkthrough.md`.
 - Redteam fixes: complete at `eb775507`; gate evidence persistence at `c46d0beb`.
 
 Commits, oldest first:

@@ -81,8 +81,6 @@ red proof (re-adding the old guard) is recorded in the ledger.
 
 ## Open Risks
 
-- Production database/storage rules are console-managed; the repo rules are
-  proven only in the emulator.
 - Public upload stays unauthenticated by design: per-actor rate limited and
   global soft-degraded with an admin alert, not captcha-protected.
 - Production storage rules allow public create under `userUploads/**`, so
@@ -99,6 +97,8 @@ red proof (re-adding the old guard) is recorded in the ledger.
 This repo now opts into Progressive Discovery: `docs/discovery/DISCOVERY.md`
 exists with entries D-20261022-01 through -11. Grep it by scope token before
 re-exploring; see `log-discoveries` for the read and append contracts.
+
+Rules deployment is no longer console-managed: `scripts/deploy.sh` ships `database.rules.json` and `storage.rules.prod` (`:39` and `:46` via `--only hosting,functions,database`, `:53` and `:60` via `--only database`, and storage through `deploy_storage_rules` at `:13-31`). The "proven only in the emulator" caveat is retired.
 
 ## Next Actions
 

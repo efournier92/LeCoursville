@@ -62,6 +62,7 @@ Status: all ten entries are now `CERTAIN`; the user reviewed them on
   trust assumption this codebase already makes elsewhere.
 - Verdict: `CERTAIN`, user decision (2026-10-22): server-stamped, folded into
   the role-grant callable.
+- Deferred: user decision (2026-10-25). The callable is not in this branch. The shipped control is the create-only, super-only rule at `database.rules.json:221-226`; `roleAudit` is already server-stamped at `functions/src/change-user-role.ts:89-104`. Recorded as `D4` in `design_specs/2026-10-24_premerge_walkthrough.md`.
 - Evidence: C-20261022-71, `src/app/services/feature-flags.service.ts:98`.
 - Revisit cost: low once the callable exists.
 
