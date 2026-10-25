@@ -5,6 +5,7 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261025-14 | 2026-10-25 | [decision] | admin/ui | Page title bar is a card with a host-owned 16px gap; the filter-row join needs a global rule because component scopes cannot reach sibling elements | src/styles.scss:344
 - D-20261025-11 | 2026-10-25 | [trap] | media/routing | RTDB transaction mutators run against the local sync tree: cold paths see `null` and abort; `get()` never warms it, a held `value` listener does | functions/src/helpers.ts:148
 - D-20261025-12 | 2026-10-25 | [decision] | build/perf | Targeted Angular specs run via `npx ng test --include <spec.ts>` (flag repeats per file); bare vitest lacks the TestBed setup | angular.json:172
 - D-20261025-13 | 2026-10-25 | [trap] | build/perf | Spec-first red proofs on new Angular API fail as TS2339 compile bundles, not runtime assertions; that exit-1 is a valid red | src/app/services/media-upload.service.spec.ts:380

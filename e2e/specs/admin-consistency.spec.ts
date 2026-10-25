@@ -79,10 +79,46 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
   expect(box).not.toBeNull();
   expect(Math.abs(box!.height - expectedHeight)).toBeLessThanOrEqual(1);
 
+  const surface = await toolbar.evaluate((el) => {
+    const styles = getComputedStyle(el);
+    return {
+      radius: parseFloat(styles.borderTopLeftRadius),
+      borderTop: styles.borderTopWidth,
+      borderLeft: styles.borderLeftWidth,
+    };
+  });
+  expect(surface.radius).toBeGreaterThan(0);
+  expect(surface.borderTop).toBe('1px');
+  expect(surface.borderLeft).toBe('1px');
+
   // The title bar is chrome only: filters live in the bar below it.
   await expect(
     toolbar.locator('mat-form-field, .mat-mdc-form-field, .gallery-segmented, app-admin-filter-bar'),
   ).toHaveCount(0);
+}
+
+/**
+ * Gap between the title bar and the next rendered content. A filter bar that
+ * joins the title bar counts as part of the bar, so the gap is measured below
+ * the joined unit.
+ */
+async function expectSharedPageGap(page: Page) {
+  const gap = await page.evaluate(() => {
+    const bar = document.querySelector('app-page-toolbar');
+    if (!bar) return null;
+    const following = bar.nextElementSibling;
+    const unit = following?.tagName === 'APP-ADMIN-FILTER-BAR' ? following : bar;
+    let next = unit.nextElementSibling;
+    while (next) {
+      const rect = next.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) break;
+      next = next.nextElementSibling;
+    }
+    if (!next) return null;
+    return Math.round(next.getBoundingClientRect().top - unit.getBoundingClientRect().bottom);
+  });
+  expect(gap).not.toBeNull();
+  expect(gap).toBe(16);
 }
 
 async function expectNoHorizontalScroll(page: Page) {
@@ -119,6 +155,7 @@ test.describe('admin visual contract', () => {
 
       await route.ready(page);
       await expectTitleBar(page, route.title, 64);
+      await expectSharedPageGap(page);
 
       await page.setViewportSize({ width: 390, height: 844 });
       await expectTitleBar(page, route.title, 56);
@@ -136,6 +173,14 @@ test.describe('admin visual contract', () => {
 });
 
 test.describe('admin consistency fixes', () => {
+  test('feature page title bar keeps the shared 16px gap', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await login(page, 'admin');
+    await page.goto('/people');
+    await expect(page.locator('.family-group').first()).toBeVisible();
+    await expectSharedPageGap(page);
+  });
+
   async function handleMetrics(page: Page, id: string) {
     return page.getByTestId(`feature-toggle-${id}`).locator('.mdc-switch__handle-track').evaluate((el) => {
       const transform = getComputedStyle(el).transform;
