@@ -10,6 +10,7 @@ import { AdminPeopleImportComponent } from './admin-people-import.component';
 
 const CSV_HEADERS = 'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family';
 const CSV_ROW = 'p-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne';
+const CSV_HEADERS_WITH_DIED = `${CSV_HEADERS},Died`;
 
 describe('AdminPeopleImportComponent', () => {
   let component: AdminPeopleImportComponent;
@@ -249,6 +250,42 @@ describe('AdminPeopleImportComponent', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="import-result-summary"]').textContent,
     ).toContain('2 people created');
+  });
+
+  it('sets deathDate from a Died column without warnings', () => {
+    component.parseCSV([CSV_HEADERS_WITH_DIED, `${CSV_ROW},2015-06-15`].join('\n'));
+
+    expect(component.parsedPeople).toHaveLength(1);
+    expect(component.parsedPeople[0].person.deathDate).toEqual({ year: 2015, month: 6, day: 15 });
+    expect(component.validationWarnings).toEqual([]);
+  });
+
+  it('imports with a null deathDate and no warning when the Died column is absent', () => {
+    component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
+
+    expect(component.parsedPeople).toHaveLength(1);
+    expect(component.parsedPeople[0].person.deathDate).toBeNull();
+    expect(component.validationWarnings).toEqual([]);
+  });
+
+  it('warns about a malformed Died value without blocking the row', () => {
+    component.parseCSV([CSV_HEADERS_WITH_DIED, `${CSV_ROW},not-a-date`].join('\n'));
+
+    expect(component.parsedPeople).toHaveLength(1);
+    expect(component.parsedPeople[0].person.deathDate).toBeNull();
+    expect(component.validationWarnings).toEqual([
+      "Row 2: Invalid Died format 'not-a-date', expected YYYY-MM-DD",
+    ]);
+  });
+
+  it('warns when the death date is before the birthday and still imports', () => {
+    component.parseCSV([CSV_HEADERS_WITH_DIED, `${CSV_ROW},1980-01-01`].join('\n'));
+
+    expect(component.parsedPeople).toHaveLength(1);
+    expect(component.parsedPeople[0].person.deathDate).toEqual({ year: 1980, month: 1, day: 1 });
+    expect(component.validationWarnings).toEqual([
+      'Row 2: Death date 1980-01-01 is before Birthday; imported with the death date',
+    ]);
   });
 
   it('renders the import error and keeps the preview so it can be retried', () => {

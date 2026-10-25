@@ -41,6 +41,12 @@
                 }
               </div>
             }
+            @if (person.deathDate && person.deathDate.year !== 0) {
+              <div class="detail-row">
+                <span class="label">Died</span>
+                <span class="value">{{ formatDate(person.deathDate) }}</span>
+              </div>
+            }
           </mat-card-content>
         </mat-card>
         @if (spousePerson) {
@@ -60,7 +66,7 @@
             </mat-card-content>
           </mat-card>
         }
-        @if ((person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0)) {
+        @if (person.isLiving !== false && ((person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0))) {
           <mat-card class="detail-section">
             <mat-card-content>
               <h3>Contact</h3>

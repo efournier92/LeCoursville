@@ -190,12 +190,12 @@
   padding: 10px 14px;
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
-  transition: background-color 0.15s;
 
   &:last-child {
     border-bottom: none;
-  }&:hover {
-    background-color: var(--color-surface-muted);
+  }&:hover .lineage-person-name {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }}.lineage-person-name {
   font-size: 0.8rem;
   font-weight: 500;

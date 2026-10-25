@@ -31,6 +31,7 @@ export interface Person {
   birthday: PersonDate;
   spouseId: string | null;
   anniversaryDate: PersonDate | null;
+  deathDate: PersonDate | null;
   emails: Email[];
   phones: Phone[];
   addresses: Address[];

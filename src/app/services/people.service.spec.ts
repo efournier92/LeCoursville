@@ -18,6 +18,7 @@ function makePerson(id: string, overrides: Partial<Person> = {}): Person {
     birthday: null as any,
     spouseId: null,
     anniversaryDate: null,
+    deathDate: null,
     emails: [],
     phones: [],
     addresses: [],

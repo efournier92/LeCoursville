@@ -172,7 +172,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    const birthdayResult = this.parseDate(this.getValue(values, headerMap, 'Birthday'), rowNum, true);
+    const birthdayResult = this.parseDate(this.getValue(values, headerMap, 'Birthday'), rowNum);
     if (birthdayResult.warning) {
       warnings.push(`Row ${rowNum}: ${birthdayResult.warning}`);
     }
@@ -180,6 +180,16 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     const anniversaryResult = this.parseDateNullable(this.getValue(values, headerMap, 'Anniversary'), rowNum);
     if (anniversaryResult.warning) {
       warnings.push(`Row ${rowNum}: ${anniversaryResult.warning}`);
+    }
+
+    const deathResult = this.parseDate(this.getValue(values, headerMap, 'Died'), rowNum, 'Died');
+    if (deathResult.warning) {
+      warnings.push(`Row ${rowNum}: ${deathResult.warning}`);
+    }
+    if (birthdayResult.date && deathResult.date && this.isBefore(deathResult.date, birthdayResult.date)) {
+      warnings.push(
+        `Row ${rowNum}: Death date ${deathResult.date.year}-${String(deathResult.date.month).padStart(2, '0')}-${String(deathResult.date.day).padStart(2, '0')} is before Birthday; imported with the death date`
+      );
     }
 
     const colorHex = this.getNullable(values, headerMap, 'Color_Hex');
@@ -214,6 +224,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
       birthday: birthdayResult.date || { year: 0, month: 1, day: 1 },
       spouseId: null,
       anniversaryDate: anniversaryResult.date,
+      deathDate: deathResult.date,
       emails: this.parseEmails(values, headerMap),
       phones: this.parsePhones(values, headerMap),
       addresses: this.parseAddresses(values, headerMap),
@@ -267,7 +278,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     return newClan.id;
   }
 
-  private parseDate(value: string, rowNum: number, isBirthday: boolean = false): { date: PersonDate | null; warning: string | null } {
+  private parseDate(value: string, rowNum: number, label: string = 'Birthday'): { date: PersonDate | null; warning: string | null } {
     if (!value) {
       return { date: null, warning: null };
     }
@@ -282,10 +293,13 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
         warning: null
       };
     }
-    if (isBirthday) {
-      return { date: null, warning: `Invalid Birthday format '${value}', expected YYYY-MM-DD` };
-    }
-    return { date: null, warning: `Invalid Anniversary format '${value}', expected YYYY-MM-DD` };
+    return { date: null, warning: `Invalid ${label} format '${value}', expected YYYY-MM-DD` };
+  }
+
+  private isBefore(a: PersonDate, b: PersonDate): boolean {
+    if (a.year !== b.year) return a.year < b.year;
+    if (a.month !== b.month) return a.month < b.month;
+    return a.day < b.day;
   }
 
   private parseDateNullable(value: string, rowNum: number): { date: PersonDate | null; warning: string | null } {

@@ -184,6 +184,7 @@ function createPerson(overrides: Partial<Person> = {}): Person {
     birthday: { year: 1990, month: 1, day: 1 },
     spouseId: null,
     anniversaryDate: null,
+    deathDate: null,
     emails: [],
     phones: [],
     addresses: [],

@@ -226,6 +226,7 @@ async function main() {
     birthday: birthday ?? { year, month: month1, day: clampDay(day) },
     spouseId: extra.spouseId ?? null,
     anniversaryDate: extra.anniversaryDate ?? null,
+    deathDate: extra.deathDate ?? null,
     emails: [{ address: `${first.toLowerCase()}@example.com`, label: null }],
     phones: [{ label: 'Home', number: '555-0101' }],
     addresses: [{
@@ -239,9 +240,9 @@ async function main() {
     }],
     directDescendent: false,
     generationNumber: extra.generationNumber ?? 1,
-    parentIds: [],
+    parentIds: extra.parentIds ?? [],
     lineage: null,
-    isLiving: true,
+    isLiving: extra.isLiving ?? true,
     createdAt: now - 60 * 24 * 60 * 60 * 1000,
     updatedAt: now,
   });
@@ -251,6 +252,17 @@ async function main() {
     'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { clanId: 'clan-2' }),
     'person-c': person('person-c', 'Carol', 'Clark', { year: year - 20, month: month1, day: clampDay(day + 1) }, { spouseId: 'person-d' }),
     'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { clanId: 'clan-2' }),
+    'person-e': person('person-e', 'Edith', 'Evans', { year: 1935, month: 1, day: 10 }, {
+      generationNumber: 2,
+      parentIds: ['person-a'],
+      isLiving: false,
+      deathDate: { year: 2015, month: 6, day: 15 },
+    }),
+    'person-f': person('person-f', 'Frank', 'Foster', { year: 1940, month: 2, day: 20 }, {
+      generationNumber: 2,
+      parentIds: ['person-a'],
+      isLiving: false,
+    }),
   };
   // Carol's anniversary (this month, +1 day).
   people['person-c'].anniversaryDate = { year: year - 10, month: month1, day: clampDay(day + 1) };
