@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EventEmitter } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -22,6 +24,9 @@ const makeUser = (id: number, name: string): User => ({
   dateRegistered: new Date(2024, 0, id),
   dateLastActive: new Date(2024, 1, id),
 });
+
+const roleScss = readFileSync('src/app/components/admin-users/admin-users.component.scss', 'utf-8');
+const tokensScss = readFileSync('src/styles.scss', 'utf-8');
 
 describe('AdminUsersComponent', () => {
   let component: AdminUsersComponent;
@@ -139,6 +144,103 @@ describe('AdminUsersComponent', () => {
 
     const admin = { ...users[0], roles: { user: true, admin: true, super: true } };
     expect(component.userRoles(admin)).toEqual(['Admin', 'Super', 'Member']);
+  });
+
+  it('renders the expected badge class for member, admin, super, and admin plus super', () => {
+    fixture.detectChanges();
+    settle([
+      { ...makeUser(1, 'Member Only'), roles: { user: true, admin: false, super: false } },
+      { ...makeUser(2, 'Admin Only'), roles: { user: true, admin: true, super: false } },
+      { ...makeUser(3, 'Super Only'), roles: { user: true, admin: false, super: true } },
+      { ...makeUser(4, 'Admin And Super'), roles: { user: true, admin: true, super: true } },
+    ]);
+
+    const rowBadges = (name: string) =>
+      (Array.from(fixture.nativeElement.querySelectorAll('.admin-table tbody tr')) as HTMLElement[])
+        .find(row => row.textContent?.includes(name))!
+        .querySelectorAll<HTMLElement>('.role-badge');
+
+    const labels = (name: string) =>
+      Array.from(rowBadges(name)).map(badge => ({
+        text: badge.textContent?.trim(),
+        className: badge.className,
+      }));
+
+    expect(labels('Member Only')).toEqual([
+      { text: 'Member', className: 'role-badge role-badge-member' },
+    ]);
+    expect(labels('Admin Only')).toEqual([
+      { text: 'Admin', className: 'role-badge role-badge-admin' },
+      { text: 'Member', className: 'role-badge role-badge-member' },
+    ]);
+    expect(labels('Super Only')).toEqual([
+      { text: 'Super', className: 'role-badge role-badge-super' },
+      { text: 'Member', className: 'role-badge role-badge-member' },
+    ]);
+    expect(labels('Admin And Super')).toEqual([
+      { text: 'Admin', className: 'role-badge role-badge-admin' },
+      { text: 'Super', className: 'role-badge role-badge-super' },
+      { text: 'Member', className: 'role-badge role-badge-member' },
+    ]);
+  });
+
+  it('paints each badge from its declared token pair, with no undefined accent token', () => {
+    fixture.detectChanges();
+    settle([
+      { ...makeUser(1, 'Member Only'), roles: { user: true, admin: false, super: false } },
+      { ...makeUser(2, 'Admin Only'), roles: { user: true, admin: true, super: false } },
+      { ...makeUser(3, 'Super Only'), roles: { user: true, admin: false, super: true } },
+    ]);
+
+    // JSDOM leaves a custom-property reference in the computed value instead of
+    // substituting it, so this asserts the token the cascade actually binds.
+    const badgeStyle = (rowName: string, role: string) => {
+      const row = (Array.from(fixture.nativeElement.querySelectorAll('.admin-table tbody tr')) as HTMLElement[])
+        .find(candidate => candidate.textContent?.includes(rowName))!;
+      const badge = (Array.from(row.querySelectorAll<HTMLElement>('.role-badge')))
+        .find(candidate => candidate.textContent?.trim() === role)!;
+      const style = getComputedStyle(badge);
+      return { background: style.backgroundColor, color: style.color };
+    };
+
+    expect(badgeStyle('Member Only', 'Member')).toEqual({
+      background: 'var(--role-member-bg)',
+      color: 'var(--role-member-fg)',
+    });
+    expect(badgeStyle('Admin Only', 'Admin')).toEqual({
+      background: 'var(--role-admin-bg)',
+      color: 'var(--role-admin-fg)',
+    });
+    expect(badgeStyle('Super Only', 'Super')).toEqual({
+      background: 'var(--role-super-bg)',
+      color: 'var(--role-super-fg)',
+    });
+
+    // Every token the badge rules reference must be one of the declared role
+    // pairs, so an undefined token cannot come back as a silent fallback.
+    const badgeRules = roleScss.slice(roleScss.indexOf('.role-badge'), roleScss.indexOf('.row-error'));
+    const referenced = Array.from(
+      badgeRules.matchAll(/var\((--[\w-]+)/g),
+      match => match[1],
+    );
+    expect([...new Set(referenced)].sort()).toEqual([
+      '--role-admin-bg',
+      '--role-admin-fg',
+      '--role-member-bg',
+      '--role-member-fg',
+      '--role-super-bg',
+      '--role-super-fg',
+    ]);
+    for (const declaration of [
+      '--role-member-bg: #ECEFF1;',
+      '--role-member-fg: #37474F;',
+      '--role-admin-bg: #E8EAF6;',
+      '--role-admin-fg: #283593;',
+      '--role-super-bg: #F3E5F5;',
+      '--role-super-fg: #6A1B9A;',
+    ]) {
+      expect(tokensScss).toContain(declaration);
+    }
   });
 
   it('renders the empty state when there are no users', () => {

@@ -81,6 +81,16 @@ html {
   --color-border: #E1E4E8;          // hairlines on gray
   --color-link: #245020;            // brand-dark green links
 
+  // Role badges — Material container/on-container pairs: member (neutral),
+  // admin (indigo), super (purple). Colour is redundant encoding; the role
+  // text stays. Every pair clears 4.5:1 within its own badge.
+  --role-member-bg: #ECEFF1;
+  --role-member-fg: #37474F;
+  --role-admin-bg: #E8EAF6;
+  --role-admin-fg: #283593;
+  --role-super-bg: #F3E5F5;
+  --role-super-fg: #6A1B9A;
+
   // Calendar event tags — birth blue, anniversary red, shared neutral fill.
   --cal-birth-accent: #2b6cb0;
   --cal-anniv-accent: #c53030;
