@@ -201,6 +201,8 @@ Done-check: the authorized-domains list includes the production domain and no `l
 
 ### Step 5a: Create `eric@lecoursville.com` as a real reply-to
 
+Superseded on 2026-10-25. Follow `2026-10-25_eric_email_free_zoho_setup.md` instead. The GoDaddy forwarding route below is no longer valid, and its done-check expects a forwarder MX where the current plan expects Zoho MX.
+
 `auth.lecoursville.com` is verified in Resend for outbound. The reply-to is a separate identity and must be able to receive.
 
 1. The apex `lecoursville.com` currently has **no MX records**, so it receives no mail. Set up receiving at the DNS host (GoDaddy), then create the address:
