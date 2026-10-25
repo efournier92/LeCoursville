@@ -82,7 +82,6 @@
     height: 56px;
     overflow: hidden;
     position: relative;
-    border-radius: var(--radius-sm);
     flex-shrink: 0;
     background: var(--color-surface-muted);
   }
@@ -97,7 +96,6 @@
     height: 56px;
     width: 56px;
     object-fit: cover;
-    border-radius: var(--radius-sm);
   }
 
   .media-details {
@@ -144,7 +142,6 @@
   width: 72px;
   height: 72px;
   overflow: hidden;
-  border-radius: var(--radius-sm);
   flex-shrink: 0;
   background: var(--color-surface-muted);
 }
@@ -158,7 +155,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
 }
 
 .media-list-placeholder-icon {

@@ -135,10 +135,12 @@ function zipBytes() {
   return buf;
 }
 
-/** ~0.5s of 8kHz 8-bit mono silence, valid WAV. */
+/** ~3.5s of 8kHz 8-bit mono silence, valid WAV. */
 function wavBytes() {
   const sampleRate = 8000;
-  const seconds = 0.5;
+  // Long enough for the custom transport spec to observe elapsed seconds
+  // advance before the track ends.
+  const seconds = 3.5;
   const dataSize = sampleRate * seconds;
   const buf = Buffer.alloc(44 + dataSize);
   buf.write('RIFF', 0);

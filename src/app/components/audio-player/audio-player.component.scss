@@ -50,6 +50,60 @@
   display: block;
 }
 
+.audio-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.audio-player-toggle,
+.audio-player-mute {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.audio-player-toggle {
+  background: var(--color-brand-primary);
+  color: var(--color-surface);
+
+  &:hover {
+    background: var(--color-brand-primary-hover);
+  }
+}
+
+.audio-player-time {
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.audio-player-seek {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--color-brand-primary);
+}
+
+.audio-player-volume {
+  width: 72px;
+  accent-color: var(--color-brand-primary);
+}
+
 .audio-player-tracklist {
   list-style: none;
   margin: 16px 0 0;

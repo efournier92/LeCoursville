@@ -27,12 +27,59 @@
         <span class="audio-player-track-title">{{ currentTrack?.title || album.title }}</span>
         <span class="audio-player-track-artist">{{ currentTrack?.artist || album.artist }}</span>
       </div>
-      <audio #nativeAudio
+      <audio #mediaElement
         class="audio-player-element"
         [src]="$safeNavigationMigration(currentTrack?.url)"
-        controls
-        autoplay
-      preload="metadata"></audio>
+        preload="metadata"
+        (timeupdate)="onTimeUpdate()"
+        (loadedmetadata)="onLoadedMetadata()"
+        (ended)="onEnded()"
+        (volumechange)="onVolumeChange()"
+        (play)="isPlaying = true"
+        (pause)="isPlaying = false"></audio>
+      <div class="audio-player-controls">
+        <button
+          type="button"
+          class="audio-player-toggle"
+          [attr.aria-pressed]="isPlaying"
+          [attr.aria-label]="isPlaying ? 'Pause' : 'Play'"
+          (click)="togglePlay()"
+          >
+          <mat-icon aria-hidden="true">{{ isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+        </button>
+        <span class="audio-player-time audio-player-elapsed">{{ formatTime(elapsed) }}</span>
+        <input
+          type="range"
+          class="audio-player-seek"
+          min="0"
+          [max]="duration || 0"
+          step="0.1"
+          [value]="elapsed"
+          aria-label="Seek"
+          [attr.aria-valuetext]="seekValueText()"
+          (input)="onSeek($event)"
+          />
+        <span class="audio-player-time audio-player-total">{{ formatTime(duration) }}</span>
+        <button
+          type="button"
+          class="audio-player-mute"
+          [attr.aria-pressed]="muted"
+          [attr.aria-label]="muted ? 'Unmute' : 'Mute'"
+          (click)="toggleMute()"
+          >
+          <mat-icon aria-hidden="true">{{ muted || volume === 0 ? 'volume_off' : 'volume_up' }}</mat-icon>
+        </button>
+        <input
+          type="range"
+          class="audio-player-volume"
+          min="0"
+          max="1"
+          step="0.01"
+          [value]="volume"
+          aria-label="Volume"
+          (input)="onVolumeInput($event)"
+          />
+      </div>
       <ul class="audio-player-tracklist">
         @for (track of tracks; track track; let i = $index) {
           <li>
@@ -40,6 +87,7 @@
               type="button"
               class="audio-player-track"
               [class.active]="track === currentTrack"
+              [attr.aria-current]="track === currentTrack ? 'true' : null"
               (click)="selectTrack(track)"
               >
               <mat-icon aria-hidden="true">{{ track === currentTrack ? 'volume_up' : 'music_note' }}</mat-icon>

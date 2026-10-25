@@ -377,6 +377,91 @@ test.describe('media', () => {
       .toBeGreaterThan(0);
   });
 
+  test('media card thumbnail renders square with no radius', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    const row = mediaRow(page, 'E2E S3 Video');
+    await expect(row).toBeVisible();
+
+    await expect(row.locator('.imageContainer')).toHaveCSS('border-radius', '0px');
+    await expect(row.locator('.imageCenterer img')).toHaveCSS('border-radius', '0px');
+    await expect(row).toHaveCSS('border-radius', '8px');
+  });
+
+  test('video thumbnail preview renders 1:1 with no radius', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+    await prepareVideo(page);
+
+    const preview = page.getByTestId('video-thumbnail-preview');
+    await expect(preview).toBeVisible();
+    await expect(preview).toHaveCSS('border-radius', '0px');
+    const ratio = await preview.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.height ? rect.width / rect.height : 0;
+    });
+    expect(ratio).toBeCloseTo(1, 1);
+  });
+
+  test('audio cover preview renders with no radius', async ({ page }) => {
+    const card = await openAlbumUpload(page);
+    await prepareAlbum(page, { title: `E2E Cover radius ${Date.now()}` });
+
+    const cover = card.getByTestId('album-cover-preview');
+    await expect(cover).toBeVisible();
+    await expect(cover).toHaveCSS('border-radius', '0px');
+  });
+
+  test('audio: transport plays, advances and pauses', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await page.getByText('E2E Audio').first().click();
+
+    const audio = page.locator('.audio-player-element');
+    const toggle = page.locator('.audio-player-toggle');
+    const elapsed = page.locator('.audio-player-elapsed');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(async () => (await audio.evaluate((el) => (el as HTMLAudioElement).currentTime)) ?? 0, {
+        timeout: 15000,
+      })
+      .toBeGreaterThan(0);
+    await expect.poll(async () => ((await elapsed.textContent()) ?? '').trim()).not.toBe('0:00');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect
+      .poll(async () => audio.evaluate((el) => (el as HTMLAudioElement).paused))
+      .toBe(true);
+  });
+
+  test('audio: transport controls are keyboard reachable and announce state', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await page.getByText('E2E Audio').first().click();
+
+    const toggle = page.locator('.audio-player-toggle');
+    const seek = page.getByLabel('Seek');
+    const total = page.locator('.audio-player-total');
+    await expect.poll(async () => ((await total.textContent()) ?? '').trim()).not.toBe('0:00');
+
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await toggle.focus();
+    await page.keyboard.press('Tab');
+    await expect(seek).toBeFocused();
+    await expect(seek).toHaveAttribute('aria-valuetext', /^\d+:\d{2} of \d+:\d{2}$/);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(async () => Number(await seek.inputValue())).toBeGreaterThan(0);
+  });
+
   test('video: player shell (drive iframe) renders; playback not asserted', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
