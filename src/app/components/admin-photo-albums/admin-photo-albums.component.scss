@@ -65,9 +65,33 @@
 
 .admin-album-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   padding: 0;
+}
+
+@media (min-width: 600px) {
+  .admin-album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .admin-album-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .admin-album-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .admin-album-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .admin-album-card {
@@ -78,7 +102,7 @@
   flex-direction: column;
   border-radius: var(--radius-card);
   background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
 
   &:focus-visible {
     outline: 2px solid var(--color-brand-primary);
@@ -86,7 +110,7 @@
   }
 
   mat-card-content {
-    padding: 8px 10px 4px;
+    padding: 6px 8px 2px;
   }
 
   mat-card-actions {
@@ -102,7 +126,7 @@
   border: 1px solid var(--color-border);
 
   .skeleton-cover {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
   }
@@ -130,17 +154,7 @@
   }
 }
 
-@media (max-width: 991.98px) {
-  .admin-album-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 600px) {
-  .admin-album-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .album-title {
     font-size: 0.9rem;
   }
@@ -153,7 +167,7 @@
 }
 
 .album-cover {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -252,12 +266,36 @@
 
 .admin-photo-grid {
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .admin-photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .admin-photo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .admin-photo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .admin-photo-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .admin-photo-card {
-  margin-bottom: 16px;
   cursor: default;
   overflow: hidden;
   border-radius: var(--radius-card);

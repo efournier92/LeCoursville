@@ -94,6 +94,23 @@ test.describe('admin content surfaces', () => {
     await expect(page.getByText('E2E Album One')).toBeVisible();
   });
 
+  test('photo albums: grid follows the density ladder and covers crop 4:3', async ({ page }) => {
+    await login(page, 'admin');
+
+    for (const [width, expected] of [[1600, 5], [1280, 4], [390, 1]] as const) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/admin/photo-albums');
+      await expect(page.locator('.admin-album-card').first()).toBeVisible();
+      const columns = await page
+        .locator('.admin-album-grid')
+        .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+      expect(columns).toBe(expected);
+    }
+
+    const cover = await page.locator('.admin-album-card .album-cover').first().boundingBox();
+    expect(cover!.width / cover!.height).toBeCloseTo(4 / 3, 1);
+  });
+
   test('photo albums: deleting an album cascades to its photo record and Storage object', async ({ page }) => {
     const albumsBefore = (await readDb<Record<string, any>>('photoAlbums')) ?? {};
     const photosBefore = (await readDb<Record<string, any>>('photos')) ?? {};
