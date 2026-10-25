@@ -5,8 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
-- D-20261025-20 | 2026-10-25 | [trap] | build/perf | WebKit's default Tab policy skips non-text controls, so keyboard e2e asserts focusability and DOM order instead of Tab traversal | e2e/specs/media.spec.ts:552
-- D-20261025-19 | 2026-10-25 | [trap] | media/routing | A replace upload must upload only the assets declared at batch creation; reading `thumbnailBlob` later races the automatic frame capture and resume returns `Upload asset not found.` | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:524
+- D-20261025-22 | 2026-10-25 | [trap] | build/perf | WebKit's default Tab policy skips non-text controls, so keyboard e2e asserts focusability and DOM order instead of Tab traversal | e2e/specs/media.spec.ts:552
+- D-20261025-21 | 2026-10-25 | [trap] | media/routing | A replace upload must upload only the assets declared at batch creation; reading `thumbnailBlob` later races the automatic frame capture and resume returns `Upload asset not found.` | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:524
 - D-20261025-20 | 2026-10-25 | [trap] | rules/deploy | GoDaddy nameservers lag each other and resolvers cache stale empties, so verify TXT and MX at ns03 and ns04 before trusting dig | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-19 | 2026-10-25 | [decision] | rules/deploy | eric@lecoursville.com is on Zoho Mail Free: apex MX to Zoho, merged SPF, DKIM selector zoho, no IMAP, Resend sends app mail | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-18 | 2026-10-25 | [decision] | rules/deploy | Clan-to-family migration is additive first; `--delete-legacy` needs a same-run apply plus post-checks, and rules removal follows the data | scripts/migrations/clan-to-family.mjs:188
