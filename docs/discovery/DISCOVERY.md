@@ -5,6 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261025-18 | 2026-10-25 | [decision] | rules/deploy | Clan-to-family migration is additive first; `--delete-legacy` needs a same-run apply plus post-checks, and rules removal follows the data | scripts/migrations/clan-to-family.mjs:188
+- D-20261025-17 | 2026-10-25 | [decision] | admin/security | Family is canonical: one `families` node, `Person.familyId`, `?family=`, and a one-release read-only `?clan=` alias; the `clans` node and rules stay for cutover | src/app/services/family.service.ts:10
 - D-20261025-15 | 2026-10-25 | [trap] | admin/ui | Material dialog styles inject after the global sheet, so the shared dialog padding scale needs `!important` to override component defaults | src/styles.scss:153
 - D-20261025-14 | 2026-10-25 | [decision] | admin/ui | Page title bar is a card with a host-owned 16px gap; the filter-row join needs a global rule because component scopes cannot reach sibling elements | src/styles.scss:344
 - D-20261025-11 | 2026-10-25 | [trap] | media/routing | RTDB transaction mutators run against the local sync tree: cold paths see `null` and abort; `get()` never warms it, a held `value` listener does | functions/src/helpers.ts:148

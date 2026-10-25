@@ -91,9 +91,9 @@ The admin shell owns page width and gutters. Pages must not re-declare
 - All admin dialogs use `mat-dialog-title`, body, `mat-dialog-actions
   align="end"`, primary action last.
 - Album create/rename use the existing `PhotoAlbumEditDialogComponent`.
-- Media audio/video upload keeps in-page tabs (not dialogs) but uses
-  `.admin-surface` and the same action row as dialogs: 36px buttons, right
-  aligned, no full-width buttons.
+- Media audio/video upload keeps in-page sections (not dialogs) behind one
+  segmented switch and uses `.admin-surface` and a sticky action row: 36px
+  buttons, right aligned, no full-width buttons.
 
 ## Mobile
 

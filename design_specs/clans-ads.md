@@ -1,5 +1,11 @@
 # Clan Management Agent Design Spec
 
+> Superseded 2026-10-25: clan is the retired term. The canonical concept is
+> Family, stored in the `families` node with `Person.familyId`. The legacy
+> `clans` node and `?clan=` alias exist only for the cutover window. See
+> `docs/GLOSSARY.md` and `docs/specs/2026-10-25_DevReviewBatch.md`.
+
+
 **Branch**: `feature/people-from-csv`
 **Base directory**: `/Users/e/mnt/bnk/cs/lecoursville`
 
