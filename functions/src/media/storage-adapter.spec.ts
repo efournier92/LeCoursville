@@ -4,13 +4,19 @@ const mocks = vi.hoisted(() => ({
   getSignedUrl: vi.fn(),
 }));
 
+const config = vi.hoisted(() => ({ distributionId: "distribution" }));
+
 vi.mock("./config", () => ({
   MEDIA_AWS_ACCESS_KEY_ID: { value: () => "key" },
   MEDIA_AWS_REGION: { value: () => "us-east-1" },
   MEDIA_AWS_SECRET_ACCESS_KEY: { value: () => "secret" },
-  MEDIA_CLOUDFRONT_DISTRIBUTION_ID: { value: () => "distribution" },
+  MEDIA_CLOUDFRONT_DISTRIBUTION_ID: { value: () => config.distributionId },
   MEDIA_S3_BUCKET: { value: () => "bucket" },
   emulatorMediaUrl: (key: string) => `https://sink.test/${key}`,
+  hasMediaCdn: (id: string) => {
+    const value = (id || "").trim().toLowerCase();
+    return value.length > 0 && value !== "disabled";
+  },
   isMediaEmulator: () => false,
 }));
 
@@ -43,6 +49,7 @@ function presignOptions(): {
 describe("storage adapter presign conditions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    config.distributionId = "distribution";
     mocks.getSignedUrl.mockResolvedValue("https://signed.test/object");
   });
 
@@ -85,5 +92,18 @@ describe("storage adapter presign conditions", () => {
       "if-match",
       "x-amz-meta-upload-batch",
     ]);
+  });
+});
+
+describe("storage adapter invalidation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    config.distributionId = "disabled";
+  });
+
+  it("resolves without a CloudFront call when no CDN is configured", async () => {
+    const adapter = getStorageAdapter();
+
+    await expect(adapter.invalidate(["/Video/clip.mp4"])).resolves.toBeUndefined();
   });
 });

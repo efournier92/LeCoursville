@@ -10,6 +10,9 @@ export const MEDIA_CLOUDFRONT_DISTRIBUTION_ID = defineSecret(
 
 export const MEDIA_BASE_URL = "https://assets.lecoursville.com";
 
+/** Sentinel for MEDIA_CLOUDFRONT_DISTRIBUTION_ID when the environment has no CDN in front of the bucket. */
+export const MEDIA_CDN_DISABLED = "disabled";
+
 export const MAX_VIDEO_BYTES = 2147483648;
 export const MAX_TRACK_BYTES = 209715200;
 export const MAX_IMAGE_BYTES = 10485760;
@@ -31,9 +34,29 @@ export function emulatorMediaBaseUrl(): string {
   return `http://localhost:5001/${project}/us-central1/emulatorMediaSink`;
 }
 
-/** The active base URL; emulator mode points at the local sink. */
-export function mediaBaseUrl(): string {
-  return isMediaEmulator() ? emulatorMediaBaseUrl() : MEDIA_BASE_URL;
+/**
+ * Only the explicit sentinel disables the CDN. A missing value keeps the CDN base, so a secret
+ * that failed to bind can never silently repoint production records at the raw bucket endpoint.
+ */
+export function hasMediaCdn(distributionId: string): boolean {
+  return (distributionId || "").trim().toLowerCase() !== MEDIA_CDN_DISABLED;
+}
+
+/**
+ * The active base URL; emulator mode points at the local sink.
+ * Without a CDN the base is the bucket's regional REST endpoint, which the bucket policy serves publicly.
+ */
+export function mediaBaseUrl(opts: {
+  distributionId: string;
+  bucket: string;
+  region: string;
+}): string {
+  if (isMediaEmulator()) {
+    return emulatorMediaBaseUrl();
+  }
+  return hasMediaCdn(opts.distributionId)
+    ? MEDIA_BASE_URL
+    : `https://${opts.bucket}.s3.${opts.region}.amazonaws.com`;
 }
 
 export function emulatorMediaUrl(key: string): string {

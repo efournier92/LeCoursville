@@ -166,7 +166,8 @@ function clientPartsFor(
 async function verifyObject(
   adapter: StorageAdapter,
   asset: MediaBatchAsset,
-  batchId: string
+  batchId: string,
+  mode: "create" | "replace"
 ): Promise<void> {
   const head = await adapter.head(asset.key);
   const batchMatches = head.metadata?.["upload-batch"] === batchId;
@@ -174,7 +175,7 @@ async function verifyObject(
     head.exists &&
     head.size !== undefined &&
     (head.size > asset.size || head.size > capFor(asset.role));
-  if (head.exists && (!batchMatches || oversized)) {
+  if (mode === "create" && head.exists && (!batchMatches || oversized)) {
     try {
       await adapter.deleteMany([asset.key]);
     } catch (err) {
@@ -362,10 +363,14 @@ export const finalizeMediaUpload = onCall(
             batch.mode
           );
         }
-        await verifyObject(adapter, asset, batchId);
+        await verifyObject(adapter, asset, batchId, batch.mode);
       }
 
-      const baseUrl = mediaBaseUrl();
+      const baseUrl = mediaBaseUrl({
+        distributionId: MEDIA_CLOUDFRONT_DISTRIBUTION_ID.value(),
+        bucket: MEDIA_S3_BUCKET.value(),
+        region: MEDIA_AWS_REGION.value(),
+      });
       const sink = isMediaEmulator();
       const finalizedAt = Date.now();
       const now = Date.now();

@@ -335,6 +335,25 @@ describe("finalizeMediaUpload", () => {
     expect(adapter.deleteMany).toHaveBeenCalledWith([VIDEO_KEY]);
   });
 
+  it("rejects a foreign object in replace mode without deleting it", async () => {
+    await seedAdmin();
+    await seedBatch(
+      videoBatch({
+        mode: "replace",
+        mediaId: "rec-1",
+        assets: [asset("video", VIDEO_KEY, 1000, "video/mp4")],
+      })
+    );
+    headFor({
+      [VIDEO_KEY]: { size: 1000, contentType: "video/mp4", batchId: "other" },
+    });
+
+    await expect(
+      invoke({ batchId: "batch-1", metadata: METADATA })
+    ).rejects.toMatchObject({ code: "failed-precondition" });
+    expect(adapter.deleteMany).not.toHaveBeenCalled();
+  });
+
   it("rejects a missing part, wrong part size, and wrong etag", async () => {
     await seedAdmin();
     const size = MULTIPART_PART_BYTES + 10;

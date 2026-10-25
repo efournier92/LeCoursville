@@ -6,6 +6,7 @@ import {
   MEDIA_CLOUDFRONT_DISTRIBUTION_ID,
   MEDIA_S3_BUCKET,
   emulatorMediaUrl,
+  hasMediaCdn,
   isMediaEmulator,
 } from "./config";
 
@@ -331,6 +332,9 @@ const productionAdapter: StorageAdapter = {
 
   async invalidate(paths) {
     if (paths.length === 0) {
+      return;
+    }
+    if (!hasMediaCdn(MEDIA_CLOUDFRONT_DISTRIBUTION_ID.value())) {
       return;
     }
     const { CreateInvalidationCommand } = await loadCloudFront();
