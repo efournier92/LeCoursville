@@ -518,7 +518,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
       this.authoritativeKeys = response.keys.video;
       this.pathProvisional = false;
     }
-    await this.uploadAssets(response.batchId);
+    // Upload exactly the assets the batch was created with. Reading
+    // `thumbnailBlob` later races the automatic frame capture and asks the
+    // server for an asset the batch does not have.
+    await this.uploadAssets(response.batchId, !!request.video?.thumbnail);
     return true;
   }
 
@@ -547,11 +550,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     };
   }
 
-  private async uploadAssets(batchId: string): Promise<void> {
-    const roles: Array<'video' | 'thumbnail'> = ['video'];
-    if (this.thumbnailBlob) {
-      roles.push('thumbnail');
-    }
+  private async uploadAssets(batchId: string, includeThumbnail: boolean): Promise<void> {
+    const roles: Array<'video' | 'thumbnail'> = includeThumbnail
+      ? ['video', 'thumbnail']
+      : ['video'];
 
     for (const role of roles) {
       if (this.mediaUpload.isAssetCompleted(batchId, { role })) {
