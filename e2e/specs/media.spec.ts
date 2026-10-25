@@ -83,7 +83,17 @@ async function prepareVideo(page: Page, fileName = 'fixture.mp4'): Promise<Locat
   await expect(settled).toBeVisible();
   await page.getByTestId('video-thumbnail-input').setInputFiles(fixturePath('fixture.png'));
   await expect(page.getByTestId('video-thumbnail-preview')).toBeVisible();
+  await openAdvanced(form);
   return form;
+}
+
+/** Opens the Advanced disclosure without toggling it closed when already open. */
+async function openAdvanced(panel: Locator): Promise<void> {
+  const details = panel.locator('details.media-form-advanced');
+  if (!(await details.evaluate((el: HTMLDetailsElement) => el.open))) {
+    await details.locator('summary').click();
+  }
+  await expect(details).toHaveJSProperty('open', true);
 }
 
 async function waitForRecordByKey(storageName: string): Promise<MediaRecord> {
@@ -116,6 +126,10 @@ function albumCard(page: Page): Locator {
   return page.locator('app-admin-media-upload-audio-album');
 }
 
+async function selectSection(page: Page, section: 'video' | 'audio'): Promise<void> {
+  await page.getByTestId(`media-section-${section}`).click();
+}
+
 /** Mirrors the app's plus-for-space folder convention for ASCII titles. */
 function albumFolderFor(title: string): string {
   return title.trim().replace(/ +/g, '+');
@@ -133,7 +147,7 @@ function albumKeys(folder: string) {
 async function openAlbumUpload(page: Page): Promise<Locator> {
   await login(page, 'admin');
   await page.goto('/admin/media');
-  await page.getByRole('tab', { name: 'Audio Album' }).click();
+  await selectSection(page, 'audio');
   const card = albumCard(page);
   await expect(card.locator('input[name="albumTitle"]')).toBeVisible();
   return card;
@@ -181,7 +195,8 @@ async function prepareAlbum(page: Page, options: AlbumOptions): Promise<Locator>
   }
 
   if (options.manualZip) {
-    await card.getByRole('checkbox', { name: 'Use my own zip' }).check({ force: true });
+    await openAdvanced(card);
+    await card.getByRole('checkbox', { name: 'Use my own zip' }).check();
     await expect(card.getByTestId('album-zip-input')).toBeVisible();
     if (options.zipFile) {
       await card.getByTestId('album-zip-input').setInputFiles(fixturePath(options.zipFile));
@@ -403,6 +418,67 @@ test.describe('media', () => {
     expect(ratio).toBeCloseTo(1, 1);
   });
 
+  test('media: segmented sections, advanced disclosure, and sticky actions', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+
+    const videoSection = page.getByTestId('media-section-video');
+    const audioSection = page.getByTestId('media-section-audio');
+    await expect(videoSection).toBeVisible();
+    await expect(audioSection).toBeVisible();
+    await expect(videoSection).toHaveAttribute('aria-pressed', 'true');
+    await expect(audioSection).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByTestId('video-file-input')).toBeVisible();
+    await expect(page.locator('app-admin-media-upload-audio-album')).toHaveCount(0);
+
+    const advanced = page.locator('app-admin-media-upload-video details.media-form-advanced');
+    await expect(advanced).not.toHaveAttribute('open', '');
+    await expect(page.getByLabel('Storage name')).toBeHidden();
+    await advanced.locator('summary').click();
+    await expect(advanced).toHaveAttribute('open', '');
+    await expect(page.getByLabel('Storage name')).toBeVisible();
+
+    await page.getByTestId('video-file-input').setInputFiles(fixturePath('fixture.mp4'));
+    await expect(page.getByTestId('video-thumbnail-preview')).toBeVisible();
+
+    const footer = page.locator('app-admin-media-upload-video .media-form-footer');
+    await expect(footer).toHaveCSS('position', 'sticky');
+    const scroller = page.locator('.admin-content');
+    // Scroll only as far as the panel still extends below the fold, which is
+    // the range where a bottom-sticky bar has to stay pinned.
+    const scrollBy = await page.evaluate(() => {
+      const el = document.querySelector('.admin-content') as HTMLElement;
+      const form = document.querySelector(
+        'app-admin-media-upload-video .admin-media-upload-upload-form',
+      ) as HTMLElement;
+      const formBottom = form.getBoundingClientRect().bottom + el.scrollTop;
+      return Math.max(0, Math.min(120, formBottom - window.innerHeight - 2));
+    });
+    expect(scrollBy).toBeGreaterThan(0);
+    await scroller.evaluate((el, y) => el.scrollTo(0, y), scrollBy);
+    await expect
+      .poll(async () =>
+        footer.evaluate((el) => {
+          const scrollport = document.querySelector('.admin-content') as HTMLElement;
+          const style = getComputedStyle(scrollport);
+          const pinnedBottom =
+            scrollport.getBoundingClientRect().top +
+            scrollport.clientHeight -
+            parseFloat(style.paddingBottom);
+          const rect = el.getBoundingClientRect();
+          return rect.bottom <= pinnedBottom + 1 && rect.bottom >= pinnedBottom - 1;
+        }),
+      )
+      .toBe(true);
+
+    await audioSection.click();
+    const audioPanel = page.locator('app-admin-media-upload-audio-album');
+    await expect(audioPanel).toBeVisible();
+    await expect(audioPanel.getByLabel('Album tracks')).toBeVisible();
+    await expect(audioSection).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('app-admin-media-upload-video')).toHaveCount(0);
+  });
+
   test('audio cover preview renders with no radius', async ({ page }) => {
     const card = await openAlbumUpload(page);
     await prepareAlbum(page, { title: `E2E Cover radius ${Date.now()}` });
@@ -454,8 +530,26 @@ test.describe('media', () => {
     await page.keyboard.press('Space');
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
 
-    await toggle.focus();
-    await page.keyboard.press('Tab');
+    // WebKit's default Tab policy skips non-text controls, so prove keyboard
+    // reachability by focusability plus DOM order, then drive the slider.
+    const transport = await page.evaluate(() => {
+      const nodes = Array.from(
+        document.querySelectorAll(
+          '.audio-player-toggle, .audio-player-seek, .audio-player-mute, .audio-player-volume',
+        ),
+      ) as HTMLElement[];
+      const index = (selector: string) => nodes.findIndex((n) => n.matches(selector));
+      return {
+        focusable: nodes.every((n) => n.tabIndex >= 0 && !(n as HTMLButtonElement).disabled),
+        toggleBeforeSeek: index('.audio-player-toggle') < index('.audio-player-seek'),
+        seekBeforeMute: index('.audio-player-seek') < index('.audio-player-mute'),
+      };
+    });
+    expect(transport.focusable).toBe(true);
+    expect(transport.toggleBeforeSeek).toBe(true);
+    expect(transport.seekBeforeMute).toBe(true);
+
+    await seek.focus();
     await expect(seek).toBeFocused();
     await expect(seek).toHaveAttribute('aria-valuetext', /^\d+:\d{2} of \d+:\d{2}$/);
     await page.keyboard.press('ArrowRight');
@@ -585,6 +679,7 @@ test.describe('media', () => {
       await expect(mediaRow(page, 'fixture')).toBeVisible();
       await mediaRow(page, 'fixture').click();
       const form = page.locator('.admin-media-upload-upload-form');
+      await openAdvanced(form);
       await expect(form.locator('input[name="videoDuration"]')).toBeVisible();
 
       await form.locator('input[name="videoTitle"]').fill('fixture edited');
@@ -623,6 +718,7 @@ test.describe('media', () => {
 
       await mediaRow(page, title).click();
       const form = page.locator('.admin-media-upload-upload-form');
+      await openAdvanced(form);
       await expect(form.locator('input[name="videoDuration"]')).toBeVisible();
 
       await page
@@ -698,6 +794,7 @@ test.describe('media', () => {
       await login(page, 'admin');
       await page.goto('/admin/media');
       await mediaRow(page, 'E2E Video').click();
+      await openAdvanced(page.locator('.admin-media-upload-upload-form'));
       await expect(page.locator('input[name="videoDuration"]')).toBeVisible();
 
       await page.locator('.admin-form-action-button-delete').click();
@@ -783,6 +880,7 @@ test.describe('media', () => {
     await page.goto('/admin/media');
 
     await expect(page.getByLabel('Video file')).toBeVisible();
+    await openAdvanced(page.locator('.admin-media-upload-upload-form'));
     await expect(page.getByLabel('Storage name')).toBeVisible();
     await expect(page.getByLabel('Thumbnail frame')).toBeVisible();
     await expect(page.getByLabel('Choose thumbnail image')).toBeVisible();
@@ -1142,7 +1240,7 @@ test.describe('media', () => {
 
       await page.unroute(/emulatorMediaSink/);
       await page.goto('/admin/media');
-      await page.getByRole('tab', { name: 'Audio Album' }).click();
+      await selectSection(page, 'audio');
       const resume = page.getByRole('button', { name: 'Resume upload' });
       await expect(resume).toBeVisible();
       await resume.click();
@@ -1260,7 +1358,7 @@ test.describe('media', () => {
 
       await page.unroute(/emulatorMediaSink/);
       await page.reload();
-      await page.getByRole('tab', { name: 'Audio Album' }).click();
+      await selectSection(page, 'audio');
 
       const resume = page.getByRole('button', { name: 'Resume upload' });
       await expect(resume).toBeVisible();
@@ -1323,9 +1421,11 @@ test.describe('media', () => {
     await expect(card.getByLabel('Folder name')).toBeVisible();
     await expect(card.getByLabel('Album tracks')).toBeVisible();
     await expect(card.getByLabel('Choose cover image')).toBeVisible();
+
+    await openAdvanced(card);
     await expect(card.locator('mat-checkbox[name="useOwnZip"]')).toBeVisible();
 
-    await card.getByRole('checkbox', { name: 'Use my own zip' }).check({ force: true });
+    await card.getByRole('checkbox', { name: 'Use my own zip' }).check();
     await expect(card.getByLabel('Zip file')).toBeVisible();
 
     const progress = card.getByTestId('album-upload-progress');
@@ -1350,7 +1450,7 @@ test.describe('media', () => {
     await expect(videoActions).toHaveCSS('justify-content', 'flex-end');
     await expect(videoActions.getByRole('button', { name: 'Clear' })).toHaveCSS('height', '36px');
 
-    await page.getByRole('tab', { name: 'Audio Album' }).click();
+    await selectSection(page, 'audio');
     const audioCard = page.locator('app-admin-media-upload-audio-album .admin-surface');
     await expect(audioCard).toBeVisible();
     await expect(audioCard).not.toHaveClass(/mat-elevation-z6/);

@@ -5,15 +5,33 @@
   Upload and manage family videos and audio albums.
 </p>
 
-<mat-tab-group class="admin-media-upload-tab-group w-100" animationDuration="0ms">
-  <mat-tab label="Video">
-    <app-admin-media-upload-video></app-admin-media-upload-video>
-  </mat-tab>
+<div class="admin-media-section-switch" role="group" aria-label="Media section">
+  <button
+    type="button"
+    class="admin-media-section-option"
+    data-testid="media-section-video"
+    [class.is-active]="section === 'video'"
+    [attr.aria-pressed]="section === 'video'"
+    (click)="section = 'video'"
+    >Video</button
+  >
+  <button
+    type="button"
+    class="admin-media-section-option"
+    data-testid="media-section-audio"
+    [class.is-active]="section === 'audio'"
+    [attr.aria-pressed]="section === 'audio'"
+    (click)="section = 'audio'"
+    >Audio Album</button
+  >
+</div>
 
-  <mat-tab label="Audio Album">
-    <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
-  </mat-tab>
-</mat-tab-group>
+@if (section === 'video') {
+  <app-admin-media-upload-video></app-admin-media-upload-video>
+}
+@if (section === 'audio') {
+  <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
+}
 
 @for (success of successMessages; track success) {
   <div class="media-upload-success-messages" role="status">

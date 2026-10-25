@@ -37,7 +37,7 @@ const ADMIN_ROUTES: AdminRoute[] = [
   {
     path: '/admin/media',
     title: 'Media',
-    ready: (page) => expect(page.getByRole('tab', { name: 'Video' })).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('media-section-video')).toBeVisible(),
   },
   {
     path: '/admin/photo-albums',

@@ -41,27 +41,26 @@ async function storageObjectExists(path: string): Promise<boolean> {
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin content surfaces', () => {
-  test('media: only the live tabs render, and a filtered-out tab shows an empty message', async ({ page }) => {
+  test('media: only the live sections render, and a filtered-out section shows an empty message', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/media');
 
-    await expect(page.getByRole('tab', { name: 'Video' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Audio Album' })).toBeVisible();
-    await expect(page.getByRole('tab')).toHaveCount(2);
+    await expect(page.getByTestId('media-section-video')).toBeVisible();
+    await expect(page.getByTestId('media-section-audio')).toBeVisible();
+    await expect(page.getByRole('tab')).toHaveCount(0);
 
-    const audioTab = page.getByRole('tab', { name: 'Audio Album' });
-    await audioTab.click();
-    const activeTab = page.locator('.mat-mdc-tab-body-active');
-    await expect(activeTab.locator('.media-list-item').first()).toBeVisible();
+    await page.getByTestId('media-section-audio').click();
+    const audioPanel = page.locator('app-admin-media-upload-audio-album');
+    await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
 
     // Filtering everything out must leave an explicit message, never a
     // blank pane.
-    await activeTab.getByLabel('Filter').fill('zzz-no-match');
-    await expect(activeTab.locator('.no-results-message')).toBeVisible();
-    await expect(activeTab.locator('.no-results-message')).toContainText('No media match');
+    await audioPanel.getByLabel('Filter').fill('zzz-no-match');
+    await expect(audioPanel.locator('.no-results-message')).toBeVisible();
+    await expect(audioPanel.locator('.no-results-message')).toContainText('No media match');
 
-    await activeTab.getByLabel('Filter').fill('');
-    await expect(activeTab.locator('.media-list-item').first()).toBeVisible();
+    await audioPanel.getByLabel('Filter').fill('');
+    await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
   });
 
   test('photo albums: seeded albums render, and a throwaway album delete can be cancelled then confirmed', async ({ page }) => {

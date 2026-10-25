@@ -17,6 +17,7 @@ export class AdminMediaComponent implements OnInit, OnDestroy {
   mediaTypes: string[] = ['Videos', 'Photos', 'Photo Album', 'Audio Track', 'Audio Album'];
   selectedMediaType: string;
   selectedFile: any;
+  section: 'video' | 'audio' = 'video';
   successMessages: string[] = [];
   errorMessages: string[] = [];
   driveFolderId = '';

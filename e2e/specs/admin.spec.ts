@@ -265,7 +265,7 @@ test.describe('admin', () => {
     try {
       await login(page, 'admin');
       await page.goto('/admin/media');
-      await page.getByRole('tab', { name: 'Audio Album' }).click();
+      await page.getByTestId('media-section-audio').click();
 
       await expect(page.getByText('Library').first()).toBeVisible();
       const item = page.locator('.media-list-item').filter({ hasText: 'E2E Dated Album' });
