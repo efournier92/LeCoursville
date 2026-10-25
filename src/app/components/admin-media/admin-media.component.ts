@@ -63,7 +63,7 @@ export class AdminMediaComponent implements OnInit, OnDestroy {
       this.parseJson(jsonString);
     };
     fileReader.onerror = (error) => {
-      console.log(error);
+      console.error(error);
     };
   }
 

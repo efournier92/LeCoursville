@@ -56,7 +56,6 @@ export class FeatureFlagsService {
   }
 
   setFeatureFlag(featureId: string, enabled: boolean): Promise<void> {
-    console.log('Setting feature flag:', featureId, enabled);
     return this.rtdb.object(`${this.FEATURES_PATH}/${featureId}`).set({
       enabled,
       updatedAt: Date.now(),
