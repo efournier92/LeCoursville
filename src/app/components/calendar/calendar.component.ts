@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
@@ -21,6 +21,7 @@ import { PersonDetailModalComponent } from 'src/app/components/person-detail-mod
 })
 export class CalendarComponent implements OnInit {
   @Output() refreshView = new EventEmitter();
+  @ViewChild('monthPill') monthPill?: ElementRef<HTMLButtonElement>;
 
   refresh: Subject<any> = new Subject();
   user: User;
@@ -182,6 +183,13 @@ export class CalendarComponent implements OnInit {
     this.datePickerOpen = false;
     this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
     this.updateQueryParams();
+  }
+
+  onPickerDismiss(reason: 'outside' | 'escape'): void {
+    this.datePickerOpen = false;
+    if (reason === 'escape') {
+      this.monthPill?.nativeElement.focus();
+    }
   }
 
   navigateYear(direction: number): void {

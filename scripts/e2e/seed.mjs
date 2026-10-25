@@ -435,7 +435,7 @@ async function main() {
       'addr-2': { id: 'addr-2', full: '2 Oak Ave', street: '2 Oak Ave', city: 'Dallas', state: 'TX', zip: '75201', label: 'Cabin' },
     },
     calendars: {
-      'cal-1': { id: 'cal-1', path: 'calendars/e2e.pdf', url: 'http://localhost:5000/assets/e2e-fixtures/fixture.pdf', year: String(year) },
+      [`cal-${year}`]: { id: `cal-${year}`, path: 'calendars/e2e.pdf', url: 'http://localhost:5000/assets/e2e-fixtures/fixture.pdf', year: String(year) },
     },
     userUploads: {
       'upload-1': {

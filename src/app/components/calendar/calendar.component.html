@@ -30,19 +30,29 @@
         <div mwlCalendarPreviousView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_left</mat-icon>
         </div>
-        <div class="calendar-month-year-pill" (click)="datePickerOpen = !datePickerOpen">
+        <button
+          #monthPill
+          type="button"
+          class="calendar-month-year-pill"
+          [attr.aria-expanded]="datePickerOpen"
+          aria-haspopup="dialog"
+          (click)="datePickerOpen = !datePickerOpen">
           <div class="calendar-pill-label">
             <span class="calendar-month-label">{{ viewMonth }}</span>
             <span class="calendar-year-label">{{ selectedYear }}</span>
           </div>
-        </div>
+        </button>
         <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_right</mat-icon>
         </div>
       </div>
     </div>
     @if (datePickerOpen) {
-      <div class="calendar-datepicker-dropdown">
+      <div
+        class="calendar-datepicker-dropdown"
+        appDismissOnOutside
+        [dismissIgnore]="monthPill?.nativeElement"
+        (dismiss)="onPickerDismiss($event)">
         <div class="calendar-datepicker-panel">
           <div class="calendar-datepicker-header">
             <div class="calendar-datepicker-nav" (click)="navigateYear(-1)">
