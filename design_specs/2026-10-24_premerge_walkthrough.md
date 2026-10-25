@@ -65,11 +65,11 @@ Use `pending`, `done`, `skipped`, or `failed`.
 | H1 | Human | done | Snapshots saved in `database-rules/2026-10-25/`: `before.json`, `after.json`, `before-storage.rules`, `after-storage.rules`, hashes and diff in `database-rules/README.md`. Prod still runs the 2026-10-04 ruleset; storage is currently open read/write on all paths |
 | H2 | Human | pending | |
 | H3.1 | Human | done | CLI installed 2026-10-25, caller `lecoursville-admin`, region `us-east-1`, agent MCP prompt declined |
-| H3.2 | Human | done | Policy `lecoursville-media-runtime` attached to user `lecoursville-media-runtime`; one Active key `REDACTED-KEY-ID` (secret not recorded). Bucket `lecoursville`, distribution `EQYPPDTINXTD` |
+| H3.2 | Human | done | Policy `lecoursville-media-runtime` attached to user `lecoursville-media-runtime`; one Active access key (id not recorded here, secret never recorded). Bucket `lecoursville`, production distribution |
 | H3.3 | Human | done | Bucket had no prior CORS. Applied 4 origins, GET/HEAD/PUT, signed headers; read back matches. CLI needs `{"CORSRules": [...]}`, not a bare array |
 | H3.4 | Human | done | No prior lifecycle config. Applied `abort-incomplete-multipart-uploads`, `DaysAfterInitiation: 1`, all prefixes; read back matches |
 | H3.5 | Human | done | Conditional put enforced (second put returned `PreconditionFailed`); metadata `upload-batch=probe` persisted; probe deleted |
-| H3.6 | Human | done | Ten secrets set (5 per project). Secret key rotated to `REDACTED-KEY-ID` after a 46-char bad paste; old key deleted. Signature test passes as `lecoursville-media-runtime`; least-privilege deny confirmed outside `Video/*`, `Music/Albums/*`, and on IAM; CloudFront `GetInvalidation` authorized |
+| H3.6 | Human | done | Ten secrets set (5 per project). Secret key rotated after a 46-char bad paste; old key deleted and its id unrecorded. Signature test passes as `lecoursville-media-runtime`; least-privilege deny confirmed outside `Video/*`, `Music/Albums/*`, and on IAM; CloudFront `GetInvalidation` authorized |
 | H3.7 | Human | done | All four origins return 200 and all four are in bucket CORS. Dev site `lecoursville-dev` is the default hosting site; prod hosts `lecoursville` under the same project id |
 | H3.8 | Human + Agent | done | Dev media isolated: bucket `lecoursville-media-dev` with dev-only CORS, lifecycle abort plus 30-day expiry, public GET on two prefixes, user `lecoursville-media-runtime-dev` (no CloudFront grants), and dev secrets moved to that bucket with distribution `disabled`. Verified by signature, public GET, prod-bucket deny, CloudFront deny |
 | H6 | Human | pending | |
