@@ -351,6 +351,24 @@ test.describe('admin content surfaces', () => {
     await expect(page.getByLabel('Sort Order')).toBeFocused();
   });
 
+  test('admin families and the people filter offer the same family names', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/families');
+    const adminRows = page.locator('.families-table tbody tr .family-name');
+    await expect(adminRows).toHaveCount(2, { timeout: 20000 });
+    const adminNames = (await adminRows.allTextContents()).map((name) => name.trim()).sort();
+
+    await page.goto('/people');
+    await page.locator('.family-filter-form-field mat-select').click({ force: true });
+    const options = page.getByRole('option');
+    await expect(options).toHaveCount(adminNames.length);
+    const filterNames = (await options.allTextContents()).map((name) => name.trim()).sort();
+
+    expect(filterNames).toEqual(adminNames);
+    await page.keyboard.press('Escape');
+  });
+
   test('390x844: the uploads table becomes cards and the album grid is one column without overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, 'admin');

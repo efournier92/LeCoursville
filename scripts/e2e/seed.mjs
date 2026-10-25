@@ -269,10 +269,6 @@ async function main() {
   // Carol's anniversary (this month, +1 day).
   people['person-c'].anniversaryDate = { year: year - 10, month: month1, day: clampDay(day + 1) };
 
-  const clans = {
-    'clan-1': { id: 'clan-1', name: 'Mignonne', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
-    'clan-2': { id: 'clan-2', name: 'Denis', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
-  };
   const families = {
     'family-1': { id: 'family-1', name: 'Mignonne', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
     'family-2': { id: 'family-2', name: 'Denis', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
@@ -439,7 +435,6 @@ async function main() {
     },
     people,
     families,
-    clans,
     photoAlbums: albums,
     photos,
     messages,
