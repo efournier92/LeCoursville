@@ -9,6 +9,13 @@
 - Mailbox provider: Zoho Mail, Forever Free Plan, one custom domain
 - Supersedes the free-path appendix in `2026-10-24_eric_email_gmail_setup.md` and step 5a of `2026-10-02_account_recovery_runbook.md`
 
+## Status On 2026-10-25
+
+- Done and verified: Z1 account, Z3 domain verified, Z4 MX, Z5 SPF, Z6 DKIM, Z7 allowlist, Z8 mailboxes and catch-all off, Z9 inbound, Z10 outbound with SPF, DKIM and DMARC all passing.
+- Not started or unconfirmed: Z2 admin 2FA, Z11 owner alert, Z12 mobile push, Z13 reminder, Z15 code straggler, Z16 DMARC quarantine.
+- Z11 is blocked: `onAccountCreated` is not deployed anywhere, and the dev deployment predates the code. See `docs/2026-10-25_LeCoursville_Email_Configuration.md`.
+- Recurring routine, failure triage, and the automated check live in `docs/2026-10-25_LeCoursville_Email_Maintenance.md` and `scripts/email-healthcheck.sh`.
+
 ## Driver Prompt
 
 Paste this to the next agent:
@@ -57,14 +64,18 @@ Owner: HUMAN.
 Goal: start a free Zoho Mail organization for the domain.
 Steps:
 
-1. Open `https://mail.zoho.com/signup?type=org&plan=free`.
-2. Confirm the free plan is selected, not a trial that converts to paid.
-3. Enter `lecoursville.com` as the domain and `eric` as the admin mailbox.
-4. Complete the mobile number verification with the SMS code.
-5. Set a strong admin password and store it in a password manager.
+1. Open `https://workplace.zoho.com/signup?type=org&plan=free`, which is the entry point Zoho's own pricing page uses for the Forever Free Plan.
+2. Fallback URL if that one misbehaves: `https://mail.zoho.com/signup?type=org&plan=free`. It is a JS app and can hang on a spinner, in which case go back to the workplace URL.
+3. Confirm the free plan is selected, not a trial that converts to paid. A plan grid with prices and a 15-day trial banner is the paid funnel, so back out.
+4. Confirm the **Business Email** radio is selected and **Personal Email** is not. Personal cannot host a custom domain.
+5. Do not look for a domain field. This page creates the Zoho account only, and the domain is asked for on the next screen after the OTP.
+6. Name: your first name, then the last name field appears.
+7. Email Address or Mobile Number: a personal address on a domain you already control, never `eric@lecoursville.com`, which does not exist yet. This becomes the account identity and the recovery contact, which also satisfies the off-domain recovery requirement in Z2.
+8. Set a strong password and store it in a password manager.
+9. Accept the terms, leave the marketing checkbox alone, then Sign Up and enter the OTP.
 
-Expected: the admin console opens for `lecoursville.com`.
-Record: the data center shown by the console (US, EU, IN, JP, or AU), because it decides the MX hostnames.
+Expected: after the OTP you land in the Zoho setup wizard or the admin console, and the domain is not added yet. That is Z3's job.
+Record: the data center shown in the console (US, EU, IN, JP, or AU), because it decides the MX hostnames. If no data center is visible yet, record it in Z3 instead.
 Failure branch: if the free plan is unavailable for the region, stop and report. Do not enter card details.
 
 ### Z2: Lock Down The Admin Account
@@ -261,13 +272,11 @@ Owner: HUMAN.
 Goal: this mailbox is silent for months by design, which is exactly the condition Zoho treats as abandoned, and silence is also how a broken delivery path looks.
 Steps:
 
-1. Add a recurring 30-day calendar reminder named `eric@ mailbox check`.
-2. Each time it fires, sign in to Zoho webmail as `eric@` and open the Inbox. This is what resets the idle clock.
-3. From the app, request a password reset for `canary@lecoursville.com`.
-4. Confirm the reset mail arrives in the `canary@` mailbox.
-5. Note the date in the reminder.
+1. Add a recurring 30-day calendar reminder named `eric@ mailbox check`. The owner maintains this reminder personally.
+2. Each time it fires, follow the monthly sitting in `docs/2026-10-25_LeCoursville_Email_Maintenance.md`. Do not improvise the routine here.
+3. The first sitting must include a successful reset to `canary@`.
 
-Expected: the first reminder lands within 30 days, and step 4 passes every month.
+Expected: the first reminder lands within 30 days, and step 3 passes every month.
 Failure branch: if the reset mail does not arrive, the path is broken even though DNS still resolves. Treat it as an incident, not a flake, and start at Z14.
 Record: the first date, and each month's pass or fail.
 
