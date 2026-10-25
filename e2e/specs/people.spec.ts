@@ -31,6 +31,25 @@ test.describe('people', () => {
     await expect(page.locator('app-person-detail-modal')).toContainText('Mignonne');
   });
 
+  test('person modal close glyph is centred in its icon button', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/people');
+    await page.getByText('Alice Anderson').first().click();
+    const button = page.locator('app-person-detail-modal .close-button');
+    await expect(button).toBeVisible();
+
+    const offset = await button.evaluate((btn) => {
+      const icon = btn.querySelector('.mat-icon')!.getBoundingClientRect();
+      const box = btn.getBoundingClientRect();
+      return {
+        x: icon.x + icon.width / 2 - (box.x + box.width / 2),
+        y: icon.y + icon.height / 2 - (box.y + box.height / 2),
+      };
+    });
+    expect(Math.abs(offset.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(offset.y)).toBeLessThanOrEqual(1);
+  });
+
   test('hovering a tree row underlines the name without a background fill', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');

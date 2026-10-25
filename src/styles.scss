@@ -230,6 +230,16 @@ mat-toolbar {
   }
 }
 
+// Material centres the icon's line box, not the glyph box: the 24px icon sat
+// 2px low in a 40px button. Flex the icon slot so every render site, `close`
+// included, centres the same way at any button size.
+.mat-mdc-icon-button .mat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 // Filled buttons are pill-shaped app-wide — one button style per role.
 .mat-mdc-unelevated-button {
   --mdc-filled-button-container-shape: var(--radius-control);
