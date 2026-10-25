@@ -38,6 +38,13 @@ test.describe('contacts', () => {
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
+  test('?clan= alias applies the family filter', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts?clan=Mignonne');
+    await expect(page.getByText('Alice Anderson').first()).toBeVisible();
+    await expect(page.getByText('Ben Brown')).toHaveCount(0);
+  });
+
   test('contact detail: clicking a name opens the person modal', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts');

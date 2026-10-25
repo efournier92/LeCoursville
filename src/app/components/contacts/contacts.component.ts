@@ -43,8 +43,17 @@ export class ContactsComponent implements OnInit, OnDestroy {
 
     this.route.queryParamMap.subscribe(queryParams => {
       this.searchTerm = queryParams.get('filter') || '';
-      this.selectedFamily = queryParams.get('clan') || '';
+      // The ?clan= alias is scheduled for deletion in the next release; remove this fallback then.
+      const family = queryParams.get('family');
+      this.selectedFamily = family || queryParams.get('clan') || '';
       this.selectedPersonId = queryParams.get('selected') || null;
+      if (!family && queryParams.get('clan')) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { family: queryParams.get('clan'), clan: null },
+          queryParamsHandling: 'merge'
+        });
+      }
       // Re-trigger filter after query params update
       this.contactsFromPeopleService.contacts$.subscribe(cards => {
         this.applyFilters(cards);
@@ -152,7 +161,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.selectedFamily = '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { clan: null },
+      queryParams: { family: null, clan: null },
       queryParamsHandling: 'merge'
     });
   }
@@ -180,12 +189,13 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   private updateQueryParams(): void {
-    const queryParams: any = {};
+    // Every write clears the retired ?clan= alias so old links self-heal.
+    const queryParams: any = { clan: null };
     if (this.searchTerm) {
       queryParams['filter'] = this.searchTerm;
     }
     if (this.selectedFamily) {
-      queryParams['clan'] = this.selectedFamily;
+      queryParams['family'] = this.selectedFamily;
     }
     this.router.navigate([], {
       relativeTo: this.route,

@@ -83,7 +83,7 @@
     <div class="w-100">
       <div class="family-group" [style.--family-color]="getFamilyColorForName(group.family)">
         <div class="family-header">
-          <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.family }" queryParamsHandling="merge">{{ group.displayName }}</a>
+          <a class="family-link" [routerLink]="['/people']" [queryParams]="{ family: group.family, clan: null }" queryParamsHandling="merge">{{ group.displayName }}</a>
           @if (group.livingMemberCount > 0) {
             <span class="member-count">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
           }

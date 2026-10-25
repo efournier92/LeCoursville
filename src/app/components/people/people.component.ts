@@ -72,9 +72,18 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.subscribeFamilies();
 
     this.route.queryParamMap.subscribe(queryParams => {
-      this.selectedFamily = queryParams.get('clan') || '';
+      // The ?clan= alias is scheduled for deletion in the next release; remove this fallback then.
+      const family = queryParams.get('family');
+      this.selectedFamily = family || queryParams.get('clan') || '';
       this.filterQuery = queryParams.get('filter') || '';
       this.selectedPersonId = queryParams.get('selected') || null;
+      if (!family && queryParams.get('clan')) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { family: queryParams.get('clan'), clan: null },
+          queryParamsHandling: 'merge'
+        });
+      }
       this.applyFilter();
     }, () => (this.status = 'error'));
   }
@@ -162,13 +171,13 @@ export class PeopleComponent implements OnInit, OnDestroy {
     if (this.selectedFamily) {
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: { clan: this.selectedFamily },
+        queryParams: { family: this.selectedFamily, clan: null },
         queryParamsHandling: 'merge'
       });
     } else {
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: { clan: null },
+        queryParams: { family: null, clan: null },
         queryParamsHandling: 'merge'
       });
     }
@@ -179,7 +188,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.selectedFamily = '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { clan: null },
+      queryParams: { family: null, clan: null },
       queryParamsHandling: 'merge'
     });
   }

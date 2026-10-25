@@ -23,6 +23,33 @@ test.describe('people', () => {
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
+  test('family filter still filters the list', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/people');
+    await page.locator('.family-filter-form-field mat-select').click({ force: true });
+    await page.getByRole('option', { name: 'Mignonne' }).click();
+    await expect(page.getByText('Alice Anderson').first()).toBeVisible();
+    await expect(page.getByText('Ben Brown')).toHaveCount(0);
+  });
+
+  test('?family= applies the family filter', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/people?family=Mignonne');
+    await expect(page.getByText('Alice Anderson').first()).toBeVisible();
+    await expect(page.getByText('Ben Brown')).toHaveCount(0);
+  });
+
+  test('?clan= alias applies the filter and rewrites the URL to family', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/people?clan=Mignonne');
+    await expect(page.getByText('Alice Anderson').first()).toBeVisible();
+    await expect(page.getByText('Ben Brown')).toHaveCount(0);
+    await page.waitForFunction(() => {
+      const params = new URLSearchParams(location.search);
+      return params.get('family') === 'Mignonne' && !params.has('clan');
+    });
+  });
+
   test('person detail modal opens and shows name and family', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');

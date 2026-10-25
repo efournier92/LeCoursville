@@ -345,7 +345,7 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   }
 
   navigateToFamily(familyName: string): void {
-    this.router.navigate(['/people'], { queryParams: { clan: familyName, filter: null } });
+    this.router.navigate(['/people'], { queryParams: { family: familyName, filter: null } });
   }
 
   navigateToPerson(id: string): void {
