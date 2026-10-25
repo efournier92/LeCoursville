@@ -102,6 +102,22 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
  * joins the title bar counts as part of the bar, so the gap is measured below
  * the joined unit.
  */
+/** A filter row directly after the toolbar joins it into one card. */
+async function expectJoinedFilterBar(page: Page) {
+  const radii = await page.evaluate(() => {
+    const toolbar = document.querySelector('.page-toolbar');
+    const filter = document.querySelector('.admin-filter-bar');
+    if (!toolbar || !filter) return null;
+    return {
+      toolbarBottom: getComputedStyle(toolbar).borderBottomLeftRadius,
+      filterTop: getComputedStyle(filter).borderTopLeftRadius,
+    };
+  });
+  expect(radii).not.toBeNull();
+  expect(parseFloat(radii!.toolbarBottom)).toBe(0);
+  expect(parseFloat(radii!.filterTop)).toBe(0);
+}
+
 async function expectSharedPageGap(page: Page) {
   const gap = await page.evaluate(() => {
     const bar = document.querySelector('app-page-toolbar');
@@ -156,6 +172,9 @@ test.describe('admin visual contract', () => {
       await route.ready(page);
       await expectTitleBar(page, route.title, 64);
       await expectSharedPageGap(page);
+      if (await page.locator('.admin-filter-bar').count()) {
+        await expectJoinedFilterBar(page);
+      }
 
       await page.setViewportSize({ width: 390, height: 844 });
       await expectTitleBar(page, route.title, 56);

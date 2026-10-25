@@ -387,13 +387,13 @@ select:-webkit-autofill:focus {
 /* Toolbar + filter bar read as one card when adjacent. Global because the two
    elements are siblings across component boundaries, so neither component's
    scoped stylesheet can reach the other. */
-app-page-toolbar:has(+ app-admin-filter-bar) .page-toolbar {
+app-page-toolbar:has(+ app-admin-filter-bar) .page-toolbar.page-toolbar {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   box-shadow: none;
 }
 
-app-page-toolbar:has(+ app-admin-filter-bar) .admin-filter-bar {
+app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
   border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
