@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Production storage rules.
+// The emulator loads the open storage.rules from firebase.json, while deploy.sh ships this file through a throwaway config.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Storage rules cannot read RTDB roles, so admin-only operations stay gated in the app; enforcing them needs a custom auth claim.
+    // The public upload page writes here after createUserUpload returns a path, and create-only stops the caller overwriting an existing object.
+    match /userUploads/{allPaths=**} {
+      allow create: if request.resource.size <= 50 * 1024 * 1024;
+      allow get, list, delete: if signedIn();
+    }
+
+    // Published photos and video thumbnails are served through tokenised download URLs, and listing stays behind auth.
+    match /photos/{allPaths=**} {
+      allow get: if true;
+      allow list: if signedIn();
+      allow create, delete: if signedIn();
+    }
+
+    match /videoScreenshots/{allPaths=**} {
+      allow get: if true;
+      allow list: if signedIn();
+      allow create, delete: if signedIn();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

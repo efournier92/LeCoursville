@@ -1,0 +1,102 @@
+{
+  "rules": {
+    "calendarEvents": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "calendars": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "contacts": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "messages": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true"
+    },
+    "photos": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".indexOn": ["albumId"]
+    },
+    "videos": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "media": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "users": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      "$uid": {
+        ".write": "$uid === auth.uid && ((data.child('roles/admin').val() !== true && newData.child('roles/admin').val() !== true && data.child('roles/super').val() !== true && newData.child('roles/super').val() !== true) || (data.child('roles/user').val() === newData.child('roles/user').val() && data.child('roles/admin').val() === newData.child('roles/admin').val() && data.child('roles/super').val() === newData.child('roles/super').val()))"
+      }
+    },
+    "features": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "promotedRoute": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "clans": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "families": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "people": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "addresses": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "photoAlbums": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
+    },
+    "userUploads": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".indexOn": ["status"],
+      "$id": {
+        ".write": "!data.exists() && newData.child('status').val() === 'pending'"
+      }
+    },
+    "recoveryRequests": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": false
+    },
+    "adminAlerts": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": false
+    },
+    "recoveryAudit": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": false
+    },
+    "config": {
+      "adminAlertRecipients": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+        ".write": false
+      }
+    },
+    "rateLimits": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": false
+    },
+    "outboundEmails": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
