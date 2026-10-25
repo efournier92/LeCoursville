@@ -22,13 +22,13 @@
 
     <mat-form-field class="family-filter-form-field">
       <mat-label>By Family</mat-label>
-      <mat-select [(value)]="selectedClan" (selectionChange)="onClanChange()" panelClass="clan-select-panel">
-        @for (clan of getClans(); track clan) {
-          <mat-option [value]="clan.name">{{ clan.name }}</mat-option>
+      <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()" panelClass="family-select-panel">
+        @for (family of getFamilies(); track family) {
+          <mat-option [value]="family.name">{{ family.name }}</mat-option>
         }
       </mat-select>
-      @if (selectedClan) {
-        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearClanFilter(); $event.stopPropagation()">
+      @if (selectedFamily) {
+        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFamilyFilter(); $event.stopPropagation()">
           <mat-icon>close</mat-icon>
         </button>
       }
@@ -39,7 +39,7 @@
     <app-load-error message="We couldn't load contacts." (retry)="retry()"></app-load-error>
   }
 
-  @if (status === 'loading' && !searchTerm && !selectedClan) {
+  @if (status === 'loading' && !searchTerm && !selectedFamily) {
     <div class="contacts-skeleton-grid" aria-busy="true">
       @for (i of skeletonIterations; track i) {
         <div
@@ -82,13 +82,13 @@
     </div>
   }
 
-  @if (contacts.length === 0 && (searchTerm || selectedClan) && searchTerm) {
+  @if (contacts.length === 0 && (searchTerm || selectedFamily) && searchTerm) {
     <app-no-results-message
       [searchTerm]="searchTerm"
     ></app-no-results-message>
   }
 
-  @if (status === 'ready' && contacts.length === 0 && !searchTerm && !selectedClan) {
+  @if (status === 'ready' && contacts.length === 0 && !searchTerm && !selectedFamily) {
     <app-no-results-message
       title="No contacts yet"
       hint="Contact info will show up here once it's added."

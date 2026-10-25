@@ -136,7 +136,7 @@ function createPerson(overrides: Partial<Person> = {}): Person {
     spouseId: null,
     anniversaryDate: null,
     deathDate: null,
-    clanId: null,
+    familyId: null,
     emails: [],
     phones: [],
     addresses: [],

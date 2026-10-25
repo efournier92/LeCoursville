@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { Person } from 'src/app/models/person';
 import { AdminPeopleImportComponent } from './admin-people-import.component';
 
@@ -21,11 +21,11 @@ describe('AdminPeopleImportComponent', () => {
     peopleLoaded$: Observable<boolean>;
   };
   let peopleLoaded: BehaviorSubject<boolean>;
-  let clanService: {
-    clans$: unknown;
+  let familyService: {
     createPushId: ReturnType<typeof vi.fn>;
-    saveClan: ReturnType<typeof vi.fn>;
-    deleteClan: ReturnType<typeof vi.fn>;
+    saveFamily: ReturnType<typeof vi.fn>;
+    deleteFamily: ReturnType<typeof vi.fn>;
+    resolveFamilyIdByName: ReturnType<typeof vi.fn>;
   };
 
   const parsedPerson = (): any => ({
@@ -53,18 +53,18 @@ describe('AdminPeopleImportComponent', () => {
       people$: of([{ id: 'seed-person' } as Person]),
       peopleLoaded$: peopleLoaded.asObservable(),
     };
-    clanService = {
-      clans$: of([]),
-      createPushId: vi.fn(() => 'clan-push'),
-      saveClan: vi.fn(),
-      deleteClan: vi.fn(() => Promise.resolve()),
+    familyService = {
+      createPushId: vi.fn(() => 'family-push'),
+      saveFamily: vi.fn(),
+      deleteFamily: vi.fn(() => Promise.resolve()),
+      resolveFamilyIdByName: vi.fn(() => undefined),
     };
 
     await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
       providers: [
         { provide: PeopleService, useValue: peopleService },
-        { provide: ClanService, useValue: clanService },
+        { provide: FamilyService, useValue: familyService },
       ],
     }).compileComponents();
 
@@ -80,7 +80,7 @@ describe('AdminPeopleImportComponent', () => {
     expect(component.parsedPeople).toHaveLength(1);
     expect(component.parsedPeople[0].person.name.firstGiven).toBe('Zoe');
     expect(component.parsedPeople[0].person.name.last).toBe('Zimmerman');
-    expect(component.parsedPeople[0].person.clanId).toBe('p-1');
+    expect(component.parsedPeople[0].person.familyId).toBe('p-1');
     expect(component.importPreview).toEqual({ total: 1, created: 1, updated: 0, inactive: 0 });
   });
 
@@ -95,27 +95,27 @@ describe('AdminPeopleImportComponent', () => {
     expect(fixture.nativeElement.querySelector('app-no-results-message')).toBeTruthy();
   });
 
-  it('keeps preview read-only and creates drafted clans only on confirm', async () => {
+  it('keeps preview read-only and creates drafted families only on confirm', async () => {
     peopleService.importPeople.mockReturnValue(of({ created: 1, updated: 0, inactive: 0, conflicts: [] }));
 
     component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
     fixture.detectChanges();
 
-    expect(clanService.saveClan).not.toHaveBeenCalled();
-    expect(component.parsedPeople[0].person.clanId).toBe('p-1');
+    expect(familyService.saveFamily).not.toHaveBeenCalled();
+    expect(component.parsedPeople[0].person.familyId).toBe('p-1');
 
     component.confirmImport();
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(clanService.saveClan).toHaveBeenCalledTimes(1);
-    expect(clanService.saveClan).toHaveBeenCalledWith(
+    expect(familyService.saveFamily).toHaveBeenCalledTimes(1);
+    expect(familyService.saveFamily).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
     );
     expect(peopleService.importPeople).toHaveBeenCalledTimes(1);
   });
 
-  it('rolls back drafted clans when the people write fails', async () => {
+  it('rolls back drafted families when the people write fails', async () => {
     peopleService.importPeople.mockReturnValue(throwError(() => new Error('boom')));
     component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
     fixture.detectChanges();
@@ -125,16 +125,16 @@ describe('AdminPeopleImportComponent', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(clanService.saveClan).toHaveBeenCalledWith(
+    expect(familyService.saveFamily).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
     );
-    expect(clanService.deleteClan).toHaveBeenCalledWith('p-1');
+    expect(familyService.deleteFamily).toHaveBeenCalledWith('p-1');
     expect(component.importError).toBe('Import failed: boom');
   });
 
-  it('re-drafts a clan after cancel so confirm writes it before the people', async () => {
+  it('re-drafts a family after cancel so confirm writes it before the people', async () => {
     peopleService.importPeople.mockReturnValue(of({ created: 1, updated: 0, inactive: 0, conflicts: [] }));
-    clanService.saveClan.mockReturnValue(Promise.resolve());
+    familyService.saveFamily.mockReturnValue(Promise.resolve());
 
     component.parseCSV([CSV_HEADERS, CSV_ROW].join('\n'));
     component.cancelImport();
@@ -147,11 +147,11 @@ describe('AdminPeopleImportComponent', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(clanService.saveClan).toHaveBeenCalledTimes(1);
-    const savedClan = clanService.saveClan.mock.calls[0][0];
+    expect(familyService.saveFamily).toHaveBeenCalledTimes(1);
+    const savedFamily = familyService.saveFamily.mock.calls[0][0];
     const importedPeople = peopleService.importPeople.mock.calls[0][0];
-    expect(importedPeople[0].clanId).toBe(savedClan.id);
-    expect(clanService.saveClan.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(importedPeople[0].familyId).toBe(savedFamily.id);
+    expect(familyService.saveFamily.mock.invocationCallOrder[0]).toBeLessThan(
       peopleService.importPeople.mock.invocationCallOrder[0],
     );
   });

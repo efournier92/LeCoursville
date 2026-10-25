@@ -6,7 +6,7 @@ import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { PeopleService } from 'src/app/services/people.service';
 import { CalendarService } from 'src/app/services/calendar.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { Person } from 'src/app/models/person';
 import { PersonDetailModalComponent } from './person-detail-modal.component';
 
@@ -20,7 +20,7 @@ function makePerson(overrides: Partial<Person> = {}): Person {
       last: 'Evans',
       suffix: null,
     },
-    clanId: null,
+    familyId: null,
     birthday: { year: 1935, month: 1, day: 10 },
     spouseId: null,
     anniversaryDate: null,
@@ -78,8 +78,8 @@ describe('PersonDetailModalComponent', () => {
           useValue: { getEventsByPerson: () => of([]) },
         },
         {
-          provide: ClanService,
-          useValue: { clans$: of([]) },
+          provide: FamilyService,
+          useValue: { families$: of([]) },
         },
         { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
       ],

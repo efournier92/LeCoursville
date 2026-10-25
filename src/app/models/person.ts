@@ -27,7 +27,7 @@ export interface Phone {
 export interface Person {
   id: string;
   name: Name;
-  clanId: string | null;
+  familyId: string | null;
   birthday: PersonDate;
   spouseId: string | null;
   anniversaryDate: PersonDate | null;

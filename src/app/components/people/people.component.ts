@@ -2,9 +2,9 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrateg
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Person } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
+import { Family } from 'src/app/models/family';
 import { PeopleService } from 'src/app/services/people.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { AppSettings } from 'src/environments/app-settings';
 
 interface PersonNode {
@@ -15,7 +15,7 @@ interface PersonNode {
 }
 
 interface FamilyGroup {
-  clan: string;
+  family: string;
   displayName: string;
   firstGeneration: PersonNode[];
   roots: PersonNode[];
@@ -51,17 +51,17 @@ export class PeopleComponent implements OnInit, OnDestroy {
   selectedPersonId: string | null = null;
   status: 'loading' | 'error' | 'ready' = 'loading';
   private subscription: Subscription | null = null;
-  private clanSubscription: Subscription | null = null;
+  private familySubscription: Subscription | null = null;
   private peopleArrived = false;
-  private clansArrived = false;
+  private familiesArrived = false;
   private peopleMap: Map<string, Person> = new Map();
-  private clansMap: Map<string, Clan> = new Map();
-  private clansByIdMap: Map<string, Clan> = new Map();
+  private familiesByNameMap: Map<string, Family> = new Map();
+  private familiesByIdMap: Map<string, Family> = new Map();
   skeletonIterations = [1,2,3,4,5,6,7,8,9,10];
 
   constructor(
     private peopleService: PeopleService,
-    private clanService: ClanService,
+    private familyService: FamilyService,
     public router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
@@ -69,7 +69,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribePeople();
-    this.subscribeClans();
+    this.subscribeFamilies();
 
     this.route.queryParamMap.subscribe(queryParams => {
       this.selectedFamily = queryParams.get('clan') || '';
@@ -81,13 +81,13 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
-    this.clanSubscription?.unsubscribe();
+    this.familySubscription?.unsubscribe();
   }
 
   retry(): void {
     this.status = 'loading';
     this.subscribePeople();
-    this.subscribeClans();
+    this.subscribeFamilies();
   }
 
   // The services seed BehaviorSubjects with [], so a synchronous replay of an
@@ -114,19 +114,19 @@ export class PeopleComponent implements OnInit, OnDestroy {
     );
   }
 
-  private subscribeClans(): void {
-    this.clansArrived = false;
-    this.clanSubscription?.unsubscribe();
+  private subscribeFamilies(): void {
+    this.familiesArrived = false;
+    this.familySubscription?.unsubscribe();
     let isSeed = true;
-    this.clanSubscription = this.clanService.clans$.subscribe(
-      (clans: Clan[]) => {
-        const seedEmpty = isSeed && clans.length === 0;
+    this.familySubscription = this.familyService.families$.subscribe(
+      (families: Family[]) => {
+        const seedEmpty = isSeed && families.length === 0;
         isSeed = false;
-        this.clansMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
-        this.clansByIdMap = new Map(clans.map(c => [c.id, c]));
+        this.familiesByNameMap = new Map(families.map(f => [f.name.toLowerCase(), f]));
+        this.familiesByIdMap = new Map(families.map(f => [f.id, f]));
         this.applyFilter();
         if (!seedEmpty) {
-          this.clansArrived = true;
+          this.familiesArrived = true;
           this.updateStatus();
         }
       },
@@ -135,7 +135,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   private updateStatus(): void {
-    if (this.peopleArrived && this.clansArrived) {
+    if (this.peopleArrived && this.familiesArrived) {
       this.status = 'ready';
     }
   }
@@ -184,9 +184,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
     });
   }
 
-  getFamilies(): Clan[] {
-    const clans = Array.from(this.clansMap.values());
-    const sorted = clans.sort((a, b) => {
+  getFamilies(): Family[] {
+    const families = Array.from(this.familiesByNameMap.values());
+    const sorted = families.sort((a, b) => {
       return (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name);
     });
     return sorted;
@@ -229,9 +229,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
       );
     }
     if (this.selectedFamily) {
-      const clan = this.clansMap.get(this.selectedFamily.toLowerCase());
-      if (clan) {
-        filtered = filtered.filter(p => p.clanId === clan.id);
+      const family = this.familiesByNameMap.get(this.selectedFamily.toLowerCase());
+      if (family) {
+        filtered = filtered.filter(p => p.familyId === family.id);
       }
     }
     this.filteredPeople = filtered;
@@ -332,37 +332,37 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   private buildFamilyGroupsWithFilteredTrees(visiblePeople: Person[], visibleIds: Set<string>): FamilyGroup[] {
-    const clanIds = new Set<string>();
+    const familyIds = new Set<string>();
     for (const person of visiblePeople) {
-      if (person.clanId) clanIds.add(person.clanId);
+      if (person.familyId) familyIds.add(person.familyId);
     }
-    const clans = Array.from(clanIds)
-      .map(id => this.clansByIdMap.get(id))
-      .filter((c): c is Clan => c !== undefined)
+    const families = Array.from(familyIds)
+      .map(id => this.familiesByIdMap.get(id))
+      .filter((f): f is Family => f !== undefined)
       .sort((a, b) => {
         return (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name);
       });
 
     const groups: FamilyGroup[] = [];
-    for (const clan of clans) {
-      const clanPeople = this.allPeople.filter(p => p.clanId === clan.id);
-      if (clanPeople.length === 0) continue;
+    for (const family of families) {
+      const familyPeople = this.allPeople.filter(p => p.familyId === family.id);
+      if (familyPeople.length === 0) continue;
       const firstGenFiltered = this.filterTreeByVisibility(
-        this.findFirstGeneration(clanPeople),
+        this.findFirstGeneration(familyPeople),
         visibleIds
       );
       const rootsFiltered = this.filterTreeByVisibility(
-        this.findRootNodes(clanPeople, clanPeople),
+        this.findRootNodes(familyPeople, familyPeople),
         visibleIds
       );
       if (firstGenFiltered.length === 0 && rootsFiltered.length === 0) continue;
       groups.push({
-        clan: clan.name,
-        displayName: this.getClanDisplayName(clan.name, firstGenFiltered),
+        family: family.name,
+        displayName: this.getFamilyDisplayName(family.name, firstGenFiltered),
         firstGeneration: firstGenFiltered,
         roots: rootsFiltered,
-        memberCount: clanPeople.length,
-        livingMemberCount: clanPeople.filter(p => p.isLiving !== false).length
+        memberCount: familyPeople.length,
+        livingMemberCount: familyPeople.filter(p => p.isLiving !== false).length
       });
     }
 
@@ -370,52 +370,52 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   private buildFamilyGroups(visiblePeople: Person[]): FamilyGroup[] {
-    const clanIds = new Set<string>();
+    const familyIds = new Set<string>();
     for (const person of visiblePeople) {
-      if (person.clanId) clanIds.add(person.clanId);
+      if (person.familyId) familyIds.add(person.familyId);
     }
-    const clans = Array.from(clanIds)
-      .map(id => this.clansByIdMap.get(id))
-      .filter((c): c is Clan => c !== undefined)
+    const families = Array.from(familyIds)
+      .map(id => this.familiesByIdMap.get(id))
+      .filter((f): f is Family => f !== undefined)
       .sort((a, b) => {
         return (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name);
       });
 
     const groups: FamilyGroup[] = [];
-    for (const clan of clans) {
-      const clanPeople = visiblePeople.filter(p => p.clanId === clan.id);
-      if (clanPeople.length === 0) continue;
-      const allClanPeople = this.allPeople.filter(p => p.clanId === clan.id);
-      const firstGeneration = this.findFirstGeneration(clanPeople);
-      const roots = this.findRootNodes(clanPeople, allClanPeople);
+    for (const family of families) {
+      const familyPeople = visiblePeople.filter(p => p.familyId === family.id);
+      if (familyPeople.length === 0) continue;
+      const allFamilyPeople = this.allPeople.filter(p => p.familyId === family.id);
+      const firstGeneration = this.findFirstGeneration(familyPeople);
+      const roots = this.findRootNodes(familyPeople, allFamilyPeople);
       groups.push({
-        clan: clan.name,
-        displayName: this.getClanDisplayName(clan.name, firstGeneration),
+        family: family.name,
+        displayName: this.getFamilyDisplayName(family.name, firstGeneration),
         firstGeneration,
         roots,
-        memberCount: clanPeople.length,
-        livingMemberCount: allClanPeople.filter(p => p.isLiving !== false).length
+        memberCount: familyPeople.length,
+        livingMemberCount: allFamilyPeople.filter(p => p.isLiving !== false).length
       });
     }
 
     return groups;
   }
 
-  private findFirstGeneration(clanPeople: Person[]): PersonNode[] {
-    const gen1People = clanPeople.filter(p => p.generationNumber === 1 && !p.id.endsWith('-S'));
+  private findFirstGeneration(familyPeople: Person[]): PersonNode[] {
+    const gen1People = familyPeople.filter(p => p.generationNumber === 1 && !p.id.endsWith('-S'));
     const nodes: PersonNode[] = [];
     for (const person of gen1People) {
       const spouseId = person.id + '-S';
-      const spouse = clanPeople.find(p => p.id === spouseId) || null;
-      const node = this.buildNode(person, spouse, 0, clanPeople);
+      const spouse = familyPeople.find(p => p.id === spouseId) || null;
+      const node = this.buildNode(person, spouse, 0, familyPeople);
       nodes.push(node);
     }
     return nodes;
   }
 
-  findRootNodes(clanPeople: Person[], allPeople: Person[]): PersonNode[] {
+  findRootNodes(familyPeople: Person[], allPeople: Person[]): PersonNode[] {
     // Tree starts at generation 2 (children of gen 1)
-    const gen2People = clanPeople.filter(p => p.generationNumber === 2 && !p.id.endsWith('-S'));
+    const gen2People = familyPeople.filter(p => p.generationNumber === 2 && !p.id.endsWith('-S'));
 
     const nodes: PersonNode[] = [];
     for (const person of gen2People) {
@@ -479,16 +479,16 @@ export class PeopleComponent implements OnInit, OnDestroy {
     return this.familyGroups;
   }
 
-  getFamilyColorForClan(clan: string): string {
-    const clanObj = this.clansMap.get(clan.toLowerCase());
-    if (clanObj) {
-      return clanObj.hexColor;
+  getFamilyColorForName(name: string): string {
+    const family = this.familiesByNameMap.get(name.toLowerCase());
+    if (family) {
+      return family.hexColor;
     }
     return '#e0e0e0';
   }
 
-  getClanDisplayName(clan: string, roots: PersonNode[]): string {
-    return clan + "'s Family";
+  getFamilyDisplayName(name: string, roots: PersonNode[]): string {
+    return name + "'s Family";
   }
 
   getNodeIndent(node: PersonNode): number {
@@ -528,10 +528,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   getColorHex(node: PersonNode): string {
-    if (node.person.clanId) {
-      const clan = this.clansByIdMap.get(node.person.clanId);
-      if (clan) {
-        return this.hexToRgba(clan.hexColor, 0.5);
+    if (node.person.familyId) {
+      const family = this.familiesByIdMap.get(node.person.familyId);
+      if (family) {
+        return this.hexToRgba(family.hexColor, 0.5);
       }
     }
     return '#e0e0e080';

@@ -124,7 +124,7 @@ test.describe('admin people surfaces', () => {
     await writeDb(`people/${collisionId}`, {
       id: collisionId,
       name: { firstGiven: 'Existing', last: 'Record' },
-      clanId: 'clan-1',
+      familyId: 'family-1',
       isLiving: true,
       generationNumber: 1,
       parentIds: [],

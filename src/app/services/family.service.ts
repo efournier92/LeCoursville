@@ -10,11 +10,22 @@ export class FamilyService {
   private readonly FAMILIES_PATH = 'families';
   private familiesSource: BehaviorSubject<Family[]> = new BehaviorSubject([]);
   families$: Observable<Family[]> = this.familiesSource.asObservable();
+  private familiesSnapshot: Family[] = [];
 
   constructor(private rtdb: RtdbService) {
     this.getFamilies().valueChanges().subscribe((families: Family[]) => {
       this.familiesSource.next(families);
+      this.familiesSnapshot = families || [];
     });
+  }
+
+  getFamiliesSnapshot(): Family[] {
+    return this.familiesSnapshot;
+  }
+
+  resolveFamilyIdByName(name: string): string | undefined {
+    const key = name.trim().toLowerCase();
+    return this.familiesSnapshot.find(family => family.name.toLowerCase() === key)?.id;
   }
 
   getFamilies() {

@@ -224,7 +224,7 @@ async function main() {
   const person = (id, first, last, birthday, extra = {}) => ({
     id,
     name: { firstGiven: first, firstPreferred: first, maiden: null, last, suffix: null },
-    clanId: extra.clanId ?? 'clan-1',
+    familyId: extra.familyId ?? 'family-1',
     birthday: birthday ?? { year, month: month1, day: clampDay(day) },
     spouseId: extra.spouseId ?? null,
     anniversaryDate: extra.anniversaryDate ?? null,
@@ -251,9 +251,9 @@ async function main() {
 
   const people = {
     'person-a': person('person-a', 'Alice', 'Anderson', { year: year - 30, month: month1, day: clampDay(day) }),
-    'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { clanId: 'clan-2' }),
+    'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { familyId: 'family-2' }),
     'person-c': person('person-c', 'Carol', 'Clark', { year: year - 20, month: month1, day: clampDay(day + 1) }, { spouseId: 'person-d' }),
-    'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { clanId: 'clan-2' }),
+    'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { familyId: 'family-2' }),
     'person-e': person('person-e', 'Edith', 'Evans', { year: 1935, month: 1, day: 10 }, {
       generationNumber: 2,
       parentIds: ['person-a'],

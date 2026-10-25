@@ -23,7 +23,7 @@ test.describe('people', () => {
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
-  test('person detail modal opens and shows name and clan', async ({ page }) => {
+  test('person detail modal opens and shows name and family', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');
     await page.getByText('Alice Anderson').first().click();

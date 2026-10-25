@@ -14,7 +14,7 @@ function makePerson(id: string, overrides: Partial<Person> = {}): Person {
       last: 'Lovelace',
       suffix: null,
     },
-    clanId: null,
+    familyId: null,
     birthday: null as any,
     spouseId: null,
     anniversaryDate: null,
