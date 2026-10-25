@@ -23,8 +23,8 @@
 
 ### Branch State
 
-- Five files from this session are uncommitted, listed under Verify Commands.
-- The same checkout holds another session's uncommitted work: `docs/critique/2026-10-25_SignIn.md`, `docs/handoffs/2026-10-25_DevReviewBatchRemaining.md`, `docs/specs/2026-10-25_CallableInvokerAndRecoverySpacing.md`, and two entries in `docs/discovery/DISCOVERY.md` (`D-20261025-17`, `D-20261025-18`). Do not commit `DISCOVERY.md` until that work lands.
+- This session's work is committed as `9f018a6d` on `review/dev-feedback-2026-10-25`. Nothing of ours is uncommitted.
+- The same checkout holds another session's uncommitted work: `docs/critique/2026-10-25_SignIn.md`, `docs/handoffs/2026-10-25_DevReviewBatchRemaining.md`, `docs/specs/2026-10-25_CallableInvokerAndRecoverySpacing.md`, and two entries in `docs/discovery/DISCOVERY.md` (`D-20261025-17`, `D-20261025-18`). Do not commit `DISCOVERY.md` until that work lands, because it also carries `D-20261025-19` and `D-20261025-20` from this session.
 
 ## Key Decisions
 
@@ -56,7 +56,7 @@ git status --short
 git log --oneline -3
 ```
 
-Expect `9fed9e11` and `d4562465` in the log, and the five uncommitted files: `design_specs/2026-10-25_eric_email_free_zoho_setup.md`, `docs/2026-10-25_LeCoursville_Email_Configuration.md`, `docs/2026-10-25_LeCoursville_Email_Maintenance.md`, `scripts/email-healthcheck.sh`, `package.json`.
+Expect `9f018a6d` at or near the top of the log. `git status --short` should show nothing from this session; anything remaining belongs to the other session.
 
 ## Open Risks And Blockers
 
