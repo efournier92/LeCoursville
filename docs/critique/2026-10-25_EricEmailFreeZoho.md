@@ -1,0 +1,66 @@
+# Critique Ledger: Eric Email Free Zoho Setup
+
+- Goal: `eric@lecoursville.com` works for send and receive at zero cost, with app owner alerts and Reply-To delivered reliably
+- Started: 2026-10-25
+- Branch: review/dev-feedback-2026-10-25
+- Note: findings C-01 to C-24 adjudicated against spec v2, C-25 to C-27 against v3
+
+## Findings
+
+- C-20261025-01 | 2026-10-25 | reliability | high | high | addressed | Inactivity clearing was missing: idle mailboxes are blocked, then wiped at 300 days | design_specs/2026-10-25_eric_email_free_zoho_setup.md:30
+  - rebuttal | addressed | https://www.zoho.com/mail/help/usage-policy.html | Inactive accounts cannot send or receive until manual reactivation, and no Free-organization exemption was found.
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:258 | v3 documents the monthly routine and states plainly that the login half cannot be automated.
+- C-20261025-02 | 2026-10-25 | correctness | high | high | addressed | Z12 was unexecutable: seeded users are `@e2e.local`, so no seed can receive mail | scripts/e2e/seed.mjs:31
+  - rebuttal | addressed | `rg -n 'e2e\.local' scripts/e2e/seed.mjs` | Verified: all five seed users are on `e2e.local`, and `adminAlertRecipients` is `admin@e2e.local`.
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:207 | v3 replaces the seeded test with a production run against the canary mailbox.
+- C-20261025-03 | 2026-10-25 | correctness | high | high | addressed | Z12 assumed dev sends real mail, but `isDryRun()` stubs every emulator send | functions/src/helpers.ts:9
+  - rebuttal | addressed | `rg -n EMAIL_DRY_RUN firebase.json functions scripts` | Verified dry-run gating, and no deploy config sets the flag, so an emulator target can never deliver mail.
+- C-20261025-04 | 2026-10-25 | security | high | high | addressed | Super-admin was password-only, so one takeover owns the alert stream and can sign mail as eric@ | design_specs/2026-10-25_eric_email_free_zoho_setup.md:70
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:70 | Upheld, and v2 adds Z2 with TOTP, recovery codes, phone, and an off-domain recovery address.
+- C-20261025-05 | 2026-10-25 | security | high | medium | addressed | No allowlist step, so alert mail from the app can be filed as junk | design_specs/2026-10-25_eric_email_free_zoho_setup.md:148
+  - rebuttal | addressed | `rg -in 'allowlist|whitelist|junk|spam' design_specs/2026-10-25_eric_email_free_zoho_setup.md` | Upheld in v1, and v2 adds the allowlist and junk checks in Z7.
+- C-20261025-06 | 2026-10-25 | reliability | medium | medium | addressed | No inbound canary, so permanent breakage stays invisible after retries exhaust | functions/src/account-created.ts:89
+  - rebuttal | addressed | functions/src/account-created.ts:37 | Weakens: `retry: true` plus the dead-letter audit self-heal transient breaks, so only permanent breakage is silent.
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:280 | v3 adds the Z14 quarterly check and makes the monthly reset the delivery canary.
+- C-20261025-07 | 2026-10-25 | correctness | high | medium | addressed | Z5's dig can return a cached empty MX and abort a healthy run | design_specs/2026-10-25_eric_email_free_zoho_setup.md:113
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:113 | v2 queries 8.8.8.8 explicitly and says a blank local answer is not failure.
+- C-20261025-08 | 2026-10-25 | correctness | medium | high | addressed | Z7 ignored that a 2048-bit DKIM value exceeds one TXT string | design_specs/2026-10-25_eric_email_free_zoho_setup.md:143
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:143 | v2 explains the split and says to compare by joining chunks with no spaces.
+- C-20261025-09 | 2026-10-25 | correctness | medium | high | addressed | Z3's regional MX example `mx.zoho.<dc>.com` had the wrong shape | design_specs/2026-10-25_eric_email_free_zoho_setup.md:108
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:108 | v2 uses `mx.zoho.eu` as the shape and warns against a two-part suffix.
+- C-20261025-10 | 2026-10-25 | security | medium | medium | addressed | DoD pinned DMARC at `p=none`, so a spoofed `eric@` stays deliverable to app users | design_specs/2026-10-25_eric_email_free_zoho_setup.md:352
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:314 | Owner rejected the 90-day wait, so v3 adds Z16, a gated flip to quarantine with a one-line rollback.
+- C-20261025-11 | 2026-10-25 | reliability | medium | high | addressed | Rollback snapshot lived only in volatile `/tmp` with no durable copy | design_specs/2026-10-25_eric_email_free_zoho_setup.md:33
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:33 | v2 inlines the baseline in Current State and Rollback reads from it, so no external file is needed.
+- C-20261025-12 | 2026-10-25 | reliability | medium | high | addressed | The noticing path was mobile push, yet no step proved a notification fires | design_specs/2026-10-25_eric_email_free_zoho_setup.md:241
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:241 | Weakens in v1, and v2 adds Z12 which proves a push arrives without opening the app.
+- C-20261025-13 | 2026-10-25 | product | medium | high | addressed | The spec claimed code was aligned, but the error dialog shows a personal Gmail | src/app/errors.service.ts:90
+  - rebuttal | addressed | `rg -n 'efournier92' e2e/` | Verified, and no e2e spec asserts that copy, so any fix needs a new assertion under the repo rule. v3 tracks it as Z15.
+- C-20261025-14 | 2026-10-25 | research | medium | high | addressed | The claim that apex SPF was the only edited record was false | design_specs/2026-10-25_eric_email_free_zoho_setup.md:44
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:44 | v2 dropped the optional DMARC edit, and v3 owns the DMARC edit explicitly in Z16.
+- C-20261025-15 | 2026-10-25 | compliance | medium | medium | addressed | Free is region-gated and MX hosts vary by data center, with no guidance given | design_specs/2026-10-25_eric_email_free_zoho_setup.md:67
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:67 | v2 records the data center in Z1 and takes MX values from the console in Z4.
+- C-20261025-16 | 2026-10-25 | research | medium | high | addressed | Runbook step 5a still prescribed GoDaddy forwarding, contradicting this plan | design_specs/2026-10-02_account_recovery_runbook.md:206
+  - rebuttal | addressed | design_specs/2026-10-02_account_recovery_runbook.md:204 | v2 adds a superseded banner and points at the Zoho guide.
+- C-20261025-17 | 2026-10-25 | research | low | high | addressed | Rollback cancelled the mailbox without exporting mail first | design_specs/2026-10-25_eric_email_free_zoho_setup.md:339
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:339 | v2 makes the export the first rollback action.
+- C-20261025-18 | 2026-10-25 | research | medium | high | addressed | Z11 authenticated only the inbound reply, never the send half | design_specs/2026-10-25_eric_email_free_zoho_setup.md:193
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:193 | Upheld, and v2 splits the halves into Z9 and Z10.
+- C-20261025-19 | 2026-10-25 | research | low | high | addressed | Z1 claimed the snapshot held a root DKIM TXT, but none exists | /tmp/lecoursville-dns-before.txt
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:40 | v3 states `google._domainkey` is absent and uses Current State instead of a snapshot file.
+- C-20261025-20 | 2026-10-25 | research | low | high | addressed | Resend CNAMEs appeared in neither the snapshot nor the check | design_specs/2026-10-25_eric_email_free_zoho_setup.md:280
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:280 | v2 inlines both CNAME values and checks them in Z14.
+- C-20261025-21 | 2026-10-25 | security | low | medium | addressed | Apex MX makes every local part routable and no step checked catch-all | design_specs/2026-10-25_eric_email_free_zoho_setup.md:162
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:162 | v3 checks the state in Z8 and the owner set catch-all off.
+- C-20261025-22 | 2026-10-25 | abuse | low | high | addressed | Zoho's policy bans automated sending and the spec never recorded it | https://www.zoho.com/mail/help/usage-policy.html
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:363 | Weakens in v1, and v2 records the boundary as its own section.
+- C-20261025-23 | 2026-10-25 | scale | low | high | addressed | Z11's alert test no-ops when re-run against an already-notified account | functions/src/account-created.ts:59
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:224 | v3 names the once-per-day gate so silence is not read as failure, and the reset mail carries the monthly test.
+- C-20261025-24 | 2026-10-25 | maintainability | medium | high | addressed | Z10 Resend recheck and Z13 repo grep could not fail, and Z9 duplicated the DoD | design_specs/2026-10-25_eric_email_free_zoho_setup.md:280
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:280 | v2 deleted the standalone DMARC step and folded the Resend and code checks into Z14 and Z15, which can fail.
+- C-20261025-25 | 2026-10-25 | security | medium | high | addressed | A permanent production canary is a standing credential that nobody documented | design_specs/2026-10-25_eric_email_free_zoho_setup.md:227
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:227 | Owner chose to keep the account, so v3 adds Z11b: user role only, password in the manager, documented in docs/.
+- C-20261025-26 | 2026-10-25 | security | high | high | addressed | Flipping DMARC before proving alignment could start rejecting app mail | design_specs/2026-10-25_eric_email_free_zoho_setup.md:314
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:314 | v3 gates Z16 on the DKIM `d=` domain being the org domain, and gives a single-record rollback.
+- C-20261025-27 | 2026-10-25 | abuse | medium | high | addressed | Login resets cannot be automated without IMAP, and a bot would breach the ToS | design_specs/2026-10-25_eric_email_free_zoho_setup.md:274
+  - rebuttal | addressed | design_specs/2026-10-25_eric_email_free_zoho_setup.md:274 | v3 splits what can and cannot be automated, and marks delivery automation as a follow-up spec.
