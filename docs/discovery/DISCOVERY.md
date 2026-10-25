@@ -5,6 +5,9 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261025-11 | 2026-10-25 | [trap] | media/routing | RTDB transaction mutators run against the local sync tree: cold paths see `null` and abort; `get()` never warms it, a held `value` listener does | functions/src/helpers.ts:148
+- D-20261025-12 | 2026-10-25 | [decision] | build/perf | Targeted Angular specs run via `npx ng test --include <spec.ts>` (flag repeats per file); bare vitest lacks the TestBed setup | angular.json:172
+- D-20261025-13 | 2026-10-25 | [trap] | build/perf | Spec-first red proofs on new Angular API fail as TS2339 compile bundles, not runtime assertions; that exit-1 is a valid red | src/app/services/media-upload.service.spec.ts:380
 - D-20261025-08 | 2026-10-25 | [decision] | build/perf | Drop the redundant `src/polyfills.ts` entry: `zone.js` is already listed in `angular.json` and the file sat outside the spec program, so test builds warned | angular.json:47
 - D-20261025-07 | 2026-10-25 | [trap] | build/perf | `calendar-utils` publishes a sourcemap pointing outside the package; `vitest-base.config.ts` strips the dangling `sourceMappingURL` so Vite stops warning | vitest-base.config.ts:15
 - D-20261025-06 | 2026-10-25 | [trap] | build/perf | WebKit replace test timed out at 30s on stale `storage.bytes` under full-suite load, passed focused in 2.9s; rerun the gate, do not widen the wait | e2e/specs/media.spec.ts:564

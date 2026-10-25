@@ -677,6 +677,9 @@ test.describe('media', () => {
       await expect(page.getByTestId('video-upload-error')).toContainText(
         'The file uploaded but the record could not be saved. Choose Retry to finish saving.',
       );
+      await expect(page.getByTestId('video-finalize-reason')).toContainText(
+        'forced failure',
+      );
       const retry = page.locator('.admin-form-action-button-retry');
       await expect(retry).toBeVisible();
       await retry.click();
@@ -1112,6 +1115,7 @@ test.describe('media', () => {
       await form.locator('.admin-form-action-button-upload').click();
 
       await expect(page.getByTestId('video-upload-error')).toContainText('record could not be saved');
+      await expect(page.getByTestId('video-finalize-reason')).toContainText('forced failure');
       await expect.poll(async () => (await readBatchForAsset(key))?.id ?? null).not.toBeNull();
       batchId = (await readBatchForAsset(key))?.id ?? null;
       expect((await sinkHead(key))?.size).toBeGreaterThan(0);

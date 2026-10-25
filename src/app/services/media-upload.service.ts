@@ -193,7 +193,8 @@ export class MediaUploadError extends Error {
   constructor(
     message: string,
     readonly code?: string,
-    readonly ticket?: ClientMediaUploadTicket
+    readonly ticket?: ClientMediaUploadTicket,
+    readonly detail?: string | null
   ) {
     super(message);
     this.name = "MediaUploadError";
@@ -229,23 +230,48 @@ export function mapMediaError(
   }
   const code = errorCode(error);
   const message = errorText(error);
+  // detail preserves the raw server text whenever the mapped copy differs.
+  const withDetail = (mapped: string): string | null =>
+    message && message !== mapped ? message : null;
   switch (code) {
-    case "already-exists":
-      return new MediaUploadError(
-        message || duplicateMessage(context.key ?? context.fileName ?? ""),
-        code
-      );
+    case "already-exists": {
+      const mapped =
+        message || duplicateMessage(context.key ?? context.fileName ?? "");
+      return new MediaUploadError(mapped, code, undefined, withDetail(mapped));
+    }
     case "permission-denied":
-      return new MediaUploadError(PERMISSION_DENIED_MESSAGE, code);
-    case "resource-exhausted":
-      return new MediaUploadError(message || RATE_LIMIT_MESSAGE, code);
+      return new MediaUploadError(
+        PERMISSION_DENIED_MESSAGE,
+        code,
+        undefined,
+        withDetail(PERMISSION_DENIED_MESSAGE)
+      );
+    case "resource-exhausted": {
+      const mapped = message || RATE_LIMIT_MESSAGE;
+      return new MediaUploadError(mapped, code, undefined, withDetail(mapped));
+    }
     case "failed-precondition":
       if (/Upload not found/i.test(message)) {
-        return new MediaUploadError(message, "upload-not-found");
+        return new MediaUploadError(
+          message,
+          "upload-not-found",
+          undefined,
+          withDetail(message)
+        );
       }
-      return new MediaUploadError(message || uploadFailureMessage(context.fileName), code);
+      return new MediaUploadError(
+        message || uploadFailureMessage(context.fileName),
+        code,
+        undefined,
+        withDetail(message || uploadFailureMessage(context.fileName))
+      );
     default:
-      return new MediaUploadError(uploadFailureMessage(context.fileName), code || "upload-failed");
+      return new MediaUploadError(
+        uploadFailureMessage(context.fileName),
+        code || "upload-failed",
+        undefined,
+        withDetail(uploadFailureMessage(context.fileName))
+      );
   }
 }
 

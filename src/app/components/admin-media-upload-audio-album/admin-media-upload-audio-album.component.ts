@@ -56,6 +56,15 @@ const CANCEL_CLEANUP_FAILURE =
 const RESUME_FILES_MESSAGE =
   'Some album files are missing. Select the tracks again, then choose Resume upload.';
 
+function finalizeReasonFrom(error: unknown): string | null {
+  const detail = (error as { detail?: unknown } | null)?.detail;
+  if (typeof detail !== 'string') {
+    return null;
+  }
+  const reason = detail.trim().replace(/\s+/g, ' ').slice(0, 300);
+  return reason || null;
+}
+
 export interface AlbumTrackRow {
   id: string;
   title: string;
@@ -94,6 +103,7 @@ export class AdminMediaUploadAudioAlbumComponent
   batchId: string | null = null;
   uploading = false;
   finalizeFailed = false;
+  finalizeReason: string | null = null;
   progressMessage = '';
   formError: string | null = null;
   uploadSuccess: string | null = null;
@@ -400,6 +410,7 @@ export class AdminMediaUploadAudioAlbumComponent
     this.formError = null;
     this.uploadSuccess = null;
     this.finalizeFailed = false;
+    this.finalizeReason = null;
     this.cancelRequested = false;
     this.uploading = true;
     try {
@@ -422,10 +433,8 @@ export class AdminMediaUploadAudioAlbumComponent
       }
       try {
         await this.finalizeAlbum(created);
-      } catch {
-        this.finalizeFailed = true;
-        this.formError = FINALIZE_FAILURE;
-        this.focusHeading();
+      } catch (error) {
+        this.reportFinalizeFailure(error, created);
         return;
       }
       this.resumeBatch = null;
@@ -459,9 +468,8 @@ export class AdminMediaUploadAudioAlbumComponent
       this.resetForm();
       this.uploadSuccess = `Saved album "${title}".`;
       this.focusHeading();
-    } catch {
-      this.formError = FINALIZE_FAILURE;
-      this.focusHeading();
+    } catch (error) {
+      this.reportFinalizeFailure(error, this.batchId);
     } finally {
       this.uploading = false;
       this.progressMessage = '';
@@ -511,14 +519,23 @@ export class AdminMediaUploadAudioAlbumComponent
         this.formError = RESUME_FILES_MESSAGE;
         this.focusFirstInvalid();
       } else {
-        this.finalizeFailed = true;
-        this.formError = FINALIZE_FAILURE;
-        this.focusHeading();
+        this.reportFinalizeFailure(error, batch.batchId);
       }
     } finally {
       this.uploading = false;
       this.progressMessage = '';
     }
+  }
+
+  private reportFinalizeFailure(error: unknown, batchId: string | null): void {
+    this.finalizeFailed = true;
+    this.formError = FINALIZE_FAILURE;
+    this.finalizeReason = finalizeReasonFrom(error);
+    console.error('[media-finalize] Save failed', {
+      batchId,
+      reason: this.finalizeReason,
+    });
+    this.focusHeading();
   }
 
   async onCancelUpload(): Promise<void> {
@@ -1173,6 +1190,7 @@ export class AdminMediaUploadAudioAlbumComponent
     this.manualZipFile = null;
     this.batchId = null;
     this.finalizeFailed = false;
+    this.finalizeReason = null;
     this.resumeNeedsFiles = false;
     this.resumeMissingKey = null;
     this.progressMessage = '';

@@ -242,8 +242,15 @@
           role="alert"
           aria-live="assertive"
           data-testid="album-upload-error"
-          >{{ formError }}</div
-          >
+          >{{ formError }}
+          @if (finalizeReason !== null) {
+            <div
+              class="admin-error-reason"
+              data-testid="album-finalize-reason"
+              >Reason: {{ finalizeReason }}</div
+            >
+          }</div
+        >
       }
       @if (uploadSuccess) {
         <div

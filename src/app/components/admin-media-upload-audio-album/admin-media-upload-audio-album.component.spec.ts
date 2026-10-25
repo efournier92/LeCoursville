@@ -475,6 +475,81 @@ describe('AdminMediaUploadAudioAlbumComponent', () => {
     expect(component.uploadSuccess).toBe('Saved album "Le Cours".');
   });
 
+  it('renders the finalize reason line when the rejection carries a detail', async () => {
+    await readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'Album folder clash',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.formError).toBe(
+      'The album uploaded but the record could not be saved. Choose Retry to finish saving.',
+    );
+    expect(component.finalizeReason).toBe('Album folder clash');
+    fixture.detectChanges();
+    const band = fixture.nativeElement.querySelector(
+      '[data-testid="album-upload-error"]',
+    );
+    expect(band.textContent).toContain('Reason: Album folder clash');
+  });
+
+  it('renders the reason again when retry finalize fails', async () => {
+    await readyToUpload();
+    cloud.finalizeMediaUpload
+      .mockRejectedValueOnce({
+        code: 'functions/unavailable',
+        message: 'first failure',
+      })
+      .mockRejectedValueOnce({
+        code: 'functions/unavailable',
+        message: 'second failure',
+      });
+
+    await component.onUploadSelectedMedia();
+    await component.onRetryFinalize();
+
+    expect(component.finalizeReason).toBe('second failure');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="album-finalize-reason"]')
+        .textContent,
+    ).toContain('Reason: second failure');
+  });
+
+  it('renders no reason line when the rejection carries no detail', async () => {
+    await readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.finalizeReason).toBeNull();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="album-finalize-reason"]'),
+    ).toBeNull();
+  });
+
+  it('logs the finalize failure once with the app-owned prefix', async () => {
+    await readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'Album folder clash',
+    });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.onUploadSelectedMedia();
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[media-finalize] Save failed',
+      expect.objectContaining({ batchId: BATCH, reason: 'Album folder clash' }),
+    );
+  });
+
   it('hides content controls in edit mode and saves titles and order', async () => {
     const album = new AudioAlbum('a1', 'Old', 'Old');
     album.date = '2020';

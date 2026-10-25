@@ -312,6 +312,81 @@ describe('AdminMediaUploadVideoComponent', () => {
     expect(component.uploadSuccess).toBe('Saved "My Trip".');
   });
 
+  it('renders the finalize reason line when the rejection carries a detail', async () => {
+    readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'Upload batch expired',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.formError).toBe(
+      'The file uploaded but the record could not be saved. Choose Retry to finish saving.',
+    );
+    expect(component.finalizeReason).toBe('Upload batch expired');
+    fixture.detectChanges();
+    const band = fixture.nativeElement.querySelector(
+      '[data-testid="video-upload-error"]',
+    );
+    expect(band.textContent).toContain('Reason: Upload batch expired');
+  });
+
+  it('renders the reason again when retry finalize fails', async () => {
+    readyToUpload();
+    cloud.finalizeMediaUpload
+      .mockRejectedValueOnce({
+        code: 'functions/unavailable',
+        message: 'first failure',
+      })
+      .mockRejectedValueOnce({
+        code: 'functions/unavailable',
+        message: 'second failure',
+      });
+
+    await component.onUploadSelectedMedia();
+    await component.onRetryFinalize();
+
+    expect(component.finalizeReason).toBe('second failure');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-finalize-reason"]')
+        .textContent,
+    ).toContain('Reason: second failure');
+  });
+
+  it('renders no reason line when the rejection carries no detail', async () => {
+    readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+    });
+
+    await component.onUploadSelectedMedia();
+
+    expect(component.finalizeReason).toBeNull();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="video-finalize-reason"]'),
+    ).toBeNull();
+  });
+
+  it('logs the finalize failure once with the app-owned prefix', async () => {
+    readyToUpload();
+    cloud.finalizeMediaUpload.mockRejectedValueOnce({
+      code: 'functions/unavailable',
+      message: 'Upload batch expired',
+    });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await component.onUploadSelectedMedia();
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[media-finalize] Save failed',
+      expect.objectContaining({ batchId: BATCH, reason: 'Upload batch expired' }),
+    );
+  });
+
   it('hides file controls in edit mode and saves duration through the callable', async () => {
     component.onMediaSelect(record());
     fixture.detectChanges();

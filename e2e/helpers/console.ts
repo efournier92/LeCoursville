@@ -13,6 +13,8 @@ import { Page } from '@playwright/test';
  *  - Auth emulator host (:9099): the invalid/used reset-code path returns a 400
  *    from the emulator, which the SDK logs as a console error; expected, and
  *    scoping to the emulator host keeps application errors visible.
+ *  - `[media-finalize]`: the forced-finalize failure tests exercise a handled
+ *    save-failure path; unexpected errors stay visible.
  */
 
 export interface ConsoleCollector {
@@ -26,6 +28,7 @@ const ALLOWLIST = [
   /ERR_ABORTED/,
   /drive\.google\.com/,
   /(?:127\.0\.0\.1|localhost):9099\//,
+  /\[media-finalize\]/,
 ];
 
 export function isAllowed(message: string): boolean {
