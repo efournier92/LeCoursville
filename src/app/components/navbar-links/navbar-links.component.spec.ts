@@ -88,14 +88,12 @@ describe('NavbarLinksComponent', () => {
     expect(accountButton!.title).toBe('Account');
   });
 
-  it('shows the Admin link only to super users', () => {
+  it('never renders an Admin link, even for a super user', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="nav-admin-link"]')).toBeNull();
 
     component.isSuperUser = true;
     fixture.detectChanges();
 
-    const adminLink = fixture.nativeElement.querySelector('[data-testid="nav-admin-link"]');
-    expect(adminLink).toBeTruthy();
-    expect(adminLink.textContent).toContain('Admin');
+    expect(fixture.nativeElement.querySelector('[data-testid="nav-admin-link"]')).toBeNull();
   });
 });

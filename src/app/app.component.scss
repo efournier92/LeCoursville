@@ -42,5 +42,26 @@
   cursor: pointer;
 }
 
+.toolbar-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  // The brand-green ring is invisible on the green toolbar; keep the app's
+  // 2px/2px treatment but draw it in the toolbar's own ink.
+  &:focus-visible {
+    outline: 2px solid currentColor !important;
+    outline-offset: 2px !important;
+  }
+}
+
 /* Nav loading skeleton styles live globally in styles.scss (shared by
    app.component and navbar-links; Angular scopes component styles). */

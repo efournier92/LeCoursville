@@ -7,7 +7,7 @@ test.describe('navigation', () => {
     await expect(page.locator('#lecoursville-navbar-links')).toHaveCount(0);
   });
 
-  test('logged-in toolbar shows enabled features but NOT chat', async ({ page }) => {
+  test('logged-in nav shows enabled features and never the Admin entry', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');
     await expect(nav.getByRole('button', { name: 'People' })).toBeVisible();
@@ -20,6 +20,7 @@ test.describe('navigation', () => {
     await expect(nav.getByRole('button', { name: 'Upload' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Account' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Chat' })).toHaveCount(0);
+    await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
   });
 
   test('cached session renders nav links immediately, never Sign In', async ({ page }) => {
