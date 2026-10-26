@@ -69,13 +69,14 @@
   @if (familyGroups.length === 0 && filterQuery.trim()) {
     <app-no-results-message
       [searchTerm]="filterQuery"
+      noun="people"
     ></app-no-results-message>
   }
 
   @if (status === 'ready' && familyGroups.length === 0 && !filterQuery.trim()) {
     <app-no-results-message
-      title="No people yet"
-      hint="The family tree will show up here once people are added."
+      title="We couldn't find any people."
+      hint="Check back later."
     ></app-no-results-message>
   }
 

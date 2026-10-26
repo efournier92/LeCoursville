@@ -67,8 +67,8 @@
     }
     @if (getFilteredAlbums().length === 0 && !searchTerm) {
       <app-no-results-message
-        title="No albums yet"
-        hint="Albums you create will appear here."
+        title="We couldn't find any albums."
+        hint="Check back later."
         [isCentered]="true"
       ></app-no-results-message>
     }

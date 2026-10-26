@@ -80,15 +80,10 @@
       [(ngModel)]="formUser.name"
       />
   </mat-form-field>
-  <mat-form-field class="user-edit-form-field w-100">
-    <mat-label>Email</mat-label>
-    <input
-      matInput
-      type="email"
-      name="user-email"
-      [(ngModel)]="formUser.email"
-      />
-  </mat-form-field>
+  <div class="user-edit-display-field">
+    <div class="user-edit-display-label">Email</div>
+    <div class="user-edit-display-value">{{ formUser.email }}</div>
+  </div>
   <div class="user-edit-display-container">
     <div class="user-edit-field-group">
       <div class="user-edit-display-field">

@@ -31,7 +31,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
   { route: '/admin/media', content: (p) => p.getByTestId('media-section-video') },
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
-  { route: '/admin/uploads', content: (p) => p.getByText("You're all caught up") },
+  { route: '/admin/uploads', content: (p) => p.getByText('pending.png').first() },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
   { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
 ];
@@ -82,13 +82,13 @@ test.describe('loading contract', () => {
       await page.goto('/contacts');
       await expect(page.locator('.contacts-grid')).toBeVisible();
       await deleteDb('people');
-      await expect(page.getByText('No contacts yet')).toBeVisible();
+      await expect(page.getByText("We couldn't find any contacts.")).toBeVisible();
       await expect(page.locator('.contacts-skeleton-grid')).toHaveCount(0);
 
       await page.goto('/photos');
       await expect(page.locator('.album-tile-title', { hasText: 'E2E Album One' })).toBeVisible();
       await deleteDb('photoAlbums');
-      await expect(page.getByText('No albums yet')).toBeVisible();
+      await expect(page.getByText("We couldn't find any albums.")).toBeVisible();
       await expect(page.getByTestId('albums-skeleton')).toHaveCount(0);
     } finally {
       await writeDb('people', people);

@@ -12,10 +12,9 @@ import { MatIconModule } from '@angular/material/icon';
 export class NoResultsMessageComponent {
   @Input() searchTerm: string;
   @Input() isCentered = false;
-  /** What was searched, e.g. 'albums' → "No albums match …" (default: the
-   *  original people/contacts phrasing). */
+  /** What was searched, e.g. 'albums' → "We couldn't find any albums matching …". */
   @Input() noun: string;
   /** Custom empty-library copy when there is no search term. */
-  @Input() hint = 'Try a first name, a last name, or a family.';
-  @Input() title = 'Nothing found';
+  @Input() hint = 'Try a different search or filter.';
+  @Input() title = "We couldn't find anything.";
 }

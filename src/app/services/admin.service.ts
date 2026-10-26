@@ -70,7 +70,10 @@ export class AdminService implements OnDestroy {
   }
 
   updateUser(user: User): Promise<void> {
-    return this.rtdb.object(`users/${user.id}`).update(user as any);
+    // Email is immutable under the rules; a stale form must not try to rewrite it.
+    const profile = { ...user };
+    delete profile.email;
+    return this.rtdb.object(`users/${user.id}`).update(profile as any);
   }
 
   /** Role grants and their audit row are one server transaction. */

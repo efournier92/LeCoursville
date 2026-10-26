@@ -1,7 +1,23 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { expectNoHorizontalOverflow } from '../helpers/overflow';
 
 test.describe('people', () => {
+  test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [900, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/people');
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        await expectNoHorizontalOverflow(page.locator('mat-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('list renders the 6 seeded people grouped by family', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');
@@ -21,6 +37,10 @@ test.describe('people', () => {
     await page.getByLabel('Filter').fill('Alice');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
+    await page.getByLabel('Filter').fill('zzznope');
+    await expect(
+      page.getByText('We couldn\'t find any people matching "zzznope".'),
+    ).toBeVisible();
   });
 
   test('family filter still filters the list', async ({ page }) => {

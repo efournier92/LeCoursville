@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { expectNoHorizontalOverflow } from '../helpers/overflow';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,6 +11,21 @@ const TINY_PNG = Buffer.from(
 );
 
 test.describe('photos', () => {
+  test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [900, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/photos');
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        await expectNoHorizontalOverflow(page.locator('mat-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('albums grid renders the 2 seeded album titles', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/photos');
@@ -24,7 +40,7 @@ test.describe('photos', () => {
     // emission), so the deterministic assertions are the invariant ones:
     // real content arrives and the empty state never renders for it.
     await expect(page.locator('[data-testid="albums-skeleton"], .album-tile').first()).toBeAttached();
-    await expect(page.getByText('No albums yet')).toHaveCount(0);
+    await expect(page.getByText("We couldn't find any albums.")).toHaveCount(0);
     await expect(page.getByText('E2E Album One')).toBeVisible();
     await expect(page.getByTestId('albums-skeleton')).toHaveCount(0);
   });

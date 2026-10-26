@@ -155,7 +155,7 @@
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true)",
-        ".write": "((!data.exists() && $uid === auth.uid && newData.child('roles/user').val() === null && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && !newData.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true) || (data.exists() && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('roles/user').val() === data.child('roles/user').val() && newData.child('roles/admin').val() === data.child('roles/admin').val() && newData.child('roles/super').val() === data.child('roles/super').val()))"
+        ".write": "((!data.exists() && $uid === auth.uid && newData.child('roles/user').val() === null && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && !newData.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true) || (newData.child('email').val() === data.child('email').val() && data.exists() && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('roles/user').val() === data.child('roles/user').val() && newData.child('roles/admin').val() === data.child('roles/admin').val() && newData.child('roles/super').val() === data.child('roles/super').val()))"
       }
     },
     "features": {

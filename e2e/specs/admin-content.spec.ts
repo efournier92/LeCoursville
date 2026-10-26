@@ -57,7 +57,7 @@ test.describe('admin content surfaces', () => {
     // blank pane.
     await audioPanel.getByLabel('Filter').fill('zzz-no-match');
     await expect(audioPanel.locator('.no-results-message')).toBeVisible();
-    await expect(audioPanel.locator('.no-results-message')).toContainText('No media match');
+    await expect(audioPanel.locator('.no-results-message')).toContainText("We couldn't find any media matching");
 
     await audioPanel.getByLabel('Filter').fill('');
     await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
@@ -147,12 +147,15 @@ test.describe('admin content surfaces', () => {
     await login(page, 'admin');
     await page.goto('/admin/uploads');
 
-    // The seeded upload is approved, so the default pending queue is empty.
-    await expect(page.getByText("You're all caught up")).toBeVisible();
+    // The seed has one pending upload; the approved fixture is not in the queue.
+    await expect(page.getByText('pending.png').first()).toBeVisible();
+    await expect(page.getByText('fixture.png')).toHaveCount(0);
 
     await page.getByRole('button', { name: /All \(\d+\)/ }).click();
     await expect(page.locator('.admin-table')).toBeVisible();
     await expect(page.getByText('fixture.png').first()).toBeVisible();
+    await expect(page.getByText('pending.png').first()).toBeVisible();
+    await expect(page.getByText('rejected.png').first()).toBeVisible();
 
     await page.getByRole('button', { name: 'Reject fixture.png' }).click();
     const confirm = page.locator('app-confirm-dialog');
@@ -163,7 +166,8 @@ test.describe('admin content surfaces', () => {
 
     await expect(page.getByText('fixture.png').first()).toBeVisible();
     await page.getByRole('button', { name: /Pending \(\d+\)/ }).click();
-    await expect(page.getByText("You're all caught up")).toBeVisible();
+    await expect(page.getByText('pending.png').first()).toBeVisible();
+    await expect(page.getByText('fixture.png')).toHaveCount(0);
   });
 
   test('uploads: a rejected upload is removed after confirming, and the seeded record is restored', async ({ page }) => {
@@ -192,8 +196,9 @@ test.describe('admin content surfaces', () => {
       await expect(confirm).toContainText('fixture.png');
       await confirm.getByRole('button', { name: 'Reject upload' }).click();
 
-      await expect(page.getByText('No uploads yet')).toBeVisible();
       await expect(page.getByText('fixture.png')).toHaveCount(0);
+      await expect(page.getByText('pending.png').first()).toBeVisible();
+      await expect(page.getByText('rejected.png').first()).toBeVisible();
       await expect.poll(async () => readDb('userUploads/upload-1')).toBeNull();
     } finally {
       await writeDb('userUploads/upload-1', original);
@@ -310,7 +315,8 @@ test.describe('admin content surfaces', () => {
       await confirm.getByRole('button', { name: 'Reject upload' }).click();
 
       await expect(preview).toBeHidden();
-      await expect(page.getByText("You're all caught up")).toBeVisible();
+      await expect(page.getByText('pending.png').first()).toBeVisible();
+      await expect(page.getByText(fileName)).toHaveCount(0);
       await expect.poll(async () => readDb(`userUploads/${uploadId}`)).toBeNull();
     } finally {
       await deleteDb(`userUploads/${uploadId}`);
@@ -357,6 +363,9 @@ test.describe('admin content surfaces', () => {
     await page.goto('/admin/families');
     const adminRows = page.locator('.families-table tbody tr .family-name');
     await expect(adminRows).toHaveCount(2, { timeout: 20000 });
+    await expect(adminRows.filter({ hasText: 'Mignonne' })).toBeVisible();
+    await expect(adminRows.filter({ hasText: 'Denis' })).toBeVisible();
+    await expect(page.getByText('No families yet')).toHaveCount(0);
     const adminNames = (await adminRows.allTextContents()).map((name) => name.trim()).sort();
 
     await page.goto('/people');
@@ -369,6 +378,76 @@ test.describe('admin content surfaces', () => {
     await page.keyboard.press('Escape');
   });
 
+  test('features: rows carry icon tiles, grouped headings, and contained toggles', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    await expect(page.getByTestId('feature-toggle-people')).toBeVisible();
+
+    const rows = page.locator('.feature-row');
+    await expect(rows).toHaveCount(9);
+
+    const tiles = await page.locator('.feature-row .feature-icon').evaluateAll((elements) =>
+      elements.map((el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          background: getComputedStyle(el).backgroundColor,
+          icon: el.querySelector('mat-icon')?.textContent?.trim() ?? '',
+        };
+      }),
+    );
+    expect(tiles).toHaveLength(9);
+    for (const tile of tiles) {
+      expect(tile.width).toBe(32);
+      expect(tile.height).toBe(32);
+      expect(tile.background).not.toBe('rgba(0, 0, 0, 0)');
+      expect(tile.icon).not.toBe('');
+    }
+
+    const groups = page.locator('.feature-group');
+    await expect(groups).toHaveCount(3);
+    const headings = await groups.evaluateAll((elements) =>
+      elements.map((group) => {
+        const label = group.querySelector('.feature-group-label') as HTMLElement;
+        const styles = getComputedStyle(label);
+        return {
+          top: styles.marginTop,
+          bottom: styles.marginBottom,
+          border: styles.borderTopWidth,
+        };
+      }),
+    );
+    expect(headings[0]).toEqual({ top: '0px', bottom: '8px', border: '0px' });
+    expect(headings[1]).toEqual({ top: '20px', bottom: '8px', border: '1px' });
+    expect(headings[2]).toEqual({ top: '20px', bottom: '8px', border: '1px' });
+
+    // `.mdc-switch__handle` is the one allowed Material-internal hook: measure
+    // the switch button as the track and require the thumb to stay inside it.
+    const thumb = async (id: string) =>
+      page
+        .getByTestId(`feature-toggle-${id}`)
+        .locator('button[role="switch"]')
+        .evaluate((button) => {
+          const track = button.getBoundingClientRect();
+          const handle = button.querySelector('.mdc-switch__handle')!.getBoundingClientRect();
+          return {
+            trackLeft: track.left,
+            trackRight: track.right,
+            handleLeft: handle.left,
+            handleRight: handle.right,
+          };
+        });
+
+    const off = await thumb('chat');
+    const on = await thumb('contacts');
+    for (const state of [off, on]) {
+      expect(state.handleLeft).toBeGreaterThanOrEqual(state.trackLeft + 1);
+      expect(state.handleRight).toBeLessThanOrEqual(state.trackRight - 1);
+    }
+    expect(on.handleLeft).toBeGreaterThan(off.handleLeft);
+  });
+
   test('390x844: the uploads table becomes cards and the album grid is one column without overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, 'admin');
@@ -377,7 +456,7 @@ test.describe('admin content surfaces', () => {
     await page.getByRole('button', { name: /All \(\d+\)/ }).click();
     await expect(page.getByText('fixture.png').first()).toBeVisible();
     await expect(page.locator('.admin-table thead')).toBeHidden();
-    await expect(page.locator('td[data-label="File"]')).toBeVisible();
+    await expect(page.locator('td[data-label="File"]').first()).toBeVisible();
 
     const uploadsOverflow = await page.evaluate(() => {
       const content = document.querySelector('.admin-content') as HTMLElement;

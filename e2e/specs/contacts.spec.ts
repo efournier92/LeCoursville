@@ -1,10 +1,26 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { expectNoHorizontalOverflow } from '../helpers/overflow';
 
 // The contacts page is a people-derived directory (people + families in RTDB).
 // The legacy `contacts` node is not read by the current UI.
 
 test.describe('contacts', () => {
+  test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [900, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/contacts');
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        await expectNoHorizontalOverflow(page.locator('mat-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('list renders the seeded people as contact cards', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts');
@@ -26,7 +42,9 @@ test.describe('contacts', () => {
     await login(page, 'admin');
     await page.goto('/contacts');
     await page.getByLabel('Filter').fill('zzznope');
-    await expect(page.getByText('Nothing found')).toBeVisible();
+    await expect(
+      page.getByText('We couldn\'t find any contacts matching "zzznope".'),
+    ).toBeVisible();
   });
 
   test('family filter narrows the list', async ({ page }) => {

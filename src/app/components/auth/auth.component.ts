@@ -179,7 +179,7 @@ export class AuthComponent implements OnInit {
       case "auth/expired-action-code":
         return "That reset link has expired. Request a new one.";
       case "auth/account-exists-with-different-credential":
-        return "An account already exists for this email. Sign in with your email and password, then connect Google from your account page.";
+        return "An account already exists for this email. Sign in with your email and password.";
       case "auth/popup-blocked":
         return "Your browser blocked the Google sign-in popup. Allow popups and try again.";
       case "auth/popup-closed-by-user":

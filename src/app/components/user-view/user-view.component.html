@@ -43,28 +43,4 @@
       <span>Edit profile</span>
     </button>
   </div>
-
-  <div class="account-connect">
-    @if (googleConnected) {
-      <div class="account-connect-status" role="status">
-        <mat-icon aria-hidden="true">check_circle_outline</mat-icon>
-        <span>Google connected</span>
-      </div>
-    } @else {
-      <button
-        mat-stroked-button
-        type="button"
-        class="account-connect-button"
-        [disabled]="connecting"
-        (click)="onConnectGoogle()"
-        data-testid="account-connect-google"
-        >
-        <mat-icon aria-hidden="true">login</mat-icon>
-        <span>{{ connecting ? 'Connecting…' : 'Connect Google' }}</span>
-      </button>
-    }
-    @if (connectError) {
-      <p class="account-connect-error" role="alert">{{ connectError }}</p>
-    }
-  </div>
 </div>

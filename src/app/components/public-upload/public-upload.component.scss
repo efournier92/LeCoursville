@@ -1,11 +1,14 @@
 @use '../../styles/buttons' as *;
 
 .upload-container {
-  // Deliberately a narrow form column (public upload is one focused action);
-  // inherits the app-wide font + tokens.
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 40px 20px;
+  // A narrow single-action sheet, so the form does not become the widest card on the site.
+  max-width: 680px;
+  margin: 24px auto;
+  padding: 24px;
+
+  @media (max-width: 600px) {
+    padding: 16px;
+  }
 }
 
 h1 {
@@ -26,6 +29,7 @@ h1 {
   padding: 60px 40px;
   text-align: center;
   cursor: pointer;
+  background: var(--color-surface);
   transition: all 0.2s ease;
 
   &:hover, &.dragging {
@@ -119,8 +123,8 @@ h1 {
 .file-list {
   margin-top: 24px;
   background: var(--color-surface-muted);
-  border-radius: var(--radius-card);
-  padding: 16px;
+  border-radius: var(--radius-sm);
+  padding: 12px;
 }
 
 .file-header {

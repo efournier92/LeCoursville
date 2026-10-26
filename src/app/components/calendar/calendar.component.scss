@@ -68,7 +68,7 @@
 .calendar-nav-row {
   display: flex;
   justify-content: center;
-  margin: 24px 0 10px;
+  margin: 24px 0;
   position: relative;
   z-index: 101;
 }
@@ -285,7 +285,7 @@
   }
 
   .calendar-nav-row {
-    margin-top: 16px;
+    margin: 16px 0;
   }
 
   .calendar-view-component {

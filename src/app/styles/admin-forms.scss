@@ -38,20 +38,46 @@
 }
 
 .admin-form-action-button {
-  color: white;
   margin-top: 12px;
 }
 
+// Filled upload stays white; a stroked usage falls back to ink so it stays
+// readable on the card it sits on.
 .admin-form-action-button-upload {
   color: white;
-}
+  --mat-button-filled-label-text-color: white;
 
-.admin-form-action-button-delete {
-  color: white;
+  &.mat-mdc-outlined-button {
+    color: var(--color-ink);
+    --mat-button-outlined-label-text-color: var(--color-ink);
+  }
 }
 
 .admin-form-action-button-cancel {
-  color: white;
+  color: var(--color-ink);
+  --mat-button-text-label-text-color: var(--color-ink);
+  --mat-button-text-state-layer-color: var(--color-ink);
+  --mat-button-outlined-label-text-color: var(--color-ink);
+}
+
+.admin-form-action-button-delete {
+  color: var(--color-error);
+  --mat-button-text-label-text-color: var(--color-error);
+  --mat-button-outlined-label-text-color: var(--color-error);
+  --mat-button-outlined-outline-color: var(--color-error);
+  --mat-button-outlined-state-layer-color: var(--color-error);
+}
+
+.admin-form-action-button-retry,
+.admin-form-action-button-resume {
+  color: var(--color-accent-strong);
+  --mat-button-outlined-label-text-color: var(--color-accent-strong);
+  --mat-button-outlined-outline-color: var(--color-accent-strong);
+  --mat-button-outlined-state-layer-color: var(--color-accent-strong);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent-strong) 10%, transparent);
+  }
 }
 
 .admin-media-upload-form-container {

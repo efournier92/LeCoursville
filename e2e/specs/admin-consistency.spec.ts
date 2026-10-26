@@ -48,7 +48,7 @@ const ADMIN_ROUTES: AdminRoute[] = [
     path: '/admin/uploads',
     title: 'Uploads',
     ready: async (page) => {
-      await expect(page.getByText("You're all caught up")).toBeVisible();
+      await expect(page.getByText('pending.png').first()).toBeVisible();
       await page.getByRole('button', { name: /All \(\d+\)/ }).click();
       await expect(page.locator('.admin-table tbody tr').first()).toBeVisible();
     },
@@ -77,7 +77,10 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
 
   const box = await toolbar.boundingBox();
   expect(box).not.toBeNull();
-  expect(Math.abs(box!.height - expectedHeight)).toBeLessThanOrEqual(1);
+  // Bars wrap and grow instead of clipping (DC-20261026-05): the minimum holds,
+  // and one wrapped control row (<=48px) is allowed.
+  expect(box!.height).toBeGreaterThanOrEqual(expectedHeight - 1);
+  expect(box!.height).toBeLessThanOrEqual(expectedHeight + 48);
 
   const surface = await toolbar.evaluate((el) => {
     const styles = getComputedStyle(el);
@@ -192,6 +195,42 @@ test.describe('admin visual contract', () => {
 });
 
 test.describe('admin consistency fixes', () => {
+  test('stacked admin cards keep the shared 16px gap', async ({ page }) => {
+    await login(page, 'admin');
+
+    const routes = [
+      {
+        path: '/admin/users',
+        ready: () => expect(page.getByTestId('admin-users-table')).toBeVisible(),
+      },
+      {
+        path: '/admin/features',
+        ready: () => expect(page.getByTestId('feature-toggle-calendar')).toBeVisible(),
+      },
+    ];
+
+    for (const route of routes) {
+      await page.goto(route.path);
+      await route.ready();
+
+      const gaps = await page.locator('.admin-surface').evaluateAll((cards) => {
+        const values: number[] = [];
+        for (let i = 0; i < cards.length - 1; i += 1) {
+          if (cards[i].nextElementSibling !== cards[i + 1]) continue;
+          const above = cards[i].getBoundingClientRect();
+          const below = cards[i + 1].getBoundingClientRect();
+          values.push(Math.round(below.top - above.bottom));
+        }
+        return values;
+      });
+
+      expect(gaps.length).toBeGreaterThan(0);
+      for (const gap of gaps) {
+        expect(gap).toBe(16);
+      }
+    }
+  });
+
   test('feature page title bar keeps the shared 16px gap', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await login(page, 'admin');

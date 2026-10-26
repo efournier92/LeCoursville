@@ -85,7 +85,7 @@ test.describe('edge cases', () => {
     await login(page, 'admin');
     await page.goto('/photos');
     await page.getByLabel('Search albums').fill('zzznope');
-    await expect(page.getByText('Nothing found')).toBeVisible();
+    await expect(page.getByText('We couldn\'t find any albums matching "zzznope".')).toBeVisible();
   });
 
   test('malformed CSV import surfaces validation errors', async ({ page }) => {
