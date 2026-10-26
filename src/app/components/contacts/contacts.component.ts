@@ -51,7 +51,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { family: queryParams.get('clan'), clan: null },
-          queryParamsHandling: 'merge'
+          queryParamsHandling: 'merge',
+          replaceUrl: true
         });
       }
       // Re-trigger filter after query params update

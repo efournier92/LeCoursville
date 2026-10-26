@@ -83,7 +83,9 @@ function printReport(project, mode, clans, families, people, result) {
     const action =
       row.action === 'merged'
         ? `merged, replaces families/${row.replacedFamilyId}`
-        : 'copied';
+        : row.action === 'skipped'
+          ? 'skipped, families record kept'
+          : 'copied';
     console.log(`  ${row.clanId} ${row.name} -> families/${row.familyId} (${action})`);
   }
   console.log(
@@ -95,11 +97,24 @@ function printReport(project, mode, clans, families, people, result) {
       console.log(
         `  colour ${conflict.name}: clans/${conflict.clanId} ${conflict.clanHexColor} vs families/${conflict.familyId} ${conflict.familyHexColor}`
       );
+    } else if (conflict.kind === 'duplicate-name') {
+      console.log(
+        `  duplicate ${conflict.name}: families/${conflict.familyId} ignored, families/${conflict.keptFamilyId} kept`
+      );
+    } else if (conflict.kind === 'key-collision') {
+      console.log(
+        `  key ${conflict.clanId}: family "${conflict.familyName}" kept over clan "${conflict.clanName}"`
+      );
+    } else if (conflict.kind === 'field-conflict') {
+      console.log(
+        `  field ${conflict.field} ${conflict.name}: clans/${conflict.clanId} ${conflict.clanValue} vs families/${conflict.familyId} ${conflict.familyValue}`
+      );
     } else {
       console.log(`  orphan ${conflict.personId}: clans/${conflict.clanId} not found`);
     }
   }
   console.log(`${TAG} people gaining familyId: ${stats.peopleGainingFamilyId}`);
+  console.log(`${TAG} existing familyIds remapped: ${stats.familyIdsRemapped}`);
   console.log(
     `${TAG} orphan clanIds: ${stats.orphanClanIds.length}${
       stats.orphanClanIds.length ? ` (${stats.orphanClanIds.join(', ')})` : ''

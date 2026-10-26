@@ -46,6 +46,144 @@ describe("mergeFamilyNodes", () => {
     ]);
   });
 
+  it("reports a duplicate-name family that the merge does not keep", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = {
+      abc: clan("abc", "Smith", "#222222", "9"),
+      def: clan("def", "Smith", "#333333", "10"),
+    };
+
+    const result = mergeFamilyNodes(clans, families, {});
+
+    expect(Object.keys(result.families)).toEqual(["xyz"]);
+    expect(result.stats.familiesOut).toBe(1);
+    expect(result.conflicts).toEqual([
+      {
+        kind: "color",
+        name: "Smith",
+        clanId: "xyz",
+        familyId: "abc",
+        clanHexColor: "#111111",
+        familyHexColor: "#222222",
+      },
+      {
+        kind: "duplicate-name",
+        name: "Smith",
+        familyId: "def",
+        keptFamilyId: "abc",
+      },
+    ]);
+  });
+
+  it("keeps a family edited under a clan id and reports the key collision", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = { xyz: clan("xyz", "Renamed", "#999999", "0") };
+
+    const result = mergeFamilyNodes(clans, families, {});
+
+    expect(result.families).toEqual({ xyz: families.xyz });
+    expect(result.stats.familiesOut).toBe(1);
+    expect(result.stats.mergeTable).toEqual([
+      {
+        clanId: "xyz",
+        familyId: "xyz",
+        name: "Smith",
+        sortOrder: "0",
+        action: "skipped",
+        replacedFamilyId: null,
+      },
+    ]);
+    expect(result.conflicts).toEqual([
+      {
+        kind: "key-collision",
+        clanId: "xyz",
+        familyId: "xyz",
+        clanName: "Smith",
+        familyName: "Renamed",
+      },
+    ]);
+  });
+
+  it("keeps a same-name family when its clan is skipped by a key collision", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = {
+      xyz: clan("xyz", "Renamed", "#999999", "0"),
+      abc: clan("abc", "Smith", "#123123", "1"),
+    };
+
+    const result = mergeFamilyNodes(clans, families, {});
+
+    expect(Object.keys(result.families).sort()).toEqual(["abc", "xyz"]);
+    expect(result.families.abc).toEqual(families.abc);
+    expect(result.families.xyz).toEqual(families.xyz);
+    expect(result.stats.familiesOut).toBe(2);
+    expect(result.stats.familiesOnly).toBe(2);
+  });
+
+  it("reports a colour conflict for a same-key family that keeps the clan name", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = { xyz: clan("xyz", "Smith", "#222222", "0") };
+
+    const result = mergeFamilyNodes(clans, families, {});
+
+    expect(result.families).toEqual({ xyz: clans.xyz });
+    expect(result.conflicts).toEqual([
+      {
+        kind: "color",
+        name: "Smith",
+        clanId: "xyz",
+        familyId: "xyz",
+        clanHexColor: "#111111",
+        familyHexColor: "#222222",
+      },
+    ]);
+  });
+
+  it("remaps an existing familyId when its family is replaced by a clan", () => {
+    const clans = { zzz: clan("zzz", "Wick", "#000000", "0") };
+    const families = { abc: clan("abc", "Wick", "#000000", "0") };
+    const people = { p1: { id: "p1", familyId: "abc" } };
+
+    const result = mergeFamilyNodes(clans, families, people);
+
+    expect(result.people.p1.familyId).toBe("zzz");
+    expect(result.stats.familyIdsRemapped).toBe(1);
+  });
+
+  it("remaps a familyId that points at an ignored duplicate-name family", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = {
+      abc: clan("abc", "Smith", "#222222", "1"),
+      def: clan("def", "Smith", "#333333", "2"),
+    };
+    const people = { p3: { id: "p3", familyId: "def" } };
+
+    const result = mergeFamilyNodes(clans, families, people);
+
+    expect(result.people.p3.familyId).toBe("xyz");
+    expect(result.stats.familyIdsRemapped).toBe(1);
+  });
+
+  it("reports a sortOrder conflict for a same-key family", () => {
+    const clans = { xyz: clan("xyz", "Smith", "#111111", "0") };
+    const families = { xyz: clan("xyz", "Smith", "#111111", "7") };
+
+    const result = mergeFamilyNodes(clans, families, {});
+
+    expect(result.families).toEqual({ xyz: clans.xyz });
+    expect(result.conflicts).toEqual([
+      {
+        kind: "field-conflict",
+        name: "Smith",
+        clanId: "xyz",
+        familyId: "xyz",
+        field: "sortOrder",
+        clanValue: "0",
+        familyValue: "7",
+      },
+    ]);
+  });
+
   it("survives families-only records untouched", () => {
     const clans = { "clan-1": clan("clan-1", "Mignonne", "#F44336", "A") };
     const families = {

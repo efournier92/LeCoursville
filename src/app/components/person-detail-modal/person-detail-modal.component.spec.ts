@@ -145,6 +145,21 @@ describe('PersonDetailModalComponent', () => {
     expect(component.calculateAge()).toBe('30');
   });
 
+  it('treats a zero-year death date as unknown when computing age', () => {
+    const today = new Date();
+    renderPerson(makePerson({
+      birthday: {
+        year: today.getFullYear() - 30,
+        month: today.getMonth() + 1,
+        day: Math.min(today.getDate(), 28),
+      },
+      deathDate: { year: 0, month: 1, day: 1 },
+      isLiving: false,
+    }));
+
+    expect(component.calculateAge()).toBe('30');
+  });
+
   it('treats a missing isLiving value as living', () => {
     const person = makePerson();
     delete (person as Partial<Person>).isLiving;

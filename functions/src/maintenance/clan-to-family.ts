@@ -28,7 +28,7 @@ export interface MergeTableRow {
   familyId: string;
   name: string;
   sortOrder: string;
-  action: "copied" | "merged";
+  action: "copied" | "merged" | "skipped";
   /** Id of the `families` record replaced by this clan, when merged by name. */
   replacedFamilyId: string | null;
 }
@@ -48,7 +48,37 @@ export interface OrphanConflict {
   clanId: string;
 }
 
-export type MergeConflict = ColorConflict | OrphanConflict;
+export interface DuplicateNameConflict {
+  kind: "duplicate-name";
+  name: string;
+  familyId: string;
+  keptFamilyId: string;
+}
+
+export interface KeyCollisionConflict {
+  kind: "key-collision";
+  clanId: string;
+  familyId: string;
+  clanName: string;
+  familyName: string;
+}
+
+export interface FieldConflict {
+  kind: "field-conflict";
+  name: string;
+  clanId: string;
+  familyId: string;
+  field: "sortOrder";
+  clanValue: string | null;
+  familyValue: string | null;
+}
+
+export type MergeConflict =
+  | ColorConflict
+  | OrphanConflict
+  | DuplicateNameConflict
+  | KeyCollisionConflict
+  | FieldConflict;
 
 export interface MergeStats {
   /** Input record counts. */
@@ -61,6 +91,8 @@ export interface MergeStats {
   familiesOnly: number;
   /** People whose `familyId` changes in this run (0 on a repeat run). */
   peopleGainingFamilyId: number;
+  /** People whose existing `familyId` followed a replaced family id. */
+  familyIdsRemapped: number;
   /** Distinct `clanId` values with no matching clan record. */
   orphanClanIds: string[];
   /** Legacy clan id -> output family id. */
@@ -138,15 +170,33 @@ export function mergeFamilyNodes(
   }
   clanEntries.sort(compareFamilyEntries);
 
+  const clanIds = new Set(clanEntries.map(([key]) => key));
+  const familyIdMap: Record<string, string> = {};
   const familyByName = new Map<string, { key: string; record: FamilyRecord }>();
   const familyOnlyEntries: Array<[string, FamilyRecord]> = [];
+  const duplicateNameConflicts: MergeConflict[] = [];
   for (const key of Object.keys(families).sort(compareText)) {
     const record = recordOf<FamilyRecord>(families[key]);
     if (!record) continue;
     const name = textOrNull(record.name);
     if (name && clanNames.has(name)) {
+      // A family under a clan id is the same record; the clan copy owns it.
+      if (clanIds.has(key)) continue;
       // Deterministic: the first family id in key order wins the merge.
-      if (!familyByName.has(name)) familyByName.set(name, { key, record });
+      const kept = familyByName.get(name);
+      if (!kept) {
+        familyByName.set(name, { key, record });
+      } else {
+        // One name survives by design; surface the ignored duplicate and
+        // follow its reference through to whatever replaces the kept record.
+        duplicateNameConflicts.push({
+          kind: "duplicate-name",
+          name,
+          familyId: key,
+          keptFamilyId: kept.key,
+        });
+        familyIdMap[key] = kept.key;
+      }
     } else {
       familyOnlyEntries.push([key, record]);
     }
@@ -155,16 +205,69 @@ export function mergeFamilyNodes(
   const outputEntries: Array<[string, FamilyRecord]> = [];
   const idMap: Record<string, string> = {};
   const mergeTable: MergeTableRow[] = [];
-  const conflicts: MergeConflict[] = [];
+  const conflicts: MergeConflict[] = [...duplicateNameConflicts];
+  const familyOnlyKeys = new Set(familyOnlyEntries.map(([key]) => key));
+  const consumedNames = new Set<string>();
   let mergedByName = 0;
 
   for (const [clanId, clan] of clanEntries) {
     const name = textOrNull(clan.name);
     const match = name ? familyByName.get(name) : undefined;
     idMap[clanId] = clanId;
+    const sameKeyFamily = recordOf<FamilyRecord>(families[clanId]);
+    if (sameKeyFamily && !familyOnlyKeys.has(clanId) && textOrNull(sameKeyFamily.name) === (name ?? "")) {
+      // Same id and name: the clan hex wins by spec, but never silently.
+      const clanHex = textOrNull(clan.hexColor);
+      const familyHex = textOrNull(sameKeyFamily.hexColor);
+      if (clanHex !== familyHex) {
+        conflicts.push({
+          kind: "color",
+          name: name ?? "",
+          clanId,
+          familyId: clanId,
+          clanHexColor: clanHex,
+          familyHexColor: familyHex,
+        });
+      }
+      const clanSort = sortOrderOf(clan);
+      const familySort = sortOrderOf(sameKeyFamily);
+      if (clanSort !== familySort) {
+        conflicts.push({
+          kind: "field-conflict",
+          name: name ?? "",
+          clanId,
+          familyId: clanId,
+          field: "sortOrder",
+          clanValue: clanSort || null,
+          familyValue: familySort || null,
+        });
+      }
+    }
+    if (familyOnlyKeys.has(clanId)) {
+      // The admin renamed this record after a previous apply. Keep the edit.
+      const renamed = recordOf<FamilyRecord>(families[clanId]);
+      conflicts.push({
+        kind: "key-collision",
+        clanId,
+        familyId: clanId,
+        clanName: name ?? "",
+        familyName: textOrNull(renamed?.name) ?? "",
+      });
+      mergeTable.push({
+        clanId,
+        familyId: clanId,
+        name: name ?? "",
+        sortOrder: sortOrderOf(clan),
+        action: "skipped",
+        replacedFamilyId: null,
+      });
+      continue;
+    }
     outputEntries.push([clanId, { ...clan }]);
     if (match) {
       mergedByName += 1;
+      consumedNames.add(name ?? "");
+      familyIdMap[match.key] = clanId;
       mergeTable.push({
         clanId,
         familyId: clanId,
@@ -197,6 +300,13 @@ export function mergeFamilyNodes(
     }
   }
 
+  let keptAfterSkip = 0;
+  for (const [name, entry] of familyByName) {
+    if (!consumedNames.has(name)) {
+      outputEntries.push([entry.key, { ...entry.record }]);
+      keptAfterSkip += 1;
+    }
+  }
   for (const [familyId, family] of familyOnlyEntries) {
     outputEntries.push([familyId, { ...family }]);
   }
@@ -216,6 +326,7 @@ export function mergeFamilyNodes(
   const orphanIds = new Set<string>();
   const outPeople: NodeMap<PersonRecord> = {};
   let peopleGainingFamilyId = 0;
+  let familyIdsRemapped = 0;
 
   for (const personKey of Object.keys(people).sort(compareText)) {
     const person = recordOf<PersonRecord>(people[personKey]);
@@ -236,6 +347,16 @@ export function mergeFamilyNodes(
         orphanIds.add(clanId);
         conflicts.push({ kind: "orphan-clan-id", personId: personKey, clanId });
       }
+    } else {
+      const existingFamilyId = textOrNull(person.familyId);
+      let mapped = existingFamilyId ? familyIdMap[existingFamilyId] : null;
+      for (let hop = 0; mapped && familyIdMap[mapped] && familyIdMap[mapped] !== mapped && hop < 5; hop += 1) {
+        mapped = familyIdMap[mapped];
+      }
+      if (mapped && mapped !== next.familyId) {
+        next.familyId = mapped;
+        familyIdsRemapped += 1;
+      }
     }
     outPeople[personKey] = next;
   }
@@ -248,6 +369,15 @@ export function mergeFamilyNodes(
     if (a.kind === "orphan-clan-id" && b.kind === "orphan-clan-id") {
       return compareText(a.personId, b.personId) || compareText(a.clanId, b.clanId);
     }
+    if (a.kind === "duplicate-name" && b.kind === "duplicate-name") {
+      return compareText(a.name, b.name) || compareText(a.familyId, b.familyId);
+    }
+    if (a.kind === "key-collision" && b.kind === "key-collision") {
+      return compareText(a.clanId, b.clanId) || compareText(a.familyName, b.familyName);
+    }
+    if (a.kind === "field-conflict" && b.kind === "field-conflict") {
+      return compareText(a.clanId, b.clanId) || compareText(a.field, b.field);
+    }
     return 0;
   });
 
@@ -255,10 +385,11 @@ export function mergeFamilyNodes(
     clans: Object.keys(clans).length,
     families: Object.keys(families).length,
     people: Object.keys(people).length,
-    familiesOut: outputEntries.length,
+    familiesOut: Object.keys(outFamilies).length,
     mergedByName,
-    familiesOnly: familyOnlyEntries.length,
+    familiesOnly: familyOnlyEntries.length + keptAfterSkip,
     peopleGainingFamilyId,
+    familyIdsRemapped,
     orphanClanIds: Array.from(orphanIds).sort(compareText),
     idMap,
     mergeTable,

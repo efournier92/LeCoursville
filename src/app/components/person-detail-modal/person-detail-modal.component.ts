@@ -362,7 +362,7 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     if (!this.person?.birthday) return '';
     const { year, month, day } = this.person.birthday;
     const birthDate = new Date(year, month - 1, day);
-    const deathDate = this.person.deathDate;
+    const deathDate = this.person.deathDate?.year ? this.person.deathDate : null;
     const endDate = deathDate
       ? new Date(deathDate.year, deathDate.month - 1, deathDate.day)
       : new Date();

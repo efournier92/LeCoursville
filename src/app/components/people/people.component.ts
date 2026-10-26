@@ -81,7 +81,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { family: queryParams.get('clan'), clan: null },
-          queryParamsHandling: 'merge'
+          queryParamsHandling: 'merge',
+          replaceUrl: true
         });
       }
       this.applyFilter();
