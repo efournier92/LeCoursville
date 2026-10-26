@@ -49,10 +49,18 @@ extend the seed, don't hand-edit the emulator database.
 
 ## Deploy sign-off
 
-`scripts/deploy.sh` runs the gate before ANY build/tag/deploy step. A red
-gate aborts the deploy. A green gate still requires an explicit human
-sign-off: interactive shells must type `deploy`; non-interactive shells must
-set `E2E_APPROVED=1`. Never bypass the sign-off.
+`scripts/deploy.sh` runs the gate before ANY build/tag/deploy step. A green
+gate still requires an explicit human sign-off; a red gate prompts a deliberate
+"deploy anyway" override so a reviewed failure can ship.
+
+- Interactive shells approve with any input containing `deploy` or `yes` (any
+  casing), or a bare `y`/`d`; Enter aborts.
+- Non-interactive shells set `E2E_APPROVED=1` for a green or skipped gate, or
+  `E2E_FORCE=1` to deploy over a red gate.
+- `npm run deploy:dev:nogate` and `npm run deploy:prod:nogate` (`SKIP_GATE=1`)
+  skip the gate for a build whose gate you already ran and passed. Sign-off
+  still applies, and the bundle identity check still runs.
+- Never bypass the sign-off, and never skip a gate you have not actually run.
 
 ## Environment
 

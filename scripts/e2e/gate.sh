@@ -3,7 +3,8 @@
 # Suite (auth, database, storage, hosting), seed deterministic data, and run
 # the full Playwright matrix (chromium, webkit, firefox).
 #
-# Blocks deploys: scripts/deploy.sh runs this before any build/tag/deploy step.
+# Runs before every deploy: scripts/deploy.sh runs this before any build/tag/
+# deploy step unless SKIP_GATE=1 skips it for a build whose gate already passed.
 set -e -o pipefail
 
 mkdir -p .gate-results

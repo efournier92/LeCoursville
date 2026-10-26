@@ -11,6 +11,8 @@
     "e2e:gate": "bash scripts/e2e/gate.sh",
     "deploy:prod": "bash scripts/deploy.sh prod",
     "deploy:dev": "bash scripts/deploy.sh dev",
+    "deploy:prod:nogate": "SKIP_GATE=1 bash scripts/deploy.sh prod",
+    "deploy:dev:nogate": "SKIP_GATE=1 bash scripts/deploy.sh dev",
     "email-healthcheck": "bash scripts/email-healthcheck.sh"
   },
   "private": true,

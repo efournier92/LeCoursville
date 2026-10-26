@@ -84,8 +84,10 @@ Rules and callable logic are tested once, at the lowest layer that can prove the
 
 ## The Pre-Deploy Gate
 
-- `npm run e2e:gate` blocks deploy: `scripts/deploy.sh` runs it before any build, tag, or deploy step, and a red gate aborts.
-- A green gate still requires the human sign-off in `scripts/deploy.sh`.
+- `npm run e2e:gate` runs before every deploy: `scripts/deploy.sh` gates before any build, tag, or deploy step.
+- A green gate still requires the human sign-off in `scripts/deploy.sh`: any input containing `deploy` or `yes` (any casing), or a bare `y`/`d`; Enter aborts.
+- A red gate blocks the default path but prints the report paths and asks for the same confirmation, or `E2E_FORCE=1` non-interactively. The override is always a human decision.
+- `SKIP_GATE=1` (`npm run deploy:dev:nogate`, `npm run deploy:prod:nogate`) skips the gate for a build whose gate already passed; sign-off and the bundle identity check still apply.
 - The gate is emulator only; it never touches the Firebase console, real projects, or production or development databases.
 - The gate runs the prod-rules pass and the rules suite once each, then each browser project with a fresh seed.
 - The gate must be green on chromium, webkit, and firefox with 0 skipped, 0 unexpected, and 0 flaky.

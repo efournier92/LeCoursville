@@ -83,6 +83,17 @@ Deploys go through `scripts/deploy.sh` so the e2e gate and its explicit sign-off
 
 - `bash scripts/deploy.sh prod` (production, `master` only)
 - `bash scripts/deploy.sh dev`
+- `npm run deploy:prod` / `npm run deploy:dev` (same thing)
+
+Approve at the prompt with any input containing `deploy` or `yes` (any casing), or a bare `y`/`d`; Enter aborts.
+A red gate prints the report paths and asks for the same confirmation; `E2E_FORCE=1` overrides it in a non-interactive shell.
+
+To deploy without re-running the gate, after you have already run and passed it:
+
+- `npm run deploy:dev:nogate` (`SKIP_GATE=1`)
+- `npm run deploy:prod:nogate`
+
+Sign-off still applies, and the bundle identity check still runs.
 
 Each deploy builds the bundle, then ships hosting, functions, database rules (`database.rules.json`), and storage rules (`storage.rules.prod`).
 The storage emulator keeps using the open `storage.rules`, so never run a bare `firebase deploy`: it would ship the emulator rules to the bucket.

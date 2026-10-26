@@ -4,6 +4,8 @@ set -e
 # Deploy LeCoursville
 # Usage: ./deploy.sh <prod|dev>
 #        RULES_ONLY=1 ./deploy.sh <prod|dev>   # database + storage rules only
+#        SKIP_GATE=1 ./deploy.sh <prod|dev>    # skip the e2e gate (sign-off still applies)
+#        E2E_FORCE=1 ./deploy.sh <prod|dev>    # deploy despite a red gate (non-interactive)
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
@@ -145,44 +147,93 @@ validate_bundle_config() {
   echo "Bundle identity OK: $env config in $pub_dir"
 }
 
-run_e2e_gate() {
-  echo "=== Running e2e gate ==="
-  npm run e2e:gate
-  local exit_code=$?
-  if [ $exit_code -ne 0 ]; then
-    echo ""
-    echo "E2E gate FAILED. Do not deploy."
-    echo "Artifacts for the fix loop: test-results/e2e-results.json (JSON), playwright-report/index.html (HTML), test-results/ (traces, screenshots, videos)."
-    echo "Start a session and say: fix the e2e gate. Drive the loop in 'Failure fix loop' below; re-run 'npm run e2e:gate' until green, then deploy again."
-    exit $exit_code
-  fi
-  sign_off
+# Normalize a typed answer: drop CR and bracketed-paste markers (ESC[200~ /
+# ESC[201~), strip whitespace and control bytes, lowercase. A stray keypress or
+# paste wrapper must not turn a real approval into a rejection.
+normalize_answer() {
+  local answer=$1
+  answer=${answer//$'\r'/}
+  answer=${answer//$'\e[200~'/}
+  answer=${answer//$'\e[201~'/}
+  printf '%s' "$answer" | tr -d '[:space:][:cntrl:]' | tr '[:upper:]' '[:lower:]'
 }
 
+# Per the owner: any input containing "deploy" or "yes" (any casing) approves,
+# plus the bare y/d shortcut. A stray "a deploy" is an approval, not a typo.
+is_approval() {
+  case "$1" in
+    y|d) return 0 ;;
+    *deploy*|*yes*) return 0 ;;
+  esac
+  return 1
+}
+
+# Explicit human sign-off. Enter or anything without an approval word aborts.
 sign_off() {
   if [ ! -t 0 ]; then
     if [ "$E2E_APPROVED" = "1" ]; then
+      echo "Sign-off auto-approved (E2E_APPROVED=1)."
       return
     fi
-    echo "ERROR: non-interactive shell cannot sign off. Re-run interactively or set E2E_APPROVED=1 to approve the gate result."
+    echo "ERROR: non-interactive shell cannot sign off. Re-run interactively or set E2E_APPROVED=1 to approve."
     exit 1
   fi
   echo ""
-  echo "=== E2E gate PASSED (chromium, webkit, firefox) ==="
-  echo "Review the report: open playwright-report/index.html"
-  printf 'Type "deploy" to approve and continue, anything else to abort: '
-  read -r approval
-  # Terminal emulators may deliver a CR, and bracketed paste wraps the text in
-  # ESC[200~ / ESC[201~. Strip both so a real "deploy" is not lost to control bytes.
-  approval=${approval//$'\r'/}
-  approval=${approval//$'\e[200~'/}
-  approval=${approval//$'\e[201~'/}
-  approval=${approval//[[:space:]]/}
-  if [ "$approval" != "deploy" ]; then
-    echo "Deploy aborted by user (gate was green; no deploy action ran)."
-    echo "Input received: $(printf '%s' "${approval}" | od -An -c | tr -s ' ')"
+  echo "Review before approving: open playwright-report/index.html"
+  printf 'Deploy now? [y/N]: '
+  local answer
+  read -r answer || answer=""
+  answer=$(normalize_answer "$answer")
+  if is_approval "$answer"; then
+    echo "Approved. Continuing."
+    return
+  fi
+  echo "Deploy aborted (no deploy action ran). Answer y to deploy."
+  exit 1
+}
+
+# A red gate is an override, not a dead end: the failure may be unrelated or
+# already understood. Keep it deliberate (a typed phrase, or E2E_FORCE=1).
+confirm_red_gate() {
+  if [ "${E2E_FORCE:-0}" = "1" ]; then
+    echo "WARNING: deploying over a RED gate (E2E_FORCE=1)."
+    return
+  fi
+  if [ ! -t 0 ]; then
+    echo "ERROR: the gate is red. Re-run interactively to override, or set E2E_FORCE=1 deliberately."
     exit 1
   fi
+  printf 'Gate is RED. Type "deploy anyway" (or y/yes) to continue: '
+  local answer
+  read -r answer || answer=""
+  answer=$(normalize_answer "$answer")
+  if ! is_approval "$answer"; then
+    echo "Deploy aborted (red gate; no deploy action ran)."
+    exit 1
+  fi
+  echo "WARNING: deploying over a RED gate (user override)."
+}
+
+run_e2e_gate() {
+  if [ "${SKIP_GATE:-0}" = "1" ]; then
+    echo "=== SKIP_GATE=1: e2e gate skipped (sign-off still required) ==="
+    sign_off
+    return
+  fi
+  echo "=== Running e2e gate ==="
+  local exit_code=0
+  npm run e2e:gate || exit_code=$?
+  if [ "$exit_code" -ne 0 ]; then
+    echo ""
+    echo "E2E gate FAILED (exit $exit_code)."
+    echo "Artifacts for review: playwright-report/index.html (HTML), test-results/e2e-results.json (JSON), test-results/ (traces, screenshots, videos)."
+    echo "Fix loop: start a session, say \"fix the e2e gate\", and re-run npm run e2e:gate until green."
+    echo ""
+    confirm_red_gate
+    return
+  fi
+  echo "=== E2E gate PASSED (chromium, webkit, firefox) ==="
+  sign_off
 }
 
 main() {

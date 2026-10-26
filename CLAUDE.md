@@ -3,8 +3,8 @@
 > **E2E coverage is mandatory with every feature.** Read `AGENTS.md` at the
 > repo root: every user-visible change ships with a Playwright spec under
 > `e2e/specs/`, the gate is `npm run e2e:gate` (Chromium + WebKit + Firefox
-> against the Firebase Emulator Suite), and `scripts/deploy.sh` blocks deploys
-> on a red gate plus an explicit human sign-off.
+> against the Firebase Emulator Suite), and `scripts/deploy.sh` gates every
+> deploy plus an explicit human sign-off.
 
 ## Overview
 
