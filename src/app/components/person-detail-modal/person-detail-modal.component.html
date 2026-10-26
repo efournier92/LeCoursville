@@ -2,7 +2,7 @@
   @if (person) {
     <div class="modal-content">
       <div class="modal-header">
-        <div class="clan-color-bar" [style.background-color]="getClanForPerson(person.clanId)?.hexColor || '#2D5A27'"></div>
+        <div class="family-color-bar" [style.background-color]="getFamilyForPerson(person.familyId)?.hexColor || '#2D5A27'"></div>
         <div class="name-block">
           <h2>{{ getDisplayName() }}</h2>
           @if (person.name.firstPreferred && person.name.firstPreferred !== person.name.firstGiven) {
@@ -16,10 +16,10 @@
       <div class="modal-body">
         <mat-card class="detail-section">
           <mat-card-content>
-            @if (getClanForPerson(person.clanId)) {
+            @if (getFamilyForPerson(person.familyId)) {
               <div class="detail-row">
                 <span class="label">Family</span>
-                <a class="value link" (click)="navigateToClan($safeNavigationMigration(getClanForPerson(person.clanId)?.name))">{{ getClanForPerson(person.clanId)?.name }}</a>
+                <a class="value link" (click)="navigateToFamily($safeNavigationMigration(getFamilyForPerson(person.familyId)?.name))">{{ getFamilyForPerson(person.familyId)?.name }}</a>
               </div>
             }
             @if (person.generationNumber !== null) {
@@ -41,6 +41,12 @@
                 }
               </div>
             }
+            @if (person.deathDate && person.deathDate.year !== 0) {
+              <div class="detail-row">
+                <span class="label">Died</span>
+                <span class="value">{{ formatDate(person.deathDate) }}</span>
+              </div>
+            }
           </mat-card-content>
         </mat-card>
         @if (spousePerson) {
@@ -60,7 +66,7 @@
             </mat-card-content>
           </mat-card>
         }
-        @if ((person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0)) {
+        @if (person.isLiving !== false && ((person.addresses && person.addresses.length > 0) || (person.emails && person.emails.length > 0) || (person.phones && person.phones.length > 0))) {
           <mat-card class="detail-section">
             <mat-card-content>
               <h3>Contact</h3>
@@ -81,7 +87,7 @@
                   <app-person-tree
                     [nodes]="lineageTree"
                     [clickable]="true"
-                    [clanColorHex]="$safeNavigationMigration(getClanForPerson($safeNavigationMigration(person?.clanId))?.hexColor)"
+                    [familyColorHex]="$safeNavigationMigration(getFamilyForPerson($safeNavigationMigration(person?.familyId))?.hexColor)"
                     [selectedPersonId]="getLineagePersonId()"
                     (personClick)="onLineagePersonClick($event)"
                   ></app-person-tree>

@@ -1,7 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 
-// The contacts page is a people-derived directory (people + clans in RTDB).
+// The contacts page is a people-derived directory (people + families in RTDB).
 // The legacy `contacts` node is not read by the current UI.
 
 test.describe('contacts', () => {
@@ -29,11 +29,18 @@ test.describe('contacts', () => {
     await expect(page.getByText('Nothing found')).toBeVisible();
   });
 
-  test('clan filter narrows the list', async ({ page }) => {
+  test('family filter narrows the list', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts');
     await page.locator('.family-filter-form-field mat-select').click({ force: true });
     await page.getByRole('option', { name: 'Mignonne' }).click();
+    await expect(page.getByText('Alice Anderson').first()).toBeVisible();
+    await expect(page.getByText('Ben Brown')).toHaveCount(0);
+  });
+
+  test('?clan= alias applies the family filter', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts?clan=Mignonne');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });

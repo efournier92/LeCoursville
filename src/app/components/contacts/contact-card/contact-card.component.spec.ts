@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ContactCardComponent } from './contact-card.component';
 import { ContactCard } from 'src/app/services/contacts-from-people.service';
 import { Person } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
+import { Family } from 'src/app/models/family';
 
 describe('ContactCardComponent', () => {
   let component: ContactCardComponent;
@@ -100,18 +100,18 @@ describe('ContactCardComponent', () => {
     });
   });
 
-  describe('getClanColor', () => {
-    it('returns clan hexColor when clan exists', () => {
-      const clan: Clan = { id: 'clan1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 };
-      component.contactCard = createContactCard({ clan });
+  describe('getFamilyColor', () => {
+    it('returns family hexColor when family exists', () => {
+      const family: Family = { id: 'family1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 };
+      component.contactCard = createContactCard({ family });
       fixture.detectChanges();
-      expect(component.getClanColor()).toBe('#FF0000');
+      expect(component.getFamilyColor()).toBe('#FF0000');
     });
 
-    it('returns fallback brand green when clan is null', () => {
-      component.contactCard = createContactCard({ clan: null });
+    it('returns fallback brand green when family is null', () => {
+      component.contactCard = createContactCard({ family: null });
       fixture.detectChanges();
-      expect(component.getClanColor()).toBe('#2D5A27');
+      expect(component.getFamilyColor()).toBe('#2D5A27');
     });
   });
 
@@ -180,10 +180,11 @@ function createPerson(overrides: Partial<Person> = {}): Person {
   return {
     id: 'default-id',
     name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-    clanId: null,
+    familyId: null,
     birthday: { year: 1990, month: 1, day: 1 },
     spouseId: null,
     anniversaryDate: null,
+    deathDate: null,
     emails: [],
     phones: [],
     addresses: [],
@@ -202,7 +203,7 @@ function createContactCard(overrides: Partial<ContactCard> = {}): ContactCard {
   return {
     person: createPerson(),
     spouse: null,
-    clan: null,
+    family: null,
     addresses: [],
     emails: [],
     phones: [],

@@ -6,6 +6,10 @@
 - DNS host: GoDaddy, nameservers `ns03.domaincontrol.com` and `ns04.domaincontrol.com`
 - Why it matters: `functions/src/config.ts` uses `eric@lecoursville.com` as `REPLY_TO` and `OWNER_ALERT_ADDRESS`, so replies to app mail and owner alerts currently go nowhere.
 
+- Update 2026-10-25: the zero-cost route moved to `2026-10-25_eric_email_free_zoho_setup.md`.
+- The appendix below is stale, because Gmail removes third-party "Send as" in January 2027.
+- This file stays as the reference for the Google Workspace route.
+
 ## Driver Prompt
 
 Paste this to the next agent:
@@ -262,6 +266,8 @@ Expected: `eric@lecoursville.com` for `REPLY_TO` and `OWNER_ALERT_ADDRESS`, and 
 Record: no change needed, or the diff.
 
 ## Appendix: Free Path
+
+Stale as of 2026-10-25. Use `2026-10-25_eric_email_free_zoho_setup.md` instead.
 
 Only if E0 chose option 2.
 

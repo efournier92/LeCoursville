@@ -2,32 +2,32 @@ import { TestBed } from '@angular/core/testing';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ContactsFromPeopleService, ContactCard } from './contacts-from-people.service';
 import { PeopleService } from 'src/app/services/people.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { Person } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
+import { Family } from 'src/app/models/family';
 
 describe('ContactsFromPeopleService', () => {
   let service: ContactsFromPeopleService;
   let mockPeopleService: { people$: unknown };
-  let mockClanService: { clans$: unknown };
+  let mockFamilyService: { families$: unknown };
 
   // Fresh subjects per test: the service holds combineLatest subscriptions for
   // its whole lifetime, so stale values from a previous test would otherwise
   // leak into the next one (the original suite failed intermittently on this).
   let peopleSubject: BehaviorSubject<Person[]>;
-  let clansSubject: BehaviorSubject<Clan[]>;
+  let familiesSubject: BehaviorSubject<Family[]>;
 
   beforeEach(() => {
     peopleSubject = new BehaviorSubject<Person[]>([]);
-    clansSubject = new BehaviorSubject<Clan[]>([]);
+    familiesSubject = new BehaviorSubject<Family[]>([]);
     mockPeopleService = { people$: peopleSubject.asObservable() };
-    mockClanService = { clans$: clansSubject.asObservable() };
+    mockFamilyService = { families$: familiesSubject.asObservable() };
 
     TestBed.configureTestingModule({
       providers: [
         ContactsFromPeopleService,
         { provide: PeopleService, useValue: mockPeopleService },
-        { provide: ClanService, useValue: mockClanService },
+        { provide: FamilyService, useValue: mockFamilyService },
       ]
     });
 
@@ -40,14 +40,14 @@ describe('ContactsFromPeopleService', () => {
 
   describe('getContacts', () => {
     it('returns list sorted by generation then id', async () => {
-      const clans: Clan[] = [{ id: 'clan1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 }];
+      const families: Family[] = [{ id: 'family1', name: 'Test', hexColor: '#FF0000', sortOrder: 'A', createdAt: 0, updatedAt: 0 }];
       const people: Person[] = [
         createPerson({ id: 'gen2-person', generationNumber: 2, emails: [{ address: 'a@test.com', label: null }] }),
         createPerson({ id: 'gen1-person', generationNumber: 1, emails: [{ address: 'b@test.com', label: null }] })
       ];
 
       peopleSubject.next(people);
-      clansSubject.next(clans);
+      familiesSubject.next(families);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.length).toBe(2);
@@ -66,7 +66,7 @@ describe('ContactsFromPeopleService', () => {
       ];
 
       peopleSubject.next(people);
-      clansSubject.next([]);
+      familiesSubject.next([]);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.length).toBe(1);
@@ -91,7 +91,7 @@ describe('ContactsFromPeopleService', () => {
       ];
 
       peopleSubject.next(people);
-      clansSubject.next([]);
+      familiesSubject.next([]);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.length).toBe(1);
@@ -114,7 +114,7 @@ describe('ContactsFromPeopleService', () => {
       ];
 
       peopleSubject.next(people);
-      clansSubject.next([]);
+      familiesSubject.next([]);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.length).toBe(1);
@@ -129,7 +129,7 @@ describe('ContactsFromPeopleService', () => {
       ];
 
       peopleSubject.next(people);
-      clansSubject.next([]);
+      familiesSubject.next([]);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.length).toBe(1);
@@ -143,7 +143,7 @@ describe('ContactsFromPeopleService', () => {
       ];
 
       peopleSubject.next(people);
-      clansSubject.next([]);
+      familiesSubject.next([]);
 
       const contacts: ContactCard[] = await firstValueFrom(service.getContacts());
       expect(contacts.map(c => c.person.id)).toEqual(['widow1']);
@@ -155,10 +155,11 @@ function createPerson(overrides: Partial<Person> = {}): Person {
   return {
     id: 'default-id',
     name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-    clanId: null,
+    familyId: null,
     birthday: { year: 1990, month: 1, day: 1 },
     spouseId: null,
     anniversaryDate: null,
+    deathDate: null,
     emails: [],
     phones: [],
     addresses: [],

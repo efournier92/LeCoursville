@@ -2,11 +2,11 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, S
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Person } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
+import { Family } from 'src/app/models/family';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PeopleService } from 'src/app/services/people.service';
 import { CalendarService } from 'src/app/services/calendar.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 
 @Component({
     selector: 'app-person-detail-modal',
@@ -31,9 +31,9 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   lineageAncestors: Person[] = [];
   lineageDescendants: Person[] = [];
   lineageTree: any[] = [];
-  private clansSource: Clan[] = [];
-  private clansByIdMap: Map<string, Clan> = new Map();
-  private clansByNameMap: Map<string, Clan> = new Map();
+  private familiesSource: Family[] = [];
+  private familiesByIdMap: Map<string, Family> = new Map();
+  private familiesByNameMap: Map<string, Family> = new Map();
   private subscriptions: Subscription[] = [];
   private allPeople: Person[] = [];
   private pendingLineageBuild: boolean = false;
@@ -41,15 +41,15 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
   constructor(
     private peopleService: PeopleService,
     private calendarService: CalendarService,
-    private clanService: ClanService,
+    private familyService: FamilyService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.clanService.clans$.subscribe(clans => {
-      this.clansSource = clans;
-      this.clansByIdMap = new Map(clans.map(c => [c.id, c]));
-      this.clansByNameMap = new Map(clans.map(c => [c.name.toLowerCase(), c]));
+    this.familyService.families$.subscribe(families => {
+      this.familiesSource = families;
+      this.familiesByIdMap = new Map(families.map(f => [f.id, f]));
+      this.familiesByNameMap = new Map(families.map(f => [f.name.toLowerCase(), f]));
     });
     this.peopleService.people$.subscribe(people => {
       this.allPeople = people;
@@ -344,8 +344,8 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     }
   }
 
-  navigateToClan(clanName: string): void {
-    this.router.navigate(['/people'], { queryParams: { clan: clanName, filter: null } });
+  navigateToFamily(familyName: string): void {
+    this.router.navigate(['/people'], { queryParams: { family: familyName, filter: null } });
   }
 
   navigateToPerson(id: string): void {
@@ -362,10 +362,13 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     if (!this.person?.birthday) return '';
     const { year, month, day } = this.person.birthday;
     const birthDate = new Date(year, month - 1, day);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    const deathDate = this.person.deathDate?.year ? this.person.deathDate : null;
+    const endDate = deathDate
+      ? new Date(deathDate.year, deathDate.month - 1, deathDate.day)
+      : new Date();
+    let age = endDate.getFullYear() - birthDate.getFullYear();
+    const monthDiff = endDate.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate())) {
       age--;
     }
     return age.toString();
@@ -377,13 +380,13 @@ export class PersonDetailModalComponent implements OnInit, OnDestroy, OnChanges 
     return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  getClanForPerson(clanId: string | null): Clan | null {
-    if (!clanId) return null;
-    return this.clansByIdMap.get(clanId) || null;
+  getFamilyForPerson(familyId: string | null): Family | null {
+    if (!familyId) return null;
+    return this.familiesByIdMap.get(familyId) || null;
   }
 
-  getClanByName(name: string): Clan | null {
-    return this.clansByNameMap.get(name.toLowerCase()) || null;
+  getFamilyByName(name: string): Family | null {
+    return this.familiesByNameMap.get(name.toLowerCase()) || null;
   }
 
   getDisplayName(): string {

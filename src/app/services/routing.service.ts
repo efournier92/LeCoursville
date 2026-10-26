@@ -142,7 +142,7 @@ export class RoutingService {
     this.NavigateToRoute('/admin/features');
   }
 
-  NavigateToAdminClans() {
+  NavigateToAdminFamilies() {
     this.NavigateToRoute('/admin/families');
   }
 

@@ -12,6 +12,7 @@ import {
   REPLACE_STALE_MESSAGE,
   UploadProgress,
   duplicateMessage,
+  mapMediaError,
 } from "./media-upload.service";
 
 const BATCH = "batch-1";
@@ -362,5 +363,31 @@ describe("MediaUploadService", () => {
     service.clearBatchState(BATCH);
     expect(service.pendingBatch()).toBeNull();
     expect(service.isAssetCompleted(BATCH, { role: "video" })).toBe(false);
+  });
+});
+
+describe("mapMediaError", () => {
+  it("keeps the mapped message while setting detail from the raw server message", () => {
+    const mapped = mapMediaError({
+      code: "functions/internal",
+      message: "server exploded",
+    });
+
+    expect(mapped.message).toBe(
+      "Couldn't upload the file. Check your connection and try again."
+    );
+    expect(mapped.code).toBe("internal");
+    expect(mapped.detail).toBe("server exploded");
+  });
+
+  it("nulls detail when the raw message is empty or equals the mapped message", () => {
+    expect(mapMediaError({ code: "functions/internal" }).detail).toBeNull();
+
+    const passthrough = mapMediaError({
+      code: "functions/failed-precondition",
+      message: "Finalize already in progress.",
+    });
+    expect(passthrough.message).toBe("Finalize already in progress.");
+    expect(passthrough.detail).toBeNull();
   });
 });

@@ -2,26 +2,26 @@
   font-size: 1.05em;
   font-weight: 500;
   margin-bottom: 3px;
-  margin-left: 1px;
 }.calendar-cell-event-container {
   display: flex;
   align-items: flex-start;
   margin-bottom: 3px;
-  background: var(--color-surface-muted);
+  margin-inline: 4px;
+  background: var(--cal-tag-bg);
   border-radius: var(--radius-sm);
   padding: 6px 8px;
   border-left: 4px solid;
-  width: 100%;
+  width: auto;
   box-sizing: border-box;
   overflow: hidden;
 }.border-birth {
-  border-left-color: var(--color-brand-primary);
+  border-left-color: var(--cal-birth-accent);
 }.border-anniv {
-  border-left-color: var(--color-accent-strong);
+  border-left-color: var(--cal-anniv-accent);
 }.birthday-color {
-  color: var(--color-brand-primary);
+  color: var(--cal-birth-accent);
 }.anniversary-color {
-  color: var(--color-accent-strong);
+  color: var(--cal-anniv-accent);
 }.calendar-years-since-container {
   line-height: 1.2em;
   min-width: 1.6em;
@@ -44,7 +44,7 @@
   align-items: flex-start;
 }.event-title-link,
 .event-title-spouse-link {
-  color: var(--color-ink);
+  color: var(--cal-tag-ink);
   cursor: pointer;
   font-weight: 600;
   font-size: 1em;

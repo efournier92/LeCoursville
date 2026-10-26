@@ -2,6 +2,18 @@
 
 :host {
   display: block;
+  margin-bottom: 16px;
+}
+
+// The filter row joins the bar above it; the joined surface rules live in the
+// global stylesheet because the toolbar is outside this component's scope.
+
+// Older engines without :has cannot join the cards; keep two full-radius
+// surfaces with the documented 8px gap.
+@supports not selector(:has(*)) {
+  :host {
+    margin-top: -8px;
+  }
 }
 
 // 36px control row: drop M3's phantom hint/error reserve so fields center in

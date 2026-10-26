@@ -68,8 +68,8 @@ export class ContactCardComponent implements OnDestroy {
     return this.contactCard?.spouse?.id || '';
   }
 
-  getClanColor(): string {
-    return this.contactCard?.clan?.hexColor || '#2D5A27';
+  getFamilyColor(): string {
+    return this.contactCard?.family?.hexColor || '#2D5A27';
   }
 
   hasEmails(): boolean {

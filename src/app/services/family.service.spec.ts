@@ -67,4 +67,17 @@ describe('FamilyService', () => {
     expect(service.createPushId()).toBe('push-1');
     expect(rtdbSpy.createPushId).toHaveBeenCalledTimes(1);
   });
+
+  it('resolves a family id by name case-insensitively', () => {
+    expect(service.resolveFamilyIdByName('family')).toBe('f1');
+    expect(service.resolveFamilyIdByName('  FAMILY  ')).toBe('f1');
+  });
+
+  it('returns undefined for a name that matches no family', () => {
+    expect(service.resolveFamilyIdByName('Missing')).toBeUndefined();
+  });
+
+  it('exposes the in-memory families snapshot', () => {
+    expect(service.getFamiliesSnapshot().map(f => f.id)).toEqual(['f1']);
+  });
 });

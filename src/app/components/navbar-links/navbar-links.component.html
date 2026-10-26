@@ -27,17 +27,6 @@
         <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
       </button>
     }
-    @if (isSuperUser) {
-      <button
-        mat-button
-        data-testid="nav-admin-link"
-        routerLink="/admin"
-        routerLinkActive="active"
-        >
-        <mat-icon class="navbar-link-icon" aria-hidden="true">admin_panel_settings</mat-icon>
-        <span>Admin</span>
-      </button>
-    }
   </div>
 }
 
@@ -54,17 +43,6 @@
         >
         <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
         <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
-      </button>
-    }
-    @if (isSuperUser) {
-      <button
-        mat-menu-item
-        data-testid="nav-admin-link"
-        routerLink="/admin"
-        routerLinkActive="active"
-        >
-        <mat-icon class="navbar-link-icon" aria-hidden="true">admin_panel_settings</mat-icon>
-        <span>Admin</span>
       </button>
     }
   </div>

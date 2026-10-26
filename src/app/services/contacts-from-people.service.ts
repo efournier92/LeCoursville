@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest, Subject, ReplaySubject } from 'rxjs';
 import { map, takeUntil, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Person, Email, Phone } from 'src/app/models/person';
-import { Clan } from 'src/app/models/clan';
+import { Family } from 'src/app/models/family';
 import { Address } from 'src/app/models/address';
 import { PeopleService } from 'src/app/services/people.service';
-import { ClanService } from 'src/app/services/clan.service';
+import { FamilyService } from 'src/app/services/family.service';
 
 export interface ContactCard {
   person: Person;
   spouse: Person | null;
-  clan: Clan | null;
+  family: Family | null;
   addresses: Address[];
   emails: { address: string; label: string | null; owner: string | null }[];
   phones: { label: string; number: string; owner: string | null }[];
@@ -27,7 +27,7 @@ export class ContactsFromPeopleService {
 
   constructor(
     private peopleService: PeopleService,
-    private clanService: ClanService
+    private familyService: FamilyService
   ) {
     this.loadContacts();
   }
@@ -35,18 +35,18 @@ export class ContactsFromPeopleService {
   private loadContacts(): void {
     combineLatest([
       this.peopleService.people$,
-      this.clanService.clans$
+      this.familyService.families$
     ]).pipe(
-      map(([people, clans]) => this.buildContactCards(people, clans))
+      map(([people, families]) => this.buildContactCards(people, families))
     ).subscribe(cards => {
       this.contactsSource.next(cards);
       this.dataReadySource.next();
     });
   }
 
-  private buildContactCards(people: Person[], clans: Clan[]): ContactCard[] {
+  private buildContactCards(people: Person[], families: Family[]): ContactCard[] {
     // Guard against undefined inputs
-    if (!people || !clans) {
+    if (!people || !families) {
       return [];
     }
 
@@ -71,16 +71,16 @@ export class ContactsFromPeopleService {
         return a.id.localeCompare(b.id);
       });
 
-    const clanMap = new Map<string, Clan>();
-    (clans || []).forEach(c => clanMap.set(c.id, c));
+    const familyMap = new Map<string, Family>();
+    (families || []).forEach(f => familyMap.set(f.id, f));
 
-    return primaryPeople.map(person => this.buildContactCard(person, people, clanMap));
+    return primaryPeople.map(person => this.buildContactCard(person, people, familyMap));
   }
 
   private buildContactCard(
     person: Person,
     allPeople: Person[],
-    clanMap: Map<string, Clan>
+    familyMap: Map<string, Family>
   ): ContactCard {
     // Resolve spouse
     let spouse: Person | null = null;
@@ -110,8 +110,8 @@ export class ContactsFromPeopleService {
       spouse = null;
     }
 
-    // Get clan
-    const clan = person.clanId ? clanMap.get(person.clanId) || null : null;
+    // Get family
+    const family = person.familyId ? familyMap.get(person.familyId) || null : null;
 
     // Collect addresses (embedded in person like emails/phones)
     const addresses: Address[] = [];
@@ -194,7 +194,7 @@ export class ContactsFromPeopleService {
     }
     const phones = Array.from(phoneMap.values()).map(({ count, ...rest }) => rest);
 
-    return { person, spouse, clan, addresses, emails, phones };
+    return { person, spouse, family, addresses, emails, phones };
   }
 
   private hasAnyContactInfo(person: Person, allPeople: Person[]): boolean {

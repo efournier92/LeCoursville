@@ -10,8 +10,8 @@ interface AudioTrack {
 }
 
 /**
- * Native HTML5 audio player (replaces the deprecated ngx-audio-player wrapper,
- * which does not support Angular 17+).
+ * Audio player with a component-owned transport around a native HTML5 element
+ * (replaces the deprecated ngx-audio-player wrapper, unsupported on Angular 17+).
  */
 @Component({
     selector: 'app-audio-player',
@@ -23,10 +23,15 @@ interface AudioTrack {
 export class AudioPlayerComponent implements OnChanges {
   @Input() album: AudioAlbum = new AudioAlbum();
 
-  @ViewChild('nativeAudio', { static: false }) nativeAudio: ElementRef<HTMLAudioElement>;
+  @ViewChild('mediaElement', { static: false }) mediaElement: ElementRef<HTMLAudioElement>;
 
   tracks: AudioTrack[] = [];
   currentTrack: AudioTrack | null = null;
+  isPlaying = false;
+  elapsed = 0;
+  duration = 0;
+  volume = 1;
+  muted = false;
 
   constructor(
     private mediaService: MediaService,
@@ -37,6 +42,7 @@ export class AudioPlayerComponent implements OnChanges {
   ngOnChanges(): void {
     this.tracks = [];
     this.currentTrack = null;
+    this.resetTransport();
     this.addTracksToPlaylist();
   }
 
@@ -47,11 +53,111 @@ export class AudioPlayerComponent implements OnChanges {
       return;
     }
     this.currentTrack = track;
-    const audio = this.nativeAudio?.nativeElement;
-    if (audio) {
-      audio.load();
-      audio.play().catch(() => {});
+    this.resetTransport();
+    const audio = this.mediaElement?.nativeElement;
+    if (!audio) {
+      return;
     }
+    audio.load();
+    this.startPlayback(audio);
+  }
+
+  togglePlay(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (!audio || !this.currentTrack?.url) {
+      return;
+    }
+    if (this.isPlaying) {
+      audio.pause();
+      this.isPlaying = false;
+      return;
+    }
+    this.startPlayback(audio);
+  }
+
+  onTimeUpdate(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (!audio) {
+      return;
+    }
+    this.elapsed = audio.currentTime || 0;
+    this.syncDuration(audio);
+  }
+
+  onLoadedMetadata(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (audio) {
+      this.syncDuration(audio);
+    }
+  }
+
+  onEnded(): void {
+    const index = this.currentTrack ? this.tracks.indexOf(this.currentTrack) : -1;
+    const next = index >= 0 ? this.tracks[index + 1] : undefined;
+    if (next) {
+      this.selectTrack(next);
+      return;
+    }
+    const audio = this.mediaElement?.nativeElement;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    this.isPlaying = false;
+    this.elapsed = 0;
+  }
+
+  onVolumeChange(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (!audio) {
+      return;
+    }
+    this.volume = audio.volume;
+    this.muted = audio.muted;
+  }
+
+  onSeek(event: Event): void {
+    const audio = this.mediaElement?.nativeElement;
+    const value = Number((event.target as HTMLInputElement).value);
+    if (!audio || Number.isNaN(value)) {
+      return;
+    }
+    audio.currentTime = value;
+    this.elapsed = value;
+  }
+
+  onVolumeInput(event: Event): void {
+    const audio = this.mediaElement?.nativeElement;
+    const value = Number((event.target as HTMLInputElement).value);
+    if (!audio || Number.isNaN(value)) {
+      return;
+    }
+    audio.volume = value;
+    audio.muted = value === 0;
+    this.volume = value;
+    this.muted = value === 0;
+  }
+
+  toggleMute(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (!audio) {
+      return;
+    }
+    audio.muted = !audio.muted;
+    this.muted = audio.muted;
+  }
+
+  formatTime(seconds: number): string {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return '0:00';
+    }
+    const total = Math.floor(seconds);
+    const minutes = Math.floor(total / 60);
+    return `${minutes}:${(total % 60).toString().padStart(2, '0')}`;
+  }
+
+  seekValueText(): string {
+    return `${this.formatTime(this.elapsed)} of ${this.formatTime(this.duration)}`;
   }
 
   // HELPER METHODS
@@ -71,6 +177,27 @@ export class AudioPlayerComponent implements OnChanges {
     );
     if (this.tracks.length > 0) {
       this.currentTrack = this.tracks[0];
+    }
+  }
+
+  private startPlayback(audio: HTMLAudioElement): void {
+    this.isPlaying = true;
+    const playback = audio.play();
+    // A rejected play promise is an expected autoplay block, not an error.
+    playback?.catch(() => {
+      this.isPlaying = false;
+    });
+  }
+
+  private resetTransport(): void {
+    this.isPlaying = false;
+    this.elapsed = 0;
+    this.duration = 0;
+  }
+
+  private syncDuration(audio: HTMLAudioElement): void {
+    if (Number.isFinite(audio.duration)) {
+      this.duration = audio.duration;
     }
   }
 }

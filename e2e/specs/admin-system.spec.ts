@@ -26,6 +26,33 @@ test.describe('admin system surfaces', () => {
     await expect(regular.getByRole('button', { name: 'Delete Regular User' })).toBeVisible();
   });
 
+  test('users: role badges compute their member, admin, and super token pairs', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+
+    const table = page.getByTestId('admin-users-table');
+    await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
+
+    const badge = (email: string, role: string) =>
+      table
+        .locator('tbody tr')
+        .filter({ hasText: email })
+        .locator('.role-badge')
+        .filter({ hasText: role });
+
+    const member = badge('user@e2e.local', 'Member');
+    await expect(member).toHaveCSS('background-color', 'rgb(236, 239, 241)');
+    await expect(member).toHaveCSS('color', 'rgb(55, 71, 79)');
+
+    const admin = badge('staff@e2e.local', 'Admin');
+    await expect(admin).toHaveCSS('background-color', 'rgb(232, 234, 246)');
+    await expect(admin).toHaveCSS('color', 'rgb(40, 53, 147)');
+
+    const superBadge = badge('admin@e2e.local', 'Super');
+    await expect(superBadge).toHaveCSS('background-color', 'rgb(243, 229, 245)');
+    await expect(superBadge).toHaveCSS('color', 'rgb(106, 27, 154)');
+  });
+
   test('users: role history shows when, actor, target, and before -> after roles', async ({ page }) => {
     const key = `e2e-audit-${Date.now()}`;
     const users = (await readDb<Record<string, any>>('users')) ?? {};

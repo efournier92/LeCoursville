@@ -5,6 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { CalendarCellComponent } from 'src/app/components/calendar-cell/calendar-cell.component';
+import { DismissOnOutsideDirective } from 'src/app/directives/dismiss-on-outside.directive';
 import { CalendarDatepickerDialogComponent } from 'src/app/components/calendar-datepicker-dialog/calendar-datepicker-dialog.component';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { CalendarViewComponent } from 'src/app/components/calendar-view/calendar-view.component';
@@ -37,6 +38,7 @@ const routes: Routes = [
     SharedModule,
     LvLoadErrorComponent,
     PageToolbarComponent,
+    DismissOnOutsideDirective,
     CalendarModule.forRoot({
       provide: DateAdapter,
       useFactory: adapterFactory,

@@ -81,6 +81,22 @@ html {
   --color-border: #E1E4E8;          // hairlines on gray
   --color-link: #245020;            // brand-dark green links
 
+  // Role badges — Material container/on-container pairs: member (neutral),
+  // admin (indigo), super (purple). Colour is redundant encoding; the role
+  // text stays. Every pair clears 4.5:1 within its own badge.
+  --role-member-bg: #ECEFF1;
+  --role-member-fg: #37474F;
+  --role-admin-bg: #E8EAF6;
+  --role-admin-fg: #283593;
+  --role-super-bg: #F3E5F5;
+  --role-super-fg: #6A1B9A;
+
+  // Calendar event tags — birth blue, anniversary red, shared neutral fill.
+  --cal-birth-accent: #2b6cb0;
+  --cal-anniv-accent: #c53030;
+  --cal-tag-bg: #fafbfc;
+  --cal-tag-ink: var(--color-ink);
+
   // Shape
   --radius-card: 16px;
   --radius-control: 999px;
@@ -130,13 +146,30 @@ html {
   @include mat.menu-overrides((container-color: #ffffff));
   @include mat.datepicker-overrides((calendar-container-background-color: #ffffff));
   @include mat.autocomplete-overrides((background-color: #ffffff));
-  @include mat.dialog-overrides((container-color: #ffffff));
+  @include mat.dialog-overrides((
+    container-color: #ffffff,
+    container-shape: var(--radius-card),
+  ));
   // M3 fields default to a 4px corner — square against the 14–16px radii of
   // the toolbar and cards. Round inputs to the same language as the chrome.
   @include mat.form-field-overrides((
     filled-container-shape: var(--radius-input),
     outlined-container-shape: var(--radius-input),
   ));
+}
+
+// Material injects its dialog styles after this sheet, so the shared dialog
+// padding needs !important to override the component's own defaults.
+.mat-mdc-dialog-title,
+.mat-mdc-dialog-content {
+  padding: 24px 32px !important;
+}
+
+@media (max-width: 600px) {
+  .mat-mdc-dialog-title,
+  .mat-mdc-dialog-content {
+    padding: 20px !important;
+  }
 }
 
 /* White nav controls on the green toolbar (nav links + menu toggle) */
@@ -195,6 +228,16 @@ mat-toolbar {
   .mat-mdc-icon-button {
     color: #ffffff;
   }
+}
+
+// Material centres the icon's line box, not the glyph box: the 24px icon sat
+// 2px low in a 40px button. Flex the icon slot so every render site, `close`
+// included, centres the same way at any button size.
+.mat-mdc-icon-button .mat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 // Filled buttons are pill-shaped app-wide — one button style per role.
@@ -339,6 +382,21 @@ select:-webkit-autofill:focus {
   @media (max-width: 600px) {
     padding: 0 16px 16px;
   }
+}
+
+/* Toolbar + filter bar read as one card when adjacent. Global because the two
+   elements are siblings across component boundaries, so neither component's
+   scoped stylesheet can reach the other. */
+app-page-toolbar:has(+ app-admin-filter-bar) .page-toolbar.page-toolbar {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: none;
+}
+
+app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 // ── Calendar (angular-calendar) overrides ─────────────────────────────────────

@@ -42,7 +42,88 @@ test.describe('calendar', () => {
     await page.getByRole('button', { name: 'Print' }).click();
     await expect(page.locator('.calendar-printer-title')).toContainText('Print Calendar');
     const year = new Date().getFullYear().toString();
-    await expect(page.getByRole('button', { name: year })).toBeVisible();
+    await expect(page.getByRole('button', { name: year, exact: true })).toBeVisible();
+  });
+
+  test('birth tags use the blue accent and anniversary tags the red accent', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+
+    const birth = page.locator('.event-birth .calendar-cell-event-container').first();
+    const anniv = page.locator('.event-anniv .calendar-cell-event-container').first();
+    await expect(birth).toBeVisible();
+    await expect(anniv).toBeVisible();
+    await expect(birth).toHaveCSS('border-left-color', 'rgb(43, 108, 176)');
+    await expect(anniv).toHaveCSS('border-left-color', 'rgb(197, 48, 48)');
+  });
+
+  test('event tags are inset 4px from the day cell edge', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+
+    const tag = page.locator('.event-birth .calendar-cell-event-container').first();
+    await expect(tag).toBeVisible();
+    const inset = await tag.evaluate((el) => {
+      const cell = el.closest('.cal-day-cell');
+      if (!cell) return null;
+      return Math.round(el.getBoundingClientRect().left - cell.getBoundingClientRect().left);
+    });
+    expect(inset).toBe(4);
+  });
+
+  test('month picker opens on the pill and closes on outside click or Escape', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+
+    const pill = page.locator('.calendar-month-year-pill');
+    const panel = page.locator('.calendar-datepicker-panel');
+    await expect(panel).toHaveCount(0);
+
+    await pill.click();
+    await expect(panel).toBeVisible();
+    await expect(pill).toHaveAttribute('aria-expanded', 'true');
+
+    await page.locator('.calendar-nav-row').click({ position: { x: 4, y: 4 } });
+    await expect(panel).toHaveCount(0);
+    await expect(pill).toHaveAttribute('aria-expanded', 'false');
+
+    await pill.click();
+    await expect(panel).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(pill).toBeFocused();
+  });
+
+  test('nav row keeps its vertical rhythm at desktop and 390px', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+
+    const navRow = page.locator('.calendar-nav-row');
+    await expect(navRow).toHaveCSS('margin-top', '24px');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(navRow).toHaveCSS('margin-top', '16px');
+  });
+
+  test('print dialog uses the shared scale and the primary action treatment', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    await page.getByRole('button', { name: 'Print' }).click();
+
+    await expect(page.locator('.calendar-printer-title')).toBeVisible();
+    const year = new Date().getFullYear().toString();
+    await expect(page.getByRole('button', { name: year, exact: true })).toBeVisible();
+
+    await expect(page.locator('.calendar-printer-action-btn')).toHaveCSS('background-color', 'rgb(45, 90, 39)');
+
+    const content = page.locator('.mat-mdc-dialog-content');
+    await expect(content).toBeVisible();
+    const padding = await content.evaluate((el) => {
+      const styles = getComputedStyle(el);
+      return { top: parseFloat(styles.paddingTop), left: parseFloat(styles.paddingLeft) };
+    });
+    expect(padding.top).toBeGreaterThanOrEqual(24);
+    expect(padding.left).toBeGreaterThanOrEqual(24);
   });
 
   test('clicking an event opens the person modal', async ({ page }) => {

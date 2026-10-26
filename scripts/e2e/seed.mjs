@@ -135,10 +135,12 @@ function zipBytes() {
   return buf;
 }
 
-/** ~0.5s of 8kHz 8-bit mono silence, valid WAV. */
+/** ~3.5s of 8kHz 8-bit mono silence, valid WAV. */
 function wavBytes() {
   const sampleRate = 8000;
-  const seconds = 0.5;
+  // Long enough for the custom transport spec to observe elapsed seconds
+  // advance before the track ends.
+  const seconds = 3.5;
   const dataSize = sampleRate * seconds;
   const buf = Buffer.alloc(44 + dataSize);
   buf.write('RIFF', 0);
@@ -222,10 +224,11 @@ async function main() {
   const person = (id, first, last, birthday, extra = {}) => ({
     id,
     name: { firstGiven: first, firstPreferred: first, maiden: null, last, suffix: null },
-    clanId: extra.clanId ?? 'clan-1',
+    familyId: extra.familyId ?? 'family-1',
     birthday: birthday ?? { year, month: month1, day: clampDay(day) },
     spouseId: extra.spouseId ?? null,
     anniversaryDate: extra.anniversaryDate ?? null,
+    deathDate: extra.deathDate ?? null,
     emails: [{ address: `${first.toLowerCase()}@example.com`, label: null }],
     phones: [{ label: 'Home', number: '555-0101' }],
     addresses: [{
@@ -239,26 +242,33 @@ async function main() {
     }],
     directDescendent: false,
     generationNumber: extra.generationNumber ?? 1,
-    parentIds: [],
+    parentIds: extra.parentIds ?? [],
     lineage: null,
-    isLiving: true,
+    isLiving: extra.isLiving ?? true,
     createdAt: now - 60 * 24 * 60 * 60 * 1000,
     updatedAt: now,
   });
 
   const people = {
     'person-a': person('person-a', 'Alice', 'Anderson', { year: year - 30, month: month1, day: clampDay(day) }),
-    'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { clanId: 'clan-2' }),
+    'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { familyId: 'family-2' }),
     'person-c': person('person-c', 'Carol', 'Clark', { year: year - 20, month: month1, day: clampDay(day + 1) }, { spouseId: 'person-d' }),
-    'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { clanId: 'clan-2' }),
+    'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { familyId: 'family-2' }),
+    'person-e': person('person-e', 'Edith', 'Evans', { year: 1935, month: 1, day: 10 }, {
+      generationNumber: 2,
+      parentIds: ['person-a'],
+      isLiving: false,
+      deathDate: { year: 2015, month: 6, day: 15 },
+    }),
+    'person-f': person('person-f', 'Frank', 'Foster', { year: 1940, month: 2, day: 20 }, {
+      generationNumber: 2,
+      parentIds: ['person-a'],
+      isLiving: false,
+    }),
   };
   // Carol's anniversary (this month, +1 day).
   people['person-c'].anniversaryDate = { year: year - 10, month: month1, day: clampDay(day + 1) };
 
-  const clans = {
-    'clan-1': { id: 'clan-1', name: 'Mignonne', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
-    'clan-2': { id: 'clan-2', name: 'Denis', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
-  };
   const families = {
     'family-1': { id: 'family-1', name: 'Mignonne', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
     'family-2': { id: 'family-2', name: 'Denis', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
@@ -425,7 +435,6 @@ async function main() {
     },
     people,
     families,
-    clans,
     photoAlbums: albums,
     photos,
     messages,
@@ -435,7 +444,7 @@ async function main() {
       'addr-2': { id: 'addr-2', full: '2 Oak Ave', street: '2 Oak Ave', city: 'Dallas', state: 'TX', zip: '75201', label: 'Cabin' },
     },
     calendars: {
-      'cal-1': { id: 'cal-1', path: 'calendars/e2e.pdf', url: 'http://localhost:5000/assets/e2e-fixtures/fixture.pdf', year: String(year) },
+      [`cal-${year}`]: { id: `cal-${year}`, path: 'calendars/e2e.pdf', url: 'http://localhost:5000/assets/e2e-fixtures/fixture.pdf', year: String(year) },
     },
     userUploads: {
       'upload-1': {

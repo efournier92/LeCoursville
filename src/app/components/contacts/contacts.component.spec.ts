@@ -48,7 +48,7 @@ describe('ContactsComponent', () => {
       {
         person: createPerson({ id: 'person1' }),
         spouse: null,
-        clan: null,
+        family: null,
         addresses: [],
         emails: [{ address: 'test@test.com', label: null, owner: null }],
         phones: []
@@ -62,8 +62,8 @@ describe('ContactsComponent', () => {
   it('filters contacts by search term', () => {
     component.searchTerm = 'Doe';
     contactsSubject.next([
-      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] },
-      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] }
+      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, family: null, addresses: [], emails: [], phones: [] },
+      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, family: null, addresses: [], emails: [], phones: [] }
     ]);
 
     expect(component.contacts.length).toBe(1);
@@ -72,8 +72,8 @@ describe('ContactsComponent', () => {
 
   it('clearing the search term restores the full list', () => {
     const cards: ContactCard[] = [
-      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] },
-      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, clan: null, addresses: [], emails: [], phones: [] }
+      { person: createPerson({ id: 'gen1', name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null } }), spouse: null, family: null, addresses: [], emails: [], phones: [] },
+      { person: createPerson({ id: 'gen2', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null } }), spouse: null, family: null, addresses: [], emails: [], phones: [] }
     ];
     component.searchTerm = 'Doe';
     contactsSubject.next(cards);
@@ -89,10 +89,11 @@ function createPerson(overrides: Partial<Person> = {}): Person {
   return {
     id: 'default-id',
     name: { firstGiven: 'John', firstPreferred: null, maiden: null, last: 'Doe', suffix: null },
-    clanId: null,
+    familyId: null,
     birthday: { year: 1990, month: 1, day: 1 },
     spouseId: null,
     anniversaryDate: null,
+    deathDate: null,
     emails: [],
     phones: [],
     addresses: [],

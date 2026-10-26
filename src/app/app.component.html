@@ -6,13 +6,19 @@
     class="d-inline-flex mat-elevation-z8 justify-content-between"
     color="primary"
     >
-    <img
-      src="./assets/img/logo/L.png"
-      class="toolbar-icon"
+    <button
+      type="button"
+      class="toolbar-logo"
+      [attr.aria-label]="isSuperAdmin() ? 'Admin' : 'Home'"
       (click)="onLogoClick()"
-      [alt]="isSuperAdmin() ? 'Admin' : 'L'"
-      height="80%"
-      />
+      >
+      <img
+        src="./assets/img/logo/L.png"
+        class="toolbar-icon"
+        [alt]="isSuperAdmin() ? 'Admin' : 'L'"
+        height="80%"
+        />
+    </button>
     <div class="icons-menu d-inline-flex">
       @if (!authResolved) {
         <div data-testid="nav-links-skeleton">

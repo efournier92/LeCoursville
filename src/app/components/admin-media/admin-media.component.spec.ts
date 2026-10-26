@@ -28,16 +28,24 @@ describe('AdminMediaComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders only the live tab set', () => {
+  it('renders both section switches', () => {
     const el: HTMLElement = fixture.nativeElement;
-    const labels = Array.from(el.querySelectorAll('mat-tab')).map(tab => tab.getAttribute('label'));
+    const labels = Array.from(el.querySelectorAll('[data-testid^="media-section-"]')).map(
+      button => button.textContent.trim(),
+    );
     expect(labels).toEqual(['Video', 'Audio Album']);
     expect(el.textContent).not.toContain('TODO');
   });
 
-  it('hosts an uploader in each live tab so empty tabs are never blank', () => {
+  it('mounts one uploader per section, swapping panels without a blank state', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelectorAll('app-admin-media-upload-video').length).toBe(1);
+    expect(el.querySelectorAll('app-admin-media-upload-audio-album').length).toBe(0);
+
+    component.section = 'audio';
+    fixture.detectChanges();
+
+    expect(el.querySelectorAll('app-admin-media-upload-video').length).toBe(0);
     expect(el.querySelectorAll('app-admin-media-upload-audio-album').length).toBe(1);
   });
 

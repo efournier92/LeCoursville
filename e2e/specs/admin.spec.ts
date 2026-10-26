@@ -6,15 +6,44 @@ import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin', () => {
-  test('super admin sees the Admin link in the navbar', async ({ page }) => {
+  test('super admin sees no Admin link in the toolbar on desktop or mobile', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
     const navbar = page.locator('#lecoursville-navbar-links');
     await expect(navbar).toBeVisible();
-    const adminLink = navbar.getByTestId('nav-admin-link');
-    await expect(adminLink).toBeVisible();
-    await expect(adminLink).toContainText('Admin');
-    await adminLink.click();
+    await expect(page.getByTestId('nav-admin-link')).toHaveCount(0);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('.menu-icon-container').click();
+    await expect(page.getByRole('menuitem', { name: 'People' })).toBeVisible();
+    await expect(page.getByTestId('nav-admin-link')).toHaveCount(0);
+  });
+
+  test('clicking the logo as a super admin lands on /admin/users', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const logo = page.locator('.toolbar-logo');
+    await expect(logo).toHaveAttribute('aria-label', 'Admin');
+    await logo.click();
+    await expect(page).toHaveURL(/\/admin\/users$/);
+  });
+
+  test('clicking the logo as a staff admin lands on the promoted route', async ({ page }) => {
+    await login(page, 'staff');
+    await page.goto('/people');
+    const logo = page.locator('.toolbar-logo');
+    await expect(logo).toHaveAttribute('aria-label', 'Home');
+    await logo.click();
+    await expect(page).toHaveURL(/\/calendar$/);
+  });
+
+  test('the logo is keyboard focusable and activates with Enter', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const logo = page.locator('.toolbar-logo');
+    await logo.focus();
+    await expect(logo).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/admin\/users$/);
   });
 
@@ -265,7 +294,7 @@ test.describe('admin', () => {
     try {
       await login(page, 'admin');
       await page.goto('/admin/media');
-      await page.getByRole('tab', { name: 'Audio Album' }).click();
+      await page.getByTestId('media-section-audio').click();
 
       await expect(page.getByText('Library').first()).toBeVisible();
       const item = page.locator('.media-list-item').filter({ hasText: 'E2E Dated Album' });

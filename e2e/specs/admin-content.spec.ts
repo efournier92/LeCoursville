@@ -41,27 +41,26 @@ async function storageObjectExists(path: string): Promise<boolean> {
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin content surfaces', () => {
-  test('media: only the live tabs render, and a filtered-out tab shows an empty message', async ({ page }) => {
+  test('media: only the live sections render, and a filtered-out section shows an empty message', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/media');
 
-    await expect(page.getByRole('tab', { name: 'Video' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Audio Album' })).toBeVisible();
-    await expect(page.getByRole('tab')).toHaveCount(2);
+    await expect(page.getByTestId('media-section-video')).toBeVisible();
+    await expect(page.getByTestId('media-section-audio')).toBeVisible();
+    await expect(page.getByRole('tab')).toHaveCount(0);
 
-    const audioTab = page.getByRole('tab', { name: 'Audio Album' });
-    await audioTab.click();
-    const activeTab = page.locator('.mat-mdc-tab-body-active');
-    await expect(activeTab.locator('.media-list-item').first()).toBeVisible();
+    await page.getByTestId('media-section-audio').click();
+    const audioPanel = page.locator('app-admin-media-upload-audio-album');
+    await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
 
     // Filtering everything out must leave an explicit message, never a
     // blank pane.
-    await activeTab.getByLabel('Filter').fill('zzz-no-match');
-    await expect(activeTab.locator('.no-results-message')).toBeVisible();
-    await expect(activeTab.locator('.no-results-message')).toContainText('No media match');
+    await audioPanel.getByLabel('Filter').fill('zzz-no-match');
+    await expect(audioPanel.locator('.no-results-message')).toBeVisible();
+    await expect(audioPanel.locator('.no-results-message')).toContainText('No media match');
 
-    await activeTab.getByLabel('Filter').fill('');
-    await expect(activeTab.locator('.media-list-item').first()).toBeVisible();
+    await audioPanel.getByLabel('Filter').fill('');
+    await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
   });
 
   test('photo albums: seeded albums render, and a throwaway album delete can be cancelled then confirmed', async ({ page }) => {
@@ -93,6 +92,23 @@ test.describe('admin content surfaces', () => {
     await page.locator('app-confirm-dialog').getByRole('button', { name: 'Delete album' }).click();
     await expect(throwaway).toBeHidden();
     await expect(page.getByText('E2E Album One')).toBeVisible();
+  });
+
+  test('photo albums: grid follows the density ladder and covers crop 4:3', async ({ page }) => {
+    await login(page, 'admin');
+
+    for (const [width, expected] of [[1600, 5], [1280, 4], [390, 1]] as const) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/admin/photo-albums');
+      await expect(page.locator('.admin-album-card').first()).toBeVisible();
+      const columns = await page
+        .locator('.admin-album-grid')
+        .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+      expect(columns).toBe(expected);
+    }
+
+    const cover = await page.locator('.admin-album-card .album-cover').first().boundingBox();
+    expect(cover!.width / cover!.height).toBeCloseTo(4 / 3, 1);
   });
 
   test('photo albums: deleting an album cascades to its photo record and Storage object', async ({ page }) => {
@@ -333,6 +349,24 @@ test.describe('admin content surfaces', () => {
     await expect(page.locator('.families-table tbody tr')).toHaveCount(2, { timeout: 20000 });
     await page.getByRole('button', { name: 'Add Family' }).click();
     await expect(page.getByLabel('Sort Order')).toBeFocused();
+  });
+
+  test('admin families and the people filter offer the same family names', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/admin/families');
+    const adminRows = page.locator('.families-table tbody tr .family-name');
+    await expect(adminRows).toHaveCount(2, { timeout: 20000 });
+    const adminNames = (await adminRows.allTextContents()).map((name) => name.trim()).sort();
+
+    await page.goto('/people');
+    await page.locator('.family-filter-form-field mat-select').click({ force: true });
+    const options = page.getByRole('option');
+    await expect(options).toHaveCount(adminNames.length);
+    const filterNames = (await options.allTextContents()).map((name) => name.trim()).sort();
+
+    expect(filterNames).toEqual(adminNames);
+    await page.keyboard.press('Escape');
   });
 
   test('390x844: the uploads table becomes cards and the album grid is one column without overflow', async ({ page }) => {

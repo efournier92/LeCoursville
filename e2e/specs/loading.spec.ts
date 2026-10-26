@@ -29,7 +29,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/families', content: (p) => p.locator('.admin-table').first() },
   { route: '/admin/people', content: (p) => p.locator('.import-card') },
   { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
-  { route: '/admin/media', content: (p) => p.locator('mat-tab-group') },
+  { route: '/admin/media', content: (p) => p.getByTestId('media-section-video') },
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
   { route: '/admin/uploads', content: (p) => p.getByText("You're all caught up") },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },

@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { PeopleService, ImportResult } from 'src/app/services/people.service';
-import { ClanService } from 'src/app/services/clan.service';
-import { Clan } from 'src/app/models/clan';
+import { FamilyService } from 'src/app/services/family.service';
+import { Family } from 'src/app/models/family';
 import { Person, PersonDate, Email, Phone } from 'src/app/models/person';
 import { Address } from 'src/app/models/address';
 import { paginate, Page, pageRange } from 'src/app/admin/pagination';
@@ -37,11 +37,8 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
   private lastImportSkipped = 0;
   private lastImportErrors = 0;
   private existingPeople: Person[] = [];
-  private clansByNameMap: Map<string, Clan> = new Map();
-  private clansFromDb: Clan[] = [];
-  private pendingClans: Map<string, Clan> = new Map();
+  private pendingFamilies: Map<string, Family> = new Map();
   private peopleSub?: Subscription;
-  private clansSub?: Subscription;
 
   // Pagination
   readonly previewPageSize = 10;
@@ -49,7 +46,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
 
   constructor(
     private peopleService: PeopleService,
-    private clanService: ClanService
+    private familyService: FamilyService
   ) {}
 
   ngOnInit(): void {
@@ -59,15 +56,10 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
         this.peopleReady = loaded;
         this.recomputePreview();
       });
-    this.clansSub = this.clanService.clans$.subscribe(clans => {
-      this.clansFromDb = clans || [];
-      this.rebuildClansByNameMap();
-    });
   }
 
   ngOnDestroy(): void {
     this.peopleSub?.unsubscribe();
-    this.clansSub?.unsubscribe();
   }
 
   parseCSV(rawCsv: string): void {
@@ -80,9 +72,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     this.hasParsedFile = true;
     this.previewPage = 1;
     this.skippedMissingId = 0;
-    this.pendingClans.clear();
-    // Drop drafts from a previous parse so they are re-added to pending.
-    this.rebuildClansByNameMap();
+    this.pendingFamilies.clear();
 
     const lines = rawCsv.trim().split('\n');
     if (lines.length < 2) {
@@ -172,7 +162,7 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    const birthdayResult = this.parseDate(this.getValue(values, headerMap, 'Birthday'), rowNum, true);
+    const birthdayResult = this.parseDate(this.getValue(values, headerMap, 'Birthday'), rowNum);
     if (birthdayResult.warning) {
       warnings.push(`Row ${rowNum}: ${birthdayResult.warning}`);
     }
@@ -180,6 +170,16 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     const anniversaryResult = this.parseDateNullable(this.getValue(values, headerMap, 'Anniversary'), rowNum);
     if (anniversaryResult.warning) {
       warnings.push(`Row ${rowNum}: ${anniversaryResult.warning}`);
+    }
+
+    const deathResult = this.parseDate(this.getValue(values, headerMap, 'Died'), rowNum, 'Died');
+    if (deathResult.warning) {
+      warnings.push(`Row ${rowNum}: ${deathResult.warning}`);
+    }
+    if (birthdayResult.date && deathResult.date && this.isBefore(deathResult.date, birthdayResult.date)) {
+      warnings.push(
+        `Row ${rowNum}: Death date ${deathResult.date.year}-${String(deathResult.date.month).padStart(2, '0')}-${String(deathResult.date.day).padStart(2, '0')} is before Birthday; imported with the death date`
+      );
     }
 
     const colorHex = this.getNullable(values, headerMap, 'Color_Hex');
@@ -210,10 +210,11 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
         last: this.getNullable(values, headerMap, 'Name_Last'),
         suffix: this.getNullable(values, headerMap, 'Name_Suffix')
       },
-      clanId: this.resolveClanId(values, headerMap, colorHex),
+      familyId: this.resolveFamilyId(values, headerMap, colorHex),
       birthday: birthdayResult.date || { year: 0, month: 1, day: 1 },
       spouseId: null,
       anniversaryDate: anniversaryResult.date,
+      deathDate: deathResult.date,
       emails: this.parseEmails(values, headerMap),
       phones: this.parsePhones(values, headerMap),
       addresses: this.parseAddresses(values, headerMap),
@@ -239,35 +240,35 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     return val || null;
   }
 
-  private resolveClanId(values: string[], headerMap: Record<string, number>, colorHex: string | null): string | null {
-    const clanName = this.getValue(values, headerMap, 'Family').trim();
-    const clanIdFromCsv = this.getNullable(values, headerMap, 'ID');
-    if (!clanName) return null;
+  private resolveFamilyId(values: string[], headerMap: Record<string, number>, colorHex: string | null): string | null {
+    const familyName = this.getValue(values, headerMap, 'Family').trim();
+    const familyIdFromCsv = this.getNullable(values, headerMap, 'ID');
+    if (!familyName) return null;
 
-    // Case-insensitive lookup in clansByNameMap
-    const key = clanName.toLowerCase();
-    const clan = this.clansByNameMap.get(key);
-    if (clan) return clan.id;
+    const key = familyName.toLowerCase();
+    // Subsequent rows with the same family name share this draft.
+    const pending = this.pendingFamilies.get(key);
+    if (pending) return pending.id;
 
-    // Preview is read-only: draft the clan here and create it on Confirm.
+    const existingId = this.familyService.resolveFamilyIdByName(familyName);
+    if (existingId) return existingId;
+
+    // Preview is read-only: draft the family here and create it on Confirm.
     const hexColor = (colorHex && /^#[0-9A-Fa-f]{6}$/.test(colorHex)) ? colorHex : '#808080';
-    const newClan: Clan = {
-      id: clanIdFromCsv || this.clanService.createPushId(),
-      name: clanName,
+    const newFamily: Family = {
+      id: familyIdFromCsv || this.familyService.createPushId(),
+      name: familyName,
       hexColor: hexColor,
-      sortOrder: clanIdFromCsv || '',
+      sortOrder: familyIdFromCsv || '',
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
-    this.pendingClans.set(key, newClan);
+    this.pendingFamilies.set(key, newFamily);
 
-    // Subsequent rows with the same family name share this draft.
-    this.clansByNameMap.set(key, newClan);
-
-    return newClan.id;
+    return newFamily.id;
   }
 
-  private parseDate(value: string, rowNum: number, isBirthday: boolean = false): { date: PersonDate | null; warning: string | null } {
+  private parseDate(value: string, rowNum: number, label: string = 'Birthday'): { date: PersonDate | null; warning: string | null } {
     if (!value) {
       return { date: null, warning: null };
     }
@@ -282,10 +283,13 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
         warning: null
       };
     }
-    if (isBirthday) {
-      return { date: null, warning: `Invalid Birthday format '${value}', expected YYYY-MM-DD` };
-    }
-    return { date: null, warning: `Invalid Anniversary format '${value}', expected YYYY-MM-DD` };
+    return { date: null, warning: `Invalid ${label} format '${value}', expected YYYY-MM-DD` };
+  }
+
+  private isBefore(a: PersonDate, b: PersonDate): boolean {
+    if (a.year !== b.year) return a.year < b.year;
+    if (a.month !== b.month) return a.month < b.month;
+    return a.day < b.day;
   }
 
   private parseDateNullable(value: string, rowNum: number): { date: PersonDate | null; warning: string | null } {
@@ -459,31 +463,31 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     this.lastImportSkipped = this.skippedMissingId;
     this.lastImportErrors = this.validationErrors.length;
     const people = this.parsedPeople.map(p => p.person);
-    const clans = Array.from(this.pendingClans.values());
+    const families = Array.from(this.pendingFamilies.values());
 
-    if (clans.length === 0) {
+    if (families.length === 0) {
       this.runImport(people);
       return;
     }
 
-    Promise.all(clans.map(clan => this.clanService.saveClan(clan)))
+    Promise.all(families.map(family => this.familyService.saveFamily(family)))
       .then(() => {
-        this.runImport(people, clans);
+        this.runImport(people, families);
       })
       .catch(err => {
         this.isImporting = false;
         this.importError = 'Import failed: ' + (err?.message || 'Unknown error');
-        this.rollbackClans(clans);
+        this.rollbackFamilies(families);
       });
   }
 
-  private runImport(people: Person[], clans: Clan[] = []): void {
+  private runImport(people: Person[], families: Family[] = []): void {
     this.peopleService.importPeople(people).subscribe({
       next: result => {
         this.isImporting = false;
         this.importResult = result;
         this.lastImportTimestamp = new Date().toLocaleString();
-        this.pendingClans.clear();
+        this.pendingFamilies.clear();
         this.parsedPeople = [];
         this.importPreview = null;
         this.hasParsedFile = false;
@@ -493,15 +497,15 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
       error: err => {
         this.isImporting = false;
         this.importError = 'Import failed: ' + (err?.message || 'Unknown error');
-        this.rollbackClans(clans);
+        this.rollbackFamilies(families);
       },
     });
   }
 
-  private rollbackClans(clans: Clan[]): void {
+  private rollbackFamilies(families: Family[]): void {
     // best-effort: a failed delete must not mask the import error the admin sees.
-    clans.forEach(clan => {
-      this.clanService.deleteClan(clan.id).catch(() => undefined);
+    families.forEach(family => {
+      this.familyService.deleteFamily(family.id).catch(() => undefined);
     });
   }
 
@@ -511,13 +515,8 @@ export class AdminPeopleImportComponent implements OnInit, OnDestroy {
     this.importError = null;
     this.hasParsedFile = false;
     this.skippedMissingId = 0;
-    this.pendingClans.clear();
-    this.rebuildClansByNameMap();
+    this.pendingFamilies.clear();
     this.previewPage = 1;
-  }
-
-  private rebuildClansByNameMap(): void {
-    this.clansByNameMap = new Map(this.clansFromDb.map(c => [c.name.toLowerCase(), c]));
   }
 
   onFileSelected(event: Event): void {

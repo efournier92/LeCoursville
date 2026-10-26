@@ -44,6 +44,15 @@ const CANCEL_CLEANUP_FAILURE =
 const RESUME_FILE_MESSAGE =
   'Choose the missing MP4 file, then choose Resume upload.';
 
+function finalizeReasonFrom(error: unknown): string | null {
+  const detail = (error as { detail?: unknown } | null)?.detail;
+  if (typeof detail !== 'string') {
+    return null;
+  }
+  const reason = detail.trim().replace(/\s+/g, ' ').slice(0, 300);
+  return reason || null;
+}
+
 @Component({
   selector: 'app-admin-media-upload-video',
   templateUrl: './admin-media-upload-video.component.html',
@@ -60,6 +69,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
   progressMessage = '';
   uploading = false;
   finalizeFailed = false;
+  finalizeReason: string | null = null;
   replaceFile = false;
   resumeBatch: StoredMediaBatch | null = null;
   batchId: string | null = null;
@@ -285,6 +295,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     this.formError = null;
     this.uploadSuccess = null;
     this.finalizeFailed = false;
+    this.finalizeReason = null;
     this.cancelRequested = false;
     this.uploading = true;
     try {
@@ -294,10 +305,8 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
       }
       try {
         await this.finalizeUpload();
-      } catch {
-        this.finalizeFailed = true;
-        this.formError = FINALIZE_FAILURE;
-        this.focusHeading();
+      } catch (error) {
+        this.reportFinalizeFailure(error, this.batchId);
         return;
       }
       this.resetForm();
@@ -330,9 +339,8 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
       this.resetForm();
       this.uploadSuccess = `Saved "${title}".`;
       this.focusHeading();
-    } catch {
-      this.formError = FINALIZE_FAILURE;
-      this.focusHeading();
+    } catch (error) {
+      this.reportFinalizeFailure(error, this.batchId);
     } finally {
       this.uploading = false;
       this.progressMessage = '';
@@ -370,14 +378,23 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
           this.focusFirstInvalid();
         }
       } else {
-        this.finalizeFailed = true;
-        this.formError = FINALIZE_FAILURE;
-        this.focusHeading();
+        this.reportFinalizeFailure(error, batch.batchId);
       }
     } finally {
       this.uploading = false;
       this.progressMessage = '';
     }
+  }
+
+  private reportFinalizeFailure(error: unknown, batchId: string | null): void {
+    this.finalizeFailed = true;
+    this.formError = FINALIZE_FAILURE;
+    this.finalizeReason = finalizeReasonFrom(error);
+    console.error('[media-finalize] Save failed', {
+      batchId,
+      reason: this.finalizeReason,
+    });
+    this.focusHeading();
   }
 
   private finishResume(batch: StoredMediaBatch): void {
@@ -501,7 +518,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
       this.authoritativeKeys = response.keys.video;
       this.pathProvisional = false;
     }
-    await this.uploadAssets(response.batchId);
+    // Upload exactly the assets the batch was created with. Reading
+    // `thumbnailBlob` later races the automatic frame capture and asks the
+    // server for an asset the batch does not have.
+    await this.uploadAssets(response.batchId, !!request.video?.thumbnail);
     return true;
   }
 
@@ -530,11 +550,10 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     };
   }
 
-  private async uploadAssets(batchId: string): Promise<void> {
-    const roles: Array<'video' | 'thumbnail'> = ['video'];
-    if (this.thumbnailBlob) {
-      roles.push('thumbnail');
-    }
+  private async uploadAssets(batchId: string, includeThumbnail: boolean): Promise<void> {
+    const roles: Array<'video' | 'thumbnail'> = includeThumbnail
+      ? ['video', 'thumbnail']
+      : ['video'];
 
     for (const role of roles) {
       if (this.mediaUpload.isAssetCompleted(batchId, { role })) {
@@ -961,6 +980,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
     this.captureFailed = false;
     this.replaceFile = false;
     this.finalizeFailed = false;
+    this.finalizeReason = null;
     this.resumeBatch = null;
     this.resumeMissingKey = null;
     this.batchId = null;

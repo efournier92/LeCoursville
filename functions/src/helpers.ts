@@ -114,6 +114,11 @@ type DataRef<T> = {
   transaction(
     mutate: (current: T | null) => T | undefined
   ): Promise<{ committed: boolean; snapshot: { val(): unknown } }>;
+  on(
+    event: "value",
+    callback: (snapshot: { val(): unknown }) => void
+  ): unknown;
+  off(event: "value", callback: (snapshot: { val(): unknown }) => void): void;
 };
 
 // The RTDB emulator does not implement Admin SDK transactions: the callback
@@ -140,11 +145,28 @@ export async function compareAndSet<T>(
     await ref.set(next);
     return { committed: true, value: next };
   }
-  const result = await ref.transaction(mutate);
-  return {
-    committed: result.committed,
-    value: (result.snapshot.val() ?? null) as T | null,
-  };
+  // The Admin SDK runs the mutator against the local sync tree first, so a
+  // cold cache sees null and aborts before contacting the server; a prior
+  // get() does not populate that cache. Holding one value listener open
+  // across the transaction primes it.
+  let resolvePrimed: () => void = () => {};
+  const primed = new Promise<void>((resolve) => {
+    resolvePrimed = resolve;
+  });
+  // on() returns the callback itself in the Admin SDK, not an unsubscribe,
+  // and the callback resolves once then ignores later snapshots.
+  const callback = (): void => resolvePrimed();
+  ref.on("value", callback);
+  try {
+    await primed;
+    const result = await ref.transaction(mutate);
+    return {
+      committed: result.committed,
+      value: (result.snapshot.val() ?? null) as T | null,
+    };
+  } finally {
+    ref.off("value", callback);
+  }
 }
 
 interface RateLimitState {

@@ -184,6 +184,93 @@ describe("compareAndSet", () => {
     expect((fakeDb.read("cas/node") as { status: string }).status).toBe("open");
   });
 
+  // Models the installed Admin SDK: runTransaction calls the mutator against
+  // the local sync tree first, so a path no listener has delivered yet
+  // surfaces to the mutator as null and the write aborts before any server
+  // round-trip. A prior get() does not populate that cache.
+  function coldCacheRef(path: string) {
+    const base = fakeDb.ref(path);
+    const state = { primed: false, detaches: 0 };
+    return {
+      state,
+      get: () => base.get(),
+      set: (value: unknown) => base.set(value),
+      on: (
+        _event: "value",
+        callback: (snapshot: { val(): unknown }) => void
+      ): unknown => {
+        const wrapped = (snapshot: { val(): unknown }) => {
+          state.primed = true;
+          callback(snapshot);
+        };
+        return base.on("value", wrapped);
+      },
+      off: (_event: "value", _callback: (snapshot: { val(): unknown }) => void): void => {
+        state.detaches += 1;
+      },
+      transaction: async (
+        mutate: (current: unknown) => unknown
+      ): Promise<{ committed: boolean; snapshot: { val(): unknown } }> => {
+        const current = state.primed
+          ? ((await base.get()).val() ?? null)
+          : null;
+        const next = mutate(current);
+        if (next === undefined) {
+          return { committed: false, snapshot: { val: () => current } };
+        }
+        await base.set(next);
+        return { committed: true, snapshot: { val: () => next } };
+      },
+    };
+  }
+
+  it("commits on a cold cache by priming the path before the transaction", async () => {
+    await fakeDb.ref("cas/cold").set({ status: "ticketed" });
+    const ref = coldCacheRef("cas/cold");
+    let seen: unknown;
+
+    const result = await compareAndSet<{ status?: string }>(ref, (current) => {
+      seen = current;
+      return current ? { ...current, status: "finalizing" } : undefined;
+    });
+
+    expect(seen).toEqual({ status: "ticketed" });
+    expect(result.committed).toBe(true);
+    expect((fakeDb.read("cas/cold") as { status: string }).status).toBe("finalizing");
+  });
+
+  it("aborts a genuinely missing node without writing", async () => {
+    const ref = coldCacheRef("cas/missing");
+
+    const result = await compareAndSet<{ status?: string }>(ref, (current) =>
+      current ? { status: "written" } : undefined
+    );
+
+    expect(result.committed).toBe(false);
+    expect(result.value).toBeNull();
+    expect(fakeDb.read("cas/missing")).toBeNull();
+  });
+
+  it("detaches the priming listener on commit, abort, and mutator throw", async () => {
+    await fakeDb.ref("cas/detach").set({ status: "open" });
+
+    const committing = coldCacheRef("cas/detach");
+    await compareAndSet<{ status?: string }>(committing, (current) => current ?? undefined);
+    expect(committing.state.detaches).toBe(1);
+
+    const aborting = coldCacheRef("cas/detach");
+    await compareAndSet<{ status?: string }>(aborting, () => undefined);
+    expect(aborting.state.detaches).toBe(1);
+
+    const throwing = coldCacheRef("cas/detach");
+    await expect(
+      compareAndSet<{ status?: string }>(throwing, () => {
+        throw new Error("mutator exploded");
+      })
+    ).rejects.toThrow("mutator exploded");
+    expect(throwing.state.detaches).toBe(1);
+  });
+
   it.each([
     ["FUNCTIONS_EMULATOR", "true"],
     ["FIREBASE_DATABASE_EMULATOR_HOST", "127.0.0.1:9000"],
@@ -200,6 +287,8 @@ describe("compareAndSet", () => {
           committed: false,
           snapshot: { val: () => null },
         }),
+        on: () => undefined,
+        off: () => undefined,
       };
 
       const result = await compareAndSet<{ status?: string }>(

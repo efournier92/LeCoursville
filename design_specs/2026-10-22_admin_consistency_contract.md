@@ -27,8 +27,12 @@ The admin shell owns page width and gutters. Pages must not re-declare
 - No inputs, filters, sort menus, or segmented controls inside the title bar.
 - Optional one-line subtitle sits inside the 64px bar under the title at
   0.8125rem, ink-2; its presence must not change the bar height.
-- Background: `--color-surface`; 1px `--color-border` bottom border; no
-  radius, no shadow (the bar is chrome, not a card).
+- Card surface: `background: var(--color-surface)`, `1px solid
+  var(--color-border)`, `border-radius: var(--radius-card)`,
+  `box-shadow: var(--shadow-card)`. No bottom hairline.
+- The `app-page-toolbar` host owns `margin-top: 16px` and `margin-bottom:
+  16px`; horizontal inset comes from the page gutter, so the bar aligns with
+  the cards below.
 
 ## Filter bar
 
@@ -40,6 +44,11 @@ The admin shell owns page width and gutters. Pages must not re-declare
   inside the bar. The bar may grow to 96px on mobile, never beyond.
 - Same white-fill outlined field recipe as the title-bar-era fields; one
   shared class, no per-page `::ng-deep`.
+- When the filter bar immediately follows the title bar, the two read as one
+  card: the title bar rounds only its top corners, the filter bar rounds only
+  its bottom corners, and they share one border and one shadow.
+- When `:has` is unsupported, both surfaces keep the full radius and an 8px
+  gap.
 
 ## Surfaces
 
@@ -82,9 +91,9 @@ The admin shell owns page width and gutters. Pages must not re-declare
 - All admin dialogs use `mat-dialog-title`, body, `mat-dialog-actions
   align="end"`, primary action last.
 - Album create/rename use the existing `PhotoAlbumEditDialogComponent`.
-- Media audio/video upload keeps in-page tabs (not dialogs) but uses
-  `.admin-surface` and the same action row as dialogs: 36px buttons, right
-  aligned, no full-width buttons.
+- Media audio/video upload keeps in-page sections (not dialogs) behind one
+  segmented switch and uses `.admin-surface` and a sticky action row: 36px
+  buttons, right aligned, no full-width buttons.
 
 ## Mobile
 

@@ -19,7 +19,7 @@ export interface PersonNode {
 export class PersonTreeComponent {
   @Input() nodes: PersonNode[] = [];
   @Input() clickable = true;
-  @Input() clanColorHex: string | null = null;
+  @Input() familyColorHex: string | null = null;
   @Input() selectedPersonId: string | null = null;
   @Output() personClick = new EventEmitter<string>();
 

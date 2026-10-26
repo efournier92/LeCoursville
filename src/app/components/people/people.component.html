@@ -23,8 +23,8 @@
     <mat-form-field class="family-filter-form-field">
       <mat-label>By Family</mat-label>
       <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
-        @for (clan of getFamilies(); track clan) {
-          <mat-option [value]="clan.name">{{ clan.name }}</mat-option>
+        @for (family of getFamilies(); track family) {
+          <mat-option [value]="family.name">{{ family.name }}</mat-option>
         }
       </mat-select>
       @if (selectedFamily) {
@@ -81,9 +81,9 @@
 
   @for (group of familyGroups; track group) {
     <div class="w-100">
-      <div class="family-group" [style.--family-color]="getFamilyColorForClan(group.clan)">
+      <div class="family-group" [style.--family-color]="getFamilyColorForName(group.family)">
         <div class="family-header">
-          <a class="family-link" [routerLink]="['/people']" [queryParams]="{ clan: group.clan }" queryParamsHandling="merge">{{ group.displayName }}</a>
+          <a class="family-link" [routerLink]="['/people']" [queryParams]="{ family: group.family, clan: null }" queryParamsHandling="merge">{{ group.displayName }}</a>
           @if (group.livingMemberCount > 0) {
             <span class="member-count">{{ group.livingMemberCount }} {{ group.livingMemberCount === 1 ? 'Member' : 'Members' }}</span>
           }

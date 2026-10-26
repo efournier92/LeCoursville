@@ -5,8 +5,8 @@ import { first } from 'rxjs/operators';
 import { ContactCard } from "src/app/services/contacts-from-people.service";
 import { ContactsFromPeopleService } from "src/app/services/contacts-from-people.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
-import { ClanService } from "src/app/services/clan.service";
-import { Clan } from "src/app/models/clan";
+import { FamilyService } from "src/app/services/family.service";
+import { Family } from "src/app/models/family";
 
 @Component({
     selector: "app-contacts",
@@ -18,20 +18,20 @@ import { Clan } from "src/app/models/clan";
 export class ContactsComponent implements OnInit, OnDestroy {
   contacts: ContactCard[] = [];
   searchTerm = "";
-  selectedClan = '';
-  clans: Clan[] = [];
+  selectedFamily = '';
+  families: Family[] = [];
   selectedPersonId: string | null = null;
   skeletonIterations = [1, 2, 3, 4, 5, 6];
   status: 'loading' | 'error' | 'ready' = 'loading';
 
   private contactsSub: Subscription | null = null;
-  private clansSub: Subscription | null = null;
+  private familiesSub: Subscription | null = null;
   private contactsArrived = false;
-  private clansArrived = false;
+  private familiesArrived = false;
 
   constructor(
     private contactsFromPeopleService: ContactsFromPeopleService,
-    private clanService: ClanService,
+    private familyService: FamilyService,
     private analyticsService: AnalyticsService,
     public router: Router,
     private route: ActivatedRoute,
@@ -43,8 +43,18 @@ export class ContactsComponent implements OnInit, OnDestroy {
 
     this.route.queryParamMap.subscribe(queryParams => {
       this.searchTerm = queryParams.get('filter') || '';
-      this.selectedClan = queryParams.get('clan') || '';
+      // The ?clan= alias is scheduled for deletion in the next release; remove this fallback then.
+      const family = queryParams.get('family');
+      this.selectedFamily = family || queryParams.get('clan') || '';
       this.selectedPersonId = queryParams.get('selected') || null;
+      if (!family && queryParams.get('clan')) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { family: queryParams.get('clan'), clan: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+      }
       // Re-trigger filter after query params update
       this.contactsFromPeopleService.contacts$.subscribe(cards => {
         this.applyFilters(cards);
@@ -56,7 +66,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.contactsSub?.unsubscribe();
-    this.clansSub?.unsubscribe();
+    this.familiesSub?.unsubscribe();
   }
 
   retry(): void {
@@ -70,17 +80,17 @@ export class ContactsComponent implements OnInit, OnDestroy {
   private subscribeData(): void {
     this.status = 'loading';
     this.contactsArrived = false;
-    this.clansArrived = false;
-    this.clansSub?.unsubscribe();
+    this.familiesArrived = false;
+    this.familiesSub?.unsubscribe();
     this.contactsSub?.unsubscribe();
 
-    let clansSeed = true;
-    this.clansSub = this.clanService.clans$.subscribe(clans => {
-      const seedEmpty = clansSeed && clans.length === 0;
-      clansSeed = false;
-      this.clans = clans.sort((a, b) => (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name));
+    let familiesSeed = true;
+    this.familiesSub = this.familyService.families$.subscribe(families => {
+      const seedEmpty = familiesSeed && families.length === 0;
+      familiesSeed = false;
+      this.families = families.sort((a, b) => (a.sortOrder || a.name).localeCompare(b.sortOrder || b.name));
       if (!seedEmpty) {
-        this.clansArrived = true;
+        this.familiesArrived = true;
         this.updateStatus();
       }
     }, () => (this.status = 'error'));
@@ -98,7 +108,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   private updateStatus(): void {
-    if (this.contactsArrived && this.clansArrived) {
+    if (this.contactsArrived && this.familiesArrived) {
       this.status = 'ready';
     }
   }
@@ -137,7 +147,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.applyFiltersFromParams();
   }
 
-  onClanChange(): void {
+  onFamilyChange(): void {
     this.updateQueryParams();
     this.applyFiltersFromParams();
   }
@@ -148,11 +158,11 @@ export class ContactsComponent implements OnInit, OnDestroy {
     }, () => (this.status = 'error')).add(() => {});
   }
 
-  clearClanFilter(): void {
-    this.selectedClan = '';
+  clearFamilyFilter(): void {
+    this.selectedFamily = '';
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { clan: null },
+      queryParams: { family: null, clan: null },
       queryParamsHandling: 'merge'
     });
   }
@@ -160,10 +170,10 @@ export class ContactsComponent implements OnInit, OnDestroy {
   private applyFilters(cards: ContactCard[]): void {
     let filtered = cards;
 
-    if (this.selectedClan) {
+    if (this.selectedFamily) {
       filtered = filtered.filter(card => {
-        const clanName = card.clan?.name?.toLowerCase() || '';
-        return clanName === this.selectedClan.toLowerCase();
+        const familyName = card.family?.name?.toLowerCase() || '';
+        return familyName === this.selectedFamily.toLowerCase();
       });
     }
 
@@ -180,12 +190,13 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   private updateQueryParams(): void {
-    const queryParams: any = {};
+    // Every write clears the retired ?clan= alias so old links self-heal.
+    const queryParams: any = { clan: null };
     if (this.searchTerm) {
       queryParams['filter'] = this.searchTerm;
     }
-    if (this.selectedClan) {
-      queryParams['clan'] = this.selectedClan;
+    if (this.selectedFamily) {
+      queryParams['family'] = this.selectedFamily;
     }
     this.router.navigate([], {
       relativeTo: this.route,
@@ -207,7 +218,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return `${first} ${last}`.trim();
   }
 
-  getClans(): Clan[] {
-    return this.clans;
+  getFamilies(): Family[] {
+    return this.families;
   }
 }

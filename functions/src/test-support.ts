@@ -151,6 +151,16 @@ export class FakeRef {
     }
   }
 
+  on(
+    _event: "value",
+    callback: (snapshot: FakeSnapshot) => void
+  ): (snapshot: FakeSnapshot) => void {
+    callback(new Snapshot(this.db.read(this.path)));
+    return callback;
+  }
+
+  off(_event: "value", _callback: (snapshot: FakeSnapshot) => void): void {}
+
   async transaction(fn: (current: unknown) => unknown) {
     const current = clone(this.db.read(this.path) ?? null);
     const next = fn(current);
