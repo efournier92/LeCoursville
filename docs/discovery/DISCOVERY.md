@@ -5,6 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261026-04 | 2026-10-26 | [outcome] | admin/ui | Shipped the 2026-10-26 feedback batch: calendar band, neutral transport, one-card upload page, admin card gaps, features redesign, queue restyle, mobile queue, families truth, empty-state voice, account gaps, wrapping top bars | docs/specs/2026-10-26_DevFeedbackBatch.md
+- D-20261026-03 | 2026-10-26 | [trap] | admin/ui | An empty projected slot still creates a wrapped flex row: hide page-toolbar-content with :empty or every toolbar grows 38px under 600px | src/app/components/shared/page-toolbar/page-toolbar.component.scss:110
+- D-20261026-02 | 2026-10-26 | [decision] | admin/security | Email is immutable: no self edit, no admin edit, no Admin SDK path. The users rule pins email on profile writes only, inside the data.exists branch, so delete and creation still pass | database.rules.json:158
+- D-20261026-01 | 2026-10-26 | [decision] | build/perf | Dev builds use outputHashing all and index.html is no-cache; a stale dev bundle made fixed bugs look unfixed and hid the un-run migration | angular.json:118
 - D-20261025-22 | 2026-10-25 | [trap] | build/perf | WebKit's default Tab policy skips non-text controls, so keyboard e2e asserts focusability and DOM order instead of Tab traversal | e2e/specs/media.spec.ts:552
 - D-20261025-21 | 2026-10-25 | [trap] | media/routing | Replace uploads read only the batch-declared assets; a later `thumbnailBlob` race breaks resume | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:524
 - D-20261025-20 | 2026-10-25 | [trap] | rules/deploy | GoDaddy nameservers lag each other and resolvers cache stale empties, so verify TXT and MX at ns03 and ns04 before trusting dig | docs/2026-10-25_LeCoursville_Email_Configuration.md
