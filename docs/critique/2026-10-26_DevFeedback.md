@@ -29,5 +29,12 @@ _None yet._
 
 ## Open Questions
 
-- OQ-20261026-01 | is the `Resume upload` control on the admin media upload forms necessary? It appears only when `resumeBatch` is set, that is, when a previous batch was interrupted, and it is the only way to finish the remaining files without reselecting them. Recommendation: keep it and restyle it warm, because removing it strands a partial batch. Owner to confirm at batch approval.
-- OQ-20261026-02 | should a super admin be able to change another user's sign-in email? That needs an Admin SDK callable (`updateUser` on the Auth side) because the client cannot change another account's Auth email. The batch removes self-service email editing and pins the field in rules regardless; this question only decides whether to add the server path now or leave it as a known gap.
+_None open. All six were resolved on 2026-10-26; see Decisions._
+
+## Decisions
+
+- DC-20261026-01 | F-20261026-07 and OQ-20261026-01 | Resume and Retry become the warm accent (`--color-accent-strong` `#9C6B26`) and stay; the primary Upload/Update button keeps brand green. Resume is kept because it is the only way to finish an interrupted batch without reselecting files.
+- DC-20261026-02 | OQ-20261026-02 | Email is immutable. Self-service editing is removed, the admin-side edit is removed too, and no Admin SDK path is added. A person who wants a different sign-in email creates a new account. Rules pin `email` on every client write.
+- DC-20261026-03 | F-20261026-08 | Owner runs the clans-to-families migration on `lecoursville-dev` after this branch merges. The batch ships the code fixes and a runbook; the DB is never touched by an agent.
+- DC-20261026-04 | F-20261026-03 | The public Upload page adopts page ground plus one centered white card with its own heading. No page toolbar.
+- DC-20261026-05 | F-20261026-12 | Top bars always wrap and grow taller. No clipping and no inner horizontal scroll, at any width.
