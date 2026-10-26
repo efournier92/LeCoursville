@@ -5,10 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
-- D-20261026-04 | 2026-10-26 | [outcome] | admin/ui | Shipped the 2026-10-26 feedback batch: calendar band, neutral transport, one-card upload page, admin card gaps, features redesign, queue restyle, mobile queue, families truth, empty-state voice, account gaps, wrapping top bars | docs/specs/2026-10-26_DevFeedbackBatch.md
-- D-20261026-03 | 2026-10-26 | [trap] | admin/ui | An empty projected slot still creates a wrapped flex row: hide page-toolbar-content with :empty or every toolbar grows 38px under 600px | src/app/components/shared/page-toolbar/page-toolbar.component.scss:110
-- D-20261026-02 | 2026-10-26 | [decision] | admin/security | Email is immutable: no self edit, no admin edit, no Admin SDK path. The users rule pins email on profile writes only, inside the data.exists branch, so delete and creation still pass | database.rules.json:158
-- D-20261026-01 | 2026-10-26 | [decision] | build/perf | Dev builds use outputHashing all and index.html is no-cache; a stale dev bundle made fixed bugs look unfixed and hid the un-run migration | angular.json:118
+- D-20261026-04 | 2026-10-26 | [outcome] | admin/ui | Shipped the 2026-10-26 batch: 13 fixes, gate green on three engines | docs/specs/2026-10-26_DevFeedbackBatch.md
+- D-20261026-03 | 2026-10-26 | [trap] | admin/ui | An empty projected slot still wraps: hide page-toolbar-content with :empty or bars grow 38px under 600px | src/app/components/shared/page-toolbar/page-toolbar.component.scss:110
+- D-20261026-02 | 2026-10-26 | [decision] | admin/security | Email is immutable: no self or admin edit, rule pins it on the data.exists branch only | database.rules.json:158
+- D-20261026-01 | 2026-10-26 | [decision] | build/perf | Dev builds hash assets and index.html is no-cache; stale dev bundles made fixes look broken | angular.json:118
 - D-20261025-22 | 2026-10-25 | [trap] | build/perf | WebKit's default Tab policy skips non-text controls, so keyboard e2e asserts focusability and DOM order instead of Tab traversal | e2e/specs/media.spec.ts:552
 - D-20261025-21 | 2026-10-25 | [trap] | media/routing | Replace uploads read only the batch-declared assets; a later `thumbnailBlob` race breaks resume | src/app/components/admin-media-upload-video/admin-media-upload-video.component.ts:524
 - D-20261025-20 | 2026-10-25 | [trap] | rules/deploy | GoDaddy nameservers lag each other and resolvers cache stale empties, so verify TXT and MX at ns03 and ns04 before trusting dig | docs/2026-10-25_LeCoursville_Email_Configuration.md
@@ -38,9 +38,9 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 - D-20261022-03 | 2026-10-22 | [decision] | admin/ui | All nine admin routes use a fixed 64px/56px title bar with filters in a separate fixed row | design_specs/2026-10-22_admin_consistency_contract.md
 - D-20261022-04 | 2026-10-22 | [trap] | admin/ui | Material 22 emits a null --mat-slide-toggle-handle-width, pinning the thumb left until the handle width is set | src/app/components/admin-features/admin-features.component.scss:57
 - D-20261022-05 | 2026-10-22 | [decision] | admin/security | roles/user is server-stamped at signup via callable plus trigger watchdog; clients can never write roles; revoke is the ban switch | functions/src/claim-member-role.ts:18
-- D-20261022-06 | 2026-10-22 | [decision] | admin/security | Role grants and roleAudit are one super-only transaction with server-derived actor/time and last-super demotion rejection | functions/src/change-user-role.ts:85
-- D-20261022-07 | 2026-10-22 | [decision] | media/routing | Media reads stay public so copied /media/explorer?id=<id> links play signed out; writes stay admin; clans require auth | src/app/app-routing.module.ts:81
-- D-20261022-08 | 2026-10-22 | [trap] | media/routing | An auth guard on the media parent broke signed-out single-item links; e2e covers audio and video and fails if the guard returns | e2e/specs/media.spec.ts:22
-- D-20261022-09 | 2026-10-22 | [decision] | rules/deploy | Database and storage rules deploy from the repo; the emulator keeps permissive storage.rules, production uses storage.rules.prod | scripts/deploy.sh
-- D-20261022-10 | 2026-10-22 | [trap] | admin/security | An RTDB child .write:false cannot revoke a parent grant; enforce with parent conditions plus validate | database.rules.json:173
-- D-20261022-11 | 2026-10-22 | [question] | rules/deploy | Production rules drift, storage public-create bypass of callable limits, and the signup migration still need ops sign-off | design_specs/2026-10-22_admin_open_questions.md
+- D-20261022-06 | 2026-10-22 | [decision] | admin/security | Archived: see `docs/discovery/archive/D-20261022-06.md`
+- D-20261022-07 | 2026-10-22 | [decision] | media/routing | Archived: see `docs/discovery/archive/D-20261022-07.md`
+- D-20261022-08 | 2026-10-22 | [trap] | media/routing | Archived: see `docs/discovery/archive/D-20261022-08.md`
+- D-20261022-09 | 2026-10-22 | [decision] | rules/deploy | Archived: see `docs/discovery/archive/D-20261022-09.md`
+- D-20261022-10 | 2026-10-22 | [trap] | admin/security | Archived: see `docs/discovery/archive/D-20261022-10.md`
+- D-20261022-11 | 2026-10-22 | [question] | rules/deploy | Archived: see `docs/discovery/archive/D-20261022-11.md`
