@@ -129,6 +129,7 @@
   @if (displayedItems.length === 0 && sortSettings.activeFilterQuery && !isLoading && !error) {
     <app-no-results-message
       [searchTerm]="sortSettings.activeFilterQuery"
+      noun="expressions"
     ></app-no-results-message>
   }
 
@@ -137,10 +138,8 @@
       <div class="expressions-empty-icon" aria-hidden="true">
         <mat-icon>format_quote</mat-icon>
       </div>
-      <p class="expressions-empty-title">No expressions yet</p>
-      <p class="expressions-empty-hint">
-        Family quotes and wisdom will show up here. Admins can add the first one with Create Expression.
-      </p>
+      <p class="expressions-empty-title">We couldn't find any expressions.</p>
+      <p class="expressions-empty-hint">Check back later.</p>
     </div>
   }
 </div>

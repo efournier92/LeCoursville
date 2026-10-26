@@ -44,7 +44,7 @@ describe('ChatComponent', () => {
 
     const empty = fixture.nativeElement.querySelector('.chat-empty');
     expect(empty).not.toBeNull();
-    expect(empty.textContent).toContain('No messages yet');
+    expect(empty.textContent).toContain("We couldn't find any messages.");
   });
 
   it('renders a retryable load error', () => {

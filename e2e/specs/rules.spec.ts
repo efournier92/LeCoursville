@@ -4,6 +4,34 @@ import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import { ROLES, del, get, patch, put, signIn, uidForEmail } from '../helpers/rules';
 
 const STORAGE_BUCKET = 'lecoursville-dev.appspot.com';
+const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
+
+async function signUp(email: string): Promise<{ uid: string; token: string }> {
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'E2e-pass-2026', returnSecureToken: true }),
+    },
+  );
+  const body = await res.json();
+  if (!body.localId || !body.idToken) {
+    throw new Error(`signUp failed: ${JSON.stringify(body)}`);
+  }
+  return { uid: body.localId, token: body.idToken };
+}
+
+async function deleteAuthAccount(token: string): Promise<void> {
+  await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:delete?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: token }),
+    },
+  );
+}
 
 function storageUrl(path: string): string {
   return `http://localhost:9199/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}?alt=media`;
@@ -35,6 +63,61 @@ test.describe('rules', () => {
       expect(await readDb<string>(`users/${uid}/name`)).toBe('E2E Renamed');
     } finally {
       await writeDb(`users/${uid}/name`, original);
+    }
+  });
+
+  test('a self write cannot change email, but a same-email refresh is allowed', async () => {
+    const token = await signIn('user');
+    const uid = await uidForEmail(E2E_USERS.user.email);
+    const original = await readDb<Record<string, any>>(`users/${uid}`);
+
+    try {
+      const hijack = await patch(
+        `users/${uid}`,
+        { email: `hijack-${Date.now()}@e2e.local` },
+        token,
+      );
+      expect(hijack.status).not.toBe(200);
+      expect(await readDb<string>(`users/${uid}/email`)).toBe(E2E_USERS.user.email);
+
+      // The client rewrites the whole profile on sign-in, email included.
+      const refresh = await patch(
+        `users/${uid}`,
+        { ...original, dateLastActive: Date.now() },
+        token,
+      );
+      expect(refresh.ok).toBe(true);
+      expect(await readDb<string>(`users/${uid}/email`)).toBe(E2E_USERS.user.email);
+    } finally {
+      await writeDb(`users/${uid}`, original);
+    }
+  });
+
+  test('creation writes and super deletes are still allowed', async () => {
+    const email = `rules-create-${Date.now()}@e2e.local`;
+    const { uid, token } = await signUp(email);
+    const superToken = await signIn('admin');
+
+    try {
+      const created = await put(
+        `users/${uid}`,
+        {
+          id: uid,
+          email,
+          name: 'Rules Create',
+          dateRegistered: Date.now(),
+          dateLastActive: Date.now(),
+        },
+        token,
+      );
+      expect(created.ok).toBe(true);
+      expect(await readDb<string>(`users/${uid}/email`)).toBe(email);
+
+      expect((await del(`users/${uid}`, superToken)).ok).toBe(true);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+    } finally {
+      await deleteDb(`users/${uid}`);
+      await deleteAuthAccount(token);
     }
   });
 

@@ -72,6 +72,8 @@ test.describe('expressions', () => {
     await login(page, 'admin');
     await page.goto('/expressions');
     await page.getByLabel('Filter').fill('zzznope');
-    await expect(page.getByText('Nothing found')).toBeVisible();
+    await expect(
+      page.getByText('We couldn\'t find any expressions matching "zzznope".'),
+    ).toBeVisible();
   });
 });

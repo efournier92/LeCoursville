@@ -7,7 +7,6 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  linkWithPopup,
   GoogleAuthProvider,
   verifyPasswordResetCode,
   confirmPasswordReset,
@@ -124,14 +123,6 @@ export class AuthService {
       }
       return this.redirectToGoogle(provider);
     }
-  }
-
-  async linkGoogle(): Promise<FirebaseUser> {
-    if (!this.firebase.auth.currentUser) {
-      throw new Error("Cannot link Google: no user is signed in.");
-    }
-    const cred = await linkWithPopup(this.firebase.auth.currentUser, new GoogleAuthProvider());
-    return cred.user;
   }
 
   getUser(authData: any): void {

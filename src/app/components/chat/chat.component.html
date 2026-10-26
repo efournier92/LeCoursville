@@ -14,8 +14,8 @@
     @if (!loading && !error && allItems.length === 0) {
       <div class="chat-empty">
         <mat-icon class="chat-empty-icon" aria-hidden="true">forum</mat-icon>
-        <p class="chat-empty-title">No messages yet</p>
-        <p class="chat-empty-hint">Start the conversation — the family's listening.</p>
+        <p class="chat-empty-title">We couldn't find any messages.</p>
+        <p class="chat-empty-hint">Start the conversation.</p>
         <button mat-flat-button color="primary" (click)="onCreate()">
           <mat-icon>add</mat-icon>
           <span>New Message</span>

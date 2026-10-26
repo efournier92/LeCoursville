@@ -132,4 +132,21 @@ test.describe('chat', () => {
     await expect(page.getByText('From the user')).toBeVisible();
     await expect(page.getByText('A message from the regular user.')).toBeVisible();
   });
+
+  test('empty state: no messages shows the visitor copy', async ({ page }) => {
+    const messages = await readDb<Record<string, any>>('messages');
+    try {
+      await openChatAs(page, 'admin');
+      // Warm the route with data first so the nulled node re-emits [] instead
+      // of leaving a cold subscription on the skeleton.
+      await page.goto('/chat');
+      await expect(page.getByText('Welcome to E2E')).toBeVisible();
+      await deleteDb('messages');
+      await expect(page.getByText("We couldn't find any messages.")).toBeVisible();
+      await expect(page.getByText('Start the conversation.')).toBeVisible();
+    } finally {
+      await writeDb('messages', messages);
+      await writeDb('features/chat/enabled', false);
+    }
+  });
 });

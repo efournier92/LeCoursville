@@ -52,8 +52,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
   status: 'loading' | 'error' | 'ready' = 'loading';
   private subscription: Subscription | null = null;
   private familySubscription: Subscription | null = null;
-  private peopleArrived = false;
-  private familiesArrived = false;
+  private peopleLoadedSubscription: Subscription | null = null;
+  private familiesStatusSubscription: Subscription | null = null;
+  private peopleLoaded = false;
+  private familiesStatus: 'loading' | 'ready' | 'error' = 'loading';
   private peopleMap: Map<string, Person> = new Map();
   private familiesByNameMap: Map<string, Family> = new Map();
   private familiesByIdMap: Map<string, Family> = new Map();
@@ -92,6 +94,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.familySubscription?.unsubscribe();
+    this.peopleLoadedSubscription?.unsubscribe();
+    this.familiesStatusSubscription?.unsubscribe();
   }
 
   retry(): void {
@@ -100,54 +104,43 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.subscribeFamilies();
   }
 
-  // The services seed BehaviorSubjects with [], so a synchronous replay of an
-  // empty list is still the seed, not data.
-  // minimalist: a warm route into a genuinely empty dataset waits for the next
-  // fresh emit; expose a loaded$ on the services if that ever matters.
   private subscribePeople(): void {
-    this.peopleArrived = false;
     this.subscription?.unsubscribe();
-    let isSeed = true;
+    this.peopleLoadedSubscription?.unsubscribe();
     this.subscription = this.peopleService.people$.subscribe(
       (people: Person[]) => {
-        const seedEmpty = isSeed && people.length === 0;
-        isSeed = false;
         this.allPeople = people;
         this.peopleMap = new Map(this.allPeople.map(p => [p.id, p]));
         this.applyFilter();
-        if (!seedEmpty) {
-          this.peopleArrived = true;
-          this.updateStatus();
-        }
       },
       () => (this.status = 'error'),
     );
+    this.peopleLoadedSubscription = this.peopleService.peopleLoaded$.subscribe(loaded => {
+      this.peopleLoaded = loaded;
+      this.updateStatus();
+    });
   }
 
   private subscribeFamilies(): void {
-    this.familiesArrived = false;
     this.familySubscription?.unsubscribe();
-    let isSeed = true;
-    this.familySubscription = this.familyService.families$.subscribe(
-      (families: Family[]) => {
-        const seedEmpty = isSeed && families.length === 0;
-        isSeed = false;
-        this.familiesByNameMap = new Map(families.map(f => [f.name.toLowerCase(), f]));
-        this.familiesByIdMap = new Map(families.map(f => [f.id, f]));
-        this.applyFilter();
-        if (!seedEmpty) {
-          this.familiesArrived = true;
-          this.updateStatus();
-        }
-      },
-      () => (this.status = 'error'),
-    );
+    this.familiesStatusSubscription?.unsubscribe();
+    this.familySubscription = this.familyService.families$.subscribe((families: Family[]) => {
+      this.familiesByNameMap = new Map(families.map(f => [f.name.toLowerCase(), f]));
+      this.familiesByIdMap = new Map(families.map(f => [f.id, f]));
+      this.applyFilter();
+    });
+    this.familiesStatusSubscription = this.familyService.familiesStatus$.subscribe(status => {
+      this.familiesStatus = status;
+      this.updateStatus();
+    });
   }
 
   private updateStatus(): void {
-    if (this.peopleArrived && this.familiesArrived) {
-      this.status = 'ready';
+    if (this.familiesStatus === 'error') {
+      this.status = 'error';
+      return;
     }
+    this.status = this.familiesStatus === 'ready' && this.peopleLoaded ? 'ready' : 'loading';
   }
 
   onFilterChange(query: string): void {

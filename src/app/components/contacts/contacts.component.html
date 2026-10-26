@@ -85,13 +85,14 @@
   @if (contacts.length === 0 && (searchTerm || selectedFamily) && searchTerm) {
     <app-no-results-message
       [searchTerm]="searchTerm"
+      noun="contacts"
     ></app-no-results-message>
   }
 
   @if (status === 'ready' && contacts.length === 0 && !searchTerm && !selectedFamily) {
     <app-no-results-message
-      title="No contacts yet"
-      hint="Contact info will show up here once it's added."
+      title="We couldn't find any contacts."
+      hint="Check back later."
     ></app-no-results-message>
   }
 </div>

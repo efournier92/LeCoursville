@@ -46,7 +46,7 @@ describe('AuthComponent', () => {
 
     it('maps account-exists-with-different-credential', () => {
       expect(map('auth/account-exists-with-different-credential')).toBe(
-        'An account already exists for this email. Sign in with your email and password, then connect Google from your account page.'
+        'An account already exists for this email. Sign in with your email and password.'
       );
     });
 
@@ -108,7 +108,7 @@ describe('AuthComponent redirect errors', () => {
   it('maps a redirect error onto component.error', () => {
     redirectError.next('auth/account-exists-with-different-credential');
     expect(component.error).toBe(
-      'An account already exists for this email. Sign in with your email and password, then connect Google from your account page.'
+      'An account already exists for this email. Sign in with your email and password.'
     );
   });
 });

@@ -55,6 +55,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
   csvPage = 1;
 
   private familiesSubscription?: Subscription;
+  private familiesStatusSubscription?: Subscription;
 
   constructor(
     private familyService: FamilyService,
@@ -67,6 +68,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.familiesSubscription?.unsubscribe();
+    this.familiesStatusSubscription?.unsubscribe();
   }
 
   // PAGE STATE
@@ -126,16 +128,13 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
   private loadFamilies(): void {
     this.familiesSubscription?.unsubscribe();
-    this.state = 'loading';
-    this.familiesSubscription = this.familyService.families$.subscribe({
-      next: (families: Family[]) => {
-        this.families = families || [];
-        this.familyPage = Math.min(this.familyPage, this.familyPageData.pageCount);
-        this.state = 'ready';
-      },
-      error: () => {
-        this.state = 'error';
-      },
+    this.familiesStatusSubscription?.unsubscribe();
+    this.familiesSubscription = this.familyService.families$.subscribe((families: Family[]) => {
+      this.families = families || [];
+      this.familyPage = Math.min(this.familyPage, this.familyPageData.pageCount);
+    });
+    this.familiesStatusSubscription = this.familyService.familiesStatus$?.subscribe((status) => {
+      this.state = status;
     });
   }
 

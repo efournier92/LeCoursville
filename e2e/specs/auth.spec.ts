@@ -115,12 +115,18 @@ test.describe('auth', () => {
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   });
 
-  test('signed-in email/password user sees Connect Google on the account page', async ({ page }) => {
+  test('signed-in email/password user sees their profile on the account page', async ({ page }) => {
     await login(page, 'user');
     await page.getByRole('button', { name: 'Account' }).click();
     await expect(page).toHaveURL('/');
-    await expect(page.getByTestId('account-connect-google')).toBeVisible();
-    await expect(page.getByTestId('account-connect-google')).toContainText('Connect Google');
+    await expect(page.locator('.account-name')).toHaveText('Regular User');
+    await expect(page.locator('.account-email')).toHaveText(E2E_USERS.user.email);
+    await expect(page.getByRole('button', { name: 'Edit profile' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Edit profile' }).click();
+    await expect(page.locator('.user-edit-display-field').filter({ hasText: 'Email' }))
+      .toContainText(E2E_USERS.user.email);
+    await expect(page.locator('input[type="email"]')).toHaveCount(0);
   });
 
   test('new account: membership is server-stamped and the client cannot write roles', async () => {

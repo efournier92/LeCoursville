@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { FamilyService } from './family.service';
 import { Family } from 'src/app/models/family';
 import { RtdbService } from './rtdb.service';
@@ -47,6 +47,27 @@ describe('FamilyService', () => {
 
   it('loads families on construction', async () => {
     expect((await firstValueFrom(service.families$)).map(f => f.id)).toEqual(['f1']);
+  });
+
+  it('reports ready after the families read resolves', async () => {
+    expect(await firstValueFrom(service.familiesStatus$)).toBe('ready');
+  });
+
+  it('reports error when the families read fails', async () => {
+    const failingRtdb = jasmine.createSpyObj('RtdbService', ['list']);
+    failingRtdb.list.and.returnValue({ valueChanges: () => throwError(() => new Error('permission_denied')) });
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        FamilyService,
+        { provide: RtdbService, useValue: failingRtdb },
+      ],
+    });
+
+    const failingService = TestBed.inject(FamilyService);
+
+    expect(await firstValueFrom(failingService.familiesStatus$)).toBe('error');
+    expect(failingRtdb.list).toHaveBeenCalledTimes(1);
   });
 
   it('saves and updates a family by id', async () => {

@@ -6,11 +6,7 @@
     <p class="no-results-title">{{ title }}</p>
     @if (searchTerm) {
       <p class="no-results-hint">
-        @if (noun) {
-          No {{ noun }} match “{{ searchTerm }}”.
-        } @else {
-          No one matches “{{ searchTerm }}”. Try a first name, a last name, or a family.
-        }
+        We couldn't find any {{ noun }} matching "{{ searchTerm }}".
       </p>
     } @else {
       <p class="no-results-hint">{{ hint }}</p>

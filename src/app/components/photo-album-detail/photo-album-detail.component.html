@@ -65,8 +65,8 @@
     }
     @if (getFilteredPhotos().length === 0 && !searchTerm) {
       <app-no-results-message
-        title="No photos yet"
-        hint="Photos added to this album will appear here."
+        title="We couldn't find any photos in this album."
+        hint="Check back later."
         [isCentered]="true"
       ></app-no-results-message>
     }
