@@ -21,8 +21,77 @@ test.describe('public upload', () => {
     await expect(page.getByText('Click To Select Files')).toBeVisible();
   });
 
+  test('layout: the whole flow is one white card on the page ground', async ({ page }) => {
+    await page.goto('/upload');
+    const card = page.locator('.upload-container.surface-card');
+    await expect(card).toBeVisible();
+
+    const tokens = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const probe = document.createElement('span');
+      document.body.append(probe);
+      const color = (token: string): string => {
+        probe.style.color = root.getPropertyValue(token).trim();
+        return getComputedStyle(probe).color;
+      };
+      const radius = (token: string): string => {
+        probe.style.borderRadius = root.getPropertyValue(token).trim();
+        return getComputedStyle(probe).borderRadius;
+      };
+      const colors = {
+        surface: color('--color-surface'),
+        muted: color('--color-surface-muted'),
+        border: color('--color-border'),
+        brandPrimary: color('--color-brand-primary'),
+      };
+      const radiusCard = radius('--radius-card');
+      probe.remove();
+      return { ...colors, radiusCard };
+    });
+
+    await expect(card).toHaveCSS('background-color', tokens.surface);
+    await expect(card).toHaveCSS('border-top-width', '1px');
+    await expect(card).toHaveCSS('border-top-style', 'solid');
+    await expect(card).toHaveCSS('border-top-color', tokens.border);
+    await expect(card).toHaveCSS('border-radius', tokens.radiusCard);
+    await expect(card).toHaveCSS('max-width', '680px');
+    const box = await card.boundingBox();
+    expect(box?.width).toBeLessThanOrEqual(680);
+
+    const dropZone = card.locator('.drop-zone');
+    await expect(dropZone).toHaveCSS('background-color', tokens.surface);
+    await dropZone.dispatchEvent('dragover');
+    await expect(dropZone).toHaveClass(/dragging/);
+    await expect(dropZone).toHaveCSS('background-color', tokens.muted);
+    await expect(dropZone).toHaveCSS('border-top-color', tokens.brandPrimary);
+    await dropZone.dispatchEvent('dragleave');
+    await expect(dropZone).not.toHaveClass(/dragging/);
+    await expect(dropZone).toHaveCSS('background-color', tokens.surface);
+    expect(tokens.muted).not.toBe(tokens.surface);
+
+    // The error state renders inside the same sheet, not beside or above it.
+    await page.route('**/createUserUpload', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { status: 'INTERNAL', message: 'forced failure' } }),
+      }),
+    );
+    await page.getByLabel('Event Name').fill('E2E Forced Failure');
+    await page.getByTestId('upload-file-input').setInputFiles({
+      name: 'fails.png',
+      mimeType: 'image/png',
+      buffer: TINY_PNG,
+    });
+    await page.getByRole('button', { name: 'Upload All' }).click();
+    await expect(card.locator('.error-message')).toBeVisible();
+    await expect(card.getByRole('heading', { name: 'Upload Failed' })).toBeVisible();
+    await expect(card).toHaveCSS('background-color', tokens.surface);
+  });
+
   test('happy path: upload creates a pending record visible to admin', async ({ page }) => {
     await page.goto('/upload');
+    const card = page.locator('.upload-container.surface-card');
     await page.getByLabel('Event Name').fill('E2E Reunion Upload');
     await page.getByTestId('upload-file-input').setInputFiles({
       name: 'family-photo.png',
@@ -31,7 +100,8 @@ test.describe('public upload', () => {
     });
     await expect(page.getByText('1 File Selected')).toBeVisible();
     await page.getByRole('button', { name: 'Upload All' }).click();
-    await expect(page.getByText('Thanks For Sharing!')).toBeVisible({ timeout: 30000 });
+    // The complete state renders inside the same card sheet.
+    await expect(card.getByText('Thanks For Sharing!')).toBeVisible({ timeout: 30000 });
 
     // Admin sees the new pending upload in the review queue.
     await login(page, 'admin');

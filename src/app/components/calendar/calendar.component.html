@@ -75,8 +75,8 @@
     }
     @if (status === 'empty') {
       <div class="calendar-empty">
-        <p class="calendar-empty-title">No events yet</p>
-        <p class="calendar-empty-hint">Birthdays and anniversaries will appear here once people are added.</p>
+        <p class="calendar-empty-title">We couldn't find any events.</p>
+        <p class="calendar-empty-hint">Check back later.</p>
       </div>
     } @else {
       <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>

@@ -79,11 +79,11 @@
 }
 
 .audio-player-toggle {
-  background: var(--color-brand-primary);
+  background: var(--color-control-strong);
   color: var(--color-surface);
 
   &:hover {
-    background: var(--color-brand-primary-hover);
+    background: var(--color-control-strong-hover);
   }
 }
 
@@ -96,12 +96,12 @@
 .audio-player-seek {
   flex: 1;
   min-width: 0;
-  accent-color: var(--color-brand-primary);
+  accent-color: var(--color-ink-2);
 }
 
 .audio-player-volume {
   width: 72px;
-  accent-color: var(--color-brand-primary);
+  accent-color: var(--color-ink-2);
 }
 
 .audio-player-tracklist {
@@ -140,7 +140,7 @@
     background: var(--color-surface-muted);
 
     mat-icon {
-      color: var(--color-brand-primary);
+      color: var(--color-ink);
     }
   }
 }

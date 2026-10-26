@@ -1,7 +1,24 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { expectNoHorizontalOverflow } from '../helpers/overflow';
 
 test.describe('calendar', () => {
+  test('top bar does not overflow horizontally at 900px and 768px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [900, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/calendar');
+        // The month grid is an intentional horizontal scroller, so only the
+        // toolbar is asserted here.
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('current month shows the seeded birthdays and anniversary', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
@@ -100,9 +117,22 @@ test.describe('calendar', () => {
 
     const navRow = page.locator('.calendar-nav-row');
     await expect(navRow).toHaveCSS('margin-top', '24px');
+    await expect(navRow).toHaveCSS('margin-bottom', '24px');
+    const desktopMargins = await navRow.evaluate((el) => {
+      const styles = getComputedStyle(el);
+      return { top: parseFloat(styles.marginTop), bottom: parseFloat(styles.marginBottom) };
+    });
+    expect(desktopMargins.top).toBe(desktopMargins.bottom);
 
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/calendar');
     await expect(navRow).toHaveCSS('margin-top', '16px');
+    await expect(navRow).toHaveCSS('margin-bottom', '16px');
+    const mobileMargins = await navRow.evaluate((el) => {
+      const styles = getComputedStyle(el);
+      return { top: parseFloat(styles.marginTop), bottom: parseFloat(styles.marginBottom) };
+    });
+    expect(mobileMargins.top).toBe(mobileMargins.bottom);
   });
 
   test('print dialog uses the shared scale and the primary action treatment', async ({ page }) => {
