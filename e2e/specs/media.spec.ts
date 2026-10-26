@@ -556,6 +556,68 @@ test.describe('media', () => {
     // onSeek wiring is owned by the unit spec; this e2e owns focus and ARIA.
   });
 
+  test('audio: transport chrome uses the neutral control tokens', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await page.getByText('E2E Audio').first().click();
+
+    const toggle = page.locator('.audio-player-toggle');
+    const seek = page.getByLabel('Seek');
+    await expect(toggle).toBeVisible();
+    await expect(seek).toBeVisible();
+
+    const { controlStrong, brandPrimary } = await page.evaluate(() => {
+      const resolve = (token: string): string => {
+        const probe = document.createElement('span');
+        probe.style.color = getComputedStyle(document.documentElement)
+          .getPropertyValue(token)
+          .trim();
+        document.body.append(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      };
+      return {
+        controlStrong: resolve('--color-control-strong'),
+        brandPrimary: resolve('--color-brand-primary'),
+      };
+    });
+
+    await expect(toggle).toHaveCSS('background-color', controlStrong);
+    await expect(seek).not.toHaveCSS('accent-color', brandPrimary);
+  });
+
+  test('resume control keeps the accent colours, never white on white', async ({ page }) => {
+    await page.addInitScript(() => {
+      sessionStorage.setItem(
+        'mediaUploadBatch:e2e-resume-visual',
+        JSON.stringify({
+          batchId: 'e2e-resume-visual',
+          kind: 'video',
+          mode: 'create',
+          storageName: 'e2e-resume-visual',
+          folderName: '',
+          createdAt: Date.now(),
+        }),
+      );
+    });
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+
+    const resume = page.getByRole('button', { name: 'Resume upload' });
+    await expect(resume).toBeVisible();
+
+    const color = await resume.evaluate((el) => getComputedStyle(el).color);
+    expect(color).not.toBe('rgb(255, 255, 255)');
+
+    const cardBackground = await page
+      .locator('app-admin-media-upload-video .admin-surface')
+      .first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    const buttonBackground = await resume.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(buttonBackground).not.toBe(cardBackground);
+  });
+
   test('video: player shell (drive iframe) renders; playback not asserted', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');

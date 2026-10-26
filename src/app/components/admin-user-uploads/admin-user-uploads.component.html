@@ -69,7 +69,7 @@
           </thead>
           <tbody>
             @for (upload of pageData.items; track upload.id) {
-              <tr>
+              <tr [class.row-decided]="upload.status !== 'pending'">
                 <td data-label="Preview">
                   <div class="upload-thumbnail">
                     @if (upload.fileType.startsWith('image/')) {
@@ -101,10 +101,12 @@
                 <td data-label="">
                   <div class="upload-actions">
                     <button mat-icon-button class="preview-btn" (click)="onPreview(upload)" matTooltip="Preview"
+                      data-label="Preview"
                       [attr.aria-label]="'Preview ' + upload.fileName">
                       <mat-icon>visibility</mat-icon>
                     </button>
                     <button mat-icon-button class="approve-btn" (click)="onApprove(upload)"
+                      data-label="Approve"
                       [disabled]="isProcessing(upload.id) || upload.status !== 'pending'"
                       [attr.aria-label]="'Approve ' + upload.fileName">
                       @if (!isProcessing(upload.id)) {
@@ -115,6 +117,7 @@
                       }
                     </button>
                     <button mat-icon-button class="reject-btn" (click)="onReject(upload)"
+                      data-label="Reject"
                       [disabled]="isProcessing(upload.id)"
                       [attr.aria-label]="'Reject ' + upload.fileName">
                       @if (!isProcessing(upload.id)) {

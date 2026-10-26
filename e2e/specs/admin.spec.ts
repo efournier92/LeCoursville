@@ -2,10 +2,27 @@ import { test, expect } from '../helpers/fixture';
 import { login, E2E_USERS } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
+import { expectNoHorizontalOverflow } from '../helpers/overflow';
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin', () => {
+  test('top bars and filter bar do not overflow at 900px and 768px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [900, 768]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/admin/users');
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        await expectNoHorizontalOverflow(page.locator('.admin-filter-bar'));
+        await expectNoHorizontalOverflow(page.locator('mat-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('super admin sees no Admin link in the toolbar on desktop or mobile', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
@@ -139,8 +156,8 @@ test.describe('admin', () => {
       const uploadsBadge = nav.getByTestId('admin-nav-badge-uploads');
       const recoveryBadge = nav.getByTestId('admin-nav-badge-recovery');
       await expect(uploadsBadge).toBeVisible();
-      await expect(uploadsBadge.locator('[aria-hidden="true"]')).toHaveText('1');
-      await expect(uploadsBadge).toContainText('1 pending');
+      await expect(uploadsBadge.locator('[aria-hidden="true"]')).toHaveText('2');
+      await expect(uploadsBadge).toContainText('2 pending');
       await expect(recoveryBadge).toBeVisible();
       await expect(recoveryBadge).toContainText('1 open');
 
@@ -154,7 +171,8 @@ test.describe('admin', () => {
 
       await deleteDb(`userUploads/${uploadKey}`);
       await deleteDb(`recoveryRequests/${recoveryKey}`);
-      await expect(uploadsBadge).toHaveCount(0);
+      // The seeded pending upload keeps the uploads badge at one.
+      await expect(uploadsBadge).toContainText('1 pending');
       await expect(recoveryBadge).toHaveCount(0);
     } finally {
       await deleteDb(`userUploads/${uploadKey}`);

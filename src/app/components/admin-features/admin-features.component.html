@@ -13,24 +13,25 @@
   <p class="feature-audit-notice" role="status" data-testid="feature-audit-notice">{{ auditNotice }}</p>
 }
 
-<mat-card class="admin-surface promoted-route-card">
-  <mat-card-header>
-    <mat-card-title class="admin-card-title">Promoted Route</mat-card-title>
-    <mat-card-subtitle>The page users see by default after signing in</mat-card-subtitle>
-  </mat-card-header>
-
+<mat-card class="admin-surface">
   <mat-card-content>
-    <mat-form-field class="w-100 promoted-route-input">
-      <mat-label>Default Landing Page</mat-label>
-      <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
-        <mat-option value="">-- Select --</mat-option>
-        @for (feature of featureOptions; track feature) {
-          <mat-option [value]="feature.route">
-            {{ feature.label }} ({{ feature.route }})
-          </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <div class="promoted-route-row">
+      <div class="promoted-route-copy">
+        <h2 class="admin-card-title">Promoted Route</h2>
+        <p class="promoted-route-support">The page users see by default after signing in</p>
+      </div>
+      <mat-form-field class="promoted-route-input">
+        <mat-label>Default Landing Page</mat-label>
+        <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
+          <mat-option value="">-- Select --</mat-option>
+          @for (feature of featureOptions; track feature) {
+            <mat-option [value]="feature.route">
+              {{ feature.label }} ({{ feature.route }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
     @if (promotedRouteWarning) {
       <p class="promoted-route-warning" role="status" data-testid="promoted-route-warning">
         {{ promotedRouteWarning }}
@@ -61,18 +62,28 @@
           <div class="feature-list">
             @for (feature of group.features; track feature) {
               <div class="feature-row">
+                <span class="feature-icon" aria-hidden="true">
+                  <mat-icon>{{ feature.icon }}</mat-icon>
+                </span>
+                <div class="feature-copy">
+                  <span class="feature-label">{{ feature.label }}</span>
+                  <span class="feature-route">{{ feature.route }}</span>
+                </div>
                 <mat-slide-toggle
                   [id]="'feature-id-' + feature.id"
                   [checked]="isEnabled(feature.id)"
                   (change)="onToggle(feature.id, $event.checked)"
                   [hideIcon]="true"
                   color="primary"
+                  [aria-label]="feature.label"
                   [attr.data-testid]="'feature-toggle-' + feature.id">
-                  <span class="feature-label">{{ feature.label }}</span>
+                  <span class="feature-toggle-label" aria-hidden="true">{{ feature.label }}</span>
                 </mat-slide-toggle>
-                <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
-                  {{ changedLabel(feature.id) }}
-                </span>
+                @if (changedLabel(feature.id)) {
+                  <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
+                    {{ changedLabel(feature.id) }}
+                  </span>
+                }
               </div>
             }
           </div>

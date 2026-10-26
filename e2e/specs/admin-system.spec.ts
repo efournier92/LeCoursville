@@ -2,6 +2,30 @@ import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { deleteDb, readDb, writeDb } from '../helpers/admin-db';
 
+const STORAGE_ORIGIN = 'http://127.0.0.1:9199';
+const STORAGE_BUCKET = 'lecoursville-dev.appspot.com';
+const TINY_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+
+async function putStorageObject(path: string): Promise<void> {
+  const res = await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o?uploadType=media&name=${encodeURIComponent(path)}`,
+    { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: TINY_PNG },
+  );
+  if (!res.ok) {
+    throw new Error(`storage seed ${path} -> HTTP ${res.status}`);
+  }
+}
+
+async function deleteStorageObject(path: string): Promise<void> {
+  await fetch(
+    `${STORAGE_ORIGIN}/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}`,
+    { method: 'DELETE' },
+  ).catch(() => undefined);
+}
+
 test.describe('admin system surfaces', () => {
   test.afterEach(async ({ collector }) => collector.assertClean());
 
@@ -182,7 +206,7 @@ test.describe('admin system surfaces', () => {
 
       await row.getByRole('button', { name: 'Delete Regular User' }).click();
       const dialog = page.getByRole('dialog');
-      await expect(dialog).toContainText('1 pending upload references this member');
+      await expect(dialog).toContainText('2 pending uploads reference this member');
       await expect(dialog).toContainText('Pending uploads stay in the queue after deletion.');
 
       await dialog.getByRole('button', { name: 'Cancel' }).click();
@@ -540,5 +564,112 @@ test.describe('admin system surfaces', () => {
       clientWidth: document.documentElement.clientWidth,
     }));
     expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+  });
+
+  test('uploads: triage actions share one 32px box and tint only actionable rows', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/uploads');
+    await page.getByRole('button', { name: /All \(\d+\)/ }).click();
+
+    const rows = page.locator('.uploads-table tbody tr');
+    await expect(rows).toHaveCount(3);
+    const approved = rows.filter({ hasText: 'fixture.png' });
+    const pending = rows.filter({ hasText: 'pending.png' });
+    await expect(approved).toBeVisible();
+    await expect(pending).toBeVisible();
+
+    const boxes = await approved
+      .locator('.upload-actions .mat-mdc-icon-button')
+      .evaluateAll((els) =>
+        els.map((el) => {
+          const rect = el.getBoundingClientRect();
+          return `${rect.width}x${rect.height}`;
+        }),
+      );
+    expect(boxes).toHaveLength(3);
+    expect(new Set(boxes).size).toBe(1);
+    expect(boxes[0]).toBe('32x32');
+
+    await expect(approved.locator('.approve-btn')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(approved.locator('.approve-btn mat-icon')).toHaveCSS('color', 'rgb(138, 145, 156)');
+
+    await expect(pending.locator('.preview-btn mat-icon')).toHaveCSS('color', 'rgb(91, 100, 112)');
+    await expect(pending.locator('.reject-btn mat-icon')).toHaveCSS('color', 'rgb(179, 38, 30)');
+    await expect(pending.locator('.approve-btn mat-icon')).toHaveCSS('color', 'rgb(45, 90, 39)');
+
+    const approve = pending.locator('.approve-btn');
+    await expect(approve).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await approve.hover();
+    await expect(approve).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  });
+
+  test('uploads at 390px: media rows keep 44px actions and approving the pending row flips its status', async ({ page }) => {
+    const originalPending = await readDb('userUploads/upload-pending');
+    const flagBefore = await readDb('features/enablePhotoAlbums');
+    const photosBefore = (await readDb<Record<string, any>>('photos')) ?? {};
+    await putStorageObject('userUploads/e2e/pending.png');
+    await writeDb('features/enablePhotoAlbums', { enabled: false, updatedAt: Date.now() });
+
+    try {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await login(page, 'admin');
+      await page.goto('/admin/uploads');
+      await page.getByRole('button', { name: /All \(\d+\)/ }).click();
+
+      const rows = page.locator('.uploads-table tbody tr');
+      await expect(rows).toHaveCount(3);
+      await expect(page.locator('.uploads-table thead')).toBeHidden();
+
+      for (const name of ['fixture.png', 'pending.png', 'rejected.png']) {
+        await expect(rows.filter({ hasText: name })).toBeVisible();
+      }
+
+      const thumbnail = rows.filter({ hasText: 'fixture.png' }).locator('.upload-thumbnail');
+      const thumb = await thumbnail.evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return { width: rect.width, height: rect.height, radius: getComputedStyle(el).borderRadius };
+      });
+      expect(thumb.width).toBe(72);
+      expect(thumb.height).toBe(72);
+      expect(thumb.radius).toBe('0px');
+
+      const overflow = await page.locator('.uploads-body').evaluate((el) => ({
+        scrollWidth: el.scrollWidth,
+        clientWidth: el.clientWidth,
+      }));
+      expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+      for (const name of ['fixture.png', 'pending.png', 'rejected.png']) {
+        const row = rows.filter({ hasText: name });
+        for (const label of ['Preview', 'Approve', 'Reject']) {
+          const action = row.getByRole('button', { name: new RegExp(`^${label} `) });
+          await expect(action).toBeVisible();
+          const box = await action.boundingBox();
+          expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+        }
+      }
+
+      const pending = rows.filter({ hasText: 'pending.png' });
+      await pending.getByRole('button', { name: 'Approve pending.png' }).click();
+      await expect(pending.locator('.upload-status')).toHaveText('Approved', { timeout: 15000 });
+      await expect
+        .poll(async () => (await readDb<{ status?: string }>('userUploads/upload-pending'))?.status)
+        .toBe('approved');
+    } finally {
+      await writeDb('userUploads/upload-pending', originalPending);
+      await writeDb('features/enablePhotoAlbums', flagBefore);
+      const photosAfter = (await readDb<Record<string, any>>('photos')) ?? {};
+      for (const [id, photo] of Object.entries(photosAfter)) {
+        if (id in photosBefore) {
+          continue;
+        }
+        const path = (photo as { path?: string })?.path;
+        if (typeof path === 'string') {
+          await deleteStorageObject(path);
+        }
+        await deleteDb(`photos/${id}`);
+      }
+      await deleteStorageObject('userUploads/e2e/pending.png');
+    }
   });
 });

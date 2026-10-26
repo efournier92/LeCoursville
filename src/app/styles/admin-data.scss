@@ -29,6 +29,11 @@
   box-shadow: var(--shadow-card);
 }
 
+// One gap for every stack of admin cards; pages never add their own.
+.admin-surface + .admin-surface {
+  margin-top: 16px;
+}
+
 // Absorbs the five per-page `.action-error` copies.
 .admin-error {
   padding: 12px 16px;
@@ -51,8 +56,10 @@
 .admin-filter-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  height: var(--filter-bar-height);
+  height: auto;
+  min-height: 56px;
   padding: 8px 16px;
   box-sizing: border-box;
   background: var(--color-surface);
@@ -61,10 +68,6 @@
   box-shadow: var(--shadow-card);
 
   @media (max-width: 600px) {
-    height: auto;
-    min-height: 52px;
-    max-height: 96px;
-    flex-wrap: wrap;
     align-content: center;
   }
 }
