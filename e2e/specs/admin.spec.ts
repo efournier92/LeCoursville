@@ -114,6 +114,7 @@ test.describe('admin', () => {
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
       { name: 'Calendars', path: '/admin/calendars' },
+      { name: 'Family Archives', path: '/admin/family-archives' },
       { name: 'Media', path: '/admin/media' },
       { name: 'Photo Albums', path: '/admin/photo-albums' },
       { name: 'Uploads', path: '/admin/uploads' },
@@ -269,8 +270,8 @@ test.describe('admin', () => {
       const nav = page.getByTestId('admin-nav');
       const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
       await expect(nav.getByRole('link', { name: 'Photo Albums', exact: true })).toHaveCount(0);
-      await expect(navItems).toHaveCount(8);
-      for (const name of ['Users', 'Families', 'People', 'Calendars', 'Media', 'Uploads', 'Recovery', 'Features']) {
+      await expect(navItems).toHaveCount(9);
+      for (const name of ['Users', 'Families', 'People', 'Calendars', 'Family Archives', 'Media', 'Uploads', 'Recovery', 'Features']) {
         await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
       }
     } finally {
