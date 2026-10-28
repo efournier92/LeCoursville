@@ -1,5 +1,9 @@
 {
   "rules": {
+    "familyArchive": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
+    },
     "calendarEvents": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
