@@ -1,0 +1,65 @@
+<aside class="family-panel surface-card" data-testid="family-panel">
+  @if (person) {
+    <h2 class="family-panel-name">{{ personName(person) }}</h2>
+    @if (sexLabel(person.sex)) {
+      <p class="family-panel-meta">{{ sexLabel(person.sex) }}</p>
+    }
+    @if (person.birthDate || person.birthPlace) {
+      <p class="family-panel-meta" data-testid="family-panel-birth">
+        Born{{ person.birthDate ? ': ' + person.birthDate : '' }}{{ person.birthPlace ? ' in ' + person.birthPlace : '' }}
+      </p>
+    }
+    @if (person.deathDate || person.deathPlace) {
+      <p class="family-panel-meta" data-testid="family-panel-death">
+        Died{{ person.deathDate ? ': ' + person.deathDate : '' }}{{ person.deathPlace ? ' in ' + person.deathPlace : '' }}
+      </p>
+    }
+    @if (person.burialDate || person.burialPlace) {
+      <p class="family-panel-meta">
+        Buried{{ person.burialDate ? ': ' + person.burialDate : '' }}{{ person.burialPlace ? ' at ' + person.burialPlace : '' }}
+      </p>
+    }
+    @if (person.occupation) {
+      <p class="family-panel-meta">{{ person.occupation }}</p>
+    }
+    @if (person.note) {
+      <p class="family-panel-note" data-testid="family-panel-note">{{ person.note }}</p>
+    }
+    @if (relative(person.fatherId) || relative(person.motherId)) {
+      <h3>Parents</h3>
+      <ul>
+        @if (relative(person.fatherId); as father) {
+          <li><button type="button" class="family-link" (click)="onSelect(father.id)">{{ personName(father) }}</button></li>
+        }
+        @if (relative(person.motherId); as mother) {
+          <li><button type="button" class="family-link" (click)="onSelect(mother.id)">{{ personName(mother) }}</button></li>
+        }
+      </ul>
+    }
+    @if (relatives(person.spouseIds).length > 0) {
+      <h3>Spouses</h3>
+      <ul>
+        @for (spouse of relatives(person.spouseIds); track spouse.id) {
+          <li>
+            <button type="button" class="family-link" (click)="onSelect(spouse.id)">{{ spouse.label }}</button>
+            @for (entry of marriageEntries(person); track entry.spouse) {
+              @if (entry.spouse === spouse.id) {
+                <span class="family-panel-meta"> (m. {{ entry.year }})</span>
+              }
+            }
+          </li>
+        }
+      </ul>
+    }
+    @if (relatives(person.childIds).length > 0) {
+      <h3>Children</h3>
+      <ul>
+        @for (child of relatives(person.childIds); track child.id) {
+          <li><button type="button" class="family-link" (click)="onSelect(child.id)">{{ child.label }}</button></li>
+        }
+      </ul>
+    }
+  } @else {
+    <p class="family-panel-meta">Select a person to see their details.</p>
+  }
+</aside>

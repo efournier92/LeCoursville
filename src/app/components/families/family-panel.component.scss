@@ -1,0 +1,54 @@
+.family-panel {
+  position: sticky;
+  top: calc(var(--header-height) + 16px);
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+
+.family-panel-name {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.family-panel-meta {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: 0.9rem;
+}
+
+.family-panel-note {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+h3 {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-3);
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.family-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-link);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+}

@@ -72,6 +72,13 @@ const routes: Routes =
       canActivate: [AuthGuardService, FeatureFlagGuard],
       data: { featureId: 'people' },
     },
+    // FAMILY ARCHIVES
+    {
+      path: 'families/:familyId',
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'families' },
+      loadChildren: () => import('./components/families/families.module').then(m => m.FamiliesModule),
+    },
     {
       path: 'contacts/:id',
       component: ContactsComponent,
