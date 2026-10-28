@@ -73,6 +73,14 @@
             </mat-menu>
           }
         </div>
+        <button
+          mat-icon-button
+          data-testid="theme-toggle"
+          [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          (click)="onThemeToggle()"
+          >
+          <mat-icon [attr.data-testid]="'theme-state-' + (theme$ | async)">{{ (theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
       }
     </div>
   </mat-toolbar>

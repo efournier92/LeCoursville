@@ -99,6 +99,12 @@ html {
   --cal-tag-bg: #fafbfc;
   --cal-tag-ink: var(--color-ink);
 
+  // Cross-theme constants: identical in light and dark, tokenized so the
+  // sweep grep stays clean.
+  --color-on-brand: #ffffff;      // text/icons on saturated brand or accent fills
+  --color-media-backdrop: #000000; // slideshow / video letterbox surround
+  --color-scrim: rgba(0, 0, 0, 0.65); // gradient scrim over photo captions
+
   // Shape
   --radius-card: 16px;
   --radius-control: 999px;
@@ -107,6 +113,46 @@ html {
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.07);
   --shadow-pop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.12);
   --shadow-frost: 0 8px 32px rgba(15, 23, 42, 0.07);
+}
+
+// Dark re-derivation of every color token; typography/shape/shadow tokens
+// are inherited from the light block above and stay unchanged.
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-app-bg: #111418;
+  --color-surface: #1B1F24;
+  --color-surface-muted: #262B31;
+  --color-ink: #E6E9ED;
+  --color-control-strong: #E6E9ED;
+  --color-control-strong-hover: #F2F4F7;
+  --color-ink-2: #A8B0BA;
+  --color-ink-3: #7D8590;
+  --color-brand-primary: #7FB77E;
+  --color-brand-primary-hover: #8FC290;
+  --color-brand-primary-dark: #6BA76B;
+  --color-brand-success: #7FB77E;
+  --color-brand-success-dark: #6BA76B;
+  --color-accent: #C99B55;
+  --color-accent-strong: #D4A768;
+  --color-error: #F2B8B5;
+  --color-border: #333940;
+  --color-link: #9CC79B;
+
+  --role-member-bg: #2E3438;
+  --role-member-fg: #C5CDD3;
+  --role-admin-bg: #2A2F4A;
+  --role-admin-fg: #BAC3F5;
+  --role-super-bg: #3A2A40;
+  --role-super-fg: #D9B0E8;
+
+  --cal-birth-accent: #7FAEDC;
+  --cal-anniv-accent: #E58585;
+  --cal-tag-bg: #22272D;
+
+  --color-on-brand: #ffffff;
+  --color-media-backdrop: #000000;
+  --color-scrim: rgba(0, 0, 0, 0.65);
 }
 
 // Chrome metrics shared by admin layouts.
@@ -133,23 +179,40 @@ $theme: mat.define-theme(
   )
 );
 
+$dark-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$green-palette,
+      tertiary: mat.$orange-palette,
+    ),
+    typography: (
+      plain-family: var(--font-body),
+      brand-family: var(--font-display),
+    ),
+    density: (scale: 0),
+  )
+);
+
 html {
   @include mat.all-component-themes($theme);
   // M3 drops the color="primary" palette variants for mat-toolbar, so the top
   // nav rendered as plain surface. Restore brand green via toolbar tokens.
+  // The green toolbar is identical across themes, so its text token is white
+  // in both blocks.
   @include mat.toolbar-overrides((
     container-background-color: var(--color-brand-primary),
-    container-text-color: #ffffff,
+    container-text-color: var(--color-on-brand),
   ));
   // M3 derives its neutral "surface" tones from the primary palette, which
   // tints every overlay (select dropdowns, menus, datepicker, dialogs) with
-  // the green hue. Pin overlay surfaces to clean white.
-  @include mat.select-overrides((panel-background-color: #ffffff));
-  @include mat.menu-overrides((container-color: #ffffff));
-  @include mat.datepicker-overrides((calendar-container-background-color: #ffffff));
-  @include mat.autocomplete-overrides((background-color: #ffffff));
+  // the green hue. Pin overlay surfaces to the active theme's surface.
+  @include mat.select-overrides((panel-background-color: var(--color-surface)));
+  @include mat.menu-overrides((container-color: var(--color-surface)));
+  @include mat.datepicker-overrides((calendar-container-background-color: var(--color-surface)));
+  @include mat.autocomplete-overrides((background-color: var(--color-surface)));
   @include mat.dialog-overrides((
-    container-color: #ffffff,
+    container-color: var(--color-surface),
     container-shape: var(--radius-card),
   ));
   // M3 fields default to a 4px corner — square against the 14–16px radii of
@@ -158,6 +221,12 @@ html {
     filled-container-shape: var(--radius-input),
     outlined-container-shape: var(--radius-input),
   ));
+}
+
+// Colors-only re-emission under the dark selector: all-component-colors
+// swaps every component's palette without duplicating typography/density.
+html[data-theme="dark"] {
+  @include mat.all-component-colors($dark-theme);
 }
 
 // Material injects its dialog styles after this sheet, so the shared dialog
@@ -200,7 +269,7 @@ html {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--color-on-brand) 22%, transparent);
   animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
 }
 
@@ -208,7 +277,7 @@ html {
   width: 84px;
   height: 12px;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--color-on-brand) 22%, transparent);
   animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
 }
 
@@ -217,7 +286,7 @@ html {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--color-on-brand) 22%, transparent);
   animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
 }
 
@@ -228,7 +297,7 @@ html {
 mat-toolbar {
   .mat-mdc-button,
   .mat-mdc-icon-button {
-    color: #ffffff;
+    color: var(--color-on-brand);
   }
 }
 
@@ -265,7 +334,7 @@ body {
 // Root stays at the browser standard (16px): everything rem-based (Material
 // M3, Bootstrap, our components) renders at default scale.
 ::selection {
-  background: rgba(45, 90, 39, 0.22);
+  background: color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
 }
 
 /* Modern focus ring for keyboard users. !important: M3 ships outline:none on
@@ -323,13 +392,13 @@ select:-webkit-autofill:focus {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.18);
+  background: color-mix(in srgb, var(--color-ink) 18%, transparent);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.3);
+  background: color-mix(in srgb, var(--color-ink) 30%, transparent);
   background-clip: content-box;
 }
 
@@ -505,7 +574,7 @@ app-calendar-cell {
 /* Today = the honey marker: warm accent instead of the stock blue dot */
 .cal-month-view .cal-day-cell.cal-today .cal-day-number {
   background: var(--color-accent-strong);
-  color: #fff;
+  color: var(--color-on-brand);
   border-radius: 50%;
   width: 30px;
   height: 30px;

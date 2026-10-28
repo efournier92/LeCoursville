@@ -4,6 +4,12 @@ export interface AuthRoles {
   super?: boolean;
 }
 
+export type Theme = 'light' | 'dark';
+
+export interface UserPrefs {
+  theme?: Theme;
+}
+
 export class User {
   id: string;
   name: string;
@@ -11,6 +17,7 @@ export class User {
   roles: AuthRoles;
   dateRegistered: Date;
   dateLastActive: Date;
+  prefs?: UserPrefs;
 
   constructor(authData: any, existingUser: User) {
     const authUser = authData?.authResult?.user || authData;

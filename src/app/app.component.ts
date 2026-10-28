@@ -4,6 +4,7 @@ import { VersionService } from './services/version.service';
 import { ErrorsService } from './errors.service';
 import { User } from './models/user';
 import { RoutingService } from './services/routing.service';
+import { ThemeService } from './services/theme.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -29,7 +30,18 @@ export class AppComponent implements OnInit {
     private versionService: VersionService,
     private errorsService: ErrorsService,
     private routingService: RoutingService,
+    private themeService: ThemeService,
   ) {}
+
+  get theme$() {
+    return this.themeService.theme$;
+  }
+
+  // SUBSCRIPTIONS
+
+  onThemeToggle(): void {
+    this.themeService.toggle();
+  }
 
   // SUBSCRIPTIONS
 
