@@ -1,0 +1,23 @@
+.form-section {
+  margin-top: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.upload-file-row {
+  margin: 4px 0;
+}
+
+.admin-preview {
+  color: var(--color-ink-2);
+  margin: 4px 0;
+}
+
+.admin-success {
+  color: var(--color-brand-success-dark);
+  margin: 4px 0;
+}
+
+.admin-form-buttons {
+  margin-top: 8px;
+}
