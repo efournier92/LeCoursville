@@ -12,11 +12,11 @@
 
 .upload-card-success {
   background: var(--color-brand-primary);
-  color: #fff;
+  color: var(--color-on-brand);
 
   .photo-upload-link,
   .upload-success-message {
-    color: #fff;
+    color: var(--color-on-brand);
   }
 }
 

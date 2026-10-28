@@ -492,10 +492,10 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(15, 23, 42, 0.5);
+    background: color-mix(in srgb, var(--color-ink) 50%, transparent);
 
     mat-icon {
-      color: #fff;
+      color: var(--color-on-brand);
     }
 
     &:hover {

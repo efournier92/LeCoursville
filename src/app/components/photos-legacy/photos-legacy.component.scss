@@ -66,7 +66,7 @@
 
   &.active {
     background: var(--color-brand-primary);
-    color: #fff;
+    color: var(--color-on-brand);
   }
 }
 
@@ -259,7 +259,7 @@ input[type="file"] {
 }
 
 .photos-skeleton-card {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);

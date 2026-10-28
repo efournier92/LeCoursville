@@ -19,7 +19,7 @@
     </div>
     @if (hasChildren(node) && getNodeChildren(node)?.length) {
       <div class="children-container">
-        <div class="generation-bar" [style.background-color]="familyColorHex || '#e0e0e0'"></div>
+        <div class="generation-bar" [style.background-color]="familyColorHex || 'var(--color-surface-muted)'"></div>
         <div class="children-items">
           <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
         </div>

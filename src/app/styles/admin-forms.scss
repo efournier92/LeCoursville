@@ -44,8 +44,8 @@
 // Filled upload stays white; a stroked usage falls back to ink so it stays
 // readable on the card it sits on.
 .admin-form-action-button-upload {
-  color: white;
-  --mat-button-filled-label-text-color: white;
+  color: var(--color-on-brand);
+  --mat-button-filled-label-text-color: var(--color-on-brand);
 
   &.mat-mdc-outlined-button {
     color: var(--color-ink);

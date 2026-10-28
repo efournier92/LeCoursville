@@ -42,7 +42,7 @@
   &.is-selected {
     border-color: var(--color-brand-primary);
     background: var(--color-brand-primary);
-    color: #fff;
+    color: var(--color-on-brand);
   }
 }
 
@@ -53,10 +53,10 @@
 
 .calendar-printer-action-btn {
   --mdc-filled-button-container-color: var(--color-brand-primary);
-  --mdc-filled-button-label-text-color: #fff;
+  --mdc-filled-button-label-text-color: var(--color-on-brand);
   border-radius: var(--radius-control);
   background: var(--color-brand-primary);
-  color: #fff;
+  color: var(--color-on-brand);
   width: auto;
   height: 40px;
   display: flex;
@@ -71,7 +71,7 @@
 
   &:hover {
     background: var(--color-brand-primary-dark);
-    color: #fff;
+    color: var(--color-on-brand);
     border-color: var(--color-brand-primary-dark);
   }
 
