@@ -1,6 +1,54 @@
 import { test, expect } from '../helpers/fixture';
 import { login, logout } from '../helpers/auth';
-import { readDb, deleteDb } from '../helpers/admin-db';
+import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
+
+type Rgb = { r: number; g: number; b: number };
+
+const parseRgb = (value: string): Rgb => {
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return { r: 0, g: 0, b: 0 };
+  const [r, g, b] = match[1].split(',').map((part) => Number.parseFloat(part.trim()));
+  return { r, g, b };
+};
+
+const channel = (value: number) => {
+  const scaled = value / 255;
+  return scaled <= 0.03928 ? scaled / 12.92 : ((scaled + 0.055) / 1.055) ** 2.4;
+};
+
+const luminance = ({ r, g, b }: Rgb) =>
+  0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+
+const contrast = (fg: string, bg: string) => {
+  const a = luminance(parseRgb(fg));
+  const b = luminance(parseRgb(bg));
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+};
+
+/** Text color plus the first opaque background up the ancestor chain. */
+async function surfaceColors(locator: import('@playwright/test').Locator) {
+  return locator.evaluate((el) => {
+    const opaque = (value: string) => {
+      const match = value.match(/rgba?\(([^)]+)\)/);
+      if (!match) return false;
+      const parts = match[1].split(',').map((part) => Number.parseFloat(part.trim()));
+      return (parts[3] ?? 1) > 0;
+    };
+    const text = getComputedStyle(el).color;
+    let node: Element | null = el;
+    while (node && !opaque(getComputedStyle(node).backgroundColor)) {
+      node = node.parentElement;
+    }
+    const background = node ? getComputedStyle(node).backgroundColor : 'rgb(255, 255, 255)';
+    return { text, background };
+  });
+}
+
+async function expectReadable(locator: import('@playwright/test').Locator) {
+  await expect(locator).toBeVisible();
+  const { text, background } = await surfaceColors(locator);
+  expect(contrast(text, background), `${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+}
 
 /**
  * Dark mode: per-user theme toggle stored at users/{uid}/prefs/theme.
@@ -8,12 +56,18 @@ import { readDb, deleteDb } from '../helpers/admin-db';
  */
 
 const USER_EMAIL = 'user@e2e.local';
+const OTHER_EMAIL = 'other@e2e.local';
 let uid: string | null = null;
+let otherUid: string | null = null;
+let otherRoles: unknown = { user: true };
 
 test.beforeAll(async () => {
-  const users = (await readDb<Record<string, { email?: string }>>('users')) ?? {};
+  const users = (await readDb<Record<string, { email?: string; roles?: unknown }>>('users')) ?? {};
   uid = Object.keys(users).find((id) => users[id]?.email === USER_EMAIL) ?? null;
+  otherUid = Object.keys(users).find((id) => users[id]?.email === OTHER_EMAIL) ?? null;
+  otherRoles = users[otherUid ?? '']?.roles ?? { user: true };
   expect(uid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
+  expect(otherUid, 'seeded other@e2e.local must resolve to a uid').toBeTruthy();
 });
 
 test.afterEach(async () => {
@@ -96,4 +150,77 @@ test('no console errors during theme flows', async ({ page, collector }) => {
     collector.errors.filter((e) => !e.includes('[Emulator]')),
     'no console/page errors beyond the allowlist',
   ).toEqual([]);
+});
+
+test('family explorer removal footer stays readable in both themes', async ({ page }) => {
+  await login(page, 'user');
+  await page.goto('/family-explorer/ferland');
+  await expect(page.getByTestId('family-explorer-page')).toBeVisible();
+  const link = page.locator('.explorer-footer .removal-link');
+  await expectReadable(link);
+  const light = await surfaceColors(link);
+
+  await page.goto('/media/explorer');
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.goto('/family-explorer/ferland');
+  await expect(page.getByTestId('family-explorer-page')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expectReadable(link);
+  const dark = await surfaceColors(link);
+  expect(dark.background, 'footer surface follows the theme').not.toBe(light.background);
+});
+
+test('pending banner stays readable in both themes', async ({ page }) => {
+  await writeDb(`users/${otherUid}/roles`, {});
+  try {
+    await login(page, 'other');
+    const banner = page.locator('.pending-banner');
+    await expectReadable(banner);
+    const light = await surfaceColors(banner);
+
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expectReadable(banner);
+    const dark = await surfaceColors(banner);
+    expect(dark.background, 'banner surface follows the theme').not.toBe(light.background);
+  } finally {
+    await writeDb(`users/${otherUid}/roles`, otherRoles);
+  }
+});
+
+test('admin family explorer stays readable in both themes', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/admin/family-explorer');
+  const row = page.getByTestId('archive-row-ferland');
+  await expect(row).toBeVisible();
+  const cell = row.locator('td').first();
+  await expectReadable(cell);
+  const light = await surfaceColors(cell);
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(row).toBeVisible();
+  await expectReadable(cell);
+  const dark = await surfaceColors(cell);
+  expect(dark.background, 'table surface follows the theme').not.toBe(light.background);
+});
+
+test('person tree renders theme-aware rows in both themes', async ({ page }) => {
+  await login(page, 'user');
+  await page.goto('/people');
+  const bar = page.locator('.generation-bar').first();
+  const name = page.locator('.person-name').first();
+  await expect(bar).toBeVisible();
+  const lightBar = await bar.evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(lightBar, 'generation tint is opaque').not.toBe('rgba(0, 0, 0, 0)');
+  await expectReadable(name);
+  const light = await surfaceColors(name);
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(bar).toBeVisible();
+  await expectReadable(name);
+  const dark = await surfaceColors(name);
+  expect(dark.background, 'tree surface follows the theme').not.toBe(light.background);
 });

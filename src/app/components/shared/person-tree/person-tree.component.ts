@@ -72,7 +72,7 @@ export class PersonTreeComponent {
 
   getGenerationColor(node: PersonNode): string {
     if (this.colorForNode) return this.colorForNode(node);
-    return this.familyColorHex || '#e0e0e0';
+    return this.familyColorHex || 'var(--color-surface-muted)';
   }
 
   isPersonDeceased(node: PersonNode): boolean {
