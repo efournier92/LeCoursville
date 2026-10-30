@@ -17,3 +17,7 @@ Retired term for Family. It survives only in legacy code, the legacy `clans` dat
 **Page title bar**
 
 The white `app-page-toolbar` at the top of a page, carrying the page heading and page-level actions. Not the green application bar. _Avoid_: header, top nav.
+
+**Theme**
+
+The binary per-user visual mode, light or dark, stored as a string at `users/{uid}/prefs/theme`. Light is the default when nothing is stored; the OS setting is deliberately ignored. _Avoid_: dark mode setting, skin, appearance.

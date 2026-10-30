@@ -4,6 +4,12 @@ export interface AuthRoles {
   super?: boolean;
 }
 
+export type Theme = 'light' | 'dark';
+
+export interface UserPrefs {
+  theme?: Theme;
+}
+
 /** Membership is server-owned; pending users simply lack roles.user. */
 export function isApprovedUser(user: User | null | undefined): boolean {
   return user?.roles?.user === true
@@ -18,6 +24,7 @@ export class User {
   roles: AuthRoles;
   dateRegistered: Date;
   dateLastActive: Date;
+  prefs?: UserPrefs;
 
   constructor(authData: any, existingUser: User) {
     const authUser = authData?.authResult?.user || authData;

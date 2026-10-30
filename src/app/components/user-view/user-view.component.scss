@@ -14,7 +14,7 @@
     var(--color-brand-primary) 0%,
     var(--color-brand-primary-dark) 100%
   );
-  color: #ffffff;
+  color: var(--color-on-brand);
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.02em;

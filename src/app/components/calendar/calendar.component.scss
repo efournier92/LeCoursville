@@ -40,7 +40,7 @@
 .calendar-print-button {
   border-radius: 8px;
   background: var(--color-brand-primary);
-  color: #fff;
+  color: var(--color-on-brand);
   width: auto;
   height: 36px;
   display: flex;
@@ -56,7 +56,7 @@
 
 .calendar-print-button:hover {
   background: var(--color-brand-primary-dark);
-  color: #fff;
+  color: var(--color-on-brand);
   border-color: var(--color-brand-primary-dark);
 }
 
@@ -243,7 +243,7 @@
 
 .calendar-datepicker-cell.is-selected {
   background-color: var(--color-brand-primary);
-  color: #fff;
+  color: var(--color-on-brand);
 }
 
 .calendar-view-component {

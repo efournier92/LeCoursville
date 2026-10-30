@@ -2,7 +2,7 @@
   @if (person) {
     <div class="modal-content">
       <div class="modal-header">
-        <div class="family-color-bar" [style.background-color]="getFamilyForPerson(person.familyId)?.hexColor || '#2D5A27'"></div>
+        <div class="family-color-bar" [style.background-color]="getFamilyForPerson(person.familyId)?.hexColor || 'var(--color-brand-primary)'"></div>
         <div class="name-block">
           <h2>{{ getDisplayName() }}</h2>
           @if (person.name.firstPreferred && person.name.firstPreferred !== person.name.firstGiven) {

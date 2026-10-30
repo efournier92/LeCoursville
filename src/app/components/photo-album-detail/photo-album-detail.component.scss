@@ -35,8 +35,8 @@
   flex-direction: column;
   gap: 2px;
   padding: 24px 10px 8px;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.65));
-  color: #fff;
+  background: linear-gradient(180deg, transparent, var(--color-scrim));
+  color: var(--color-on-brand);
   font-size: 0.8rem;
   opacity: 0;
   transition: opacity 200ms ease;
