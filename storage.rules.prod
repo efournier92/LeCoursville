@@ -15,17 +15,17 @@ service firebase.storage {
       allow get, list, delete: if signedIn();
     }
 
-    // Published photos and video thumbnails are served through tokenised download URLs, and listing stays behind auth.
+    // Published photos and video thumbnails are served through tokenised download URLs; pending users may only view them.
     match /photos/{allPaths=**} {
       allow get: if true;
       allow list: if signedIn();
-      allow create, delete: if signedIn();
+      allow create, delete: if request.auth != null && request.auth.token.approved == true;
     }
 
     match /videoScreenshots/{allPaths=**} {
       allow get: if true;
       allow list: if signedIn();
-      allow create, delete: if signedIn();
+      allow create, delete: if request.auth != null && request.auth.token.approved == true;
     }
 
     match /{allPaths=**} {

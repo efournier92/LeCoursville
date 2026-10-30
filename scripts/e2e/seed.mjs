@@ -39,7 +39,7 @@ const USERS = [
 
 const FEATURE_IDS = [
   'people', 'contacts', 'calendar', 'music', 'videos',
-  'photos', 'enablePhotoAlbums', 'expressions', 'chat', 'families',
+  'photos', 'enablePhotoAlbums', 'expressions', 'chat',
 ];
 
 async function ensureUser(email, name) {
@@ -75,6 +75,9 @@ async function idTokenFor(email) {
 }
 
 // --- Fixtures --------------------------------------------------------------
+
+import { FERLAND_ARCHIVE, WOLF_ARCHIVE } from './seed-fixtures.mjs';
+
 
 function pngBytes() {
   return Buffer.from(
@@ -156,7 +159,8 @@ function wavBytes() {
   buf.writeUInt16LE(8, 34);
   buf.write('data', 36);
   buf.writeUInt32LE(dataSize, 40);
-  // rest stays 0x00 (silence)
+  // 8-bit PCM is unsigned, so 0x80 is the silence midpoint; zero-filling would be full-scale negative DC.
+  buf.fill(0x80, 44);
   return buf;
 }
 
@@ -199,6 +203,12 @@ async function main() {
   const localIds = {};
   for (const u of USERS) {
     localIds[u.email] = await ensureUser(u.email, u.name);
+  }
+  // Approval is mirrored into the auth token exactly as changeUserRole does it.
+  for (const u of USERS) {
+    await admin.auth().setCustomUserClaims(localIds[u.email], {
+      approved: u.roles?.user === true,
+    });
   }
   out.push(`auth users: ${USERS.length}`);
 
@@ -414,56 +424,10 @@ async function main() {
     },
   };
 
-  // Synthetic family-archive fixtures; names are invented, no real genealogy.
-  const famPerson = (id, given, surname, extra = {}) => ({
-    id,
-    given,
-    surname,
-    name: `${given} ${surname}`,
-    suffix: null,
-    sex: extra.sex ?? 'M',
-    birthDate: extra.birthDate ?? null,
-    birthPlace: extra.birthPlace ?? null,
-    deathDate: extra.deathDate ?? null,
-    deathPlace: extra.deathPlace ?? null,
-    burialDate: null,
-    burialPlace: null,
-    occupation: extra.occupation ?? null,
-    fatherId: extra.fatherId ?? null,
-    motherId: extra.motherId ?? null,
-    spouseIds: extra.spouseIds ?? [],
-    childIds: extra.childIds ?? [],
-    marriageYears: extra.marriageYears ?? {},
-    note: extra.note ?? null,
-  });
-
-  const familyArchive = {
-    ferland: {
-      title: 'Ferland Family',
-      published: true,
-      updatedAt: now,
-      updatedBy: adminUid,
-      people: {
-        'fa-1': famPerson('fa-1', 'Ferdinand', 'Fern', { sex: 'M', birthDate: '1901-01-05', birthPlace: 'Fairview', deathDate: '1980-03-02', occupation: 'Farrier', spouseIds: ['fa-2'], childIds: ['fa-3', 'fa-4'], marriageYears: { 'fa-2': 1925 }, note: 'Kept a notebook of family recipes.' }),
-        'fa-2': famPerson('fa-2', 'Fabienne', 'Fern', { sex: 'F', birthDate: '1904-07-11', spouseIds: ['fa-1'], childIds: ['fa-3', 'fa-4'], marriageYears: { 'fa-1': 1925 } }),
-        'fa-3': famPerson('fa-3', 'Felix', 'Fern', { sex: 'M', birthDate: '1926-04-18', fatherId: 'fa-1', motherId: 'fa-2', spouseIds: ['fa-5'], childIds: ['fa-6'], marriageYears: { 'fa-5': 1948 } }),
-        'fa-4': famPerson('fa-4', 'Fiona', 'Fern', { sex: 'F', birthDate: '1929-09-30', fatherId: 'fa-1', motherId: 'fa-2' }),
-        'fa-5': famPerson('fa-5', 'Florence', 'Firth', { sex: 'F', birthDate: '1928-02-14', spouseIds: ['fa-3'], childIds: ['fa-6'], marriageYears: { 'fa-3': 1948 } }),
-        'fa-6': famPerson('fa-6', 'Faron', 'Fern', { sex: 'M', birthDate: '1950-12-01', occupation: 'Fiddler', fatherId: 'fa-3', motherId: 'fa-5' }),
-        'fb-1': famPerson('fb-1', 'Barnaby', 'Birch', { sex: 'M', birthDate: '1910-06-06', spouseIds: ['fb-2'], marriageYears: { 'fb-2': 1935 } }),
-        'fb-2': famPerson('fb-2', 'Beatrix', 'Birch', { sex: 'F', birthDate: '1912-08-09', spouseIds: ['fb-1'], marriageYears: { 'fb-1': 1935 } }),
-      },
-    },
-    wolf: {
-      title: 'Wolf Family',
-      published: false,
-      updatedAt: now,
-      updatedBy: adminUid,
-      people: {
-        'w-1': famPerson('w-1', 'Walter', 'Wolf', { spouseIds: ['w-2'], childIds: [], marriageYears: { 'w-2': 1950 } }),
-        'w-2': famPerson('w-2', 'Wilma', 'Wolf', { sex: 'F', spouseIds: ['w-1'], childIds: [] }),
-      },
-    },
+  // Synthetic family-explorer fixtures; names are invented, no real genealogy.
+  const familyExplorer = {
+    ferland: FERLAND_ARCHIVE(now, adminUid),
+    wolf: WOLF_ARCHIVE(adminUid),
   };
 
   const tree = {
@@ -487,7 +451,7 @@ async function main() {
     },
     people,
     families,
-    familyArchive,
+    familyExplorer,
     photoAlbums: albums,
     photos,
     messages,
@@ -603,7 +567,11 @@ async function main() {
   await admin.app().delete();
 }
 
-main().catch((err) => {
-  console.error('[seed] FAILED:', err.message);
-  process.exit(1);
-});
+// Only auto-run when invoked directly; specs import the fixture builders.
+import { pathToFileURL } from 'node:url';
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error('[seed] FAILED:', err.message);
+    process.exit(1);
+  });
+}

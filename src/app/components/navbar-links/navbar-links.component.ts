@@ -18,12 +18,33 @@ export interface LinkableButton {
 export class NavbarLinksComponent implements OnInit {
   @Input() isMenuList: boolean;
   @Input() isSuperUser = false;
+  @Input() isApproved = true;
 
   buttons: LinkableButton[] = [];
 
-  filteredButtons: LinkableButton[] = [];
-
   flagsReady = false;
+
+  private flagsMap: Record<string, { enabled?: boolean } | null | undefined> = {};
+
+  /** Approval gates PII/planning links; media, photos, expressions, account
+   *  and upload stay available to pending users. */
+  private static readonly approvalGatedLinks = new Set(['/people', '/contacts', '/calendar']);
+
+  get filteredButtons(): LinkableButton[] {
+    return this.buttons.filter(b => {
+      if (!this.isApproved && NavbarLinksComponent.approvalGatedLinks.has(b.link)) {
+        return false;
+      }
+      if (b.link === '/') return true;
+      const featureId = this.getFeatureIdFromLink(b.link);
+      const flag = this.flagsMap[featureId];
+      if (flag === null || flag === undefined) {
+        const def = FEATURES.find(f => f.id === featureId);
+        return def?.defaultEnabled !== false;
+      }
+      return flag.enabled === true;
+    });
+  }
 
   constructor(private featureFlagsService: FeatureFlagsService) { }
 
@@ -47,16 +68,7 @@ export class NavbarLinksComponent implements OnInit {
       this.flagsReady = ready;
     });
     this.featureFlagsService.getAllFeatureFlags().subscribe(flagsMap => {
-      this.filteredButtons = this.buttons.filter(b => {
-        if (b.link === '/') return true;
-        const featureId = this.getFeatureIdFromLink(b.link);
-        const flag = flagsMap[featureId];
-        if (flag === null || flag === undefined) {
-          const def = FEATURES.find(f => f.id === featureId);
-          return def?.defaultEnabled !== false;
-        }
-        return flag.enabled === true;
-      });
+      this.flagsMap = flagsMap as typeof this.flagsMap;
     });
   }
 

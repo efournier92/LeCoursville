@@ -1,4 +1,3 @@
-import { getDatabase } from "firebase-admin/database";
 import { onValueCreated } from "firebase-functions/v2/database";
 import { ALERTS_FROM, OWNER_ALERT_ADDRESS, REGION, RESEND_API_KEY } from "./config";
 import { checkRateLimit, escapeHtml, rateLimit, sendEmail, writeAudit } from "./helpers";
@@ -25,9 +24,7 @@ function trueRoles(roles: Record<string, unknown> | undefined): string {
  * Detective control for the accepted Google self-provisioning risk (C-40):
  * every first-time `users/{uid}` creation notifies the owner in real time.
  * Not preventive, so a stranger still holds read access until a human reacts.
- *
- * Also the watchdog for server-side membership: if signup's claimMemberRole
- * call never lands, this stamps `roles/user` before anything can read it.
+ * New accounts are pending until an admin approves them (changeUserRole).
  */
 export const onAccountCreated = onValueCreated(
   {
@@ -41,11 +38,6 @@ export const onAccountCreated = onValueCreated(
     const user = event.data.val() as UserRecord | null;
     if (!user) {
       return;
-    }
-
-    if (user.roles?.user !== true) {
-      await getDatabase().ref(`users/${uid}/roles/user`).set(true);
-      user.roles = { ...(user.roles ?? {}), user: true };
     }
 
     const email = String(user.email ?? "").trim();
@@ -69,13 +61,16 @@ export const onAccountCreated = onValueCreated(
       `Name: ${name || "(none)"}`,
       `Roles: ${roles}`,
       `UID: ${uid}`,
+      "",
+      "Status: pending approval",
     ].join("\n");
     const html =
       `<p>A new LeCoursville account was created.</p>` +
       `<p>Email: ${escapeHtml(email || "(none)")}</p>` +
       `<p>Name: ${escapeHtml(name || "(none)")}</p>` +
       `<p>Roles: ${escapeHtml(roles)}</p>` +
-      `<p>UID: ${escapeHtml(uid)}</p>`;
+      `<p>UID: ${escapeHtml(uid)}</p>` +
+      `<p>Status: pending approval</p>`;
 
     try {
       await sendEmail({

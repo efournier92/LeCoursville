@@ -45,6 +45,20 @@
   font-size: 0.875rem;
 }
 
+// Mirrors the error shape so a success reads as the same kind of inline banner.
+.admin-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--color-brand-success-dark);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-brand-success) 10%, transparent);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
 .admin-card-title {
   margin: 0 0 12px;
   font-size: 20px;

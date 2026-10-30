@@ -1,3 +1,4 @@
+import { getAuth } from "firebase-admin/auth";
 import { getDatabase } from "firebase-admin/database";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "./config";
@@ -104,6 +105,11 @@ export const changeUserRole = onCall(
       [`roleAudit/${auditRef.key}`]: audit,
     };
     await db.ref().update(updates);
+
+    // Mirror approval into the auth token and force it to take effect now
+    // rather than when the current refresh token expires.
+    await getAuth().setCustomUserClaims(targetUid, { approved: after.user === true });
+    await getAuth().revokeRefreshTokens(targetUid);
 
     return { ok: true, before, after };
   }
