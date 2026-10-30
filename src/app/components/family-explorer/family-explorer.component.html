@@ -1,0 +1,83 @@
+<mat-drawer-container
+  class="explorer-page page-ground"
+  data-testid="family-explorer-page"
+  [hasBackdrop]="drawerMode === 'over'">
+  <mat-drawer-content class="explorer-content">
+          @if (loading) {
+      <div class="page-state family-skeleton" data-testid="family-skeleton" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <p class="visually-hidden" role="status">Loading the family tree…</p>
+    } @else if (!available) {
+      <div class="page-state family-empty" data-testid="family-explorer-empty">
+        <p role="status">This family archive is not available</p>
+      </div>
+    } @else {
+      <header class="explorer-topbar">
+        <div class="topbar-inner">
+          <span class="topbar-icon-chip" aria-hidden="true">
+            <mat-icon class="topbar-icon">account_tree</mat-icon>
+          </span>
+          <div class="topbar-heading">
+            <span class="topbar-title">{{ explorer?.title }}</span>
+            <p class="topbar-subtitle" data-testid="family-counts">{{ people.length }} {{ people.length === 1 ? 'Person' : 'People' }} · {{ generations }} {{ generations === 1 ? 'Generation' : 'Generations' }}</p>
+          </div>
+          <input
+            class="topbar-filter"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Filter by name"
+            aria-label="Filter by name"
+            data-testid="family-search"
+            [(ngModel)]="searchText" />
+        </div>
+      </header>
+      <div class="explorer-body page-content">
+        <div class="roots-row" data-testid="family-roots">
+          <span class="roots-label">Roots</span>
+          @for (root of couple; track root.id) {
+            <button
+              type="button"
+              class="root-btn"
+              [attr.data-testid]="'family-root-' + root.id"
+              [attr.aria-pressed]="selectedId === root.id"
+              (click)="select(root.id)">
+              <span class="root-name">{{ personName(root) }}</span>
+              <span class="root-years">{{ yearsOf(root) }}</span>
+            </button>
+          }
+        </div>
+        <app-family-chart
+          [people]="people"
+          [search]="searchText"
+          [selectedId]="selectedId"
+          (select)="select($event)">
+        </app-family-chart>
+      </div>
+      <footer class="explorer-footer">
+        <p>Think you are in this family and want your information removed? <a class="removal-link" [href]="removalRequestHref">Request removal</a></p>
+      </footer>
+    }
+  </mat-drawer-content>
+
+  @if (available) {
+    <mat-drawer
+      class="explorer-drawer"
+      data-testid="family-drawer"
+      position="end"
+      [mode]="drawerMode"
+      [opened]="!!selected"
+      (openedChange)="onDrawerOpenedChange($event)">
+      @if (selected) {
+        <app-family-panel
+          [person]="selected"
+          [people]="explorer?.people || null"
+          [style.--family-color]="selectedBranchColor"
+          (select)="select($event)"
+          (close)="clearSelection()">
+        </app-family-panel>
+      }
+    </mat-drawer>
+  }
+</mat-drawer-container>

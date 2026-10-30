@@ -1,0 +1,113 @@
+<aside class="family-panel" data-testid="family-panel" (keydown.escape)="close.emit()">
+  @if (person) {
+    <div class="panel-body" [class.pending]="switching">
+      <div class="panel-top">
+        <span class="family-color-bar" aria-hidden="true"></span>
+        <div class="name-block">
+          <h2 class="family-panel-name">{{ personName(person) }}</h2>
+          <p class="p-years">
+            {{ yearsOf(person) }}
+            @if (sexLabel(person.sex)) {
+              <span class="sex"> · {{ sexLabel(person.sex) }}</span>
+            }
+          </p>
+        </div>
+        <button
+          type="button"
+          class="panel-close"
+          data-testid="family-panel-close"
+          aria-label="Close details"
+          (click)="close.emit()">
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="panel-cards">
+        <!-- minimalist: @if aliases the array (always truthy); the inner guard keeps the empty case from rendering a wrapper -->
+        @if (marriageEntries(person); as entries) {
+          @if (person.birthDate || person.deathDate || person.burialDate || entries.length > 0) {
+            <section class="detail-section">
+            <h3>Life</h3>
+            @if (person.birthDate || person.birthPlace) {
+              <div class="detail-row life-row" data-testid="family-panel-birth">
+                <span class="label">Born</span>
+                <span class="value">
+                  @if (person.birthDate) {
+                    <span class="date-line">{{ formatDate(person.birthDate) }}</span>
+                  }
+                  @if (person.birthPlace) {
+                    <span class="place-line">{{ person.birthPlace }}</span>
+                  }
+                </span>
+              </div>
+            }
+            @if (person.deathDate || person.deathPlace) {
+              <div class="detail-row life-row" data-testid="family-panel-death">
+                <span class="label">Died</span>
+                <span class="value">
+                  @if (person.deathDate) {
+                    <span class="date-line">{{ formatDate(person.deathDate) }}</span>
+                  }
+                  @if (person.deathPlace) {
+                    <span class="place-line">{{ person.deathPlace }}</span>
+                  }
+                </span>
+              </div>
+            }
+            @if (person.burialDate || person.burialPlace) {
+              <div class="detail-row life-row" data-testid="family-panel-burial">
+                <span class="label">Buried</span>
+                <span class="value">
+                  @if (person.burialDate) {
+                    <span class="date-line">{{ formatDate(person.burialDate) }}</span>
+                  }
+                  @if (person.burialPlace) {
+                    <span class="place-line">{{ person.burialPlace }}</span>
+                  }
+                </span>
+              </div>
+            }
+            @for (entry of entries; track entry.spouse) {
+              <div class="detail-row life-row spouse-row">
+                <span class="label">Spouse</span>
+                <span class="value">
+                  <button type="button" class="link" (click)="onSelect(entry.spouse)">{{ entry.label }}</button>
+                  <span class="marry"> · m. {{ entry.year }}</span>
+                </span>
+              </div>
+            }
+          </section>
+          }
+        }
+
+        @if (person.occupation || person.note) {
+          <section class="detail-section">
+            <h3>About</h3>
+            @if (person.occupation) {
+              <div class="detail-row" data-testid="family-panel-occupation">
+                <span class="label">Work</span>
+                <span class="value">{{ person.occupation }}</span>
+              </div>
+            }
+            @if (person.note) {
+              <p class="note" data-testid="family-panel-note">{{ person.note }}</p>
+            }
+          </section>
+        }
+
+        @if (lineage.length > 0) {
+          <section class="detail-section lineage-section" data-testid="family-panel-lineage">
+            <h3>Lineage</h3>
+            <app-person-tree
+              [nodes]="lineage"
+              [clickable]="true"
+              [familyColorHex]="branchTint"
+              [selectedPersonId]="person.id"
+              (personClick)="onSelect($event)">
+            </app-person-tree>
+          </section>
+        }
+      </div>
+    </div>
+  }
+</aside>

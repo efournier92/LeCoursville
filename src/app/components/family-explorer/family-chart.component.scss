@@ -1,0 +1,129 @@
+// Branch cards use the People page's family-card language: a white sheet
+// with a full-height rail in the branch color, a named header with a member
+// pill, and tinted generation bars in the tree. One card per row, filling the
+// page-content column.
+.family-chart {
+  display: block;
+  min-width: 0;
+  columns: 300px;
+  column-gap: 20px;
+}
+
+.chart-status {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--color-ink-2);
+}
+
+.branch-numeral-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.tint-dot {
+  flex: none;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--family-color, var(--color-brand-primary));
+}
+
+.branch-numeral {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-2);
+}
+
+.branch-family {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-ink-2);
+}
+
+.family-branch {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  min-width: 0;
+  margin: 0 0 20px;
+  padding: 18px 22px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+
+  // Identity rail in the branch's own color, like .family-group::before.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--family-color, var(--color-brand-primary));
+  }
+}
+
+.branch-head {
+  margin: 0 0 4px;
+}
+
+.family-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  font-weight: 400;
+}
+
+.family-head-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.member-count {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-ink-2);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .family-chart {
+    columns: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .family-branch {
+    padding: 14px 16px 10px;
+
+    &::before {
+      width: 4px;
+    }
+  }
+
+  .family-head-name {
+    font-size: 1.15rem;
+  }
+
+  .member-count {
+    font-size: 0.66rem;
+  }
+}

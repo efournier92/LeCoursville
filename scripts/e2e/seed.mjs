@@ -76,6 +76,9 @@ async function idTokenFor(email) {
 
 // --- Fixtures --------------------------------------------------------------
 
+import { FERLAND_ARCHIVE, WOLF_ARCHIVE } from './seed-fixtures.mjs';
+
+
 function pngBytes() {
   return Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
@@ -156,7 +159,8 @@ function wavBytes() {
   buf.writeUInt16LE(8, 34);
   buf.write('data', 36);
   buf.writeUInt32LE(dataSize, 40);
-  // rest stays 0x00 (silence)
+  // 8-bit PCM is unsigned, so 0x80 is the silence midpoint; zero-filling would be full-scale negative DC.
+  buf.fill(0x80, 44);
   return buf;
 }
 
@@ -199,6 +203,12 @@ async function main() {
   const localIds = {};
   for (const u of USERS) {
     localIds[u.email] = await ensureUser(u.email, u.name);
+  }
+  // Approval is mirrored into the auth token exactly as changeUserRole does it.
+  for (const u of USERS) {
+    await admin.auth().setCustomUserClaims(localIds[u.email], {
+      approved: u.roles?.user === true,
+    });
   }
   out.push(`auth users: ${USERS.length}`);
 
@@ -414,6 +424,12 @@ async function main() {
     },
   };
 
+  // Synthetic family-explorer fixtures; names are invented, no real genealogy.
+  const familyExplorer = {
+    ferland: FERLAND_ARCHIVE(now, adminUid),
+    wolf: WOLF_ARCHIVE(adminUid),
+  };
+
   const tree = {
     users: {
       [adminUid]: { id: adminUid, name: 'Admin User', email: 'admin@e2e.local', roles: { user: true, admin: true, super: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
@@ -435,6 +451,7 @@ async function main() {
     },
     people,
     families,
+    familyExplorer,
     photoAlbums: albums,
     photos,
     messages,
@@ -550,7 +567,11 @@ async function main() {
   await admin.app().delete();
 }
 
-main().catch((err) => {
-  console.error('[seed] FAILED:', err.message);
-  process.exit(1);
-});
+// Only auto-run when invoked directly; specs import the fixture builders.
+import { pathToFileURL } from 'node:url';
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error('[seed] FAILED:', err.message);
+    process.exit(1);
+  });
+}

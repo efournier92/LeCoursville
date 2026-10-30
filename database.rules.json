@@ -1,5 +1,12 @@
 {
   "rules": {
+    "familyExplorer": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      "$familyId": {
+        ".read": "data.child('published').val() === true || (auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true)"
+      }
+    },
     "calendarEvents": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
@@ -13,7 +20,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "messages": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".read": "auth != null",
       "$id": {
         ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid && newData.child('isSticky').val() === false && newData.child('isReply').val() !== true && newData.child('replies').val() === null && newData.child('likes').val() === null) || (data.exists() && newData.val() === null && data.child('authorId').val() === auth.uid))",
         ".validate": "newData.child('id').val() === $id && (!data.exists() ? ((newData.child('messageType').val() === 'expression' ? (newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && (newData.child('authorName').val() === '' || newData.child('authorName').val() === root.child('users').child(auth.uid).child('name').val() || root.child('users').child(auth.uid).child('roles/admin').val() === true)) : (newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && newData.child('authorName').val() === root.child('users').child(auth.uid).child('name').val())) && (newData.child('attachmentUrl').val() === null || newData.child('attachmentUrl').val() === '' || newData.child('attachmentUrl').val().matches(/^https:\\/\\/firebasestorage\\.googleapis\\.com\\/v0\\/b\\/[^\\/]+\\/o\\//) || newData.child('attachmentUrl').val().matches(/^http:\\/\\/(localhost|127\\.0\\.0\\.1):9199\\/v0\\/b\\/[^\\/]+\\/o\\//)) && newData.child('dateSent').isNumber() && newData.child('dateSent').val() >= now - 86400000 && newData.child('dateSent').val() <= now + 300000 && newData.child('isEditable').val() !== true) : true)",
@@ -129,7 +136,7 @@
       }
     },
     "photos": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
       ".indexOn": ["albumId"]
     },
@@ -167,23 +174,23 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
     "clans": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "families": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "people": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "addresses": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "photoAlbums": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
     "userUploads": {

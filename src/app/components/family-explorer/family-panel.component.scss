@@ -1,0 +1,261 @@
+// People detail-card anatomy (person-detail-modal) ported to the explorer
+// drawer: color-bar header, section cards, label|value rows. Tokens only.
+.family-panel {
+  display: block;
+  min-width: 0;
+}
+
+.panel-body {
+  transition: opacity 140ms ease, transform 140ms ease;
+
+  &.pending {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.panel-top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.family-color-bar {
+  flex: none;
+  width: 12px;
+  min-height: 100%;
+  background: var(--family-color, var(--color-brand-primary));
+}
+
+.name-block {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  padding: 20px 8px 16px 20px;
+}
+
+.family-panel-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.p-years {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 12px 12px 0 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-ink-2);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    transition: transform 140ms ease;
+  }
+
+  &:hover mat-icon {
+    transform: translateX(2px);
+  }
+
+  &:hover {
+    color: var(--color-ink);
+    background: var(--color-surface-muted);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+.panel-cards {
+  display: grid;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+// Sections are flat inside the drawer's single surface: spacing and hairlines
+// carry the structure instead of nested cards.
+.detail-section {
+  padding: 0;
+}
+
+.detail-section + .detail-section {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.detail-section h3 {
+  margin: 0 0 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detail-row .label {
+  min-width: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink-2);
+}
+
+.detail-row .value {
+  color: var(--color-ink);
+  min-width: 0;
+}
+
+// Life facts — a compact vitals block: micro labels, confident tabular dates,
+// muted place lines, each fact separated by a hairline.
+.life-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: baseline;
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+
+  &:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  &:last-of-type {
+    padding-bottom: 0;
+  }
+}
+
+.life-row .label {
+  min-width: 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-3);
+}
+
+.life-row .value {
+  display: grid;
+  gap: 2px;
+}
+
+.spouse-row .value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+}
+
+.spouse-row .link {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.spouse-row .marry {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-ink-3);
+}
+
+.date-line {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.place-line {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  font-weight: 450;
+  color: var(--color-ink-2);
+}
+
+.marry {
+  color: var(--color-ink-2);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-ink-2);
+  white-space: pre-line;
+}
+
+.link {
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-link);
+  font-weight: 500;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-primary-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 1px;
+    border-radius: 2px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .panel-cards {
+    padding: 20px 20px 20px;
+  }
+}

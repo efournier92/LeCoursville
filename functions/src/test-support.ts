@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 interface FakeSnapshot {
   val(): unknown;
   exists(): boolean;
@@ -223,6 +225,8 @@ export const fakeDb = new FakeDatabase();
 
 export const authMock = {
   users: new Map<string, { uid: string }>(),
+  setCustomUserClaims: vi.fn(async (): Promise<void> => {}),
+  revokeRefreshTokens: vi.fn(async (): Promise<void> => {}),
   link: "https://lecoursville.test/auth/action?oobCode=abc",
   linkError: null as Error | null,
   async getUserByEmail(email: string) {
@@ -246,6 +250,8 @@ export function resetFakeState(): void {
   fakeDb.store = {};
   fakeDb.seq = 0;
   authMock.users.clear();
+  authMock.setCustomUserClaims.mockClear();
+  authMock.revokeRefreshTokens.mockClear();
   authMock.link = "https://lecoursville.test/auth/action?oobCode=abc";
   authMock.linkError = null;
   process.env.EMAIL_DRY_RUN = "1";

@@ -1,6 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login, logout, E2E_USERS } from '../helpers/auth';
-import { deleteDb, readDb } from '../helpers/admin-db';
+import { deleteDb, findOutboundEmails, readDb } from '../helpers/admin-db';
 
 const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
 const DB_NS = 'ns=lecoursville-dev-default-rtdb';
@@ -129,7 +129,7 @@ test.describe('auth', () => {
     await expect(page.locator('input[type="email"]')).toHaveCount(0);
   });
 
-  test('new account: membership is server-stamped and the client cannot write roles', async () => {
+  test('new account: signup stays pending and the client cannot write roles', async () => {
     const email = `signup-${Date.now()}@e2e.local`;
     const { uid, token } = await signUpNewAccount(email);
     const userUrl = `http://localhost:9000/users/${uid}.json?${DB_NS}&auth=${token}`;
@@ -160,9 +160,29 @@ test.describe('auth', () => {
         }),
       });
       expect(profile.ok).toBe(true);
+
+      // Wait for the account-created hook to fully process the record, then
+      // run the signup callable: neither may grant membership any more.
       await expect
-        .poll(async () => readDb(`users/${uid}/roles/user`), { timeout: 20000 })
+        .poll(
+          async () =>
+            (await findOutboundEmails('account_created')).some((mail) =>
+              (mail.text ?? '').includes(email),
+            ),
+          { timeout: 20000 },
+        )
         .toBe(true);
+
+      const claim = await fetch(
+        'http://localhost:5001/lecoursville-dev/us-central1/claimMemberRole',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ data: {} }),
+        },
+      );
+      expect(claim.ok).toBe(true);
+      expect([null, false]).toContain(await readDb(`users/${uid}/roles/user`));
     } finally {
       await deleteDb(`users/${uid}`);
       await deleteAuthAccount(token);

@@ -3,6 +3,7 @@ import type { Locator } from '@playwright/test';
 import { login, logout } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
 import { deleteDb, readDb, writeDb } from '../helpers/admin-db';
+import { get, put, signIn } from '../helpers/rules';
 
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
@@ -79,21 +80,27 @@ test.describe('security', () => {
   test('XSS: chat message bodies must not execute injected HTML', async ({ page }) => {
     await login(page, 'admin');
     await setFeatureFlag(page, 'chat', true);
-    await page.goto('/chat');
-    await page.getByRole('button', { name: 'New Message' }).first().click();
-    await page.getByPlaceholder('Title').fill('XSS probe');
-    await page.getByTestId('chat-message-input').fill('<img src=x onerror="window.__xss=1">');
-    await page.getByTestId('chat-send').click();
-    await page.getByRole('button', { name: 'Yes' }).click();
-    // View as another user (the payload executes for ANY viewer).
-    await page.getByRole('button', { name: 'Account' }).click();
-    await logout(page);
-    await login(page, 'other');
-    await page.goto('/chat');
-    await expect(page.getByText('XSS probe')).toBeVisible();
-    await expectNoInjectedHandler(page);
-    const xss = await page.evaluate(() => (window as any).__xss ?? 0);
-    expect(xss).toBe(0);
+    try {
+      await page.goto('/chat');
+      await page.getByRole('button', { name: 'New Message' }).first().click();
+      await page.getByPlaceholder('Title').fill('XSS probe');
+      await page.getByTestId('chat-message-input').fill('<img src=x onerror="window.__xss=1">');
+      await page.getByTestId('chat-send').click();
+      await page.getByRole('button', { name: 'Yes' }).click();
+      // View as another user (the payload executes for ANY viewer).
+      await page.getByRole('button', { name: 'Account' }).click();
+      await logout(page);
+      await login(page, 'other');
+      await page.goto('/chat');
+      await expect(page.getByText('XSS probe')).toBeVisible();
+      await expectNoInjectedHandler(page);
+      const xss = await page.evaluate(() => (window as any).__xss ?? 0);
+      expect(xss).toBe(0);
+    } finally {
+      // The page is signed out as a non-admin here, so restore the seeded
+      // OFF state with the Admin SDK at the exact path the seed writes.
+      await writeDb('features/chat', { enabled: false, updatedAt: Date.now() });
+    }
   });
 
   test('XSS: expression bodies must not execute injected HTML', async ({ page }) => {
@@ -174,6 +181,7 @@ test.describe('security', () => {
       '/admin/media',
       '/admin/photo-albums',
       '/admin/uploads',
+      '/admin/family-explorer',
     ];
     for (const route of routes) {
       await page.goto(route);
@@ -326,4 +334,35 @@ test.describe('security', () => {
       }
     }
   });
+
+  test('family explorer: anonymous read is limited to published families and anonymous writes fail', async () => {
+    // A sibling admin spec can publish wolf; pin the fixture before probing.
+    await writeDb('familyExplorer/wolf/published', false);
+    const published = await get('familyExplorer/ferland');
+    expect(published.status).toBe(200);
+
+    const unpublished = await get('familyExplorer/wolf');
+    expect([401, 403]).toContain(unpublished.status);
+
+    const write = await put('familyExplorer/ferland', { title: 'Anonymous overwrite' });
+    expect([401, 403]).toContain(write.status);
+    expect((await readDb<{ title?: string }>('familyExplorer/ferland'))?.title).toBe('Ferland Family');
+
+    // Anonymous callers cannot LIST archives either.
+    const anonList = await get('familyExplorer');
+    expect([401, 403]).toContain(anonList.status);
+
+    // Authenticated members cannot LIST archives but may read any single family.
+    const token = await signIn('user');
+    const list = await get('familyExplorer', token);
+    expect([401, 403]).toContain(list.status);
+    const memberRead = await get('familyExplorer/wolf', token);
+    expect(memberRead.status).toBe(200);
+    expect((await memberRead.json())?.title).toBe('Wolf Family');
+
+    const memberWrite = await put('familyExplorer/wolf', { title: 'Member overwrite' }, token);
+    expect([401, 403]).toContain(memberWrite.status);
+    expect((await readDb<{ title?: string }>('familyExplorer/wolf'))?.title).toBe('Wolf Family');
+  });
+
 });

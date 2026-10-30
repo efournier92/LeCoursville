@@ -15,7 +15,7 @@ import {
 import { httpsCallable } from "firebase/functions";
 import { MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Observable } from "rxjs";
-import { User } from "src/app/models/user";
+import { User, isApprovedUser } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { PromptModalService } from "src/app/services/prompt-modal.service";
@@ -37,6 +37,7 @@ export class AuthService {
   redirectError$: Observable<string | null>;
   hasAlreadyUpdatedUser: boolean;
   private signedOut = false;
+  private approvedClaimRefreshed = false;
 
   private userSource: BehaviorSubject<{}>;
   private authResolvedSource: BehaviorSubject<boolean>;
@@ -107,6 +108,11 @@ export class AuthService {
 
   async confirmReset(code: string, newPassword: string): Promise<void> {
     await confirmPasswordReset(this.firebase.auth, code, newPassword);
+    // A completed reset must invalidate any existing session. No server-side
+    // revoke callable exists, so clear the client session here; skip signOut()
+    // because its reload would hide the success state.
+    await firebaseSignOut(this.firebase.auth);
+    this.removeUserFromLocalStorage();
   }
 
   async signInWithGoogle(): Promise<FirebaseUser> {
@@ -187,6 +193,7 @@ export class AuthService {
     if (!authUser?.uid) {
       return;
     }
+    void this.refreshApprovedClaim(authUser);
     // Guard: updateUser() writes back to the very path this listener watches,
     // and Firebase dispatches the local-cache event synchronously inside
     // update(). The flag must be set BEFORE the write — otherwise the
@@ -222,7 +229,8 @@ export class AuthService {
     await this.rtdb.object(`users/${user.id}`).update(profile as any);
     await this.claimMemberRole();
 
-    user.roles = { ...user.roles, user: true };
+    // Stay pending locally: membership is granted by the server, never
+    // optimistically by signup.
     this.user = user;
     this.userSource.next(user);
     this.setUserInLocalStorage(user);
@@ -273,6 +281,10 @@ export class AuthService {
     return !!user?.roles?.admin;
   }
 
+  isUserApproved(): boolean {
+    return isApprovedUser(this.getUserFromLocalStorage());
+  }
+
   // HELPERS
 
   private subscribeToAuthState(): void {
@@ -280,10 +292,12 @@ export class AuthService {
       if (!authData) {
         // Signed out: the outcome is known now, nothing else to wait for.
         this.signedOut = true;
+        this.approvedClaimRefreshed = false;
         this.authResolvedSource.next(true);
         return;
       }
       this.signedOut = false;
+      void this.refreshApprovedClaim(authData);
       // Signed in: stay unresolved until the RTDB user record lands, so the
       // nav keeps its skeleton instead of flashing a wrong Sign In link.
       // Safety valve: if the record never arrives (missing users/{uid} node,
@@ -331,6 +345,20 @@ export class AuthService {
   private isTransportFailure(error: unknown): boolean {
     const code = (error as { code?: string })?.code;
     return code === "functions/unavailable" || code === "functions/deadline-exceeded";
+  }
+
+  /** Approval lives in a server-set custom claim; refresh once per session
+   *  so it is picked up without blocking sign-in if the refresh fails. */
+  private async refreshApprovedClaim(authUser: FirebaseUser): Promise<void> {
+    if (!authUser || this.approvedClaimRefreshed) {
+      return;
+    }
+    this.approvedClaimRefreshed = true;
+    try {
+      await authUser.getIdToken(true);
+    } catch {
+      // Sign-in proceeds on the cached token.
+    }
   }
 
   /** The `/users/{uid}` creation trigger is the watchdog for a lost call. */

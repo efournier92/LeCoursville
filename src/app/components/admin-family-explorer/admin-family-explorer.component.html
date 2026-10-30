@@ -1,0 +1,143 @@
+<div class="admin-page">
+<app-page-toolbar title="Family Explorer">
+</app-page-toolbar>
+
+<p class="admin-intro">
+  Manage Family Explorer. Uploading an existing Family ID replaces that archive.
+</p>
+
+@if (actionError) {
+  <div class="admin-error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    {{ actionError }}
+  </div>
+}
+
+<mat-card class="admin-surface">
+  <mat-card-content>
+    <h2 class="admin-card-title">Archives</h2>
+    @if (loading) {
+      <div class="admin-skeleton-rows" data-testid="family-explorer-loading" aria-hidden="true">
+        @for (row of [1, 2, 3]; track row) {
+          <span></span>
+        }
+      </div>
+      <p class="visually-hidden" role="status">Loading archives…</p>
+    } @else if (rows.length === 0) {
+      <app-no-results-message
+        data-testid="archive-empty"
+        title="No Archives Yet"
+        hint="Upload a family tree to create the first archive."
+        />
+    } @else {
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Family ID</th>
+            <th>Published</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.id) {
+            <tr [attr.data-testid]="'archive-row-' + row.id">
+              <td data-label="Title">{{ row.title }}</td>
+              <td data-label="Family ID"><code>{{ row.id }}</code></td>
+              <td data-label="Published">
+                <mat-slide-toggle
+                  class="publish-toggle"
+                  [attr.data-testid]="'archive-published-' + row.id"
+                  [checked]="row.published"
+                  [aria-label]="'Publish ' + row.title"
+                  (change)="onTogglePublished(row)">
+                </mat-slide-toggle>
+              </td>
+              <td data-label="Updated">{{ row.updatedAt ? (row.updatedAt | date : 'medium') : 'Not yet updated' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="admin-surface">
+  <mat-card-content>
+    <h2 class="admin-card-title">Upload Archive</h2>
+    <form class="upload-form" (ngSubmit)="onConfirm()">
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Family ID</mat-label>
+        <input matInput [(ngModel)]="familyId" name="familyId" list="archive-ids" (ngModelChange)="onFamilyIdInput()" required />
+      </mat-form-field>
+      <datalist id="archive-ids">
+        @for (id of explorerIds; track id) {
+          <option [value]="id"></option>
+        }
+      </datalist>
+      <mat-form-field class="admin-upload-input">
+        <mat-label>Title</mat-label>
+        <input matInput [(ngModel)]="title" name="title" (input)="refreshPreview()" required />
+      </mat-form-field>
+      <mat-checkbox [(ngModel)]="published" name="published">Published</mat-checkbox>
+      <mat-form-field class="admin-upload-input">
+        <mat-label>People JSON</mat-label>
+        <textarea
+          matInput
+          rows="6"
+          [(ngModel)]="rawJson"
+          name="rawJson"
+          data-testid="archive-json-input"
+          (input)="refreshPreview()"></textarea>
+      </mat-form-field>
+      <div
+        class="upload-file-row"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop($event)">
+        <button type="button" class="upload-choose" (click)="jsonFile.click()">
+          <mat-icon aria-hidden="true">upload_file</mat-icon>
+          <span>Choose JSON File</span>
+        </button>
+        <input
+          #jsonFile
+          type="file"
+          accept="application/json"
+          data-testid="archive-json-file"
+          (change)="onFile($event)"
+          hidden />
+        @if (selectedFileName) {
+          <span class="upload-hint">{{ selectedFileName }}</span>
+        }
+      </div>
+      @if (formError) {
+        <div class="admin-error" role="alert" data-testid="archive-form-error">
+          <mat-icon>error_outline</mat-icon>
+          {{ formError }}
+        </div>
+      }
+      @if (previewCount !== null) {
+        <p class="admin-preview" data-testid="archive-preview-count">{{ previewCount }} people</p>
+      }
+      @if (successMessage) {
+        <div #successBanner class="admin-success" role="status" aria-live="polite" tabindex="-1" data-testid="archive-success">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          <span>{{ successMessage }}</span>
+        </div>
+      }
+      <div class="admin-form-buttons">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          data-testid="archive-confirm"
+          [disabled]="previewCount === null || submitting">
+          Confirm Upload
+        </button>
+        <button mat-button type="button" data-testid="archive-reset" (click)="onReset()">
+          Reset
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+</div>

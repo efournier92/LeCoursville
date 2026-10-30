@@ -1,10 +1,17 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import {
+  getAuth,
+  Auth,
+  connectAuthEmulator,
+  setPersistence,
+  browserLocalPersistence,
+} from 'firebase/auth';
 import { getDatabase, Database, connectDatabaseEmulator } from 'firebase/database';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { environment } from 'src/environments/environment';
 
 /**
@@ -16,6 +23,7 @@ import { environment } from 'src/environments/environment';
  */
 type EmulatorSwitches = {
   useEmulators?: boolean;
+  appCheckSiteKey?: string;
   emulator?: {
     auth: string;
     database: { host: string; port: number };
@@ -42,6 +50,29 @@ export class FirebaseService {
     const useEmulators = env.useEmulators === true;
     this.app = initializeApp(environment.firebaseConfig);
     this.auth = getAuth(this.app);
+    // Keep the session in localStorage explicitly (the SDK default) so it
+    // survives reloads instead of living only for the tab.
+    void setPersistence(this.auth, browserLocalPersistence).catch(() => {
+      // Storage can be unavailable (private mode); the in-memory fallback
+      // still lets the current tab work.
+    });
+    if (env.appCheckSiteKey) {
+      try {
+        if (useEmulators) {
+          // firebase/app-check has no exported debug provider; its built-in
+          // debug mode takes over once this global is set, exchanging the
+          // token with the emulator instead of calling reCAPTCHA.
+          const globals = self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN?: string | boolean };
+          globals.FIREBASE_APPCHECK_DEBUG_TOKEN ??= 'lecoursville-e2e-appcheck-debug';
+        }
+        initializeAppCheck(this.app, {
+          provider: new ReCaptchaV3Provider(env.appCheckSiteKey),
+          isTokenAutoRefreshEnabled: true,
+        });
+      } catch {
+        // App Check is defense-in-depth; a failed init must never block boot.
+      }
+    }
     this.db = getDatabase(this.app);
     this.storage = getStorage(this.app);
     this.functions = getFunctions(this.app, 'us-central1');

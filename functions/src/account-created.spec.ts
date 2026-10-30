@@ -51,12 +51,15 @@ describe("onAccountCreated", () => {
     expect(audits[0]).toMatchObject({ action: "account_created_notified", uid: "u1" });
   });
 
-  it("stamps roles/user when the signup record was created without it", async () => {
+  it("does not grant roles/user to a new signup", async () => {
     await onAccountCreated.run(
       eventFor("u1", { email: "new@example.com", name: "New User" })
     );
 
-    expect(fakeDb.read("users/u1/roles/user")).toBe(true);
+    expect(fakeDb.read("users/u1/roles/user")).toBeNull();
+    const emails = outboundEmails();
+    expect(emails[0]).toMatchObject({ to: "eric@lecoursville.com" });
+    expect(String(emails[0].text)).toContain("Status: pending approval");
   });
 
   it("does nothing for an empty record", async () => {

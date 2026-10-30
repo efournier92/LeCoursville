@@ -1,0 +1,82 @@
+@use 'src/app/styles/admin-data' as *;
+@use 'src/app/styles/admin-forms' as *;
+
+.upload-form {
+  display: grid;
+  gap: 12px;
+  justify-items: stretch;
+}
+
+.upload-form mat-checkbox {
+  justify-self: start;
+}
+
+.upload-file-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.upload-choose {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-muted);
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.upload-hint {
+  font-size: 0.8125rem;
+  color: var(--color-ink-2);
+}
+
+.admin-preview {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-ink-2);
+}
+
+.admin-success mat-icon {
+  flex: none;
+  color: var(--color-brand-success-dark);
+}
+
+.admin-form-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publish-toggle {
+  // Size and travel tokens move together: Material derives travel from
+  // track width minus handle width.
+  --mat-slide-toggle-track-width: 36px;
+  --mat-slide-toggle-track-height: 20px;
+  --mat-slide-toggle-handle-width: 18px;
+  --mat-slide-toggle-unselected-handle-size: 14px;
+  --mat-slide-toggle-selected-handle-size: 14px;
+  --mat-slide-toggle-pressed-handle-size: 14px;
+  --mat-slide-toggle-with-icon-handle-size: 14px;
+  --mat-slide-toggle-unselected-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-selected-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 2px;
+}

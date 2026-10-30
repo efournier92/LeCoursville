@@ -54,7 +54,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
     const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
     expect(nav.getAttribute('aria-busy')).toBe('true');
-    expect(nav.querySelectorAll('.admin-nav-skeleton .skeleton-row').length).toBe(8);
+    expect(nav.querySelectorAll('.admin-nav-skeleton .skeleton-row').length).toBe(9);
     expect(nav.querySelectorAll('.sidebar-nav').length).toBe(0);
 
     flags$.next({});
@@ -62,7 +62,7 @@ describe('AdminComponent', () => {
     expect(nav.getAttribute('aria-busy')).toBe('false');
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(8);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(9);
   });
 
   it('renders no badges at zero', () => {
