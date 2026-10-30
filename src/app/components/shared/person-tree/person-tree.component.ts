@@ -14,13 +14,19 @@ export interface PersonNode {
     styleUrls: ['./person-tree.component.scss', '../../shared/tree-styles.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+    standalone: false,
+    host: { '[class.person-tree--people]': "variant === 'people'" }
 })
 export class PersonTreeComponent {
   @Input() nodes: PersonNode[] = [];
   @Input() clickable = true;
   @Input() familyColorHex: string | null = null;
   @Input() selectedPersonId: string | null = null;
+  @Input() variant: 'modal' | 'people' = 'modal';
+  @Input() deceasedStyle = false;
+  @Input() spouseSurnameDedupe = true;
+  @Input() preferGivenFallback = true;
+  @Input() colorForNode: ((node: PersonNode) => string) | null = null;
   @Output() personClick = new EventEmitter<string>();
 
   isSelected(node: PersonNode): boolean {
@@ -28,10 +34,14 @@ export class PersonTreeComponent {
            this.selectedPersonId === node.spouse?.id;
   }
 
+  private firstName(name: Person['name']): string {
+    return name.firstPreferred || (this.preferGivenFallback ? name.firstGiven : '') || '';
+  }
+
   getPersonName(node: PersonNode): string {
-    const first = node.person.name.firstPreferred || node.person.name.firstGiven || '';
+    const first = this.firstName(node.person.name);
     const last = node.person.name.last || '';
-    if (node.spouse && last && last === node.spouse.name.last) {
+    if (this.spouseSurnameDedupe && node.spouse && last && last === node.spouse.name.last) {
       return first;
     }
     return `${first} ${last}`.trim();
@@ -39,7 +49,7 @@ export class PersonTreeComponent {
 
   getSpouseName(node: PersonNode): string {
     if (!node.spouse) return '';
-    const first = node.spouse.name.firstPreferred || node.spouse.name.firstGiven || '';
+    const first = this.firstName(node.spouse.name);
     const last = node.spouse.name.last || '';
     return `${first} ${last}`.trim();
   }
@@ -60,6 +70,19 @@ export class PersonTreeComponent {
     return node.children && node.children.length > 0;
   }
 
+  getGenerationColor(node: PersonNode): string {
+    if (this.colorForNode) return this.colorForNode(node);
+    return this.familyColorHex || '#e0e0e0';
+  }
+
+  isPersonDeceased(node: PersonNode): boolean {
+    return this.deceasedStyle && node.person.isLiving === false;
+  }
+
+  isSpouseDeceased(node: PersonNode): boolean {
+    return this.deceasedStyle && !!node.spouse && node.spouse.isLiving === false;
+  }
+
   onNodeClick(node: PersonNode): void {
     if (this.clickable) {
       this.personClick.emit(node.person.id);
@@ -69,6 +92,20 @@ export class PersonTreeComponent {
   onSpouseClick(node: PersonNode): void {
     if (this.clickable && node.spouse) {
       this.personClick.emit(node.spouse.id);
+    }
+  }
+
+  onNodeKeydown(event: KeyboardEvent, node: PersonNode): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onNodeClick(node);
+    }
+  }
+
+  onSpouseKeydown(event: KeyboardEvent, node: PersonNode): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onSpouseClick(node);
     }
   }
 }

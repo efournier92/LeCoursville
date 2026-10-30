@@ -37,6 +37,33 @@ export function signIn(who: E2EUser): Promise<string> {
   return idToken(E2E_USERS[who].email, E2E_USERS[who].password);
 }
 
+/** Creates a fresh account with no `approved` claim and returns its token plus a delete cleanup. */
+export async function pendingSignIn(): Promise<{ token: string; dispose: () => Promise<void> }> {
+  const email = `pending-rules-${Date.now()}@e2e.local`;
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'E2e-pass-2026', returnSecureToken: true }),
+    },
+  );
+  const body = await res.json();
+  if (!body.idToken) {
+    throw new Error(`pending sign-up failed: ${JSON.stringify(body)}`);
+  }
+  const token = body.idToken as string;
+  return {
+    token,
+    dispose: async () => {
+      await fetch(
+        `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:delete?key=${E2E_API_KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: token }) },
+      );
+    },
+  };
+}
+
 export async function uidForEmail(email: string): Promise<string> {
   const users = (await readDb<Record<string, any>>('users')) ?? {};
   const entry = Object.entries(users).find(([, user]) => user?.email === email);

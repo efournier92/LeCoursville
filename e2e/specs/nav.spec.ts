@@ -20,6 +20,8 @@ test.describe('navigation', () => {
     await expect(nav.getByRole('button', { name: 'Upload' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Account' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Chat' })).toHaveCount(0);
+    // Family Explorer is a URL-shared public page, never app chrome.
+    await expect(nav.getByRole('button', { name: 'Family Explorer' })).toHaveCount(0);
     await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
   });
 

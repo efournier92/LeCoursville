@@ -5,6 +5,18 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
 
 ## Entries
 
+- D-20261030-13 | 2026-10-30 | [outcome] | admin/ui | Canonical e2e gate green end to end: unit 708, functions 298, storage-prod 7, rules 13, chromium/webkit/firefox 245 each | .gate-results/firefox.json
+- D-20261030-14 | 2026-10-30 | [trap] | rules/deploy | A one-off ENOENT wipe of dist hosting fixtures mid-gate came from an external process, not the suite; check for a parallel ng build before diagnosing late-browser fixture failures | docs/critique/2026-10-28_FamilyExplorerFeedback.md
+- D-20261030-12 | 2026-10-30 | [trap] | build/perf | Playwright transpiles spec-imported .mjs to CommonJS: import.meta in any transitively imported file is a load-time SyntaxError; keep e2e fixture modules pure and import.meta-free | scripts/e2e/seed-fixtures.mjs
+- D-20261030-10 | 2026-10-30 | [trap] | admin/ui | A spec that flips a feature flag must restore it via Admin-SDK writeDb in a finally; sibling specs survive un-restored flags only by alphabetical file order | e2e/specs/security.spec.ts
+- D-20261030-11 | 2026-10-30 | [trap] | rules/deploy | A long-lived emulator serves database.rules.json from its boot time; compare the emulator etime with the rules mtime before trusting a gate-equivalent run | scripts/e2e/gate.sh
+- D-20261030-07 | 2026-10-30 | [outcome] | admin/ui | Ship-readiness redteam: 21 findings (19 fixed, 1 verified, 1 session-fixed), unit 700, functions 298, rules 13, e2e 242 per browser on chromium/webkit/firefox | docs/critique/2026-10-28_FamilyExplorerFeedback.md
+- D-20261030-06 | 2026-10-30 | [trap] | admin/ui | Playwright center-click on a Material drawer backdrop times out when the drawer covers the center; click a position on the visible strip instead | e2e/specs/family-explorer.spec.ts:166
+- D-20261030-05 | 2026-10-30 | [outcome] | build/perf | Family Explorer redteam closed: build green, 683 unit, 298 functions, 13 rules, 242 e2e per browser on chromium/webkit/firefox | docs/critique/2026-10-28_FamilyExplorerFeedback.md
+- D-20261030-04 | 2026-10-30 | [trap] | admin/ui | Symmetric marriageYears entries emit duplicate memo chips; dedupe by unordered spouse pair | src/app/components/family-explorer/family-tree-node.component.ts
+- D-20261030-03 | 2026-10-30 | [decision] | rules/deploy | A denied RTDB read must clear the explorer loading state in the subscribe error callback or the page hangs on the skeleton | src/app/components/family-explorer/family-explorer.component.ts
+- D-20261030-02 | 2026-10-30 | [trap] | build/perf | Seeding against a long-lived emulator needs FIREBASE_DATABASE_EMULATOR_HOST, FIREBASE_AUTH_EMULATOR_HOST, FIREBASE_STORAGE_EMULATOR_HOST, and GCLOUD_PROJECT; without them the Admin SDK hangs on ADC | scripts/e2e/seed.mjs
+- D-20261030-01 | 2026-10-30 | [trap] | admin/ui | tree-styles.scss is global under ViewEncapsulation.None; scope every selector under app-person-tree or `.person-name` leaks to contact cards | src/app/components/shared/tree-styles.scss
 - D-20261026-04 | 2026-10-26 | [outcome] | admin/ui | Shipped the 2026-10-26 batch: 13 fixes, gate green on three engines | docs/specs/2026-10-26_DevFeedbackBatch.md
 - D-20261026-03 | 2026-10-26 | [trap] | admin/ui | An empty projected slot still wraps: hide page-toolbar-content with :empty or bars grow 38px under 600px | src/app/components/shared/page-toolbar/page-toolbar.component.scss:110
 - D-20261026-02 | 2026-10-26 | [decision] | admin/security | Email is immutable: no self or admin edit, rule pins it on the data.exists branch only | database.rules.json:158

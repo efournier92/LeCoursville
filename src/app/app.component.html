@@ -2,6 +2,7 @@
   @if (shouldShowSidenavToggle()) {
     <button type="button" class="app-skip-link" data-testid="admin-skip-link" (click)="onSkipToContent($event)">Skip to admin content</button>
   }
+  @if (layout !== 'bare') {
   <mat-toolbar
     class="d-inline-flex mat-elevation-z8 justify-content-between"
     color="primary"
@@ -41,7 +42,7 @@
         <div
           class="d-none d-lg-block"
           >
-          <app-navbar-links [isMenuList]="false" [isSuperUser]="isSuperAdmin()"></app-navbar-links>
+          <app-navbar-links [isMenuList]="false" [isSuperUser]="isSuperAdmin()" [isApproved]="isApproved()"></app-navbar-links>
         </div>
         <div
           class="d-block d-lg-none"
@@ -69,7 +70,7 @@
               #menu="matMenu"
               class="toolbar-routes-menu"
               >
-              <app-navbar-links [isMenuList]="true" [isSuperUser]="isSuperAdmin()"></app-navbar-links>
+              <app-navbar-links [isMenuList]="true" [isSuperUser]="isSuperAdmin()" [isApproved]="isApproved()"></app-navbar-links>
             </mat-menu>
           }
         </div>
@@ -84,5 +85,11 @@
       }
     </div>
   </mat-toolbar>
+  @if (isPending()) {
+    <div class="pending-banner" role="status">
+      Your account is pending approval. You can browse Media and Photos while you wait; other features unlock once approved.
+    </div>
+  }
+  }
   <router-outlet></router-outlet>
 </body>

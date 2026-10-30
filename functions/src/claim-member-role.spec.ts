@@ -27,7 +27,7 @@ describe("claimMemberRole", () => {
     });
   });
 
-  it("stamps roles/user from the caller's uid, ignoring spoofed input", async () => {
+  it("does not grant roles/user, ignoring spoofed input", async () => {
     await fakeDb.ref("users/member-1/roles/admin").set(true);
 
     await expect(invoke({ uid: "someone-else" })).resolves.toEqual({
@@ -35,21 +35,17 @@ describe("claimMemberRole", () => {
       uid: "member-1",
     });
 
-    expect(fakeDb.read("users/member-1/roles/user")).toBe(true);
+    expect(fakeDb.read("users/member-1/roles/user")).toBeNull();
     expect(fakeDb.read("users/member-1/roles/admin")).toBe(true);
     expect(fakeDb.read("users/someone-else")).toBeNull();
   });
 
-  it("is idempotent and leaves other roles untouched", async () => {
-    await fakeDb.ref("users/member-1/roles/user").set(true);
+  it("is idempotent and leaves existing roles untouched", async () => {
     await fakeDb.ref("users/member-1/roles/super").set(true);
 
     await invoke();
     await invoke();
 
-    expect(fakeDb.read("users/member-1/roles")).toEqual({
-      user: true,
-      super: true,
-    });
+    expect(fakeDb.read("users/member-1/roles")).toEqual({ super: true });
   });
 });

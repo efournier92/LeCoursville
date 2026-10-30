@@ -8,6 +8,7 @@ import { PhotoShellComponent } from 'src/app/components/photo-shell/photo-shell.
 import { PhotoAlbumDetailComponent } from 'src/app/components/photo-album-detail/photo-album-detail.component';
 import { PhotoSlideshowComponent } from 'src/app/components/photo-slideshow/photo-slideshow.component';
 import { AuthGuardService } from 'src/app/services/auth-guard.service';
+import { ApprovedGuardService } from 'src/app/services/approved-guard.service';
 import { FeatureDisabledComponent } from './components/feature-disabled/feature-disabled.component';
 import { AuthAdminGuardService } from './services/auth-admin-guard.service';
 import { FeatureFlagGuard } from './services/feature-flag-guard.service';
@@ -26,12 +27,12 @@ const routes: Routes =
     {
       path: 'contacts',
       component: ContactsComponent,
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'contacts' },
     },
     {
       path: 'calendar',
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'calendar' },
       loadChildren: () => import('./components/calendar/calendar.module').then(m => m.CalendarFeatureModule),
     },
@@ -69,13 +70,20 @@ const routes: Routes =
     {
       path: 'people',
       component: PeopleComponent,
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'people' },
+    },
+    // FAMILY EXPLORER — public archive; renders its own green topbar instead
+    // of the app shell (no LeCoursville branding, no menu items).
+    {
+      path: 'family-explorer/:familyId',
+      data: { layout: 'bare' },
+      loadChildren: () => import('./components/family-explorer/family-explorer.module').then(m => m.FamilyExplorerModule),
     },
     {
       path: 'contacts/:id',
       component: ContactsComponent,
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
     },
     // MEDIA
     {

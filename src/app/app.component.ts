@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from './services/version.service';
 import { ErrorsService } from './errors.service';
-import { User } from './models/user';
+import { User, isApprovedUser } from './models/user';
 import { RoutingService } from './services/routing.service';
 import { ThemeService } from './services/theme.service';
 import { filter } from 'rxjs/operators';
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
   // with the RTDB user record loaded (authResolved$ emits then, not at
   // firebase-auth restore time — that gap flashed a wrong Sign In link).
   authResolved = false;
+  layout = 'default';
 
   get sidenavOpen$() {
     return this.routingService.sidenavOpen$;
@@ -31,6 +33,8 @@ export class AppComponent implements OnInit {
     private errorsService: ErrorsService,
     private routingService: RoutingService,
     private themeService: ThemeService,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   get theme$() {
@@ -77,6 +81,8 @@ export class AppComponent implements OnInit {
     }
     this.subscribeToAuthResolved();
     this.subscribeToUserObservable();
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => this.readLayout());
+    this.readLayout();
     this.versionService.writeVersionToWindow();
     this.errorsService.listenForErrors(this.user);
     this.errorsService.checkForNoInputsOnLogin(this.user);
@@ -84,12 +90,37 @@ export class AppComponent implements OnInit {
 
   // HELPERS
 
+  // Route data is declared on the lazy parent route, so walk from the deepest
+  // activated route back up until a layout declaration is found.
+  private readLayout(): void {
+    let snapshot = this.route.snapshot;
+    while (snapshot.firstChild) {
+      snapshot = snapshot.firstChild;
+    }
+    while (snapshot) {
+      if (snapshot.data['layout']) {
+        this.layout = snapshot.data['layout'];
+        return;
+      }
+      snapshot = snapshot.parent as typeof snapshot;
+    }
+    this.layout = 'default';
+  }
+
   private shouldNavigateToPromotedRoute(): boolean {
     return this.isSignedIn(this.user) && this.routingService.IsRootRoute();
   }
 
   private isSignedIn(user: User): boolean {
-    return user.id && user.roles.user;
+    return !!user?.id;
+  }
+
+  isApproved(): boolean {
+    return isApprovedUser(this.user);
+  }
+
+  isPending(): boolean {
+    return this.isSignedIn(this.user) && !this.isApproved();
   }
 
   isSuperAdmin(): boolean {

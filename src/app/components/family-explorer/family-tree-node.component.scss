@@ -1,0 +1,137 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// People tree-row anatomy: one inline row per person, "&" spouse separator,
+// tinted 2px generation bars, names-only, hover underline.
+.unit {
+  position: relative;
+  padding: 0.6em 0;
+  min-width: 0;
+}
+
+.person-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  min-width: 0;
+}
+
+.blood,
+.namebtn {
+  font-family: var(--font-body);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.blood .nm {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.head-unit .blood .nm {
+  font-weight: 600;
+}
+
+.nm.deceased {
+  color: var(--color-ink-2);
+  font-style: italic;
+}
+
+.blood:hover .nm,
+.namebtn.spouse:hover .nm {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.spouse-separator {
+  font-size: 0.8em;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-ink-2);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.namebtn.spouse .nm {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.unit.pinned {
+  background: color-mix(in srgb, var(--family-color, var(--color-brand-primary)) 8%, transparent);
+}
+
+.child-tick {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--family-color, var(--color-brand-primary));
+}
+
+.marriage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 2px;
+}
+
+.mchip {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--color-ink-2);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.gen-divider {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0 4px;
+}
+
+.gen-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+
+.gen-count {
+  font-size: 0.7rem;
+  color: var(--color-ink-2);
+}
+
+/* One indent and one generation bar per level, People tree style: the bar
+   echoes the branch tint at low opacity. */
+.kids {
+  margin: 0;
+  padding-left: 24px;
+  border-left: 2px solid color-mix(in srgb, var(--family-color, var(--color-brand-primary)) 35%, transparent);
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .kids {
+    padding-left: 16px;
+  }
+}

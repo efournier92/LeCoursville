@@ -1,0 +1,35 @@
+<div class="family-chart" data-testid="family-chart">
+  @if (visibleBranches(); as branches) {
+    @if (search.trim()) {
+      @let count = branches.length;
+      <p class="chart-status" role="status" aria-live="polite" data-testid="family-search-status">{{ count }} matching {{ count === 1 ? 'branch' : 'branches' }}</p>
+    }
+    @for (branch of branches; track branch.root.id) {
+    <section
+      class="family-branch"
+      [attr.data-testid]="'family-branch-' + branch.root.id"
+      [style.--family-color]="branch.color">
+      <div class="branch-numeral-row">
+        <span class="tint-dot" data-testid="family-tint-dot" aria-hidden="true"></span>
+        <span class="branch-numeral" data-testid="family-numeral">{{ branch.numeral.toString().padStart(2, '0') }}</span>
+        <span class="branch-family">{{ branch.family }} Branch</span>
+      </div>
+      <div class="branch-head">
+        <h3 class="family-header">
+          <span class="family-head-name">{{ branchHeadLabel(branch.root) }}</span>
+          <span class="member-count">{{ branch.personCount }} {{ branch.personCount === 1 ? 'Member' : 'Members' }}</span>
+        </h3>
+      </div>
+      <app-family-tree-node
+        [node]="branch.tree"
+        [depth]="0"
+        [search]="search"
+        [selectedId]="selectedId"
+        (select)="select.emit($event)">
+      </app-family-tree-node>
+    </section>
+  } @empty {
+    <app-no-results-message [searchTerm]="search" noun="family members"></app-no-results-message>
+  }
+  }
+</div>

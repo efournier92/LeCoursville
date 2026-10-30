@@ -15,6 +15,7 @@ import { PhotoAlbumsFeatureGuard } from 'src/app/services/photo-albums-feature.g
 import { AdminComponent } from './admin.component';
 import { AdminCalendarsComponent } from '../admin-calendars/admin-calendars.component';
 import { AdminFamiliesComponent } from '../admin-families/admin-families.component';
+import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-family-explorer.component';
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
 import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-import.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
@@ -58,6 +59,10 @@ const routes: Routes = [
         component: AdminCalendarsComponent,
       },
       {
+        path: ADMIN_ROUTE.familyExplorer,
+        component: AdminFamilyExplorerComponent,
+      },
+      {
         path: ADMIN_ROUTE.uploads,
         component: AdminUserUploadsComponent,
       },
@@ -82,6 +87,7 @@ const routes: Routes = [
     AdminPeopleImportComponent,
     AdminFamiliesComponent,
     AdminCalendarsComponent,
+    AdminFamilyExplorerComponent,
     AdminRecoveryComponent,
   ],
   imports: [

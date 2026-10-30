@@ -70,65 +70,10 @@
 
 .people-tree {
   margin-bottom: 6px;
-}.tree-rows,
-.children-container {
+}.tree-rows {
   max-width: 760px;
 }.tree-rows > .children-items {
   min-width: 0;
-}.tree-row {
-  display: flex;
-  align-items: center;
-  padding: 0;
-  cursor: pointer;
-  border-radius: 8px;
-
-  &.root-row {
-    font-weight: 500;
-  }}.generation-bar {
-  width: 2px;
-  align-self: stretch;
-  margin-right: 14px;
-  flex-shrink: 0;
-}.children-container {
-  display: flex;
-  padding-left: var(--tree-indent);
-
-  > .generation-bar {
-    align-self: stretch;
-    flex-shrink: 0;
-    margin-right: 14px;
-  }> .children-items {
-    flex: 1;
-    min-width: 0;
-  }}.person-info {
-  padding: 0.6em 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0;
-  min-width: 0;
-}.person-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-ink);
-  letter-spacing: 0.015em;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-
-  &.clickable:hover,
-  .tree-row:hover &.clickable {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }&.deceased {
-    color: var(--color-ink-2);
-    font-style: italic;
-  }}.spouse-separator {
-  font-size: 0.8em; // pinned small — matches the modal lineage tree (13px)
-  font-weight: 400;
-  line-height: 1;
-  color: var(--color-ink-2);
-  margin: 0 6px;
-  flex-shrink: 0;
 }.first-generation-row {
   display: flex;
   align-items: center;
@@ -148,26 +93,18 @@
       color: var(--color-brand-primary);
       text-decoration: underline;
       text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-ink);
+      outline-offset: 2px;
+      border-radius: 2px;
     }&.deceased {
       color: var(--color-ink-2);
       font-style: italic;
     }}.spouse-separator {
     color: var(--color-ink-2);
     margin: 0 4px;
-  }}.empty-state-card {
-  text-align: center;
-  padding: 32px;
-  background: var(--color-surface-muted);
-  border-radius: var(--radius-card);
-}.filter-no-results {
-  text-align: center;
-  padding: 48px 32px;
-  color: var(--color-ink-2);
-  font-size: 1.1em;
-
-  p {
-    margin: 0;
-    font-style: italic;
   }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
@@ -242,14 +179,6 @@
     font-size: 1.15rem;
   }.member-count {
     font-size: 0.66rem;
-  }.generation-bar {
-    margin-right: 10px;
-  }.children-container > .generation-bar {
-    margin-right: 10px;
-  }.person-name {
-    font-size: 0.95rem;
-  }.tree-row {
-    padding: 2px 0;
   }.first-generation-row {
     padding: 8px 12px 6px 0;
   }}

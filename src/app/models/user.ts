@@ -1,5 +1,5 @@
 export interface AuthRoles {
-  user: boolean;
+  user?: boolean;
   admin?: boolean;
   super?: boolean;
 }
@@ -8,6 +8,13 @@ export type Theme = 'light' | 'dark';
 
 export interface UserPrefs {
   theme?: Theme;
+}
+
+/** Membership is server-owned; pending users simply lack roles.user. */
+export function isApprovedUser(user: User | null | undefined): boolean {
+  return user?.roles?.user === true
+    || user?.roles?.admin === true
+    || user?.roles?.super === true;
 }
 
 export class User {
@@ -31,7 +38,6 @@ export class User {
       new Date();
     this.dateLastActive = authUser?.metadata.lastSignInTime || new Date();
     this.roles = existingUser?.roles || {
-      user: true,
       admin: false,
       super: false,
     };

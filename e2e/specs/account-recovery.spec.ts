@@ -179,6 +179,23 @@ test.describe('account recovery', () => {
     }
   });
 
+  test('completing a reset signs out the existing session', async ({ page }) => {
+    const email = E2E_USERS.user.email;
+    const newPassword = 'E2e-session-2026';
+    try {
+      await requestReset(page, email);
+      const link = await waitForResetLink(email);
+      await login(page, 'user');
+      await completeReset(page, link, newPassword);
+
+      await page.goto('/');
+      await expect(page.getByTestId('auth-email')).toBeVisible();
+    } finally {
+      await trackResets(email);
+      await setUserPassword(email, SEEDED_PASSWORD);
+    }
+  });
+
   test('invalid reset code shows the error and resend, with a clean console', async ({ page }) => {
     await page.goto('/auth/action?mode=resetPassword&oobCode=not-a-real-code');
     await expect(page.getByTestId('auth-action-error')).toBeVisible();

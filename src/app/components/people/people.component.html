@@ -93,14 +93,14 @@
           @if (group.firstGeneration.length > 0) {
             <div class="first-generation-row">
               @for (node of group.firstGeneration; track node) {
-                <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
+                <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getPersonId(node))" (keydown)="onFirstGenKeydown($event, getPersonId(node))">
                   {{ getPersonName(node) }}
                 </span>
                 @if (getSpouseName(node)) {
                   <span class="spouse-separator"> &amp; </span>
                 }
                 @if (getSpouseName(node)) {
-                  <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" (click)="openPersonDetail(getSpouseId(node))">
+                  <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getSpouseId(node))" (keydown)="onFirstGenKeydown($event, getSpouseId(node))">
                     {{ getSpouseName(node) }}
                   </span>
                 }
@@ -110,7 +110,16 @@
           @if (group.roots?.length) {
             <div class="tree-rows">
               <div class="children-items">
-                <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: group.roots, level: 0 }"></ng-template>
+                <app-person-tree
+                  [nodes]="group.roots"
+                  [familyColorHex]="null"
+                  [colorForNode]="colorForNode"
+                  [variant]="'people'"
+                  [deceasedStyle]="true"
+                  [spouseSurnameDedupe]="true"
+                  [preferGivenFallback]="false"
+                  (personClick)="openPersonDetail($event)"
+                ></app-person-tree>
               </div>
             </div>
           }
@@ -119,38 +128,6 @@
     </div>
   }
 </div>
-
-<ng-template #nodeTemplate let-nodes="nodes" let-level="level">
-  @for (node of nodes; track node) {
-    <div class="tree-row">
-      <span class="person-info">
-        <span class="person-name clickable" [class.deceased]="isPersonDeceased(node)" (click)="openPersonDetail(getPersonId(node))">
-          {{ getPersonName(node) }}
-        </span>
-        @if (getSpouseName(node)) {
-          <span class="spouse-separator"> &amp; </span>
-        }
-        @if (getSpouseName(node)) {
-          <span class="person-name clickable"
-            [class.deceased]="isSpouseDeceased(node)"
-            (click)="openPersonDetail(getSpouseId(node))">
-            {{ getSpouseName(node) }}
-          </span>
-        }
-      </span>
-    </div>
-    @if (hasChildren(node) === true) {
-      @if (getNodeChildren(node) !== null) {
-        <div class="children-container">
-          <div class="generation-bar" [style.background-color]="getColorHex(node)"></div>
-          <div class="children-items">
-            <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
-          </div>
-        </div>
-      }
-    }
-  }
-</ng-template>
 
 @if (selectedPersonId) {
   <app-person-detail-modal

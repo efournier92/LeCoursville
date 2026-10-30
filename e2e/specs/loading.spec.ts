@@ -34,6 +34,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/uploads', content: (p) => p.getByText('pending.png').first() },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
   { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
+  { route: '/admin/family-explorer', content: (p) => p.getByTestId('archive-row-ferland') },
 ];
 
 test.describe('loading contract', () => {

@@ -5,8 +5,13 @@ vi.mock("firebase-admin/database", async () => {
   return { getDatabase: () => fakeDb };
 });
 
+vi.mock("firebase-admin/auth", async () => {
+  const { authMock } = await import("./test-support");
+  return { getAuth: () => authMock };
+});
+
 import { changeUserRole } from "./change-user-role";
-import { fakeDb, resetFakeState } from "./test-support";
+import { authMock, fakeDb, resetFakeState } from "./test-support";
 
 const superAuth = {
   uid: "super-1",
@@ -136,6 +141,10 @@ describe("changeUserRole", () => {
     });
     expect(audits[0].at).not.toBe(0);
     expect(typeof audits[0].at).toBe("number");
+    expect(authMock.setCustomUserClaims).toHaveBeenCalledWith("target-1", {
+      approved: true,
+    });
+    expect(authMock.revokeRefreshTokens).toHaveBeenCalledWith("target-1");
   });
 
   it("revokes membership and audits the ban", async () => {
@@ -155,6 +164,9 @@ describe("changeUserRole", () => {
     expect(auditEntries()[0]).toMatchObject({
       before: { user: true, admin: false, super: false },
       after: { user: false, admin: false, super: false },
+    });
+    expect(authMock.setCustomUserClaims).toHaveBeenCalledWith("target-1", {
+      approved: false,
     });
   });
 

@@ -1,9 +1,9 @@
 import { test, expect } from '../helpers/fixture';
-import { signIn } from '../helpers/rules';
+import { pendingSignIn, signIn } from '../helpers/rules';
 
-// Accepted risk (ledger C-20261023-05): storage.rules.prod lets any signed-in
-// member create and delete photos/videoScreenshots and delete userUploads. This
-// suite pins that deployed policy as-is; it is not a statement of intent.
+// Accepted risk (ledger C-20261023-05): storage.rules.prod still lets any
+// signed-in member delete userUploads. Photos and videoScreenshots writes
+// require the approved claim; pending members are read-only there.
 const STORAGE_ORIGIN = 'http://127.0.0.1:9199';
 const BUCKET = 'lecoursville-dev.appspot.com';
 const OBJECTS = `${STORAGE_ORIGIN}/v0/b/${BUCKET}/o`;
@@ -48,7 +48,7 @@ test.describe('deployed storage rules', () => {
     expect(res.status).toBe(403);
   });
 
-  test('a signed-in member can create and delete photos (accepted risk)', async () => {
+  test('an approved member can create and delete photos', async () => {
     const token = await signIn('user');
     const path = `photos/e2e-member-${Date.now()}.png`;
 
@@ -59,6 +59,34 @@ test.describe('deployed storage rules', () => {
       expect((await getObject(path)).status).toBe(404);
     } finally {
       await removeObject(path, token).catch(() => undefined);
+    }
+  });
+
+  test('a pending member can view but cannot create or delete photos', async () => {
+    const { token, dispose } = await pendingSignIn();
+    const path = `photos/e2e-pending-${Date.now()}.png`;
+
+    try {
+      expect((await getObject('photos/album-1/photo1.png', token)).status).toBe(200);
+      expect((await fetch(`${OBJECTS}?prefix=${encodeURIComponent('photos/')}`, {
+        headers: authHeader(token),
+      })).status).toBe(200);
+      expect((await upload(path, token)).status).toBe(403);
+      expect((await removeObject('photos/album-1/photo1.png', token)).status).toBe(403);
+    } finally {
+      await dispose();
+    }
+  });
+
+  test('a pending member cannot create or delete videoScreenshots', async () => {
+    const { token, dispose } = await pendingSignIn();
+    const path = `videoScreenshots/e2e-pending-${Date.now()}.png`;
+
+    try {
+      expect((await upload(path, token)).status).toBe(403);
+      expect((await removeObject(path, token)).status).toBe(403);
+    } finally {
+      await dispose();
     }
   });
 
