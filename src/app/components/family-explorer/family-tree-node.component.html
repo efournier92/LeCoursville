@@ -1,0 +1,64 @@
+<div
+  class="unit"
+  [class.head-unit]="depth === 0"
+  [class.pinned]="isPinned()"
+  [attr.data-depth]="depth"
+  [attr.data-testid]="'family-node-' + node.person.id">
+  <div class="person-info">
+    @if (depth > 0) {
+      <span class="child-tick" data-testid="family-tick" aria-hidden="true"></span>
+    }
+    <button
+      type="button"
+      class="blood"
+      [attr.data-testid]="'family-unit-' + node.person.id"
+      [attr.data-person]="node.person.id"
+      [attr.aria-pressed]="selectedId === node.person.id"
+      (click)="onSelect(node.person)"
+      (keydown)="onKeydown($event, node.person)">
+      <span class="nm" [class.deceased]="!!node.person.deathDate">{{ personName(node.person) }}</span>
+    </button>
+    @for (spouse of node.spouses; track spouse.id) {
+      <span class="spouse-separator" aria-hidden="true">&amp;</span>
+      <button
+        type="button"
+        class="namebtn spouse"
+        [attr.data-testid]="'family-spouse-' + spouse.id"
+        [attr.data-person]="spouse.id"
+        [attr.aria-pressed]="selectedId === spouse.id"
+        (click)="onSelect(spouse)"
+        (keydown)="onKeydown($event, spouse)">
+        <span class="nm" [class.deceased]="!!spouse.deathDate">{{ personName(spouse) }}</span>
+      </button>
+    }
+  </div>
+  @if (marriageChips(); as chips) {
+    @if (chips.length > 0) {
+      <div class="marriage-chips">
+        @for (chip of chips; track chip.personId + '-' + chip.spouseId) {
+          <span class="mchip" [attr.data-testid]="'family-marriage-' + chip.personId + '-' + chip.spouseId">m. {{ chip.year }}</span>
+        }
+      </div>
+    }
+  }
+</div>
+
+@if (visibleChildren(); as children) {
+  @if (children.length > 0) {
+    <div class="kids" data-testid="family-guide">
+      <div class="gen-divider" data-testid="gen-divider">
+        <span class="gen-label">{{ generationLabel(depth) }}</span>
+        <span class="gen-count">{{ children.length }}</span>
+      </div>
+      @for (child of children; track child.person.id; let i = $index) {
+        <app-family-tree-node
+          [node]="child"
+          [depth]="depth + 1"
+          [search]="search"
+          [selectedId]="selectedId"
+          (select)="select.emit($event)">
+        </app-family-tree-node>
+      }
+    </div>
+  }
+}

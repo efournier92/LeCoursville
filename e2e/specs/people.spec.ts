@@ -78,6 +78,30 @@ test.describe('people', () => {
     await expect(page.locator('app-person-detail-modal')).toContainText('Mignonne');
   });
 
+  test('first-generation rows are keyboard-operable buttons that open the detail modal', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/people');
+
+    const spans = page.locator('.first-gen-person');
+    await expect(spans.first()).toBeVisible();
+    const count = await spans.count();
+    for (let i = 0; i < count; i += 1) {
+      await expect(spans.nth(i)).toHaveAttribute('role', 'button');
+      await expect(spans.nth(i)).toHaveAttribute('tabindex', '0');
+    }
+
+    // Focus directly: WebKit's Tab traversal skips non-text controls by default.
+    const first = spans.first();
+    const name = ((await first.textContent()) ?? '').trim();
+    await first.focus();
+    await expect(first).toBeFocused();
+    await page.keyboard.press('Enter');
+    const modal = page.locator('app-person-detail-modal');
+    await expect(modal.locator('h2')).toContainText(name);
+    await modal.locator('.close-button').click();
+    await expect(modal).toHaveCount(0);
+  });
+
   test('person modal close glyph is centred in its icon button', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');

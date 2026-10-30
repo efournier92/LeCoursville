@@ -6,13 +6,7 @@ import { Family } from 'src/app/models/family';
 import { PeopleService } from 'src/app/services/people.service';
 import { FamilyService } from 'src/app/services/family.service';
 import { AppSettings } from 'src/environments/app-settings';
-
-interface PersonNode {
-  person: Person;
-  spouse: Person | null;
-  children: PersonNode[];
-  level: number;
-}
+import { PersonNode } from 'src/app/components/shared/person-tree/person-tree.component';
 
 interface FamilyGroup {
   family: string;
@@ -21,18 +15,6 @@ interface FamilyGroup {
   roots: PersonNode[];
   memberCount: number;
   livingMemberCount: number;
-}
-
-interface TableRow {
-  person: Person;
-  personName: string;
-  spouseName: string | null;
-  spousePersonId: string | null;
-  colorHex: string;
-  indentPx: number;
-  isRoot: boolean;
-  hasChildren: boolean;
-  nodeKey: string;
 }
 
 @Component({
@@ -44,7 +26,6 @@ interface TableRow {
 })
 export class PeopleComponent implements OnInit, OnDestroy {
   allPeople: Person[] = [];
-  filteredPeople: Person[] = [];
   familyGroups: FamilyGroup[] = [];
   filterQuery = '';
   selectedFamily = '';
@@ -203,6 +184,14 @@ export class PeopleComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Mirrors person-tree's span-button contract so keyboard users can open the modal. */
+  onFirstGenKeydown(event: KeyboardEvent, id: string): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openPersonDetail(id);
+    }
+  }
+
   closeModal(): void {
     this.selectedPersonId = null;
     this.router.navigate([], {
@@ -237,8 +226,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
         filtered = filtered.filter(p => p.familyId === family.id);
       }
     }
-    this.filteredPeople = filtered;
-
     const visiblePeople = filtered.filter(p =>
       p.generationNumber > 0
     );
@@ -478,9 +465,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     return nodes;
   }
 
-  getGroupedPeopleEntries(): FamilyGroup[] {
-    return this.familyGroups;
-  }
+  colorForNode = (node: PersonNode): string => this.getColorHex(node);
 
   getFamilyColorForName(name: string): string {
     const family = this.familiesByNameMap.get(name.toLowerCase());
@@ -492,18 +477,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   getFamilyDisplayName(name: string, roots: PersonNode[]): string {
     return name + "'s Family";
-  }
-
-  getNodeIndent(node: PersonNode): number {
-    return node.level * 25;
-  }
-
-  hasChildren(node: PersonNode): boolean {
-    return node.children.length > 0;
-  }
-
-  getNodeChildren(node: PersonNode): PersonNode[] {
-    return node.children;
   }
 
   getPersonName(node: PersonNode): string {
@@ -522,8 +495,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     return `${first} ${last}`.trim();
   }
 
-  getSpouseId(node: PersonNode): string | null {
-    return node.spouse ? node.spouse.id : null;
+  getSpouseId(node: PersonNode): string {
+    return node.spouse ? node.spouse.id : '';
   }
 
   getPersonId(node: PersonNode): string {
@@ -545,10 +518,6 @@ export class PeopleComponent implements OnInit, OnDestroy {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  isRootNode(node: PersonNode, level: number): boolean {
-    return level === 0;
   }
 
   isPersonDeceased(node: PersonNode): boolean {

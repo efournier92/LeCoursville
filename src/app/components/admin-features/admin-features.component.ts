@@ -16,7 +16,7 @@ interface FeatureGroup {
 // decides which section each entry renders under.
 const FEATURE_GROUPS: { label: string; ids: string[] }[] = [
   { label: 'People', ids: ['people', 'contacts'] },
-  { label: 'Content', ids: ['calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'families'] },
+  { label: 'Content', ids: ['calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions'] },
   { label: 'System', ids: ['chat'] },
 ];
 

@@ -1,27 +1,41 @@
 <ng-template #nodeTemplate let-nodes="nodes" let-level="level">
   @for (node of nodes; track node) {
+    @let spouseName = getSpouseName(node);
+    @let nodeChildren = getNodeChildren(node);
     <div class="tree-row">
       <span class="person-info">
-        <span class="person-name clickable" [class.selected]="selectedPersonId === node.person.id" (click)="onNodeClick(node)">
+        <span class="person-name clickable"
+          [class.selected]="selectedPersonId === node.person.id"
+          [class.deceased]="isPersonDeceased(node)"
+          [attr.role]="clickable ? 'button' : null"
+          [attr.tabindex]="clickable ? 0 : null"
+          [attr.aria-pressed]="clickable && selectedPersonId ? selectedPersonId === node.person.id : null"
+          (click)="onNodeClick(node)"
+          (keydown)="onNodeKeydown($event, node)">
           {{ getPersonName(node) }}
         </span>
-        @if (getSpouseName(node)) {
+        @if (spouseName) {
           <span class="spouse-separator"> &amp; </span>
         }
-        @if (getSpouseName(node)) {
+        @if (spouseName) {
           <span class="person-name clickable"
             [class.selected]="selectedPersonId === node.spouse?.id"
-            (click)="onSpouseClick(node)">
-            {{ getSpouseName(node) }}
+            [class.deceased]="isSpouseDeceased(node)"
+            [attr.role]="clickable ? 'button' : null"
+            [attr.tabindex]="clickable ? 0 : null"
+            [attr.aria-pressed]="clickable && selectedPersonId ? selectedPersonId === node.spouse?.id : null"
+            (click)="onSpouseClick(node)"
+            (keydown)="onSpouseKeydown($event, node)">
+            {{ spouseName }}
           </span>
         }
       </span>
     </div>
-    @if (hasChildren(node) && getNodeChildren(node)?.length) {
+    @if (hasChildren(node) && nodeChildren?.length) {
       <div class="children-container">
-        <div class="generation-bar" [style.background-color]="familyColorHex || '#e0e0e0'"></div>
+        <div class="generation-bar" [style.background-color]="getGenerationColor(node)"></div>
         <div class="children-items">
-          <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: getNodeChildren(node), level: level + 1 }"></ng-template>
+          <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ nodes: nodeChildren, level: level + 1 }"></ng-template>
         </div>
       </div>
     }

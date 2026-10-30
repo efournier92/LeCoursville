@@ -100,7 +100,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="features-loading"]')).toBeFalsy();
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
   });
 
   it('shows a retryable error and recovers after retrying', () => {
@@ -123,7 +123,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(component.loadError).toBe('');
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
   });
 
   it('isEnabled() returns true when Firebase flag is null (default ON)', () => {

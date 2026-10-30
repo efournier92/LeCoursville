@@ -64,6 +64,11 @@ const ADMIN_ROUTES: AdminRoute[] = [
     title: 'Features',
     ready: (page) => expect(page.getByTestId('feature-toggle-calendar')).toBeVisible(),
   },
+  {
+    path: '/admin/family-explorer',
+    title: 'Family Explorer',
+    ready: (page) => expect(page.getByTestId('archive-row-ferland')).toBeVisible(),
+  },
 ];
 
 const MOBILE_TAP_TARGET = 44;

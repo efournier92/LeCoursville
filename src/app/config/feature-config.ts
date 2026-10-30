@@ -19,7 +19,6 @@ export const FEATURES: FeatureConfig[] = [
   { id: 'enablePhotoAlbums', label: 'Photo Albums (new view)', route: '/photos', icon: 'photo_library', defaultEnabled: false },
   { id: 'expressions', label: 'Expressions', route: '/expressions', icon: 'lightbulb' },
   { id: 'chat', label: 'Chat', route: '/chat', icon: 'message' },
-  { id: 'families', label: 'Ferland Family', route: '/families/ferland', icon: 'account_tree', defaultEnabled: false },
 ];
 
 export const ACCOUNT_FEATURE: FeatureConfig = {

@@ -26,7 +26,7 @@ export interface FamilyPerson {
   note?: string | null;
 }
 
-export interface FamilyArchive {
+export interface FamilyExplorer {
   title: string;
   published: boolean;
   updatedAt?: number;
@@ -34,7 +34,7 @@ export interface FamilyArchive {
   people: Record<string, FamilyPerson>;
 }
 
-export interface ArchiveListItem {
+export interface FamilyExplorerListItem {
   title: string;
   published: boolean;
   updatedAt?: number;
@@ -79,7 +79,7 @@ export function parseFamilyPeople(rawJson: string): ParsedPeople {
       throw new Error('Every person record needs an id.');
     }
     const source = raw as Record<string, unknown>;
-    if (people[source.id as string]) {
+    if (Object.prototype.hasOwnProperty.call(people, source.id as string)) {
       throw new Error(`Duplicate person id: ${source.id}.`);
     }
     const person: Record<string, unknown> = {};
@@ -94,19 +94,19 @@ export function parseFamilyPeople(rawJson: string): ParsedPeople {
 }
 
 @Injectable({ providedIn: 'root' })
-export class FamilyArchiveService {
+export class FamilyExplorerService {
 
   constructor(
     private rtdb: RtdbService,
     private auth: AuthService,
   ) {}
 
-  getArchive(familyId: string): Observable<FamilyArchive | null> {
-    return this.rtdb.object<FamilyArchive>('familyArchive/' + familyId).valueChanges();
+  getArchive(familyId: string): Observable<FamilyExplorer | null> {
+    return this.rtdb.object<FamilyExplorer>('familyExplorer/' + familyId).valueChanges();
   }
 
-  listArchives(): Observable<Record<string, ArchiveListItem> | null> {
-    return this.rtdb.object<Record<string, ArchiveListItem>>('familyArchive').valueChanges();
+  listArchives(): Observable<Record<string, FamilyExplorerListItem> | null> {
+    return this.rtdb.object<Record<string, FamilyExplorerListItem>>('familyExplorer').valueChanges();
   }
 
   async ingest(familyId: string, title: string, published: boolean, rawJson: string): Promise<ParsedPeople> {
@@ -121,7 +121,7 @@ export class FamilyArchiveService {
     if (!uid) {
       throw new Error('You must be signed in.');
     }
-    await this.rtdb.object(`familyArchive/${familyId}`).set({
+    await this.rtdb.object(`familyExplorer/${familyId}`).set({
       title: title.trim(),
       published,
       updatedAt: serverTimestamp(),

@@ -13,7 +13,8 @@
     "deploy:dev": "bash scripts/deploy.sh dev",
     "deploy:prod:nogate": "SKIP_GATE=1 bash scripts/deploy.sh prod",
     "deploy:dev:nogate": "SKIP_GATE=1 bash scripts/deploy.sh dev",
-    "email-healthcheck": "bash scripts/email-healthcheck.sh"
+    "email-healthcheck": "bash scripts/email-healthcheck.sh",
+    "family:upload": "node scripts/family/upload-people.mjs"
   },
   "private": true,
   "dependencies": {

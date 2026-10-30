@@ -1,1 +1,100 @@
-// Uses tree-styles.scss via styleUrls
+// Uses tree-styles.scss via styleUrls. The rules below only apply when the host
+// carries .person-tree--people (ViewEncapsulation.None, so the host class is the
+// scope boundary that keeps the modal/panel defaults untouched).
+
+.person-tree--people {
+  display: block;
+
+  .tree-row {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .person-info {
+    padding: 0.6em 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    min-width: 0;
+  }
+
+  .person-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    letter-spacing: 0.015em;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    white-space: normal;
+
+    &.clickable:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    &.deceased {
+      color: var(--color-ink-2);
+      font-style: italic;
+    }
+  }
+
+  .tree-row:hover .person-name.clickable {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .spouse-separator {
+    font-size: 0.8em;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--color-ink-2);
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+
+  .children-container {
+    display: flex;
+    align-items: stretch;
+    max-width: 760px;
+    padding-left: var(--tree-indent, 24px);
+
+    > .generation-bar {
+      align-self: stretch;
+      flex-shrink: 0;
+      margin-right: 14px;
+    }
+
+    > .children-items {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .generation-bar {
+    width: 2px;
+    align-self: stretch;
+    margin-right: 14px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .person-tree--people {
+    .generation-bar,
+    .children-container > .generation-bar {
+      margin-right: 10px;
+    }
+
+    .person-name {
+      font-size: 0.95rem;
+    }
+
+    .tree-row {
+      padding: 2px 0;
+    }
+  }
+}
