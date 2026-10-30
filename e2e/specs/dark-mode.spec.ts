@@ -209,18 +209,26 @@ test('admin family explorer stays readable in both themes', async ({ page }) => 
 test('person tree renders theme-aware rows in both themes', async ({ page }) => {
   await login(page, 'user');
   await page.goto('/people');
-  const bar = page.locator('.generation-bar').first();
-  const name = page.locator('.person-name').first();
+  const root = page.locator('.first-gen-person', { hasText: 'Alice' });
+  await expect(root).toBeVisible();
+  await root.click();
+  const modal = page.locator('app-person-detail-modal');
+  await expect(modal.locator('.close-button')).toBeVisible();
+  const bar = modal.locator('.generation-bar').first();
   await expect(bar).toBeVisible();
   const lightBar = await bar.evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(lightBar, 'generation tint is opaque').not.toBe('rgba(0, 0, 0, 0)');
-  await expectReadable(name);
-  const light = await surfaceColors(name);
+  await expectReadable(modal.locator('.person-name').first());
+  const light = await surfaceColors(modal.locator('.person-name').first());
+  await modal.locator('.close-button').click();
+  await expect(modal).toHaveCount(0);
 
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(bar).toBeVisible();
-  await expectReadable(name);
-  const dark = await surfaceColors(name);
+  await root.click();
+  await expect(modal.locator('.close-button')).toBeVisible();
+  await expect(modal.locator('.generation-bar').first()).toBeVisible();
+  await expectReadable(modal.locator('.person-name').first());
+  const dark = await surfaceColors(modal.locator('.person-name').first());
   expect(dark.background, 'tree surface follows the theme').not.toBe(light.background);
 });
