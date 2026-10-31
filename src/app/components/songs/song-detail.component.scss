@@ -50,6 +50,16 @@
   color: var(--color-ink-2);
 }
 
+// Chips wrap inside their own column so continuation chips indent under the
+// first chip instead of snapping back to the card edge under the label.
+.song-leaders-chips {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
 .leader-chip {
   display: inline-flex;
   align-items: center;
@@ -259,8 +269,18 @@
     max-width: none !important;
   }
 
+  // Keep the heading with its metadata and let the first body line follow it.
+  .song-header {
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
   // Leaders print as plain text, not filled pills: "Led by Alice, Ben".
   .song-leaders {
+    gap: 0.35em;
+  }
+
+  .song-leaders-chips {
     gap: 0.35em;
   }
 
@@ -281,12 +301,18 @@
     max-width: none;
     white-space: pre-wrap;
     word-break: normal;
+    // Never split a chord token across a print line, and never strand a
+    // chord line away from its lyric at a page break.
+    overflow-wrap: normal;
+    orphans: 3;
+    widows: 3;
 
-    // Printed chords are plain ink: no brand tint, no extra weight.
+    // Printed chords keep their 600 weight (no ink cost), but print as plain
+    // ink instead of the brand tint.
     .chord,
     .chord-line {
       color: inherit;
-      font-weight: inherit;
+      font-weight: 600;
     }
   }
 }

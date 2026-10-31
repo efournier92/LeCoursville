@@ -59,12 +59,14 @@
       </div>
     } @else {
       @if (filteredSongs.length === 0) {
-        <app-no-results-message
-          [searchTerm]="activeQuery"
-          [isCentered]="true"
-          noun="songs"
-          title="No results"
-          ></app-no-results-message>
+        <div class="songs-empty-region">
+          <app-no-results-message
+            [searchTerm]="activeQuery"
+            [isCentered]="true"
+            noun="songs"
+            title="No results"
+            ></app-no-results-message>
+        </div>
       }
 
       <div class="songs-grid">

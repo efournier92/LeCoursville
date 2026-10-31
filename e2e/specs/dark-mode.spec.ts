@@ -59,15 +59,18 @@ const USER_EMAIL = 'user@e2e.local';
 const OTHER_EMAIL = 'other@e2e.local';
 let uid: string | null = null;
 let otherUid: string | null = null;
+let adminUid: string | null = null;
 let otherRoles: unknown = { user: true };
 
 test.beforeAll(async () => {
   const users = (await readDb<Record<string, { email?: string; roles?: unknown }>>('users')) ?? {};
   uid = Object.keys(users).find((id) => users[id]?.email === USER_EMAIL) ?? null;
   otherUid = Object.keys(users).find((id) => users[id]?.email === OTHER_EMAIL) ?? null;
+  adminUid = Object.keys(users).find((id) => users[id]?.email === 'admin@e2e.local') ?? null;
   otherRoles = users[otherUid ?? '']?.roles ?? { user: true };
   expect(uid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
   expect(otherUid, 'seeded other@e2e.local must resolve to a uid').toBeTruthy();
+  expect(adminUid, 'seeded admin@e2e.local must resolve to a uid').toBeTruthy();
 });
 
 test.afterEach(async () => {
@@ -138,6 +141,33 @@ test('toggle writes theme to RTDB', async ({ page }) => {
   await expect
     .poll(() => readDb(`users/${uid}/prefs/theme`), { timeout: 10000 })
     .toBe('dark');
+});
+
+test('dark dialog scrim separates the sheet from the dark page', async ({ page }) => {
+  try {
+    await login(page, 'admin');
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    // Wait for the preference write before the finally deletes it, or the
+    // in-flight write can land afterwards and leak dark into later specs.
+    await expect
+      .poll(() => readDb(`users/${adminUid}/prefs/theme`), { timeout: 10000 })
+      .toBe('dark');
+    await page.goto('/admin/songs');
+    await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+    await page.getByTestId('admin-add-song').click();
+    await page.getByTestId('admin-paste-input').fill('Title: E2E Scrim\n\nA lyric line');
+    await page.getByTestId('admin-parse-button').click();
+    await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+    await expect(page.locator('.cdk-overlay-backdrop')).toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0.55)',
+    );
+    await page.getByTestId('draft-cancel').click();
+    await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+  } finally {
+    await deleteDb(`users/${adminUid}/prefs`);
+  }
 });
 
 test('no console errors during theme flows', async ({ page, collector }) => {

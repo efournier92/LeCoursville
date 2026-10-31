@@ -46,18 +46,20 @@
         @if (song.leaderIds.length > 0) {
           <div class="song-leaders" data-testid="song-leaders">
             <span class="song-leaders-label">Led by</span>
-            @for (leaderId of song.leaderIds; track leaderId) {
-              @if (isResolved(leaderId)) {
-                <a
-                  class="leader-chip"
-                  data-testid="leader-chip"
-                  [routerLink]="['/people']"
-                  [queryParams]="{ selected: leaderId }"
-                  >{{ leaderLabel(leaderId) }}</a>
-              } @else {
-                <span class="leader-chip leader-chip-unknown" data-testid="leader-chip">Unknown</span>
+            <div class="song-leaders-chips">
+              @for (leaderId of song.leaderIds; track leaderId) {
+                @if (isResolved(leaderId)) {
+                  <a
+                    class="leader-chip"
+                    data-testid="leader-chip"
+                    [routerLink]="['/people']"
+                    [queryParams]="{ selected: leaderId }"
+                    >{{ leaderLabel(leaderId) }}</a>
+                } @else {
+                  <span class="leader-chip leader-chip-unknown" data-testid="leader-chip">Unknown</span>
+                }
               }
-            }
+            </div>
           </div>
         }
       </header>

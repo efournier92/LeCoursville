@@ -72,6 +72,20 @@ test.describe('songs', () => {
     const noResults = page.locator('.no-results-message');
     await expect(noResults.locator('.no-results-title')).toHaveText('No results');
     await expect(noResults).toContainText('zzz-no-match');
+
+    // The state is vertically centered in the content area on roomy screens.
+    const centered = await page.locator('.songs-empty-region').evaluate(el => {
+      const region = el.getBoundingClientRect();
+      const message = el.querySelector('.no-results-message')!.getBoundingClientRect();
+      return {
+        minHeight: Number.parseFloat(getComputedStyle(el).minHeight),
+        centerDelta: Math.abs(
+          message.top + message.height / 2 - (region.top + region.height / 2),
+        ),
+      };
+    });
+    expect(centered.minHeight).toBeGreaterThan(300);
+    expect(centered.centerDelta).toBeLessThan(2);
   });
 
   test('6b. a non-admin empty library greets the viewer without an admin CTA', async ({ page }) => {
@@ -83,6 +97,14 @@ test.describe('songs', () => {
       await expect(empty).toContainText('No songs yet');
       await expect(empty).toContainText("Once songs are added, they'll show up here.");
       await expect(empty.getByRole('link')).toHaveCount(0);
+
+      // Room-sized empty state fills and centers in the content area.
+      const layout = await empty.evaluate(el => ({
+        minHeight: Number.parseFloat(getComputedStyle(el).minHeight),
+        justify: getComputedStyle(el).justifyContent,
+      }));
+      expect(layout.minHeight).toBeGreaterThan(300);
+      expect(layout.justify).toBe('center');
     } finally {
       await writeDb('songs', original);
     }
@@ -148,6 +170,27 @@ test.describe('songs', () => {
     expect(print.spaced).toBe(true);
     expect(print.border).toBe('0px');
     expect(print.comma).toContain(',');
+  });
+
+  test('9c. at 320px leader chips wrap in a column under the label', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await openSong(page, 'song-a');
+    const geometry = await page.evaluate(() => {
+      const rect = (selector: string) =>
+        document.querySelector(selector)!.getBoundingClientRect();
+      return {
+        sheetLeft: rect('.song-sheet').left,
+        label: rect('.song-leaders-label'),
+        chips: rect('.song-leaders-chips'),
+        firstChip: rect('[data-testid="leader-chip"]'),
+      };
+    });
+    // The chips column starts after the label, indented from the card edge, and
+    // a wrapped continuation shares the first chip's left edge.
+    expect(geometry.label.right).toBeLessThanOrEqual(geometry.chips.left);
+    expect(geometry.chips.left).toBeGreaterThan(geometry.sheetLeft + 50);
+    expect(Math.abs(geometry.chips.left - geometry.firstChip.left)).toBeLessThanOrEqual(0.5);
+    await expect(page.locator('.song-leaders-chips')).toHaveCSS('flex-wrap', 'wrap');
   });
 
   test('10. the detail body is monospace and preserves stored newlines', async ({ page }) => {
@@ -284,6 +327,32 @@ test.describe('songs', () => {
     expect(print.sheetWidth).toBeGreaterThanOrEqual(print.bodyWidth - 16);
     expect(print.titleTopFromSheet).toBeGreaterThanOrEqual(52);
     expect(print.titleTopFromSheet).toBeLessThan(54);
+
+    // Exactly one 14mm owner: @page contributes no margin, so real paper does
+    // not stack a second gutter on top of the sheet's own padding.
+    const cssText = await page.evaluate(async () => {
+      const chunks: string[] = [];
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          const owner = sheet.ownerNode as HTMLStyleElement | HTMLLinkElement | null;
+          if (owner?.textContent) {
+            chunks.push(owner.textContent);
+          } else if (sheet.href) {
+            chunks.push(await (await fetch(sheet.href)).text());
+          }
+        } catch {
+          // Cross-origin sheets cannot be read; every app sheet is same-origin.
+        }
+      }
+      return chunks.join('\n');
+    });
+    const pageBlocks = [...cssText.matchAll(/@page\s*\{([^}]*)\}/g)];
+    expect(pageBlocks.length).toBeGreaterThan(0);
+    for (const block of pageBlocks) {
+      const margin = /margin\s*:\s*([^;]+)/.exec(block[1])?.[1].trim();
+      expect(['0', '0mm', '0px']).toContain(margin);
+    }
+    expect(cssText.match(/14mm/g) || []).toHaveLength(1);
   });
 
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
@@ -574,6 +643,9 @@ test.describe('songs', () => {
       await page.getByTestId('admin-paste-input').fill('Title: E2E Dialog Fit\n\nA lyric line');
       await page.getByTestId('admin-parse-button').click();
       await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+      const pane = page.locator('.cdk-overlay-pane.song-draft-panel');
+      // Desktop keeps the centered 640px dialog.
+      await expect(pane).toHaveCSS('width', '640px');
 
       // Desktop: the label, the search field, and one option are on first paint.
       await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport();
@@ -582,6 +654,19 @@ test.describe('songs', () => {
 
       // Mobile: the content scrolls; the picker and the actions stay reachable.
       await page.setViewportSize({ width: 390, height: 844 });
+      // The pane becomes a full-height, full-width bottom-anchored sheet, so no
+      // dimmed strip peeks below and the actions sit on the sheet's bottom.
+      await expect(pane).toHaveCSS('width', '390px');
+      await expect(pane).toHaveCSS('height', '844px');
+      await expect(pane).toHaveCSS('max-height', '844px');
+      await expect(pane).toHaveCSS('border-radius', '0px');
+      await expect(page.locator('.mat-mdc-dialog-surface')).toHaveCSS('border-radius', '0px');
+      // Wait out the entrance transform before measuring the sheet's edges.
+      await expect(page.locator('.mat-mdc-dialog-surface')).toHaveCSS('transform', 'none');
+      const surfaceBottom = await page
+        .locator('.mat-mdc-dialog-surface')
+        .evaluate(el => el.getBoundingClientRect().bottom);
+      expect(Math.abs(surfaceBottom - 844)).toBeLessThanOrEqual(1);
       await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
       // The tighter title band and 80px body keep the Leaders search whole on
       // first paint instead of slicing it at the content edge.

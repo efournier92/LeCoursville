@@ -154,6 +154,22 @@
   text-align: center;
 }
 
+// On roomy screens the empty / no-results states sit in the middle of the
+// content area below the toolbar (the feature-disabled page's pattern).
+// Mobile stays top-aligned and compact.
+@media (min-width: 900px) {
+  .songs-empty,
+  .songs-empty-region {
+    min-height: calc(100vh - 160px);
+    justify-content: center;
+  }
+
+  .songs-empty-region {
+    display: flex;
+    align-items: center;
+  }
+}
+
 .skeleton-card {
   height: 168px;
 }

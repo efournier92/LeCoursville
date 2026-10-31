@@ -239,6 +239,12 @@ html[data-theme="dark"] {
   ));
 }
 
+// Dark pages are near-black; the stock .32 scrim leaves the dialog floating in
+// the same value. Deepen it so the modal reads as a separate layer.
+html[data-theme="dark"] .cdk-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
 // Material injects its dialog styles after this sheet, so the shared dialog
 // padding needs !important to override the component's own defaults.
 .mat-mdc-dialog-title,
@@ -250,6 +256,24 @@ html[data-theme="dark"] {
   .mat-mdc-dialog-title,
   .mat-mdc-dialog-content {
     padding: 20px !important;
+  }
+}
+
+// The draft dialog becomes a bottom-anchored full-height sheet on phones: no
+// dimmed page strip peeks below it and the actions sit on the sheet's bottom
+// edge. Material writes width/max-height inline from the dialog config, so the
+// mobile sheet needs !important; desktop keeps the 640px centered dialog.
+@media (max-width: 600px) {
+  .song-draft-panel {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+
+    .mat-mdc-dialog-surface {
+      border-radius: 0 !important;
+    }
   }
 }
 
@@ -445,10 +469,10 @@ select:-webkit-autofill:focus {
 
 /* Printed pages are content sheets: the app toolbar is screen chrome only. */
 @media print {
-  // One page box for every printable surface. Lives here, not in a component
-  // stylesheet, so the margin cannot be scoped away.
+  // The printable sheet owns the page box padding (14mm on .song-sheet), so
+  // @page must contribute no margin or real paper stacks two of them.
   @page {
-    margin: 14mm;
+    margin: 0;
   }
 
   // Beats Bootstrap's .d-inline-flex utility, which is also !important.

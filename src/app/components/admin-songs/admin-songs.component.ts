@@ -207,6 +207,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
       SongDraftDialogComponent,
       {
         data: { song, parsed, people: this.people },
+        panelClass: 'song-draft-panel',
         width: '640px',
         maxWidth: 'calc(100vw - 32px)',
         maxHeight: '98vh',

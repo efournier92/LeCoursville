@@ -19,6 +19,20 @@ test.describe('feature flags', () => {
     await expect(page.locator('.disabled-card').getByText('Feature Disabled')).toBeVisible();
     await expect(page.getByText(/feature is currently disabled/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Go Home' })).toBeVisible();
+
+    // The flag page uses the app's surface card, not Material's tinted default.
+    const card = page.locator('.disabled-card');
+    await expect(card).toHaveClass(/surface-card/);
+    const surfaces = await card.evaluate(el => {
+      const probe = document.createElement('div');
+      probe.style.background = 'var(--color-surface)';
+      document.body.appendChild(probe);
+      const token = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return { card: getComputedStyle(el).backgroundColor, token };
+    });
+    expect(surfaces.card).toBe(surfaces.token);
+    await expect(card).toHaveCSS('border-radius', '16px');
   });
 
   test('enabled features render their pages', async ({ page }) => {
