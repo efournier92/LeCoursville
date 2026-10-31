@@ -1,0 +1,136 @@
+.songs-page {
+  min-width: 0;
+}
+
+.songs-search {
+  width: 240px;
+  max-width: 100%;
+}
+
+.songs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.song-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  min-width: 0;
+}
+
+.song-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-ink);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-brand-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+.song-source {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-ink-2);
+}
+
+.song-leaders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.leader-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-link);
+  font-size: 0.85rem;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-brand-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+.leader-chip-unknown {
+  color: var(--color-ink-2);
+}
+
+.song-excerpt {
+  margin: 0;
+  max-height: 2.7em;
+  overflow: hidden;
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--color-ink-2);
+  white-space: pre;
+}
+
+.songs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--color-ink-2);
+}
+
+.songs-empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.skeleton-card {
+  height: 168px;
+}
+
+.skeleton-line {
+  display: block;
+  height: 13px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  animation: songs-pulse 1.5s ease-in-out infinite;
+
+  &.title {
+    width: 60%;
+    height: 16px;
+  }
+
+  &.short {
+    width: 40%;
+  }
+}
+
+@keyframes songs-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

@@ -389,11 +389,11 @@ test.describe('admin system surfaces', () => {
     }
   });
 
-  test('features: nine grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
+  test('features: ten grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
 
-    const ids = ['people', 'contacts', 'calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat'];
+    const ids = ['people', 'contacts', 'calendar', 'songs', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat'];
     for (const id of ids) {
       await expect(page.getByTestId(`feature-toggle-${id}`)).toBeVisible();
     }

@@ -100,7 +100,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="features-loading"]')).toBeFalsy();
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
   });
 
   it('shows a retryable error and recovers after retrying', () => {
@@ -123,7 +123,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(component.loadError).toBe('');
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(9);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
   });
 
   it('isEnabled() returns true when Firebase flag is null (default ON)', () => {
@@ -263,7 +263,7 @@ describe('AdminFeaturesComponent', () => {
     expect(rows[0].textContent).toContain('/calendar');
     expect(rows[0].textContent).toContain('/chat');
     expect(rows[0].textContent).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
-    expect(rows[1].textContent).toContain('Music');
+    expect(rows[1].textContent).toContain('Audio');
     expect(rows[1].textContent).toContain('On');
     expect(rows[1].textContent).toContain('Off');
   });

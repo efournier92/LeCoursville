@@ -501,4 +501,33 @@ test.describe('rules', () => {
       expect((await get(node, token)).ok).toBe(true);
     }
   });
+
+  test('songs allow member reads, deny member writes, and pin the record id to its key', async () => {
+    const memberToken = await signIn('user');
+    const adminToken = await signIn('admin');
+
+    const memberRead = await get('songs/song-a', memberToken);
+    expect(memberRead.ok).toBe(true);
+    expect(await memberRead.json()).toMatchObject({ id: 'song-a' });
+    expect((await get('songs/song-a')).status).not.toBe(200);
+
+    const seeded = (await readDb<Record<string, any>>('songs/song-a'))!;
+    const key = `rules-song-${Date.now()}`;
+    const record = { ...seeded, id: key, title: 'Rules probe' };
+
+    try {
+      expect((await put(`songs/${key}`, record, memberToken)).status).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect(
+        (await put(`songs/${key}`, { ...record, id: 'different-id' }, adminToken)).status,
+      ).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect((await put(`songs/${key}`, record, adminToken)).ok).toBe(true);
+      expect((await readDb<Record<string, any>>(`songs/${key}`))?.id).toBe(key);
+    } finally {
+      await deleteDb(`songs/${key}`);
+    }
+  });
 });

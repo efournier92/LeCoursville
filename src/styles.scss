@@ -435,6 +435,14 @@ select:-webkit-autofill:focus {
   box-shadow: var(--shadow-card);
 }
 
+/* Printed pages are content sheets: the app toolbar is screen chrome only. */
+@media print {
+  // Beats Bootstrap's .d-inline-flex utility, which is also !important.
+  mat-toolbar.mat-toolbar {
+    display: none !important;
+  }
+}
+
 /* Warm-tinted page ground: every routed page that renders its own background */
 .page-ground {
   min-height: 100%;

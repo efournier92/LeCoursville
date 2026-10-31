@@ -1,0 +1,158 @@
+.song-detail {
+  min-width: 0;
+}
+
+.song-sheet {
+  padding: 24px;
+  min-width: 0;
+}
+
+.song-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.song-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+
+.song-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+
+.song-leaders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.leader-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-link);
+  font-size: 0.85rem;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-brand-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+.leader-chip-unknown {
+  color: var(--color-ink-2);
+}
+
+.transpose-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  button {
+    min-height: 40px;
+  }
+
+  .mat-mdc-icon-button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+.transpose-offset {
+  min-width: 2.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.song-body {
+  margin: 0;
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  white-space: pre-wrap;
+  word-break: normal;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+
+.song-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink-2);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-muted);
+  }
+}
+
+.skeleton-line {
+  display: block;
+  height: 13px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  animation: song-pulse 1.5s ease-in-out infinite;
+
+  &.title {
+    width: 50%;
+    height: 20px;
+  }
+
+  &.short {
+    width: 30%;
+  }
+}
+
+@keyframes song-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media print {
+  app-page-toolbar,
+  .transpose-controls {
+    display: none !important;
+  }
+
+  .song-detail {
+    padding: 0;
+  }
+
+  .song-sheet {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .song-body {
+    white-space: pre-wrap;
+    word-break: normal;
+  }
+}
