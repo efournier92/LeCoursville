@@ -50,6 +50,18 @@
     <mat-card class="admin-surface add-song-card" id="add-song-panel">
       <mat-card-content>
         <h2 class="admin-card-title">Add song</h2>
+        <div class="format-guide">
+          <p class="admin-muted">One song per .txt file. Start with Title:, Source:, Key:, and optional Leader: lines, then a blank line, then lyrics with [G] chords inline.</p>
+          <a
+            mat-stroked-button
+            href="assets/samples/songs-sample.txt"
+            download="songs-sample.txt"
+            data-testid="admin-download-sample"
+            >
+            <mat-icon aria-hidden="true">download</mat-icon>
+            Download sample .txt
+          </a>
+        </div>
         <mat-form-field class="admin-upload-input paste-field">
           <mat-label>Song text</mat-label>
           <textarea
@@ -129,6 +141,15 @@
           </div>
           <p class="admin-card-title">No songs yet</p>
           <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
+          <a
+            mat-stroked-button
+            href="assets/samples/songs-sample.txt"
+            download="songs-sample.txt"
+            data-testid="admin-empty-download-sample"
+            >
+            <mat-icon aria-hidden="true">download</mat-icon>
+            Download sample .txt
+          </a>
         </div>
       </div>
     } @else if (filteredSongs.length === 0) {

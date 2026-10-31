@@ -236,6 +236,7 @@ No `ApprovedGuardService`: lyrics are not PII; this matches chat (`app-routing.m
   1. Paste: a textarea and a "Parse" button.
   2. File: a multiple `.txt` file input (`accept=".txt"`); each file read via `FileReader` as text.
   Both call `parseSongText(text, people)` and open one draft dialog per parsed song. Files are never uploaded.
+- Add-song panel format guide: a one-line description of the canonical header-plus-blank-line-plus-`[G]`-chords shape and a "Download sample .txt" link to `src/assets/samples/songs-sample.txt`, a valid example in the canonical bracket format, so a first-time admin can copy the exact shape. The admin empty state repeats the same download link.
 - Draft dialog (Material dialog, house style): editable title, source, key, body (monospace textarea), leaders multi-select over people (chip picker), plus a warning row listing `unmatchedLeaders` names ("Not found: X, Y" with a hint to pick manually). Validation on save, exact messages: `"Title is required."`, `"Lyrics are required."`, `"Title must be 200 characters or fewer."`. Save calls `saveSong`. Cancel discards.
 - Edit: same dialog prefilled from the stored song; save calls `updateSong`.
 - Delete: confirmation dialog ("Delete <title>? This cannot be undone.") then `deleteSong`, matching `admin-users.component.ts:91` copy convention.

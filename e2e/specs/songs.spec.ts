@@ -2,6 +2,7 @@ import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import zlib from 'node:zlib';
+import { readFileSync } from 'node:fs';
 
 const TITLES = ['Amazing Grace', 'Blessed Be the Name', 'Come Thou Fount', 'Noël'];
 
@@ -1074,6 +1075,31 @@ test.describe('songs', () => {
       await expect(body).toHaveCSS('resize', 'none');
       await expect(body).toHaveCSS('overflow-y', 'auto');
       await page.getByTestId('draft-cancel').click();
+    });
+
+    test('25d. the Add song guide links a parseable sample download', async ({ page }) => {
+      await page.goto('/admin/songs');
+      await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+      await page.getByTestId('admin-add-song').click();
+      await expect(page.getByTestId('admin-paste-input')).toBeVisible();
+      await expect(page.locator('.format-guide')).toContainText(
+        'One song per .txt file. Start with Title:, Source:, Key:, and optional Leader: lines, then a blank line, then lyrics with [G] chords inline.',
+      );
+
+      const downloadPromise = page.waitForEvent('download');
+      await page.getByTestId('admin-download-sample').click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toBe('songs-sample.txt');
+
+      const text = readFileSync((await download.path())!, 'utf8');
+      expect(text.trim().length).toBeGreaterThan(0);
+      expect(text).toContain('Title: Amazing Grace');
+      expect(text).toContain('Source: John Newton');
+      expect(text).toContain('Key: G');
+      expect(text).toMatch(/Key: G\n\n\[G\]/);
+      expect(text).toContain('[G]Amazing [D]grace');
+      expect(text).toContain('[Bb]I once was lost');
+      expect(text).not.toMatch(/<(!doctype|html|body)/i);
     });
 
     test('26. the draft dialog fits the Leaders picker on desktop and scrolls on mobile', async ({ page }) => {
