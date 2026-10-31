@@ -17,6 +17,15 @@ async function openSong(page, id: string) {
   await expect(page.getByTestId('song-body')).toBeVisible();
 }
 
+// WebKit reports computed lengths with subpixel drift, so compare numerically.
+async function expectCssNumber(locator, prop: string, expected: number, precision = 1) {
+  const actual = await locator.evaluate(
+    (el: Element, p: string) => Number.parseFloat(getComputedStyle(el).getPropertyValue(p)),
+    prop,
+  );
+  expect(actual).toBeCloseTo(expected, precision);
+}
+
 test.describe('songs', () => {
   test.describe('member', () => {
   test.beforeEach(async ({ page }) => {
@@ -116,12 +125,12 @@ test.describe('songs', () => {
       // The medallion is tinted brand, so it separates from the page ground.
       const medallion = await page.locator('.songs-empty-icon').evaluate(el => ({
         background: getComputedStyle(el).backgroundColor,
-        border: getComputedStyle(el).borderTopWidth,
+        border: Number.parseFloat(getComputedStyle(el).borderTopWidth),
         ground: getComputedStyle(document.body).backgroundColor,
       }));
       expect(medallion.background).not.toBe(medallion.ground);
       expect(medallion.background).not.toBe('rgba(0, 0, 0, 0)');
-      expect(medallion.border).toBe('1px');
+      expect(medallion.border).toBeCloseTo(1, 1);
     } finally {
       await writeDb('songs', original);
     }
@@ -231,10 +240,10 @@ test.describe('songs', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await openSong(page, 'song-a');
     const body = page.getByTestId('song-body');
-    await expect(body).toHaveCSS('font-size', '19.2px');
+    await expectCssNumber(body, 'font-size', 19.2);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(body).toHaveCSS('font-size', '15.2px');
+    await expectCssNumber(body, 'font-size', 15.2);
     // The 72ch measure still applies; no width regression from the scale bump.
     const measure = await body.evaluate(el => parseFloat(getComputedStyle(el).maxWidth));
     expect(measure).toBeGreaterThan(500);
@@ -362,10 +371,10 @@ test.describe('songs', () => {
         radius: parseFloat(getComputedStyle(sheet).borderTopLeftRadius),
         ground: getComputedStyle(ground).backgroundColor,
         bodyGround: getComputedStyle(document.body).backgroundColor,
-        sheetPadLeft: getComputedStyle(sheet).paddingLeft,
-        sheetPadRight: getComputedStyle(sheet).paddingRight,
-        sheetPadTop: getComputedStyle(sheet).paddingTop,
-        sheetPadBottom: getComputedStyle(sheet).paddingBottom,
+        sheetPadLeft: Number.parseFloat(getComputedStyle(sheet).paddingLeft),
+        sheetPadRight: Number.parseFloat(getComputedStyle(sheet).paddingRight),
+        sheetPadTop: Number.parseFloat(getComputedStyle(sheet).paddingTop),
+        sheetPadBottom: Number.parseFloat(getComputedStyle(sheet).paddingBottom),
         sheetLeft: sheetBox.x,
         sheetWidth: sheetBox.width,
         bodyWidth: document.body.getBoundingClientRect().width,
@@ -377,13 +386,13 @@ test.describe('songs', () => {
     expect(print.bodyGround).toBe('rgb(255, 255, 255)');
     // The element owns the horizontal 14mm gutter only (measurable even though
     // print emulation ignores @page boxes).
-    expect(print.sheetPadLeft).toBe('52.9134px');
-    expect(print.sheetPadRight).toBe('52.9134px');
+    expect(print.sheetPadLeft).toBeCloseTo(52.9134, 1);
+    expect(print.sheetPadRight).toBeCloseTo(52.9134, 1);
     // Vertical gutter belongs to the `song` page box so page 2+ keeps it; the
     // sheet adds no top/bottom padding (a fragment's padding only lands on the
     // first and last printed page).
-    expect(print.sheetPadTop).toBe('0px');
-    expect(print.sheetPadBottom).toBe('0px');
+    expect(print.sheetPadTop).toBeCloseTo(0, 1);
+    expect(print.sheetPadBottom).toBeCloseTo(0, 1);
     expect(print.sheetLeft).toBe(0);
     // Full width: no centered column and no side gutter (the print capture can
     // still reserve a scrollbar strip, hence the small tolerance).
@@ -819,7 +828,7 @@ test.describe('songs', () => {
       await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
       const pane = page.locator('.cdk-overlay-pane.song-draft-panel');
       // Desktop keeps the centered 640px dialog.
-      await expect(pane).toHaveCSS('width', '640px');
+      await expectCssNumber(pane, 'width', 640);
 
       // Desktop: the label, the search field, and one option are on first paint.
       await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport();
@@ -830,11 +839,11 @@ test.describe('songs', () => {
       await page.setViewportSize({ width: 390, height: 844 });
       // The pane becomes a full-height, full-width bottom-anchored sheet, so no
       // dimmed strip peeks below and the actions sit on the sheet's bottom.
-      await expect(pane).toHaveCSS('width', '390px');
-      await expect(pane).toHaveCSS('height', '844px');
-      await expect(pane).toHaveCSS('max-height', '844px');
-      await expect(pane).toHaveCSS('border-radius', '0px');
-      await expect(page.locator('.mat-mdc-dialog-surface')).toHaveCSS('border-radius', '0px');
+      await expectCssNumber(pane, 'width', 390);
+      await expectCssNumber(pane, 'height', 844);
+      await expectCssNumber(pane, 'max-height', 844);
+      await expectCssNumber(pane, 'border-radius', 0);
+      await expectCssNumber(page.locator('.mat-mdc-dialog-surface'), 'border-radius', 0);
       // Wait out the entrance transform before measuring the sheet's edges.
       await expect(page.locator('.mat-mdc-dialog-surface')).toHaveCSS('transform', 'none');
       const surfaceBottom = await page
@@ -844,7 +853,7 @@ test.describe('songs', () => {
       await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
       // The tighter title band and 80px body keep the Leaders search whole on
       // first paint instead of slicing it at the content edge.
-      await expect(page.getByTestId('draft-body')).toHaveCSS('min-height', '80px');
+      await expectCssNumber(page.getByTestId('draft-body'), 'min-height', 80);
       await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport({ ratio: 1 });
@@ -860,7 +869,7 @@ test.describe('songs', () => {
         const borderToken = getComputedStyle(probe).color;
         probe.remove();
         return {
-          borderTopWidth: style.borderTopWidth,
+          borderTopWidth: Number.parseFloat(style.borderTopWidth),
           borderTopColor: style.borderTopColor,
           borderToken,
           background: style.backgroundColor,
@@ -868,7 +877,7 @@ test.describe('songs', () => {
           paddingBottom: Number.parseFloat(style.paddingBottom),
         };
       });
-      expect(footer.borderTopWidth).toBe('1px');
+      expect(footer.borderTopWidth).toBeCloseTo(1, 1);
       expect(footer.borderTopColor).toBe(footer.borderToken);
       expect(footer.background).toBe(footer.surface);
       expect(footer.paddingBottom).toBeGreaterThanOrEqual(16);
