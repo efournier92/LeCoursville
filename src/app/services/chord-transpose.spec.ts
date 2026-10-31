@@ -1,4 +1,4 @@
-import { hasBracketChords, transposeBody } from './chord-transpose';
+import { hasBracketChords, transposeBody, transposeKeyName } from './chord-transpose';
 
 describe('chord-transpose', () => {
   it('detects bracket chords and bracket-less bodies (35)', () => {
@@ -35,5 +35,12 @@ describe('chord-transpose', () => {
     const body = '[G] [Bb/D] [Verse]';
 
     expect(transposeBody(body, 0)).toBe(body);
+  });
+
+  it('transposes a bare key name and rejects anything that is not one note (42)', () => {
+    expect(transposeKeyName('G', 1)).toBe('G#');
+    expect(transposeKeyName('Bb', 2)).toBe('C');
+    expect(transposeKeyName('Gm', 2)).toBeNull();
+    expect(transposeKeyName('H', 2)).toBeNull();
   });
 });

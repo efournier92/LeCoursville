@@ -72,5 +72,13 @@
   }
 }
 
+// The global ring is brand green, which disappears on the green toolbar:
+// draw focus in the toolbar's own ink for every control inside it.
+// ::ng-deep reaches toolbar controls rendered by child components (nav links).
+:host ::ng-deep mat-toolbar :focus-visible {
+  outline-color: currentColor !important;
+  outline-offset: 2px !important;
+}
+
 /* Nav loading skeleton styles live globally in styles.scss (shared by
    app.component and navbar-links; Angular scopes component styles). */

@@ -1,4 +1,6 @@
 <div class="admin-page admin-songs-page">
+  <h1 class="visually-hidden">Songs</h1>
+
   <app-page-toolbar title="Songs">
     <button
       mat-flat-button
@@ -20,6 +22,7 @@
         type="search"
         aria-label="Search songs"
         data-testid="admin-songs-search"
+        #adminSearch
         [ngModel]="searchTerm"
         (ngModelChange)="onSearchInput($event)"
         />
@@ -28,7 +31,7 @@
           matSuffix
           mat-icon-button
           aria-label="Clear search"
-          (click)="onSearchInput('')"
+          (click)="clearSearch(adminSearch)"
           >
           <mat-icon>close</mat-icon>
         </button>
@@ -68,16 +71,29 @@
           <span class="admin-muted">Parse the pasted text into an editable draft.</span>
         </div>
         <div class="file-import">
-          <label class="file-import-label" for="admin-song-file">Import .txt files</label>
           <input
             id="admin-song-file"
+            class="file-import-input visually-hidden"
             type="file"
             accept=".txt"
             multiple
             data-testid="admin-file-input"
+            #fileInput
             (change)="onFilesPicked($event)"
             />
-          <p class="admin-muted">Each file opens an editable draft. Files are never uploaded or kept.</p>
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="fileInput.click()"
+            >
+            Choose .txt files
+          </button>
+          <p class="admin-muted">
+            Each file opens an editable draft. Files are never uploaded or kept.
+            @if (pickedFileCount > 0) {
+              <span>{{ pickedFileCount }} file{{ pickedFileCount === 1 ? '' : 's' }} selected.</span>
+            }
+          </p>
         </div>
       </mat-card-content>
     </mat-card>
@@ -102,7 +118,7 @@
         <p class="admin-muted">Use Add Song to paste lyrics or import .txt files.</p>
       </div>
     } @else if (filteredSongs.length === 0) {
-      <app-no-results-message [searchTerm]="activeQuery" noun="songs"></app-no-results-message>
+      <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs"></app-no-results-message>
     } @else {
       <mat-card class="admin-surface songs-table-card">
         <table class="admin-table" data-testid="admin-songs-table">

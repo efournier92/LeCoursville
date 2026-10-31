@@ -1,4 +1,6 @@
 <div class="songs-page page-ground page-content">
+  <h1 class="visually-hidden">Songs</h1>
+
   <app-page-toolbar title="Songs">
     <mat-form-field class="songs-search">
       <mat-label>Search songs</mat-label>
@@ -7,6 +9,7 @@
         type="search"
         aria-label="Search songs"
         data-testid="song-search"
+        #songSearch
         [ngModel]="searchTerm"
         (ngModelChange)="onSearchInput($event)"
         />
@@ -15,7 +18,7 @@
           matSuffix
           mat-icon-button
           aria-label="Clear search"
-          (click)="clearSearch()"
+          (click)="clearSearch(songSearch)"
           >
           <mat-icon>close</mat-icon>
         </button>
@@ -42,15 +45,20 @@
   @if (status === 'ready') {
     @if (songs.length === 0) {
       <div class="songs-empty" data-testid="songs-empty">
+        <div class="songs-empty-icon" aria-hidden="true">
+          <mat-icon>music_note</mat-icon>
+        </div>
         <p class="songs-empty-title">No songs yet</p>
+        <p class="songs-empty-hint">Paste lyrics or import .txt files on the admin Songs page.</p>
         @if (isAdmin) {
-          <a mat-button routerLink="/admin/songs">Add songs</a>
+          <a mat-flat-button color="primary" routerLink="/admin/songs">Add songs</a>
         }
       </div>
     } @else {
       @if (filteredSongs.length === 0) {
         <app-no-results-message
           [searchTerm]="activeQuery"
+          [isCentered]="true"
           noun="songs"
           ></app-no-results-message>
       }
@@ -69,7 +77,7 @@
             }
 
             @if (song.leaderIds.length > 0) {
-              <div class="song-leaders">
+              <div class="song-leaders" role="group" aria-label="Leaders">
                 @for (leaderId of song.leaderIds; track leaderId) {
                   @if (isResolved(leaderId)) {
                     <a
@@ -77,9 +85,14 @@
                       data-testid="leader-chip"
                       [routerLink]="['/people']"
                       [queryParams]="{ selected: leaderId }"
+                      [attr.aria-label]="'Leader: ' + leaderLabel(leaderId, true)"
                       >{{ leaderLabel(leaderId) }}</a>
                   } @else {
-                    <span class="leader-chip leader-chip-unknown" data-testid="leader-chip">Unknown</span>
+                    <span
+                      class="leader-chip leader-chip-unknown"
+                      data-testid="leader-chip"
+                      aria-label="Leader not found"
+                      >Unknown</span>
                   }
                 }
               </div>

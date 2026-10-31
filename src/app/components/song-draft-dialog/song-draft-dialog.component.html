@@ -1,6 +1,7 @@
 <h2 mat-dialog-title data-testid="song-draft-dialog">{{ data.song ? 'Edit song' : 'Add song' }}</h2>
 
-<mat-dialog-content>
+<mat-dialog-content [attr.aria-busy]="saving">
+  <span class="visually-hidden" role="status">{{ saving ? 'Saving…' : '' }}</span>
   <mat-form-field class="draft-field">
     <mat-label>Title</mat-label>
     <input

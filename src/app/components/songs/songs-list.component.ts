@@ -83,8 +83,9 @@ export class SongsListComponent implements OnInit, OnDestroy {
     this.searchTerms.next(value);
   }
 
-  clearSearch(): void {
+  clearSearch(input: HTMLInputElement): void {
     this.onSearchInput('');
+    input.focus();
   }
 
   retry(): void {

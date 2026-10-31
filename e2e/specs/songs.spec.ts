@@ -53,12 +53,14 @@ test.describe('songs', () => {
     await expect(titles(page)).toHaveText(['Noël']);
   });
 
-  test('5. clearing the search restores the full list', async ({ page }) => {
+  test('5. clearing the search restores the full list and refocuses the field', async ({ page }) => {
     await page.goto('/songs');
     await expect(cards(page)).toHaveCount(4);
     await page.getByTestId('song-search').fill('Amazing');
     await expect(cards(page)).toHaveCount(1);
-    await page.getByTestId('song-search').fill('');
+    await page.getByRole('button', { name: 'Clear search' }).click();
+    await expect(page.getByTestId('song-search')).toHaveValue('');
+    await expect(page.getByTestId('song-search')).toBeFocused();
     await expect(cards(page)).toHaveCount(4);
   });
 
@@ -74,6 +76,8 @@ test.describe('songs', () => {
     await page.goto('/songs');
     const card = cards(page).filter({ hasText: 'Amazing Grace' });
     await expect(card.getByTestId('leader-chip')).toHaveText(['Alice', 'Ben']);
+    await expect(card.getByRole('group', { name: 'Leaders' })).toBeVisible();
+    await expect(card.getByTestId('leader-chip').first()).toHaveAttribute('aria-label', 'Leader: Alice Anderson');
 
     await card.getByTestId('song-title').click();
     await expect(page).toHaveURL(/\/songs\/song-a/);
@@ -111,6 +115,7 @@ test.describe('songs', () => {
     await page.getByTestId('transpose-up').click();
     await expect(page.getByTestId('song-body')).toContainText('[G#]Amazing grace');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+1');
+    await expect(page.getByTestId('song-key')).toHaveText('Key: G → G#');
   });
 
   test('12. a flat-root bracket plus two renders C', async ({ page }) => {
@@ -121,13 +126,15 @@ test.describe('songs', () => {
     await expect(page.getByTestId('transpose-offset')).toHaveText('+2');
   });
 
-  test('13. Reset restores the stored body and hides the badge', async ({ page }) => {
+  test('13. Reset restores the stored body and empties the badge', async ({ page }) => {
     const stored = (await readDb<Record<string, any>>('songs/song-a'))!;
     await openSong(page, 'song-a');
     await page.getByTestId('transpose-up').click();
     await page.getByTestId('transpose-up').click();
     await page.getByTestId('transpose-reset').click();
-    await expect(page.getByTestId('transpose-offset')).toHaveCount(0);
+    await expect(page.getByTestId('transpose-offset')).toHaveCount(1);
+    await expect(page.getByTestId('transpose-offset')).toHaveText('');
+    await expect(page.getByTestId('song-key')).toHaveText('Key: G');
     expect(await page.getByTestId('song-body').textContent()).toBe(stored.body);
   });
 
@@ -144,7 +151,7 @@ test.describe('songs', () => {
     await page.reload();
     await expect(page.getByTestId('song-body')).toContainText('[G]Amazing grace');
     await expect(page.getByTestId('song-body')).not.toContainText('[G#]');
-    await expect(page.getByTestId('transpose-offset')).toHaveCount(0);
+    await expect(page.getByTestId('transpose-offset')).toHaveText('');
   });
 
   test('16. print hides the navbar and transpose controls but keeps title and body', async ({ page }) => {
@@ -250,11 +257,13 @@ test.describe('songs', () => {
       let createdId: string | null = null;
       try {
         await openAddPanel(page);
+        await expect(page.getByRole('button', { name: 'Choose .txt files' })).toBeVisible();
         await page.getByTestId('admin-file-input').setInputFiles({
           name: 'e2e-song.txt',
           mimeType: 'text/plain',
           buffer: Buffer.from(headerText(title)),
         });
+        await expect(page.locator('.file-import .admin-muted')).toContainText('1 file selected.');
 
         const dialog = page.getByTestId('song-draft-dialog');
         await expect(dialog).toBeVisible();
@@ -344,6 +353,7 @@ test.describe('songs', () => {
         await page.goto('/admin/songs');
         const row = page.getByTestId('admin-song-row').filter({ hasText: 'Come Thou Fount' });
         await expect(row).toBeVisible();
+        await expect(row.locator('td[data-label="Updated"]')).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
         await row.getByTestId('admin-edit-song').click();
 
         await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
@@ -390,6 +400,32 @@ test.describe('songs', () => {
         expect(await readDb('songs/song-d')).toBeNull();
       } finally {
         await writeDb('songs/song-d', original);
+      }
+    });
+
+    test('24. clearing the admin search restores the rows and refocuses the field', async ({ page }) => {
+      await page.goto('/admin/songs');
+      await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+      await page.getByTestId('admin-songs-search').fill('Amazing');
+      await expect(page.getByTestId('admin-song-row')).toHaveCount(1);
+      await page.getByRole('button', { name: 'Clear search' }).click();
+      await expect(page.getByTestId('admin-songs-search')).toHaveValue('');
+      await expect(page.getByTestId('admin-songs-search')).toBeFocused();
+      await expect(page.getByTestId('admin-song-row')).toHaveCount(4);
+    });
+
+    test('25. the empty library renders the empty state and the admin CTA', async ({ page }) => {
+      const original = await readDb<Record<string, any>>('songs');
+      try {
+        await deleteDb('songs');
+        await page.goto('/songs');
+        const empty = page.getByTestId('songs-empty');
+        await expect(empty).toContainText('No songs yet');
+        await expect(empty).toContainText('Paste lyrics or import .txt files on the admin Songs page.');
+        await expect(empty.getByRole('link', { name: 'Add songs' })).toHaveAttribute('href', '/admin/songs');
+        await expect(page.getByTestId('song-card')).toHaveCount(0);
+      } finally {
+        await writeDb('songs', original);
       }
     });
   });

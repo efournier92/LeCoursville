@@ -37,7 +37,7 @@
         }
 
         @if (song.musicalKey) {
-          <p class="song-meta" data-testid="song-key">Key: {{ song.musicalKey }}</p>
+          <p class="song-meta" data-testid="song-key">Key: {{ displayKey }}</p>
         }
 
         @if (song.leaderIds.length > 0) {
@@ -60,33 +60,39 @@
 
       @if (showTranspose) {
         <div class="transpose-controls" data-testid="transpose-controls" role="group" aria-label="Transpose">
-          <button
-            mat-icon-button
-            type="button"
-            data-testid="transpose-down"
-            aria-label="Transpose down one semitone"
-            (click)="transpose(-1)"
-            >
-            <mat-icon aria-hidden="true">remove</mat-icon>
-          </button>
+          <div class="transpose-pill">
+            <button
+              mat-icon-button
+              type="button"
+              data-testid="transpose-down"
+              aria-label="Transpose down one semitone"
+              (click)="transpose(-1)"
+              >
+              <mat-icon aria-hidden="true">remove</mat-icon>
+            </button>
 
-          @if (offset !== 0) {
             <span class="transpose-offset" data-testid="transpose-offset" aria-live="polite">
-              {{ offset > 0 ? '+' : '' }}{{ offset }}
+              {{ offsetLabel }}
             </span>
-          }
+
+            <button
+              mat-icon-button
+              type="button"
+              data-testid="transpose-up"
+              aria-label="Transpose up one semitone"
+              (click)="transpose(1)"
+              >
+              <mat-icon aria-hidden="true">add</mat-icon>
+            </button>
+          </div>
 
           <button
-            mat-icon-button
+            mat-button
             type="button"
-            data-testid="transpose-up"
-            aria-label="Transpose up one semitone"
-            (click)="transpose(1)"
+            class="transpose-reset"
+            data-testid="transpose-reset"
+            (click)="reset()"
             >
-            <mat-icon aria-hidden="true">add</mat-icon>
-          </button>
-
-          <button mat-button type="button" data-testid="transpose-reset" (click)="reset()">
             Reset
           </button>
         </div>

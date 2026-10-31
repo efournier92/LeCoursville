@@ -32,6 +32,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   status: 'loading' | 'error' | 'ready' = 'loading';
   showAddPanel = false;
   pasteText = '';
+  pickedFileCount = 0;
   actionError: string | null = null;
   skeletonIterations = [1, 2, 3, 4, 5, 6];
 
@@ -84,6 +85,11 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     this.activeQuery = value;
   }
 
+  clearSearch(input: HTMLInputElement): void {
+    this.onSearchInput('');
+    input.focus();
+  }
+
   toggleAddPanel(): void {
     this.showAddPanel = !this.showAddPanel;
     this.actionError = null;
@@ -102,6 +108,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     const files = input.files ? Array.from(input.files) : [];
     input.value = '';
     this.actionError = null;
+    this.pickedFileCount = files.length;
     for (const file of files) {
       try {
         const text = await readFileText(file);
@@ -148,7 +155,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     const date = new Date(timestamp);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `Updated ${date.getFullYear()}-${month}-${day}`;
+    return `${date.getFullYear()}-${month}-${day}`;
   }
 
   private openDraft(song: Song | null, parsed: ParsedSong | null): Promise<Song | null> {

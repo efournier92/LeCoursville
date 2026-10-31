@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { Song } from 'src/app/models/song';
 import { Person } from 'src/app/models/person';
 import { PeopleService } from 'src/app/services/people.service';
-import { hasBracketChords, transposeBody } from 'src/app/services/chord-transpose';
+import { hasBracketChords, transposeBody, transposeKeyName } from 'src/app/services/chord-transpose';
 import { SongsService } from 'src/app/services/songs.service';
 
 @Component({
@@ -45,6 +45,25 @@ export class SongDetailComponent implements OnInit, OnDestroy {
 
   get displayBody(): string {
     return this.song ? transposeBody(this.song.body, this.offset) : '';
+  }
+
+  /** Empty at 0 so the badge disappears while its live region stays mounted. */
+  get offsetLabel(): string {
+    if (this.offset === 0) {
+      return '';
+    }
+    return `${this.offset > 0 ? '+' : ''}${this.offset}`;
+  }
+
+  /** Stored key, followed by the transposed key when the note parses. */
+  get displayKey(): string | null {
+    if (!this.song?.musicalKey) {
+      return null;
+    }
+    const transposed = this.offset === 0
+      ? null
+      : transposeKeyName(this.song.musicalKey, this.offset);
+    return transposed ? `${this.song.musicalKey} → ${transposed}` : this.song.musicalKey;
   }
 
   get showTranspose(): boolean {

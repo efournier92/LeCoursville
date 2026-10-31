@@ -30,6 +30,13 @@ function transposeChord(chord: string, semitones: number): string {
   return result;
 }
 
+/** Transposes a bare note name ("G", "Bb"); null when it is not a single note. */
+export function transposeKeyName(key: string, semitones: number): string | null {
+  const match = key.trim().match(/^([A-G])([#b]?)$/);
+  if (!match) { return null; }
+  return transposeNote(match[1], match[2], semitones);
+}
+
 export function hasBracketChords(body: string): boolean {
   return new RegExp(BRACKET_CHORD.source).test(body);
 }
