@@ -122,4 +122,10 @@
   .page-toolbar-content:has(> *) {
     flex-basis: 100%;
   }
+
+  // Projected icon buttons (search clear included) get a 44px touch target;
+  // they belong to the host page's scope, hence ::ng-deep.
+  :host ::ng-deep .page-toolbar-content .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+  }
 }

@@ -77,6 +77,14 @@
   }
 }
 
+// The global ring is brand green, which disappears on the green toolbar:
+// draw focus in the toolbar's own ink for every control inside it.
+// ::ng-deep reaches toolbar controls rendered by child components (nav links).
+:host ::ng-deep mat-toolbar :focus-visible {
+  outline-color: currentColor !important;
+  outline-offset: 2px !important;
+}
+
 /* Minimal theme toggle: one sun/moon glyph swapped by state, no track or
    knob. Transparent and muted so it stays present but does not compete with
    the nav; it brightens on hover/focus only. */
@@ -131,3 +139,12 @@
 
 /* Nav loading skeleton styles live globally in styles.scss (shared by
    app.component and navbar-links; Angular scopes component styles). */
+
+// Print paginates the whole document. The app container is the screen's scroll
+// container (overflow-x: hidden computes overflow-y: auto); a scroll container
+// clips its content, so Chromium prints only the first page of a long song.
+@media print {
+  .app-container {
+    overflow: visible;
+  }
+}

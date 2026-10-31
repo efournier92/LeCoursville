@@ -277,6 +277,26 @@ html[data-theme="dark"] .btn-destructive:focus-visible {
   outline-color: var(--color-on-brand) !important;
 }
 
+// The app's top nav paints on its own layer (1100); CDK's overlay container
+// defaults to 1000, so a dialog scrim ran underneath the header. CDK's rules
+// sit inside @layer cdk-overlay, and unlayered author styles outrank any layer,
+// so this plain rule lifts every overlay app-wide without !important. Menus
+// live in the same container and therefore stay above page content too.
+.cdk-overlay-container {
+  z-index: 1200;
+}
+
+// Pale pages make the stock .32 scrim read as a faint tint; deepen it so the
+// dialog reads as a separate layer. Dark pages are near-black, where the same
+// .32 leaves the sheet floating in the page value — keep .55 there.
+.cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
 // Material injects its dialog styles after this sheet, so the shared dialog
 // padding needs !important to override the component's own defaults.
 .mat-mdc-dialog-title,
@@ -288,6 +308,35 @@ html[data-theme="dark"] .btn-destructive:focus-visible {
   .mat-mdc-dialog-title,
   .mat-mdc-dialog-content {
     padding: 20px !important;
+  }
+}
+
+// The draft dialog becomes a bottom-anchored full-height sheet on phones: no
+// dimmed page strip peeks below it and the actions sit on the sheet's bottom
+// edge. Material writes width/max-height inline from the dialog config, so the
+// mobile sheet needs !important; desktop keeps the 640px centered dialog.
+@media (max-width: 600px) {
+  .song-draft-panel {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+
+    .mat-mdc-dialog-surface {
+      border-radius: 0 !important;
+    }
+
+    // The Cancel/Save row is the sheet's footer, not two buttons floating on
+    // the content: hairline divider, the sheet's own surface, and bottom
+    // padding that clears the home-indicator inset.
+    .mat-mdc-dialog-actions {
+      border-top: 1px solid var(--color-border);
+      // The sheet's own surface (not the raw token: M3's dark dialog tone is
+      // re-emitted after the token override, and a mismatch would show a band).
+      background: var(--mat-dialog-container-color, var(--color-surface));
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    }
   }
 }
 
@@ -483,6 +532,80 @@ select:-webkit-autofill:focus {
   box-shadow: var(--shadow-card);
 }
 
+/* Printed pages are content sheets: the app toolbar is screen chrome only. */
+@media print {
+  // Every route prints inside a sane page box. The song sheet opts into the
+  // named `song` page below: vertical gutters come from that page box so they
+  // repeat on every printed page (a fragment's padding only lands on the first
+  // and last), while the element keeps the horizontal 14mm gutter.
+  @page {
+    margin: 14mm;
+  }
+
+  @page song {
+    margin: 14mm 0;
+  }
+
+  // Beats Bootstrap's .d-inline-flex utility, which is also !important.
+  mat-toolbar.mat-toolbar {
+    display: none !important;
+  }
+
+  // Screen-only chrome never reaches paper.
+  .pending-banner,
+  .app-skip-link {
+    display: none !important;
+  }
+
+  // The emulated print capture has no @page margin, so the page ground itself
+  // must be white or the sheet prints on gray.
+  body {
+    background: #fff !important;
+  }
+
+  // The song detail prints on white paper: its warm ground, centered column,
+  // and side gutters are screen chrome. Paper margins come from the @page
+  // boxes above, so the sheet must not stack a second gutter of its own.
+  // Other routes keep their screen layout on paper.
+  .song-detail,
+  .song-detail .page-ground,
+  .song-detail .page-content {
+    background: #fff !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  // Print is ink on paper. A dark page keeps its light ink tokens while the
+  // grounds are forced to #fff, which prints white-on-white; re-declare the
+  // light values (mirroring the :root block) for paper.
+  html[data-theme="dark"] {
+    // Blink paints the page canvas (the @page margin band) #121212 whenever
+    // the document advertises a dark color-scheme, even with printBackground
+    // and white body/grounds. Paper is always a light surface.
+    color-scheme: light;
+    --color-app-bg: #F3F4F6;
+    --color-surface: #FFFFFF;
+    --color-surface-muted: #EBEDF0;
+    --color-ink: #232A32;
+    --color-control-strong: #232A32;
+    --color-control-strong-hover: #313942;
+    --color-ink-2: #5B6470;
+    --color-ink-3: #8A919C;
+    --color-brand-primary: #2D5A27;
+    --color-brand-primary-hover: #3A7033;
+    --color-brand-primary-dark: #245020;
+    --color-brand-success: #2D5A27;
+    --color-brand-success-dark: #245020;
+    --color-accent: #A8762D;
+    --color-accent-strong: #9C6B26;
+    --color-error: #B3261E;
+    --color-border: #E1E4E8;
+    --color-link: #245020;
+  }
+}
+
 /* Warm-tinted page ground: every routed page that renders its own background */
 .page-ground {
   min-height: 100%;
@@ -518,6 +641,14 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
   border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+/* Filter-row fields never show hints or errors, but M3 still reserves the
+   subscript band, which grew stacked mobile filter rows. Hide it for every
+   field projected into a filter bar (unscoped: the wrapper is Material's own
+   DOM, outside the page's encapsulation). */
+.admin-filter-bar .mat-mdc-form-field-subscript-wrapper {
+  display: none;
 }
 
 // ── Calendar (angular-calendar) overrides ─────────────────────────────────────

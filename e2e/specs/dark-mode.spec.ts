@@ -51,7 +51,8 @@ async function expectReadable(locator: import('@playwright/test').Locator) {
 }
 
 /**
- * Dark mode: per-user theme toggle stored at users/{uid}/prefs/theme.
+ * Dark mode: the toolbar toggle is session-only; the Account page persists
+ * the per-user preference at users/{uid}/prefs/theme.
  * Light is the floor for every unknown state; guests never render dark.
  */
 
@@ -59,15 +60,18 @@ const USER_EMAIL = 'user@e2e.local';
 const OTHER_EMAIL = 'other@e2e.local';
 let uid: string | null = null;
 let otherUid: string | null = null;
+let adminUid: string | null = null;
 let otherRoles: unknown = { user: true };
 
 test.beforeAll(async () => {
   const users = (await readDb<Record<string, { email?: string; roles?: unknown }>>('users')) ?? {};
   uid = Object.keys(users).find((id) => users[id]?.email === USER_EMAIL) ?? null;
   otherUid = Object.keys(users).find((id) => users[id]?.email === OTHER_EMAIL) ?? null;
+  adminUid = Object.keys(users).find((id) => users[id]?.email === 'admin@e2e.local') ?? null;
   otherRoles = users[otherUid ?? '']?.roles ?? { user: true };
   expect(uid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
   expect(otherUid, 'seeded other@e2e.local must resolve to a uid').toBeTruthy();
+  expect(adminUid, 'seeded admin@e2e.local must resolve to a uid').toBeTruthy();
 });
 
 test.afterEach(async () => {
@@ -256,6 +260,55 @@ test('mobile: theme toggle sits just left of the hamburger', async ({ page }) =>
   expect(toggleBox && burgerBox).toBeTruthy();
   // Toggle is immediately left of the burger, which stays at the right edge.
   expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(burgerBox!.x);
+});
+
+test('light dialog scrim separates the sheet from the pale page', async ({ page }) => {
+  await login(page, 'admin');
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+  await page.goto('/admin/songs');
+  await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+  await page.getByTestId('admin-add-song').click();
+  await page.getByTestId('admin-paste-input').fill('Title: E2E Light Scrim\n\nA lyric line');
+  await page.getByTestId('admin-parse-button').click();
+  await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+  await expect(page.locator('.cdk-overlay-backdrop')).toHaveCSS(
+    'background-color',
+    'rgba(0, 0, 0, 0.45)',
+  );
+  // The overlay layer is raised above the fixed top nav, so the scrim dims the
+  // header instead of the header painting over it.
+  await expect(page.locator('.cdk-overlay-container')).toHaveCSS('z-index', '1200');
+  const topAtHeader = await page.evaluate(() => {
+    const toolbar = document.querySelector('mat-toolbar')!.getBoundingClientRect();
+    const top = document.elementFromPoint(toolbar.left + 10, toolbar.top + toolbar.height / 2);
+    return top?.className ?? '';
+  });
+  expect(topAtHeader).toContain('cdk-overlay-backdrop');
+  await page.getByTestId('draft-cancel').click();
+  await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+});
+
+test('dark dialog scrim separates the sheet from the dark page', async ({ page }) => {
+  try {
+    await login(page, 'admin');
+    await writeDb(`users/${adminUid}/prefs/theme`, 'dark');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.goto('/admin/songs');
+    await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+    await page.getByTestId('admin-add-song').click();
+    await page.getByTestId('admin-paste-input').fill('Title: E2E Scrim\n\nA lyric line');
+    await page.getByTestId('admin-parse-button').click();
+    await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+    await expect(page.locator('.cdk-overlay-backdrop')).toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0.55)',
+    );
+    await page.getByTestId('draft-cancel').click();
+    await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+  } finally {
+    await deleteDb(`users/${adminUid}/prefs`);
+  }
 });
 
 test('no console errors during theme flows', async ({ page, collector }) => {

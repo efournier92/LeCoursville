@@ -10,6 +10,16 @@
   max-width: 400px;
   text-align: center;
 
+  // Material's card container token is injected after the global sheet, so the
+  // shared .surface-card class needs a card-level specificity to win and use
+  // the app's own white (or dark) surface instead of the theme's tinted card.
+  &.surface-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
   mat-card-header {
     display: flex;
     flex-direction: column;
@@ -20,8 +30,11 @@
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: var(--color-error);
-      background-color: rgba(179, 38, 30, 0.10);
+      // A disabled feature is a state, not an error: brand-muted disc and
+      // neutral ink instead of the red prohibition mark.
+      color: var(--color-ink-2);
+      background-color: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
+      border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
       border-radius: 50%;
       display: flex;
       align-items: center;

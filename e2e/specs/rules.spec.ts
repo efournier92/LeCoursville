@@ -1,7 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { E2E_USERS } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
-import { ROLES, del, get, patch, put, signIn, uidForEmail } from '../helpers/rules';
+import { ROLES, del, get, patch, pendingSignIn, put, signIn, uidForEmail } from '../helpers/rules';
 
 const STORAGE_BUCKET = 'lecoursville-dev.appspot.com';
 const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
@@ -499,6 +499,72 @@ test.describe('rules', () => {
     const token = await signIn('user');
     for (const node of ['media', 'clans']) {
       expect((await get(node, token)).ok).toBe(true);
+    }
+  });
+
+  test('songs allow member reads, deny member writes, and pin the record id to its key', async () => {
+    const memberToken = await signIn('user');
+    const adminToken = await signIn('admin');
+
+    const memberRead = await get('songs/song-a', memberToken);
+    expect(memberRead.ok).toBe(true);
+    expect(await memberRead.json()).toMatchObject({ id: 'song-a' });
+    expect((await get('songs/song-a')).status).not.toBe(200);
+
+    const seeded = (await readDb<Record<string, any>>('songs/song-a'))!;
+    const key = `rules-song-${Date.now()}`;
+    const record = { ...seeded, id: key, title: 'Rules probe' };
+
+    try {
+      expect((await put(`songs/${key}`, record, memberToken)).status).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect(
+        (await put(`songs/${key}`, { ...record, id: 'different-id' }, adminToken)).status,
+      ).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect((await put(`songs/${key}`, record, adminToken)).ok).toBe(true);
+      expect((await readDb<Record<string, any>>(`songs/${key}`))?.id).toBe(key);
+    } finally {
+      await deleteDb(`songs/${key}`);
+    }
+  });
+
+  test('songs writes enforce record shape and pending tokens cannot read', async () => {
+    const adminToken = await signIn('admin');
+    const pending = await pendingSignIn();
+    const stamp = Date.now();
+    const key = `rules-song-shape-${stamp}`;
+    const record = {
+      id: key,
+      title: 'Shape probe',
+      body: 'line one',
+      source: null,
+      musicalKey: null,
+      leaderIds: ['person-a', 'person-b'],
+      createdAt: stamp,
+      updatedAt: stamp,
+    };
+
+    try {
+      expect((await put(`songs/${key}`, record)).status).not.toBe(200);
+      expect((await get(`songs/${key}`, pending.token)).status).not.toBe(200);
+      expect((await get('songs/song-a', pending.token)).status).not.toBe(200);
+
+      expect(
+        (await put(`songs/${key}`, { ...record, title: 'x'.repeat(201) }, adminToken)).status,
+      ).not.toBe(200);
+      expect(
+        (await put(`songs/${key}`, { ...record, body: 42 }, adminToken)).status,
+      ).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect((await put(`songs/${key}`, record, adminToken)).ok).toBe(true);
+      expect((await readDb<Record<string, any>>(`songs/${key}`))?.title).toBe('Shape probe');
+    } finally {
+      await deleteDb(`songs/${key}`);
+      await pending.dispose();
     }
   });
 });

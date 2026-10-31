@@ -6,6 +6,7 @@
   <mat-toolbar
     class="d-inline-flex justify-content-between"
     color="primary"
+    [attr.inert]="(sidenavOpen$ | async) ? '' : null"
     >
     <div class="toolbar-left d-inline-flex">
       <button
@@ -64,6 +65,7 @@
             <button
               mat-icon-button
               class="menu-icon-container"
+              aria-label="Open navigation menu"
               [matMenuTriggerFor]="menu"
               >
               <mat-icon>menu</mat-icon>

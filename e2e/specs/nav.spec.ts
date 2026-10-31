@@ -13,7 +13,8 @@ test.describe('navigation', () => {
     await expect(nav.getByRole('button', { name: 'People' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Contacts' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Calendar' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Music' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Videos' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Photos' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Expressions' })).toBeVisible();
@@ -23,6 +24,19 @@ test.describe('navigation', () => {
     // Family Explorer is a URL-shared public page, never app chrome.
     await expect(nav.getByRole('button', { name: 'Family Explorer' })).toHaveCount(0);
     await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
+  });
+
+  test('Songs navigates to /songs and Audio still opens the audio library', async ({ page }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
+
+    await nav.getByRole('button', { name: 'Songs' }).click();
+    await expect(page).toHaveURL(/\/songs/);
+
+    await nav.getByRole('button', { name: 'Audio' }).click();
+    await expect(page).toHaveURL(/\/media\/audio/);
   });
 
   test('cached session renders nav links immediately, never Sign In', async ({ page }) => {
@@ -48,6 +62,17 @@ test.describe('navigation', () => {
     // Flags resolve and the real links render.
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
     await expect(page.getByTestId('nav-flags-skeleton')).toHaveCount(0);
+  });
+
+  test('the mobile member hamburger has an accessible name and opens the menu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    // The member twin of the admin toggle must not be an unnamed icon button.
+    const hamburger = page.getByRole('button', { name: 'Open navigation menu' });
+    await expect(hamburger).toBeVisible();
+    await hamburger.click();
+    await expect(page.locator('.mat-mdc-menu-panel')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Songs' })).toBeVisible();
   });
 
   test('at 600px the inline links are hidden and the hamburger carries them', async ({ page }) => {
@@ -107,7 +132,8 @@ test.describe('navigation', () => {
       ['People', /\/people/],
       ['Contacts', /\/contacts/],
       ['Calendar', /\/calendar/],
-      ['Music', /\/media\/audio/],
+      ['Songs', /\/songs/],
+      ['Audio', /\/media\/audio/],
       ['Videos', /\/media\/video/],
       ['Photos', /\/photos/],
       ['Expressions', /\/expressions/],

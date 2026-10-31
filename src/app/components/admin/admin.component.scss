@@ -25,8 +25,9 @@
     .logo-link {
       text-decoration: none;
 
-      h1 {
-        margin: 0;
+      // The sidebar brand is a link label, not the page heading: admin pages
+      // own their h1, so this stays a styled block.
+      .sidebar-brand {
         font-family: var(--font-display);
         font-size: 1.5rem;
         font-weight: 500;

@@ -15,8 +15,20 @@ describe('AdminComponent', () => {
   let flags$: Subject<Record<string, any>>;
   let pendingUploads$: Subject<number>;
   let openRecovery$: Subject<number>;
+  let viewportListener: ((event: MediaQueryListEvent) => void) | undefined;
+  const originalMatchMedia = window.matchMedia;
 
   beforeEach(async () => {
+    viewportListener = undefined;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+        viewportListener = listener;
+      },
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
     flags$ = new Subject();
     pendingUploads$ = new Subject();
     openRecovery$ = new Subject();
@@ -46,6 +58,10 @@ describe('AdminComponent', () => {
     component = fixture.componentInstance;
   });
 
+  afterEach(() => {
+    window.matchMedia = originalMatchMedia;
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -62,7 +78,7 @@ describe('AdminComponent', () => {
     expect(nav.getAttribute('aria-busy')).toBe('false');
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(10);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(11);
   });
 
   it('renders no badges at zero', () => {
@@ -131,6 +147,51 @@ describe('AdminComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
   });
 
+  it('makes the page content inert while the drawer is open', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    fixture.detectChanges();
+    const content = fixture.nativeElement.querySelector('#admin-content') as HTMLElement;
+    const routing = TestBed.inject(RoutingService);
+
+    expect(content.hasAttribute('inert')).toBe(false);
+
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(true);
+
+    routing.closeSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
+  it('resets the shared drawer state when the admin shell is destroyed', () => {
+    fixture.detectChanges();
+    const routing = TestBed.inject(RoutingService);
+    let open: boolean | undefined;
+    routing.sidenavOpen$.subscribe(value => (open = value));
+
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(open).toBe(true);
+
+    fixture.destroy();
+    expect(open).toBe(false);
+  });
+
+  it('closes the drawer when the viewport crosses to desktop', () => {
+    fixture.detectChanges();
+    const routing = TestBed.inject(RoutingService);
+    const content = fixture.nativeElement.querySelector('#admin-content') as HTMLElement;
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(true);
+
+    viewportListener!({ matches: true } as MediaQueryListEvent);
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
   it('focuses the first nav link when the drawer opens below 992px', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
@@ -140,6 +201,23 @@ describe('AdminComponent', () => {
 
     const firstLink = fixture.nativeElement.querySelector('[data-testid^="admin-nav-link-"]') as HTMLElement;
     const focusSpy = vi.spyOn(firstLink, 'focus');
+
+    TestBed.inject(RoutingService).openSidenav();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    expect(focusSpy).toHaveBeenCalled();
+    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+  });
+
+  it('focuses the sidebar container while the nav is still loading', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
+    fixture.detectChanges();
+    // Flags have not emitted: the nav is a skeleton, so there is no link to
+    // focus and focus must not stay on the toggle behind the scrim.
+    const sidebar = fixture.nativeElement.querySelector('#admin-sidebar') as HTMLElement;
+    expect(sidebar.getAttribute('tabindex')).toBe('-1');
+    const focusSpy = vi.spyOn(sidebar, 'focus');
 
     TestBed.inject(RoutingService).openSidenav();
     await new Promise(resolve => requestAnimationFrame(resolve));

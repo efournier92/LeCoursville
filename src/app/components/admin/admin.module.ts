@@ -20,7 +20,9 @@ import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-fam
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
 import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-import.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
+import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
+import { SongDraftDialogComponent } from '../song-draft-dialog/song-draft-dialog.component';
 
 const routes: Routes = [
   {
@@ -38,6 +40,10 @@ const routes: Routes = [
         component: AdminPhotoAlbumsComponent,
         canActivate: [PhotoAlbumsFeatureGuard],
         data: { fallbackUrl: '/admin' },
+      },
+      {
+        path: ADMIN_ROUTE.songs,
+        component: AdminSongsComponent,
       },
       {
         path: ADMIN_ROUTE.users,
@@ -94,6 +100,8 @@ const routes: Routes = [
     AdminCalendarsComponent,
     AdminFamilyExplorerComponent,
     AdminRecoveryComponent,
+    AdminSongsComponent,
+    SongDraftDialogComponent,
     AdminAnalyticsComponent,
   ],
   imports: [

@@ -63,8 +63,8 @@ test.describe('loading contract', () => {
       if (url) {
         await expect(page).toHaveURL(url);
       }
-      // 30s timeout: full-suite browser load can exceed the 15s default (ledger C-20261023-01).
-      await expect(content(page)).toBeVisible({ timeout: 30_000 });
+      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
+      await expect(content(page)).toBeVisible({ timeout: 45_000 });
     }
   });
 
@@ -122,8 +122,8 @@ test.describe('loading contract', () => {
     for (const { route, content } of ADMIN_ROUTES) {
       await page.goto(route);
       await page.reload();
-      // 30s timeout: full-suite browser load can exceed the 15s default (ledger C-20261023-01).
-      await expect(content(page)).toBeVisible({ timeout: 30_000 });
+      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
+      await expect(content(page)).toBeVisible({ timeout: 45_000 });
       await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
     }
   });

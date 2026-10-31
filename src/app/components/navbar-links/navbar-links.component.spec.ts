@@ -37,7 +37,7 @@ describe('NavbarLinksComponent', () => {
   });
 
   it('all core toggleable buttons are present when every flag defaults to enabled', () => {
-    const toggleableTitles = ['Expressions', 'Music', 'Videos', 'Calendar', 'Contacts', 'Photos', 'Chat'];
+    const toggleableTitles = ['Expressions', 'Audio', 'Videos', 'Calendar', 'Contacts', 'Photos', 'Chat'];
     const filteredToggleable = component.filteredButtons.filter(b =>
       toggleableTitles.includes(b.title)
     );
@@ -52,7 +52,7 @@ describe('NavbarLinksComponent', () => {
     component.ngOnInit();
     fixture.detectChanges();
 
-    const musicButton = component.filteredButtons.find(b => b.title === 'Music');
+    const musicButton = component.filteredButtons.find(b => b.title === 'Audio');
     expect(musicButton).toBeUndefined();
     expect(component.filteredButtons.find(b => b.title === 'Calendar')).toBeDefined();
   });

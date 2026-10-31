@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy, HostListener, ChangeDetectionStrategy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { User } from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from 'src/app/services/version.service';
@@ -27,7 +28,14 @@ export class AdminComponent implements OnInit, OnDestroy {
   private sidenavSub: Subscription;
   private userSub: Subscription;
   private flagsSub: Subscription;
+  private routerSub: Subscription;
   private badgeSubs: Subscription[] = [];
+  private viewportMedia?: MediaQueryList;
+  private readonly onViewportChange = (event: MediaQueryListEvent): void => {
+    if (event.matches) {
+      this.closeSidenav();
+    }
+  };
 
   constructor(
     private authService: AuthService,
@@ -35,6 +43,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     private routingService: RoutingService,
     private featureFlagsService: FeatureFlagsService,
     private adminBadgeService: AdminBadgeService,
+    private router: Router,
     private cdr: ChangeDetectorRef,
   ) { }
 
@@ -46,14 +55,27 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.isNavReady = true;
     });
     this.sidenavSub = this.routingService.sidenavOpen$.subscribe(open => this.onSidenavChange(open));
+    // The drawer state lives in a shared service that outlives this shell, so
+    // leaving an admin route (including browser Back) must reset it or the app
+    // toolbar stays inert on the member page.
+    this.routerSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => this.closeSidenav());
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      this.viewportMedia = window.matchMedia('(min-width: 992px)');
+      this.viewportMedia.addEventListener('change', this.onViewportChange);
+    }
     this.watchBadges();
   }
 
   ngOnDestroy(): void {
+    this.closeSidenav();
     this.userSub?.unsubscribe();
     this.flagsSub?.unsubscribe();
     this.sidenavSub?.unsubscribe();
+    this.routerSub?.unsubscribe();
     this.badgeSubs.forEach(sub => sub.unsubscribe());
+    this.viewportMedia?.removeEventListener('change', this.onViewportChange);
   }
 
   private watchBadges(): void {
@@ -144,9 +166,20 @@ export class AdminComponent implements OnInit, OnDestroy {
       // Apply the open class before focusing: a link inside a
       // visibility:hidden drawer cannot take focus.
       this.cdr.detectChanges();
-      document.querySelector<HTMLElement>('[data-testid^="admin-nav-link-"]')?.focus();
+      const firstLink = document.querySelector<HTMLElement>('[data-testid^="admin-nav-link-"]');
+      if (firstLink) {
+        firstLink.focus();
+      } else {
+        // Flags have not emitted yet (skeleton nav, no links): focus the
+        // drawer container so focus never stays on the toggle behind the
+        // open scrim.
+        document.getElementById('admin-sidebar')?.focus();
+      }
     } else if (!open && document.activeElement?.closest('.admin-sidebar')) {
-      this.focusMenuToggle();
+      // The toolbar is inert while the drawer is open, and focusing a button
+      // inside an inert subtree is a no-op. Yield a frame so change detection
+      // has cleared the attribute before restoring focus to the toggle.
+      requestAnimationFrame(() => this.focusMenuToggle());
     }
   }
 

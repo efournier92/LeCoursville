@@ -389,7 +389,7 @@ test.describe('admin content surfaces', () => {
     await expect(page.getByTestId('feature-toggle-people')).toBeVisible();
 
     const rows = page.locator('.feature-row');
-    await expect(rows).toHaveCount(9);
+    await expect(rows).toHaveCount(10);
 
     const tiles = await page.locator('.feature-row .feature-icon').evaluateAll((elements) =>
       elements.map((el) => {
@@ -402,7 +402,7 @@ test.describe('admin content surfaces', () => {
         };
       }),
     );
-    expect(tiles).toHaveLength(9);
+    expect(tiles).toHaveLength(10);
     for (const tile of tiles) {
       expect(tile.width).toBe(32);
       expect(tile.height).toBe(32);

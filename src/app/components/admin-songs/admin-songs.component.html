@@ -1,0 +1,216 @@
+<div class="admin-page admin-songs-page">
+  <h1 class="visually-hidden">Songs</h1>
+
+  <app-page-toolbar title="Songs">
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      data-testid="admin-add-song"
+      [attr.aria-controls]="showAddPanel ? 'add-song-panel' : null"
+      [attr.aria-expanded]="showAddPanel"
+      (click)="toggleAddPanel()"
+      >
+      <mat-icon aria-hidden="true">{{ showAddPanel ? 'close' : 'add' }}</mat-icon>
+      {{ showAddPanel ? 'Close' : 'Add song' }}
+    </button>
+  </app-page-toolbar>
+
+  <app-admin-filter-bar>
+    <mat-form-field class="songs-filter-field" admin-filter-search>
+      <mat-label>Search songs</mat-label>
+      <mat-icon matTextPrefix>search</mat-icon>
+      <input
+        matInput
+        type="search"
+        aria-label="Search songs"
+        data-testid="admin-songs-search"
+        #adminSearch
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchInput($event)"
+        />
+      @if (searchTerm) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear search"
+          (click)="clearSearch(adminSearch)"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </app-admin-filter-bar>
+
+  @if (actionError) {
+    <div class="admin-error" role="alert">{{ actionError }}</div>
+  }
+
+  @if (showAddPanel) {
+    <mat-card class="admin-surface add-song-card" id="add-song-panel">
+      <mat-card-content>
+        <h2 class="admin-card-title">Add song</h2>
+        <div class="format-guide">
+          <p class="admin-muted">One song per .txt file. Start with Title:, Source:, Key:, and optional Leader: lines, then a blank line, then lyrics with [G] chords inline.</p>
+          <a
+            mat-stroked-button
+            href="assets/samples/songs-sample.txt"
+            download="songs-sample.txt"
+            data-testid="admin-download-sample"
+            >
+            <mat-icon aria-hidden="true">download</mat-icon>
+            Download sample .txt
+          </a>
+        </div>
+        <mat-form-field class="admin-upload-input paste-field">
+          <mat-label>Song text</mat-label>
+          <textarea
+            matInput
+            rows="6"
+            data-testid="admin-paste-input"
+            [(ngModel)]="pasteText"
+            placeholder="Paste lyrics, optionally with Title:, Source:, Key:, and Leader: header lines."
+            ></textarea>
+        </mat-form-field>
+        <div class="add-song-actions">
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            data-testid="admin-parse-button"
+            [disabled]="!pasteText.trim() || !peopleLoaded || importing"
+            (click)="onParse()"
+            >
+            Parse
+          </button>
+          @if (!peopleLoaded) {
+            <span class="admin-muted" role="status" data-testid="add-people-loading">Loading people…</span>
+          } @else {
+            <span class="admin-muted">Parse the pasted text into an editable draft.</span>
+          }
+        </div>
+        <div class="file-import">
+          <input
+            id="admin-song-file"
+            class="file-import-input visually-hidden"
+            type="file"
+            accept=".txt"
+            multiple
+            tabindex="-1"
+            data-testid="admin-file-input"
+            #fileInput
+            (change)="onFilesPicked($event)"
+            />
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="!peopleLoaded || importing"
+            (click)="fileInput.click()"
+            >
+            Choose .txt files
+          </button>
+          <p class="admin-muted">
+            Each file can be up to 2 MB and opens as an editable draft. Files are never uploaded or kept.
+            @if (pickedFileCount > 0) {
+              <span>{{ pickedFileCount }} file{{ pickedFileCount === 1 ? '' : 's' }} selected.</span>
+            }
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (status === 'loading') {
+    <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading songs">
+      @for (i of skeletonIterations; track i) {
+        <div></div>
+      }
+    </div>
+  }
+
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load songs." (retry)="loadSongs()"></app-load-error>
+  }
+
+  @if (status === 'ready') {
+    @if (songs.length === 0) {
+      <div class="admin-empty-region" data-testid="admin-songs-empty">
+        <div class="admin-empty">
+          <div class="admin-empty-icon" aria-hidden="true">
+            <mat-icon>music_note</mat-icon>
+          </div>
+          <p class="admin-card-title">No songs yet</p>
+          <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
+          <a
+            mat-stroked-button
+            href="assets/samples/songs-sample.txt"
+            download="songs-sample.txt"
+            data-testid="admin-empty-download-sample"
+            >
+            <mat-icon aria-hidden="true">download</mat-icon>
+            Download sample .txt
+          </a>
+        </div>
+      </div>
+    } @else if (filteredSongs.length === 0) {
+      <div class="admin-empty-region">
+        <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs" title="No results"></app-no-results-message>
+      </div>
+    } @else {
+      <mat-card class="admin-surface songs-table-card">
+        <table class="admin-table" data-testid="admin-songs-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Source</th>
+              <th>Key</th>
+              <th>Leaders</th>
+              <th>Updated</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (song of filteredSongs; track song.id) {
+              <tr data-testid="admin-song-row">
+                <td data-label="Title">{{ song.title }}</td>
+                <td data-label="Source">{{ song.source || '—' }}</td>
+                <td data-label="Key">{{ song.musicalKey || '—' }}</td>
+                <td data-label="Leaders">
+                  <span class="leader-chips">
+                    @for (leaderId of song.leaderIds; track leaderId) {
+                      <span class="leader-chip">{{ leaderLabel(leaderId) }}</span>
+                    } @empty {
+                      <span class="admin-muted">—</span>
+                    }
+                  </span>
+                </td>
+                <td data-label="Updated">{{ formatUpdated(song.updatedAt) }}</td>
+                <td data-label="" class="song-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    data-testid="admin-edit-song"
+                    [attr.aria-label]="'Edit ' + song.title"
+                    (click)="onEdit(song)"
+                    >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    type="button"
+                    data-testid="admin-delete-song"
+                    [attr.aria-label]="'Delete ' + song.title"
+                    (click)="onDelete(song)"
+                    >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </mat-card>
+    }
+  }
+</div>

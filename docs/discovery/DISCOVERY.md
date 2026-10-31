@@ -1,9 +1,11 @@
 # Discovery
 
 One line per finding, decision, assumption, trap, question, or outcome. Newest first. Evidence required.
-Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
+Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy, songs/ui
 
 ## Entries
+
+- D-20261031-22 | 2026-10-31 | [outcome] | songs/ui | Songs Library findings D-20261031-08..21 archived; gate, print, rules, and UX evidence linked | .gate-results/gate-summary.txt
 
 - D-20261031-07 | 2026-10-31 | [find] | admin/ui | Only the inner icon pill toggled the dark/light chip; make the outer chip `<button role="switch">` with the pill `pointer-events: none` | src/app/components/auth/auth.component.html:79
 - D-20261031-06 | 2026-10-31 | [trap] | admin/ui | `BehaviorSubject` seed `[]` made `app-media-list` read loaded-empty and flash the empty message over the skeleton; `ReplaySubject(1)` fixes it | src/app/services/media.service.ts:15
