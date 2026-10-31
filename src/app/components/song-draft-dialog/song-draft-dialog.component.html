@@ -10,6 +10,8 @@
       maxlength="200"
       [(ngModel)]="title"
       aria-required="true"
+      [attr.aria-invalid]="errorField === 'title' ? 'true' : null"
+      [attr.aria-describedby]="errorField === 'title' ? 'draft-error' : null"
       />
   </mat-form-field>
 
@@ -33,6 +35,8 @@
       data-testid="draft-body"
       [(ngModel)]="body"
       aria-required="true"
+      [attr.aria-invalid]="errorField === 'body' ? 'true' : null"
+      [attr.aria-describedby]="errorField === 'body' ? 'draft-error' : null"
       ></textarea>
   </mat-form-field>
 
@@ -93,7 +97,7 @@
   </section>
 
   @if (error) {
-    <p class="draft-error" role="alert">{{ error }}</p>
+    <p id="draft-error" class="draft-error" role="alert">{{ error }}</p>
   }
 </mat-dialog-content>
 

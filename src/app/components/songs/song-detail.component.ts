@@ -21,6 +21,9 @@ export class SongDetailComponent implements OnInit, OnDestroy {
   offset = 0;
   status: 'loading' | 'error' | 'notfound' | 'ready' = 'loading';
 
+  /** True once the user has transposed; keeps the live region silent on load. */
+  private hasTransposed = false;
+
   private songSub: Subscription | null = null;
   private peopleSub: Subscription | null = null;
 
@@ -60,6 +63,31 @@ export class SongDetailComponent implements OnInit, OnDestroy {
     return `${this.offset > 0 ? '+' : ''}${this.offset}`;
   }
 
+  /**
+   * Screen-reader sentence behind the visual badge: direction, count, and the
+   * key change. Stays empty until the user transposes so the mounted live
+   * region never announces on page load; a reset announces its own result.
+   */
+  get offsetAnnouncement(): string {
+    const storedKey = this.song?.musicalKey || '';
+    if (this.offset === 0) {
+      if (!this.hasTransposed) {
+        return '';
+      }
+      return storedKey ? `Transpose reset; key ${storedKey}` : 'Transpose reset';
+    }
+    const count = Math.abs(this.offset);
+    const direction = this.offset > 0 ? 'up' : 'down';
+    const semitones = `${count} semitone${count === 1 ? '' : 's'}`;
+    const transposedKey = storedKey ? transposeKeyName(storedKey, this.offset) : null;
+    const keyChange = storedKey
+      ? transposedKey
+        ? `; key ${storedKey} → ${transposedKey}`
+        : `; key ${storedKey}`
+      : '';
+    return `Transposed ${direction} ${semitones}${keyChange}`;
+  }
+
   /** Stored key, followed by the transposed key when the note parses. */
   get displayKey(): string | null {
     if (!this.song?.musicalKey) {
@@ -77,10 +105,12 @@ export class SongDetailComponent implements OnInit, OnDestroy {
 
   transpose(delta: number): void {
     this.offset = Math.max(-11, Math.min(11, this.offset + delta));
+    this.hasTransposed = true;
   }
 
   reset(): void {
     this.offset = 0;
+    this.hasTransposed = true;
   }
 
   retry(): void {
@@ -103,6 +133,7 @@ export class SongDetailComponent implements OnInit, OnDestroy {
   private loadSong(): void {
     this.status = 'loading';
     this.offset = 0;
+    this.hasTransposed = false;
     this.songSub?.unsubscribe();
     this.songSub = this.songsService.getSong(this.songId).subscribe(
       song => {

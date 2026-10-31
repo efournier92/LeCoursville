@@ -156,6 +156,15 @@ test('light dialog scrim separates the sheet from the pale page', async ({ page 
     'background-color',
     'rgba(0, 0, 0, 0.45)',
   );
+  // The overlay layer is raised above the fixed top nav, so the scrim dims the
+  // header instead of the header painting over it.
+  await expect(page.locator('.cdk-overlay-container')).toHaveCSS('z-index', '1200');
+  const topAtHeader = await page.evaluate(() => {
+    const toolbar = document.querySelector('mat-toolbar')!.getBoundingClientRect();
+    const top = document.elementFromPoint(toolbar.left + 10, toolbar.top + toolbar.height / 2);
+    return top?.className ?? '';
+  });
+  expect(topAtHeader).toContain('cdk-overlay-backdrop');
   await page.getByTestId('draft-cancel').click();
   await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
 });

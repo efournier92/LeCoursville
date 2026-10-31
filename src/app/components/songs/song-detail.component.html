@@ -1,4 +1,4 @@
-<div class="song-detail page-ground page-content">
+<div class="song-detail page-ground page-content" role="main">
   <app-page-toolbar title="Songs">
     <button
       page-toolbar-left
@@ -78,8 +78,14 @@
               <mat-icon aria-hidden="true">remove</mat-icon>
             </button>
 
-            <span class="transpose-offset" data-testid="transpose-offset" aria-live="polite" [class.is-empty]="offset === 0">
+            <span class="transpose-offset" data-testid="transpose-offset" [class.is-empty]="offset === 0" aria-hidden="true">
               {{ offsetLabel }}
+            </span>
+
+            <!-- The badge is visual shorthand; the live region carries the
+                 meaningful sentence (direction, count, key change). -->
+            <span class="visually-hidden" role="status" aria-live="polite" data-testid="transpose-announcement">
+              {{ offsetAnnouncement }}
             </span>
 
             <button

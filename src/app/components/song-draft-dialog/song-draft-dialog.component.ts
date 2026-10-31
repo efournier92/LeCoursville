@@ -33,6 +33,8 @@ export class SongDraftDialogComponent {
   unmatchedLeaders: string[] = [];
   saving = false;
   error: string | null = null;
+  /** Which field the current error belongs to; drives aria-invalid/describedby. */
+  errorField: 'title' | 'body' | null = null;
 
   constructor(
     public dialogRef: MatDialogRef<SongDraftDialogComponent, Song | null>,
@@ -101,31 +103,38 @@ export class SongDraftDialogComponent {
 
     if (!title) {
       this.error = 'Title is required.';
+      this.errorField = 'title';
       return;
     }
     if (title.length > 200) {
       this.error = 'Title must be 200 characters or fewer.';
+      this.errorField = 'title';
       return;
     }
     if (!body.trim()) {
       this.error = 'Lyrics are required.';
+      this.errorField = 'body';
       return;
     }
     if (body.length > 100000) {
       this.error = 'Lyrics must be 100,000 characters or fewer.';
+      this.errorField = 'body';
       return;
     }
     if (source.length > 200) {
       this.error = 'Source must be 200 characters or fewer.';
+      this.errorField = null;
       return;
     }
     if (musicalKey.length > 16) {
       this.error = 'Key must be 16 characters or fewer.';
+      this.errorField = null;
       return;
     }
 
     this.saving = true;
     this.error = null;
+    this.errorField = null;
     const leaderIds = [...new Set(this.selectedLeaderIds)];
     const song: Song = {
       id: this.data.song?.id || crypto.randomUUID(),
@@ -156,6 +165,7 @@ export class SongDraftDialogComponent {
         error instanceof Error && error.message === 'Song no longer exists.'
           ? error.message
           : 'Couldn\'t save this song. Please try again.';
+      this.errorField = null;
     } finally {
       this.saving = false;
     }

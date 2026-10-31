@@ -38,7 +38,8 @@
 .song-leaders {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  // Top-align so the label pins to the first chip row when the chips wrap.
+  align-items: flex-start;
   gap: 8px;
   margin-top: 4px;
 }
@@ -46,6 +47,9 @@
 .song-leaders-label {
   display: inline-flex;
   align-items: center;
+  // Matches .leader-chip's min-height: the label's first line sits on the
+  // first chip row instead of floating between two rows at 320px.
+  line-height: 40px;
   font-size: 0.9rem;
   color: var(--color-ink-2);
 }
@@ -266,13 +270,16 @@
   }
 
   .song-sheet {
-    padding: 14mm !important;
+    // Horizontal gutter lives in the element (measurable in print emulation);
+    // the vertical gutter is owned by the `song` page box in styles.scss so it
+    // repeats on page 2+ instead of leaking only onto the first/last fragment.
+    padding: 0 14mm !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     max-width: none !important;
-    // Named page with a 0 margin (styles.scss); the sheet's 14mm padding is the
-    // only gutter, so real paper never stacks two of them.
+    // Named page with a 14mm top/bottom margin; the sheet pads the sides only,
+    // so real paper never stacks two gutters.
     page: song;
   }
 
@@ -285,6 +292,13 @@
   // Leaders print as plain text, not filled pills: "Led by Alice, Ben".
   .song-leaders {
     gap: 0.35em;
+    align-items: baseline;
+  }
+
+  // The on-screen 40px pin is a chip-row alignment device; print drops the
+  // chips' box, so the label returns to the text baseline.
+  .song-leaders-label {
+    line-height: inherit;
   }
 
   .song-leaders-chips {

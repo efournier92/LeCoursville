@@ -82,3 +82,12 @@
 
 /* Nav loading skeleton styles live globally in styles.scss (shared by
    app.component and navbar-links; Angular scopes component styles). */
+
+// Print paginates the whole document. The app container is the screen's scroll
+// container (overflow-x: hidden computes overflow-y: auto); a scroll container
+// clips its content, so Chromium prints only the first page of a long song.
+@media print {
+  .app-container {
+    overflow: visible;
+  }
+}

@@ -1,4 +1,4 @@
-<div class="songs-page page-ground page-content">
+<div class="songs-page page-ground page-content" role="main">
   <h1 class="visually-hidden">Songs</h1>
 
   <app-page-toolbar title="Songs">
@@ -72,11 +72,13 @@
       <div class="songs-grid">
         @for (song of filteredSongs; track song.id) {
           <article class="song-card surface-card" data-testid="song-card">
-            <a
-              class="song-title"
-              data-testid="song-title"
-              [routerLink]="['/songs', song.id]"
-              >{{ song.title }}</a>
+            <h2 class="song-title-heading">
+              <a
+                class="song-title"
+                data-testid="song-title"
+                [routerLink]="['/songs', song.id]"
+                >{{ song.title }}</a>
+            </h2>
 
             @if (song.source) {
               <p class="song-source" data-testid="song-source">Source: {{ song.source }}</p>

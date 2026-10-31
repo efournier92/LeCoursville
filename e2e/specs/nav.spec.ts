@@ -64,6 +64,17 @@ test.describe('navigation', () => {
     await expect(page.getByTestId('nav-flags-skeleton')).toHaveCount(0);
   });
 
+  test('the mobile member hamburger has an accessible name and opens the menu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    // The member twin of the admin toggle must not be an unnamed icon button.
+    const hamburger = page.getByRole('button', { name: 'Open navigation menu' });
+    await expect(hamburger).toBeVisible();
+    await hamburger.click();
+    await expect(page.locator('.mat-mdc-menu-panel')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Songs' })).toBeVisible();
+  });
+
   test('clicking each toolbar link navigates to its route', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');

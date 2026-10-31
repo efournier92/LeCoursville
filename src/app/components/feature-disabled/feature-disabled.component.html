@@ -1,7 +1,9 @@
 <div class="feature-disabled-container">
+  <h1 class="visually-hidden">Feature unavailable</h1>
+
   <mat-card class="disabled-card surface-card">
     <mat-card-header>
-      <mat-icon mat-card-avatar class="disabled-icon">block</mat-icon>
+      <mat-icon mat-card-avatar class="disabled-icon" aria-hidden="true">power_settings_new</mat-icon>
       <mat-card-title>Feature Disabled</mat-card-title>
       <mat-card-subtitle>{{ featureName }}</mat-card-subtitle>
     </mat-card-header>

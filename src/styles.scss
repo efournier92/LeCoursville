@@ -239,6 +239,15 @@ html[data-theme="dark"] {
   ));
 }
 
+// The app's top nav paints on its own layer (1100); CDK's overlay container
+// defaults to 1000, so a dialog scrim ran underneath the header. CDK's rules
+// sit inside @layer cdk-overlay, and unlayered author styles outrank any layer,
+// so this plain rule lifts every overlay app-wide without !important. Menus
+// live in the same container and therefore stay above page content too.
+.cdk-overlay-container {
+  z-index: 1200;
+}
+
 // Pale pages make the stock .32 scrim read as a faint tint; deepen it so the
 // dialog reads as a separate layer. Dark pages are near-black, where the same
 // .32 leaves the sheet floating in the page value — keep .55 there.
@@ -486,14 +495,15 @@ select:-webkit-autofill:focus {
 /* Printed pages are content sheets: the app toolbar is screen chrome only. */
 @media print {
   // Every route prints inside a sane page box. The song sheet opts into the
-  // named `song` page below, so only it loses the margin (its own 14mm padding
-  // stays the single gutter owner); other routes keep this 14mm default.
+  // named `song` page below: vertical gutters come from that page box so they
+  // repeat on every printed page (a fragment's padding only lands on the first
+  // and last), while the element keeps the horizontal 14mm gutter.
   @page {
     margin: 14mm;
   }
 
   @page song {
-    margin: 0;
+    margin: 14mm 0;
   }
 
   // Beats Bootstrap's .d-inline-flex utility, which is also !important.

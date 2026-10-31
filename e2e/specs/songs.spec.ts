@@ -27,6 +27,13 @@ test.describe('songs', () => {
     await page.goto('/songs');
     await expect(cards(page)).toHaveCount(4);
     expect(await titles(page).allTextContents()).toEqual(TITLES);
+
+    // One mobile-visible main landmark and a real h2 per card, so heading
+    // navigation lands on each title while the anchor keeps its testid.
+    await expect(page.getByRole('main')).toHaveCount(1);
+    const first = cards(page).first();
+    await expect(first.getByRole('heading', { level: 2, name: 'Amazing Grace' })).toBeVisible();
+    await expect(first.getByTestId('song-title')).toHaveAttribute('href', '/songs/song-a');
   });
 
   test('2. search by title narrows to the matching song', async ({ page }) => {
@@ -155,6 +162,9 @@ test.describe('songs', () => {
     await openSong(page, 'song-c');
     await expect(page.getByTestId('leader-chip')).toHaveCount(0);
     await expect(page.getByTestId('song-leaders')).toHaveCount(0);
+    // The member detail page exposes exactly one main landmark.
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await expect(page.getByRole('main')).toContainText('Come Thou Fount');
   });
 
   test('9b. the detail labels its leaders "Led by" and prints them as one line', async ({ page }) => {
@@ -201,6 +211,9 @@ test.describe('songs', () => {
     expect(geometry.chips.left).toBeGreaterThan(geometry.sheetLeft + 50);
     expect(Math.abs(geometry.chips.left - geometry.firstChip.left)).toBeLessThanOrEqual(0.5);
     await expect(page.locator('.song-leaders-chips')).toHaveCSS('flex-wrap', 'wrap');
+    // "Led by" pins to the first chip row instead of floating between rows.
+    await expect(page.locator('.song-leaders')).toHaveCSS('align-items', 'flex-start');
+    expect(Math.abs(geometry.label.top - geometry.firstChip.top)).toBeLessThanOrEqual(1);
   });
 
   test('10. the detail body is monospace and preserves stored newlines', async ({ page }) => {
@@ -256,6 +269,11 @@ test.describe('songs', () => {
     await expect(page.getByTestId('song-body')).toContainText('[G#]Amazing grace');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+1');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G → G#');
+    // The visible badge stays "+1"; the live region carries the sentence.
+    const live = page.getByTestId('transpose-announcement');
+    await expect(live).toHaveAttribute('role', 'status');
+    await expect(live).toHaveAttribute('aria-live', 'polite');
+    await expect(live).toHaveText('Transposed up 1 semitone; key G → G#');
     // The M3 state layer is square inside the pill, so no ink spills over the
     // "+1" divider or the right cap after the click.
     const stateLayer = page
@@ -281,6 +299,9 @@ test.describe('songs', () => {
     await page.getByTestId('transpose-up').click();
     await expect(page.getByTestId('song-body')).toContainText('[C]I once was lost');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+2');
+    await expect(page.getByTestId('transpose-announcement')).toHaveText(
+      'Transposed up 2 semitones; key G → A',
+    );
   });
 
   test('13. Reset restores the stored body and empties the badge', async ({ page }) => {
@@ -292,7 +313,15 @@ test.describe('songs', () => {
     await expect(page.getByTestId('transpose-offset')).toHaveCount(1);
     await expect(page.getByTestId('transpose-offset')).toHaveText('');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G');
+    await expect(page.getByTestId('transpose-announcement')).toHaveText('Transpose reset; key G');
     expect(await page.getByTestId('song-body').textContent()).toBe(stored.body);
+
+    // Down spells flats, and the announcement names the direction and keys.
+    await page.getByTestId('transpose-down').click();
+    await expect(page.getByTestId('transpose-offset')).toHaveText('-1');
+    await expect(page.getByTestId('transpose-announcement')).toHaveText(
+      'Transposed down 1 semitone; key G → Gb',
+    );
   });
 
   test('14. the chord-over-line song renders no transpose controls', async ({ page }) => {
@@ -333,7 +362,10 @@ test.describe('songs', () => {
         radius: parseFloat(getComputedStyle(sheet).borderTopLeftRadius),
         ground: getComputedStyle(ground).backgroundColor,
         bodyGround: getComputedStyle(document.body).backgroundColor,
-        sheetPad: getComputedStyle(sheet).paddingLeft,
+        sheetPadLeft: getComputedStyle(sheet).paddingLeft,
+        sheetPadRight: getComputedStyle(sheet).paddingRight,
+        sheetPadTop: getComputedStyle(sheet).paddingTop,
+        sheetPadBottom: getComputedStyle(sheet).paddingBottom,
         sheetLeft: sheetBox.x,
         sheetWidth: sheetBox.width,
         bodyWidth: document.body.getBoundingClientRect().width,
@@ -343,18 +375,24 @@ test.describe('songs', () => {
     expect(print.radius).toBe(0);
     expect(print.ground).toBe('rgb(255, 255, 255)');
     expect(print.bodyGround).toBe('rgb(255, 255, 255)');
-    // The sheet owns its own 14mm page box (emulated print ignores @page).
-    expect(print.sheetPad).toBe('52.9134px');
+    // The element owns the horizontal 14mm gutter only (measurable even though
+    // print emulation ignores @page boxes).
+    expect(print.sheetPadLeft).toBe('52.9134px');
+    expect(print.sheetPadRight).toBe('52.9134px');
+    // Vertical gutter belongs to the `song` page box so page 2+ keeps it; the
+    // sheet adds no top/bottom padding (a fragment's padding only lands on the
+    // first and last printed page).
+    expect(print.sheetPadTop).toBe('0px');
+    expect(print.sheetPadBottom).toBe('0px');
     expect(print.sheetLeft).toBe(0);
     // Full width: no centered column and no side gutter (the print capture can
     // still reserve a scrollbar strip, hence the small tolerance).
     expect(print.sheetWidth).toBeGreaterThanOrEqual(print.bodyWidth - 16);
-    expect(print.titleTopFromSheet).toBeGreaterThanOrEqual(52);
-    expect(print.titleTopFromSheet).toBeLessThan(54);
+    // No padding above the title; paper gains its 14mm from the page box.
+    expect(print.titleTopFromSheet).toBeLessThan(1);
 
-    // Exactly one 14mm owner on songs: the sheet opts into the named `song`
-    // page (margin 0), so real paper does not stack a second gutter on top of
-    // the sheet's own 14mm padding.
+    // The vertical gutter repeats every printed page because it lives on the
+    // named `song` page box, not on the (fragmenting) sheet element.
     const cssText = await page.evaluate(async () => {
       const chunks: string[] = [];
       for (const sheet of Array.from(document.styleSheets)) {
@@ -380,20 +418,22 @@ test.describe('songs', () => {
         return [`${name}:${margin}`, { name, margin }];
       }),
     ).values()];
-    // A 14mm default page box for every other route, plus the full-bleed named
-    // page that only the song sheet uses.
+    // A 14mm default page box for every other route, plus the named song page
+    // whose vertical margins repeat on every printed page.
     expect(pageBlocks).toEqual(
       expect.arrayContaining([
         { name: '', margin: '14mm' },
-        { name: 'song', margin: '0' },
+        { name: 'song', margin: '14mm 0' },
       ]),
     );
     expect(cssText).toMatch(/\.song-sheet[^{]*\{[^}]*page:\s*song/);
-    // One 14mm page margin, on the default page only; the named `song` page is
-    // marginless and the sheet's own padding is the single gutter.
-    expect(pageBlocks.filter(block => block.margin === '14mm')).toEqual([
-      { name: '', margin: '14mm' },
-    ]);
+    // The default page owns all four gutters on other routes; on songs the
+    // named page owns the vertical pair and the sheet the horizontal pair, so
+    // no element stacks a second vertical gutter.
+    expect(pageBlocks.filter(block => block.margin === '0')).toEqual([]);
+    expect(cssText).toMatch(
+      /\.song-sheet[^{]*\{[^}]*padding:\s*0\s+14mm\s*!important/,
+    );
 
     // Screen chrome is not paper content.
     await expect(page.locator('.pending-banner')).toBeHidden();
@@ -434,12 +474,51 @@ test.describe('songs', () => {
     }
   });
 
+  test('16c. a long song prints across multiple sheets', async ({ page, browserName }) => {
+    const id = `e2e-long-${Date.now()}`;
+    const body = Array.from({ length: 120 }, (_, i) => `Line ${i + 1} of a long printed song`).join('\n');
+    await writeDb(`songs/${id}`, {
+      id,
+      title: 'E2E Long Print',
+      body,
+      source: null,
+      musicalKey: null,
+      leaderIds: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    try {
+      await page.goto(`/songs/${id}`);
+      await expect(page.getByTestId('song-body')).toBeVisible();
+      await page.emulateMedia({ media: 'print' });
+
+      // page.pdf exists only in Chromium; test 16's CSSOM assertions cover the
+      // page-box contract on the other engines.
+      if (browserName !== 'chromium') {
+        return;
+      }
+      const pdf = await page.pdf({ format: 'A4' });
+      const counts = [...pdf.toString('latin1').matchAll(/\/Type\s*\/Pages[^>]*\/Count\s+(\d+)/g)]
+        .map(match => Number(match[1]));
+      // The named `song` page must still paginate: >= 2 sheets for 120 lines.
+      // Vertical margin values are asserted through the CSSOM in test 16; the
+      // PDF check proves the page box does not clip the song to one sheet.
+      expect(Math.max(...counts, 0)).toBeGreaterThanOrEqual(2);
+    } finally {
+      await deleteDb(`songs/${id}`);
+    }
+  });
+
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
     await writeDb('features/songs/enabled', false);
     try {
       await page.reload();
       await page.goto('/songs');
       await expect(page).toHaveURL(/\/feature-disabled\?feature=songs/);
+      // The page names itself for assistive tech, without borrowing a
+      // feature-specific string.
+      await expect(page.getByRole('heading', { level: 1, name: 'Feature unavailable' })).toBeVisible();
+      await expect(page.locator('.disabled-card .disabled-icon')).toHaveText('power_settings_new');
     } finally {
       await writeDb('features/songs/enabled', true);
     }
@@ -619,6 +698,22 @@ test.describe('songs', () => {
       await page.getByTestId('draft-save').click();
       await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Title is required.');
       await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+      // The active error is wired to the field it belongs to, and to no other.
+      const titleField = page.getByTestId('draft-title');
+      await expect(titleField).toHaveAttribute('aria-invalid', 'true');
+      await expect(titleField).toHaveAttribute('aria-describedby', 'draft-error');
+      await expect(page.getByTestId('draft-body')).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(page.getByTestId('draft-body')).not.toHaveAttribute('aria-describedby', /.+/);
+      await expect(page.locator('#draft-error')).toHaveText('Title is required.');
+      // A lyrics error moves the wiring to the body field.
+      await titleField.fill('E2E Validation');
+      await page.getByTestId('draft-body').fill('');
+      await page.getByTestId('draft-save').click();
+      await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Lyrics are required.');
+      await expect(page.getByTestId('draft-body')).toHaveAttribute('aria-invalid', 'true');
+      await expect(page.getByTestId('draft-body')).toHaveAttribute('aria-describedby', 'draft-error');
+      await expect(titleField).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(titleField).not.toHaveAttribute('aria-describedby', /.+/);
 
       await page.getByTestId('draft-cancel').click();
       await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
@@ -935,5 +1030,32 @@ test.describe('songs', () => {
         await expect(page.locator('.admin-filter-actions')).toHaveCSS('display', 'none');
       });
     }
+
+    test('31. the Add song toggle reports its panel and the hidden picker leaves the tab order', async ({ page }) => {
+      await page.goto('/admin/songs');
+      await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+      const toggle = page.getByTestId('admin-add-song');
+      await expect(toggle).toHaveAttribute('aria-controls', 'add-song-panel');
+      await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(page.locator('#add-song-panel')).toBeVisible();
+
+      // Only the visible Choose .txt files button reaches the picker; the
+      // visually-hidden input must not be a tab stop.
+      const fileInput = page.getByTestId('admin-file-input');
+      await expect(fileInput).toHaveAttribute('tabindex', '-1');
+      await page.getByTestId('admin-paste-input').focus();
+      const visited: (string | null)[] = [];
+      for (let i = 0; i < 8; i++) {
+        await page.keyboard.press('Tab');
+        visited.push(await page.evaluate(() => document.activeElement?.getAttribute('data-testid')));
+      }
+      expect(visited).not.toContain('admin-file-input');
+
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(page.locator('#add-song-panel')).toHaveCount(0);
+    });
   });
 });

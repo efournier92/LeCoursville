@@ -7,6 +7,8 @@
       color="primary"
       type="button"
       data-testid="admin-add-song"
+      aria-controls="add-song-panel"
+      [attr.aria-expanded]="showAddPanel"
       (click)="toggleAddPanel()"
       >
       <mat-icon aria-hidden="true">{{ showAddPanel ? 'close' : 'add' }}</mat-icon>
@@ -45,7 +47,7 @@
   }
 
   @if (showAddPanel) {
-    <mat-card class="admin-surface add-song-card">
+    <mat-card class="admin-surface add-song-card" id="add-song-panel">
       <mat-card-content>
         <h2 class="admin-card-title">Add song</h2>
         <mat-form-field class="admin-upload-input paste-field">
@@ -82,6 +84,7 @@
             type="file"
             accept=".txt"
             multiple
+            tabindex="-1"
             data-testid="admin-file-input"
             #fileInput
             (change)="onFilesPicked($event)"
