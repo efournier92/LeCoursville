@@ -70,10 +70,27 @@
   } @else {
     <div class="auth-card auth-card--account">
       @if (!isEditMode) {
-        <app-user-view
-          [userOnCard]="user"
-          (editClickedEvent)="onEdit()"
-        ></app-user-view>
+        <app-user-view [userOnCard]="user"></app-user-view>
+        <div class="account-action-bar">
+          <button mat-flat-button color="primary" type="button" class="account-action" (click)="onEdit()">
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            <span>Edit profile</span>
+          </button>
+          <button type="button" class="account-theme-pref" data-testid="account-always-dark" role="switch"
+            [attr.aria-checked]="alwaysDark"
+            [attr.aria-label]="alwaysDark ? 'Always Dark' : 'Always Light'"
+            (click)="onAlwaysDarkChange(!alwaysDark)">
+            <span class="account-theme-label">{{ alwaysDark ? 'Always Dark' : 'Always Light' }}</span>
+            <span class="theme-pill" aria-hidden="true">
+              <span class="theme-pill-opt" [class.is-active]="!alwaysDark"><mat-icon>light_mode</mat-icon></span>
+              <span class="theme-pill-opt" [class.is-active]="alwaysDark"><mat-icon>nightlight_round</mat-icon></span>
+            </span>
+          </button>
+          <button mat-stroked-button type="button" class="account-action auth-signout" (click)="onSignOutButtonClick()">
+            <mat-icon aria-hidden="true">logout</mat-icon>
+            <span>Sign Out</span>
+          </button>
+        </div>
       }
       @if (isEditMode) {
         <app-user-edit
@@ -81,14 +98,14 @@
           [isAdminMode]="false"
           (cancelEditClickedEvent)="onCancelEdit()"
         ></app-user-edit>
+        <div class="auth-signout-row">
+          <button mat-stroked-button type="button"
+            class="auth-signout" (click)="onSignOutButtonClick()">
+            <mat-icon aria-hidden="true">logout</mat-icon>
+            <span>Sign Out</span>
+          </button>
+        </div>
       }
-      <div class="auth-signout-row">
-        <button mat-stroked-button color="warn" type="button"
-          class="auth-signout" (click)="onSignOutButtonClick()">
-          <mat-icon aria-hidden="true">logout</mat-icon>
-          <span>Sign out</span>
-        </button>
-      </div>
     </div>
   }
 </div>

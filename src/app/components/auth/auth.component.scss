@@ -25,10 +25,11 @@
   max-width: 440px;
   padding: 40px 36px 32px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.86);
+  // minimalist: color-mix over the surface token keeps the frosted-glass look in both themes.
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid color-mix(in srgb, var(--color-surface) 75%, transparent);
   box-shadow:
     0 18px 50px rgba(15, 23, 42, 0.07),
     0 2px 6px rgba(15, 23, 42, 0.04);
@@ -45,7 +46,7 @@
 }
 
 .auth-card--account {
-  max-width: 480px;
+  max-width: 560px;
   padding: 32px 28px 24px;
 
   // user-view / user-edit render their own mat-card; in the account page the
@@ -65,7 +66,7 @@
   height: 56px;
   margin: 0 auto 16px;
   border-radius: 14px;
-  background: var(--color-brand-primary);
+  background: var(--color-brand-solid);
   padding: 8px;
   object-fit: contain;
 }
@@ -228,6 +229,116 @@
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.account-action-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+    .account-theme-pref { justify-self: center; }
+  }
+}
+
+.account-action {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  border-radius: 999px;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+
+  // minimalist: M3 renders the light-theme fill as vivid green; pin it to the brand token shared with dark mode and the topnav.
+  &.mat-mdc-unelevated-button {
+    background-color: var(--color-brand-solid) !important;
+    &:hover { background-color: var(--color-brand-solid-hover) !important; }
+  }
+}
+
+.auth-signout {
+  // minimalist: M3 outlined tokens default to the primary hue; pin neutral.
+  color: var(--color-ink-2) !important;
+  border-color: color-mix(in srgb, var(--color-ink) 25%, transparent) !important;
+  &:hover { color: var(--color-ink) !important; background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
+}
+
+.account-theme-pref {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  min-height: 44px;
+  box-sizing: border-box;
+  justify-self: center;      // center the whole chip in the auto grid column
+  padding: 5px 8px 5px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
+  transition: background 150ms, border-color 150ms;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-theme-pref {
+    transition: none;
+  }
+}
+
+.account-theme-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+
+// Compact sun/moon switch reusing the top-nav glyphs. Small by design: it
+// sits between Edit profile and Sign Out and should not compete with them.
+.theme-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 9%, transparent);
+  pointer-events: none;
+}
+
+.theme-pill-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  border-radius: 999px;
+  color: var(--color-ink-2);
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  &.is-active {
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand);
+  }
 }
 
 .auth-signout {
