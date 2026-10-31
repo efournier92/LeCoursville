@@ -684,12 +684,9 @@ test.describe('songs', () => {
     expect(userUid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
     try {
       // The member beforeEach already signed in as user@e2e.local.
-      await page.getByTestId('theme-toggle').click();
+      await writeDb(`users/${userUid}/prefs/theme`, 'dark');
+      await page.reload();
       await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-      // Let the preference write land before the finally deletes it.
-      await expect
-        .poll(() => readDb(`users/${userUid}/prefs/theme`), { timeout: 10000 })
-        .toBe('dark');
 
       await openSong(page, 'song-a');
       await page.emulateMedia({ media: 'print' });

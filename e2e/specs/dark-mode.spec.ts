@@ -51,7 +51,8 @@ async function expectReadable(locator: import('@playwright/test').Locator) {
 }
 
 /**
- * Dark mode: per-user theme toggle stored at users/{uid}/prefs/theme.
+ * Dark mode: the toolbar toggle is session-only; the Account page persists
+ * the per-user preference at users/{uid}/prefs/theme.
  * Light is the floor for every unknown state; guests never render dark.
  */
 
@@ -290,13 +291,9 @@ test('light dialog scrim separates the sheet from the pale page', async ({ page 
 test('dark dialog scrim separates the sheet from the dark page', async ({ page }) => {
   try {
     await login(page, 'admin');
-    await page.getByTestId('theme-toggle').click();
+    await writeDb(`users/${adminUid}/prefs/theme`, 'dark');
+    await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    // Wait for the preference write before the finally deletes it, or the
-    // in-flight write can land afterwards and leak dark into later specs.
-    await expect
-      .poll(() => readDb(`users/${adminUid}/prefs/theme`), { timeout: 10000 })
-      .toBe('dark');
     await page.goto('/admin/songs');
     await expect(page.getByTestId('admin-songs-table')).toBeVisible();
     await page.getByTestId('admin-add-song').click();
