@@ -202,13 +202,30 @@ test.describe('songs', () => {
     const print = await page.evaluate(() => {
       const sheet = document.querySelector('.song-sheet')!;
       const ground = document.querySelector('.song-detail')!;
+      const title = document.querySelector('.song-title')!;
+      const sheetBox = sheet.getBoundingClientRect();
       return {
         radius: parseFloat(getComputedStyle(sheet).borderTopLeftRadius),
         ground: getComputedStyle(ground).backgroundColor,
+        bodyGround: getComputedStyle(document.body).backgroundColor,
+        sheetPad: getComputedStyle(sheet).paddingLeft,
+        sheetLeft: sheetBox.x,
+        sheetWidth: sheetBox.width,
+        bodyWidth: document.body.getBoundingClientRect().width,
+        titleTopFromSheet: title.getBoundingClientRect().y - sheetBox.y,
       };
     });
     expect(print.radius).toBe(0);
     expect(print.ground).toBe('rgb(255, 255, 255)');
+    expect(print.bodyGround).toBe('rgb(255, 255, 255)');
+    // The sheet owns its own 14mm page box (emulated print ignores @page).
+    expect(print.sheetPad).toBe('52.9134px');
+    expect(print.sheetLeft).toBe(0);
+    // Full width: no centered column and no side gutter (the print capture can
+    // still reserve a scrollbar strip, hence the small tolerance).
+    expect(print.sheetWidth).toBeGreaterThanOrEqual(print.bodyWidth - 16);
+    expect(print.titleTopFromSheet).toBeGreaterThanOrEqual(52);
+    expect(print.titleTopFromSheet).toBeLessThan(54);
   });
 
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
@@ -492,9 +509,9 @@ test.describe('songs', () => {
       // Mobile: the content scrolls; the picker and the actions stay reachable.
       await page.setViewportSize({ width: 390, height: 844 });
       await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
-      // The tighter title band and 104px body keep the Leaders search whole on
+      // The tighter title band and 80px body keep the Leaders search whole on
       // first paint instead of slicing it at the content edge.
-      await expect(page.getByTestId('draft-body')).toHaveCSS('min-height', '104px');
+      await expect(page.getByTestId('draft-body')).toHaveCSS('min-height', '80px');
       await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport({ ratio: 1 });

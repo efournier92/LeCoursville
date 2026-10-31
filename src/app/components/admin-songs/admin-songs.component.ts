@@ -199,6 +199,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
         data: { song, parsed, people: this.people },
         width: '640px',
         maxWidth: 'calc(100vw - 32px)',
+        maxHeight: '94vh',
         autoFocus: 'first-tabbable',
         // Escape/backdrop must never discard a typed draft; Cancel is the
         // explicit discard and the only close path while a save is in flight.

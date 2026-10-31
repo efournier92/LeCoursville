@@ -136,12 +136,12 @@ mat-dialog-content {
   // `rows` sets the textarea's intrinsic height, so cap the box itself at
   // mobile: the picker below must fit without being sliced at the content edge.
   .draft-body-field textarea {
-    height: 104px;
-    min-height: 104px;
+    height: 80px;
+    min-height: 80px;
     overflow-y: auto;
   }
 
   .draft-options {
-    max-height: 132px;
+    max-height: 120px;
   }
 }

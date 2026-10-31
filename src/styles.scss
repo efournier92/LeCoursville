@@ -455,6 +455,12 @@ select:-webkit-autofill:focus {
   mat-toolbar.mat-toolbar {
     display: none !important;
   }
+
+  // The emulated print capture has no @page margin, so the page ground itself
+  // must be white or the sheet prints on gray.
+  body {
+    background: #fff !important;
+  }
 }
 
 /* Warm-tinted page ground: every routed page that renders its own background */

@@ -217,24 +217,24 @@
     display: none !important;
   }
 
-  // Print on white: the warm app ground and the sheet's card chrome would
-  // otherwise print the lyrics as a floating card on gray.
+  // Emulated print captures ignore @page margins, so the sheet owns its own
+  // page box: kill the warm ground, the centered column, and every gutter.
+  .song-detail,
   .page-ground,
-  .song-detail {
-    background: #fff;
-  }
-
-  .song-detail {
-    padding: 0;
+  .page-content {
+    background: #fff !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   .song-sheet {
-    max-width: none;
-    // Keeps the first line's ascenders off the page-box edge.
-    padding: 8px 0 0;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+    padding: 14mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    max-width: none !important;
   }
 
   // Leaders print as plain text, not filled pills.
