@@ -20,6 +20,18 @@ export interface CreatedUserUpload {
   path: string;
 }
 
+export interface AnalyticsTableRow {
+  label: string;
+  value: number;
+}
+
+export interface AnalyticsSummary {
+  source: 'fixture' | 'ga';
+  totals: { users: number; sessions: number };
+  topPages: AnalyticsTableRow[];
+  topEvents: AnalyticsTableRow[];
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -73,6 +85,14 @@ export class CloudFunctionsService {
       ...input,
       continueUrl: this.appActionUrl(),
     });
+  }
+
+  adminAnalyticsSummary(): Promise<AnalyticsSummary> {
+    const callable = httpsCallable<Record<string, never>, AnalyticsSummary>(
+      this.firebase.functions,
+      "adminAnalyticsSummary",
+    );
+    return callable({}).then(result => result.data);
   }
 
   updateAlertRecipients(emails: string[]): Promise<unknown> {

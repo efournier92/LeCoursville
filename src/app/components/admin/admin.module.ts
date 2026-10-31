@@ -6,6 +6,7 @@ import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
 import { AdminPhotoAlbumsComponent } from 'src/app/components/admin-photo-albums/admin-photo-albums.component';
 import { AdminUserUploadsComponent } from 'src/app/components/admin-user-uploads/admin-user-uploads.component';
+import { AdminAnalyticsComponent } from 'src/app/components/admin-analytics/admin-analytics.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
@@ -71,6 +72,10 @@ const routes: Routes = [
         component: AdminRecoveryComponent,
       },
       {
+        path: ADMIN_ROUTE.analytics,
+        component: AdminAnalyticsComponent,
+      },
+      {
         path: '',
         redirectTo: 'users',
         pathMatch: 'full',
@@ -89,6 +94,7 @@ const routes: Routes = [
     AdminCalendarsComponent,
     AdminFamilyExplorerComponent,
     AdminRecoveryComponent,
+    AdminAnalyticsComponent,
   ],
   imports: [
     CommonModule,

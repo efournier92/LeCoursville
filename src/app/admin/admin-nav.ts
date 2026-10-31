@@ -11,6 +11,7 @@ export const ADMIN_ROUTE = {
   photoAlbums: 'photo-albums',
   uploads: 'uploads',
   recovery: 'recovery',
+  analytics: 'analytics',
   features: 'features',
 } as const;
 
@@ -40,6 +41,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { key: 'users', path: '/admin/' + ADMIN_ROUTE.users, label: 'Users', icon: 'manage_accounts', group: 'System' },
   { key: 'features', path: '/admin/' + ADMIN_ROUTE.features, label: 'Features', icon: 'toggle_on', group: 'System' },
   { key: 'recovery', path: '/admin/' + ADMIN_ROUTE.recovery, label: 'Recovery', icon: 'lock_reset', group: 'System' },
+  { key: 'analytics', path: '/admin/' + ADMIN_ROUTE.analytics, label: 'Analytics', icon: 'insights', group: 'System' },
 ];
 
 export function visibleAdminNav(
