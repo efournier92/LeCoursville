@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { Song } from 'src/app/models/song';
+import { trimTrailingBlankLines } from './song-parser';
 import { RtdbService } from './rtdb.service';
+
+const VALID_ID = /^[A-Za-z0-9-]+$/;
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +17,11 @@ export class SongsService {
   }
 
   getSong(id: string): Observable<Song | null> {
+    // Only app-generated ids (UUIDs) are valid; anything else settles on
+    // notfound without touching RTDB.
+    if (!VALID_ID.test(id)) {
+      return of(null);
+    }
     return this.rtdb.object<Song>('songs/' + id).valueChanges();
   }
 
@@ -21,6 +29,8 @@ export class SongsService {
     const now = Date.now();
     const record: Song = {
       ...song,
+      body: trimTrailingBlankLines(song.body),
+      leaderIds: [...new Set(song.leaderIds || [])],
       createdAt: song.createdAt || now,
       updatedAt: now,
     };
@@ -35,7 +45,10 @@ export class SongsService {
     if (!existing) {
       throw new Error('Song no longer exists.');
     }
-    await ref.update({ ...patch, updatedAt: Date.now() });
+    const normalized = patch.body === undefined
+      ? patch
+      : { ...patch, body: trimTrailingBlankLines(patch.body) };
+    await ref.update({ ...normalized, updatedAt: Date.now() });
   }
 
   async deleteSong(id: string): Promise<void> {

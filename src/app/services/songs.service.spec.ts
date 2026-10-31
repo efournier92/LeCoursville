@@ -61,6 +61,29 @@ describe('SongsService', () => {
     expect(rtdbSpy.object).toHaveBeenCalledWith('songs/s1');
   });
 
+  it('getSong skips the read and emits null for an invalid id', async () => {
+    expect(await firstValueFrom(service.getSong('../s1'))).toBeNull();
+    expect(rtdbSpy.object).not.toHaveBeenCalled();
+  });
+
+  it('saveSong dedupes leaderIds and trims trailing blank lines from body', async () => {
+    await service.saveSong(makeSong({
+      body: '[G]Amazing grace\n\n\n',
+      leaderIds: ['person-a', 'person-b', 'person-a'],
+    }));
+
+    const payload = (objectRef.set as any).mock.calls[0][0] as Song;
+    expect(payload.body).toBe('[G]Amazing grace');
+    expect(payload.leaderIds).toEqual(['person-a', 'person-b']);
+  });
+
+  it('updateSong trims trailing blank lines from a body patch', async () => {
+    await service.updateSong('s1', { body: 'line one\n\n  \n' });
+
+    const payload = (objectRef.update as any).mock.calls[0][0] as Partial<Song>;
+    expect(payload.body).toBe('line one');
+  });
+
   it('saveSong stamps createdAt for a new song and updatedAt always', async () => {
     await service.saveSong(makeSong({ createdAt: 0 }));
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Person } from 'src/app/models/person';
 import { Song } from 'src/app/models/song';
 import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
@@ -51,6 +52,8 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   private songsSub: Subscription | null = null;
   private peopleSub: Subscription | null = null;
   private peopleLoadedSub: Subscription | null = null;
+  private searchSub: Subscription | null = null;
+  private searchTerms = new Subject<string>();
   private peopleById = new Map<string, Person>();
 
   constructor(
@@ -61,6 +64,12 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Same 200ms cadence as the member page so both search inputs feel alike.
+    this.searchSub = this.searchTerms.pipe(
+      debounceTime(200),
+      distinctUntilChanged(),
+    ).subscribe(term => (this.activeQuery = term));
+
     this.loadSongs();
     this.peopleSub = this.peopleService.people$.subscribe(people => {
       this.people = people || [];
@@ -75,6 +84,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     this.songsSub?.unsubscribe();
     this.peopleSub?.unsubscribe();
     this.peopleLoadedSub?.unsubscribe();
+    this.searchSub?.unsubscribe();
   }
 
   get filteredSongs(): Song[] {
@@ -99,7 +109,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
 
   onSearchInput(value: string): void {
     this.searchTerm = value;
-    this.activeQuery = value;
+    this.searchTerms.next(value);
   }
 
   clearSearch(input: HTMLInputElement): void {

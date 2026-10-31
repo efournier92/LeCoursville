@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Person } from 'src/app/models/person';
 import { Song } from 'src/app/models/song';
-import { ParsedSong } from 'src/app/services/song-parser';
+import { ParsedSong, trimTrailingBlankLines } from 'src/app/services/song-parser';
 import { SongsService } from 'src/app/services/songs.service';
 
 export interface SongDraftDialogData {
@@ -99,7 +99,7 @@ export class SongDraftDialogComponent {
     const title = this.title.trim();
     const source = this.source.trim();
     const musicalKey = this.musicalKey.trim();
-    const body = this.body;
+    const body = trimTrailingBlankLines(this.body);
 
     if (!title) {
       this.error = 'Title is required.';

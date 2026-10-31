@@ -62,9 +62,7 @@ export function parseSongText(raw: string, people: Person[]): ParsedSong {
     }
   }
 
-  while (bodyLines.length > 0 && bodyLines[bodyLines.length - 1].trim() === '') {
-    bodyLines.pop();
-  }
+  const body = trimTrailingBlankLines(bodyLines.join('\n'));
 
   const leaderIds: string[] = [];
   const unmatchedLeaders: string[] = [];
@@ -86,10 +84,19 @@ export function parseSongText(raw: string, people: Person[]): ParsedSong {
 
   return {
     title,
-    body: bodyLines.join('\n'),
+    body,
     source,
     musicalKey,
     leaderIds,
     unmatchedLeaders,
   };
+}
+
+/** Saved lyrics drop the same trailing blank lines the parser drops. */
+export function trimTrailingBlankLines(value: string): string {
+  const lines = value.split('\n');
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+    lines.pop();
+  }
+  return lines.join('\n');
 }

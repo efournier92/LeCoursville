@@ -1,7 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { E2E_USERS } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
-import { ROLES, del, get, patch, put, signIn, uidForEmail } from '../helpers/rules';
+import { ROLES, del, get, patch, pendingSignIn, put, signIn, uidForEmail } from '../helpers/rules';
 
 const STORAGE_BUCKET = 'lecoursville-dev.appspot.com';
 const E2E_API_KEY = 'AIzaSyDBhEg8J_knZVdhEWCIbtcKJak3glu_TKA';
@@ -528,6 +528,43 @@ test.describe('rules', () => {
       expect((await readDb<Record<string, any>>(`songs/${key}`))?.id).toBe(key);
     } finally {
       await deleteDb(`songs/${key}`);
+    }
+  });
+
+  test('songs writes enforce record shape and pending tokens cannot read', async () => {
+    const adminToken = await signIn('admin');
+    const pending = await pendingSignIn();
+    const stamp = Date.now();
+    const key = `rules-song-shape-${stamp}`;
+    const record = {
+      id: key,
+      title: 'Shape probe',
+      body: 'line one',
+      source: null,
+      musicalKey: null,
+      leaderIds: ['person-a', 'person-b'],
+      createdAt: stamp,
+      updatedAt: stamp,
+    };
+
+    try {
+      expect((await put(`songs/${key}`, record)).status).not.toBe(200);
+      expect((await get(`songs/${key}`, pending.token)).status).not.toBe(200);
+      expect((await get('songs/song-a', pending.token)).status).not.toBe(200);
+
+      expect(
+        (await put(`songs/${key}`, { ...record, title: 'x'.repeat(201) }, adminToken)).status,
+      ).not.toBe(200);
+      expect(
+        (await put(`songs/${key}`, { ...record, body: 42 }, adminToken)).status,
+      ).not.toBe(200);
+      expect(await readDb(`songs/${key}`)).toBeNull();
+
+      expect((await put(`songs/${key}`, record, adminToken)).ok).toBe(true);
+      expect((await readDb<Record<string, any>>(`songs/${key}`))?.title).toBe('Shape probe');
+    } finally {
+      await deleteDb(`songs/${key}`);
+      await pending.dispose();
     }
   });
 });

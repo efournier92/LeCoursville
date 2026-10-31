@@ -197,7 +197,19 @@
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
       "$id": {
-        ".validate": "newData.child('id').val() === $id"
+        ".validate": "newData.child('id').isString() && newData.child('id').val() === $id && newData.child('title').isString() && newData.child('title').val().length >= 1 && newData.child('title').val().length <= 200 && newData.child('body').isString() && newData.child('body').val().length >= 1 && newData.child('body').val().length <= 100000 && (newData.child('source').val() === null || (newData.child('source').isString() && newData.child('source').val().length <= 200)) && (newData.child('musicalKey').val() === null || (newData.child('musicalKey').isString() && newData.child('musicalKey').val().length <= 16)) && (newData.child('leaderIds').val() === null || newData.child('leaderIds').hasChildren()) && newData.child('createdAt').isNumber() && newData.child('updatedAt').isNumber()",
+        "id": { ".validate": "newData.isString()" },
+        "title": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200" },
+        "body": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100000" },
+        "source": { ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)" },
+        "musicalKey": { ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 16)" },
+        "leaderIds": {
+          ".validate": "newData.val() === null || newData.hasChildren()",
+          "$leaderId": { ".validate": "newData.isString() && $leaderId.matches(/^([0-9]|[1-4][0-9])$/)" }
+        },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
       }
     },
     "userUploads": {
