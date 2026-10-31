@@ -1,15 +1,14 @@
 # Songs Library Handoff
 
-Date: 2026-10-31 · Branch: `2026-10-31_Songs` · Worktree: `/Users/e/mnt/bnk/cs/lecoursville-songs` · Base: `master` at `26755dcd` · Status: feature-complete; latest presentation/print commits have targeted unit + Chromium Songs e2e, full 3-browser gate must rerun before merge. Not pushed, not deployed.
+Date: 2026-10-31 · Branch: `2026-10-31_Songs` · Worktree: `/Users/e/mnt/bnk/cs/lecoursville-songs` · Base: merged `origin/master` at `6734ebb1` · Status: gate green on the merged tree, ready to ship. Not pushed, not deployed.
 
 The discovery index is back under its 8 KB cap: the fourteen Songs entries are archived as D-20261031-08 through D-20261031-21 and summarized by D-20261031-22.
 
 ## Current State
 
-- 27 commits on the branch, working tree clean.
-- Last full gate `npm run e2e:gate` was green at `81a80961` (before the chord-over, sample-download, and lyrics-only/print/tags commits). It must be rerun before merge.
-- Gate evidence in `.gate-results/`: `unit-tests.txt` (107 files, 740 tests), `functions-tests.txt` (24 files, 298 tests), `rules.txt` (15 passed), `storage-prod.txt` (9 passed), `chromium.json`, `webkit.json`, `firefox.json` (320 expected each, 0 unexpected, 0 flaky, 0 skipped), consolidated in `gate-summary.txt`. These artifacts do not cover the latest three commits.
-- Latest targeted evidence: 32 unit tests green; 55 Songs e2e tests green on Chromium.
+- 31 commits on the branch after this handoff commit, working tree clean.
+- Full gate `npm run e2e:gate` exit 0 on the merged tree.
+- Gate evidence in `.gate-results/`: `unit-tests.txt` (107 files, 746 tests), `functions-tests.txt` (24 files, 298 tests), `rules.txt` (15 passed), `storage-prod.txt` (9 passed), `chromium.json`, `webkit.json`, `firefox.json` (349 expected each, 0 unexpected, 0 flaky, 0 skipped), consolidated in `gate-summary.txt`.
 - No `functions/`, `storage.rules`, `storage.rules.prod`, or dependency changes. `database.rules.json` changed (Songs rules plus shape validation).
 - Nothing pushed: no `origin/2026-10-31_Songs`; no tag; `scripts/deploy.sh` untouched.
 
@@ -89,16 +88,15 @@ node -e "for(const f of ['chromium','webkit','firefox'])console.log(f,require('.
 npm run e2e:gate
 ```
 
-Expected: clean tree, 27 commits, each browser 320 expected / 0 unexpected / 0 flaky at the last full gate; rerun `npm run e2e:gate` now to cover the latest commits.
+Expected: clean tree, 31 commits, each browser 349 expected / 0 unexpected / 0 flaky; gate exit 0.
 
 ## Next Actions
 
-1. Run `npm run e2e:gate` on the current HEAD; the latest three commits are not covered by the last full gate.
-2. User review and merge; no push or deploy was performed by the agent.
-3. Deploy dev, smoke, deploy prod with sign-off.
-4. Populate the library and announce when non-empty.
-5. Optional follow-ups: split song metadata from bodies if the library grows; revisit chord-over wrapping on narrow screens; decide whether pending members should get `ApprovedGuardService` on Songs; refresh the shared feature-disabled copy.
+1. Autoship: push the branch, open the PR to `master`, merge, and clean up.
+2. Deploy dev, smoke, deploy prod with sign-off.
+3. Populate the library and announce when non-empty.
+4. Optional follow-ups: split song metadata from bodies if the library grows; revisit chord-over wrapping on narrow screens; decide whether pending members should get `ApprovedGuardService` on Songs; refresh the shared feature-disabled copy.
 
 ## Open Risks / Blockers
 
-No blockers. Residual risks are the deferred items above plus the normal deploy-time rules rollout. The latest presentation/print commits have targeted unit and Chromium Songs e2e coverage only; the full 3-browser gate must rerun before merge. The full gate is emulator-only; no real Firebase project or production data was touched.
+No blockers. Residual risks are the deferred items above plus the normal deploy-time rules rollout. The full merged-tree gate is green. The full gate is emulator-only; no real Firebase project or production data was touched.
