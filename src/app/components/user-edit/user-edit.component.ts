@@ -91,6 +91,13 @@ export class UserEditComponent implements OnInit, OnChanges {
       };
     }
     const changes = this.roleChanges(user);
+    if (changes.messages.length === 0 && this.userOnCard?.roles) {
+      // No role change: write roles exactly as stored. The normalization above
+      // fills absent admin/super keys with false, but the users rule compares
+      // the profile write against the stored shape, so a fabricated false where
+      // the record has no key reads as a role change and is denied.
+      user.roles = { ...this.userOnCard.roles };
+    }
     if (changes.messages.length > 0) {
       const confirmed = await this.confirmDialog.confirm({
         title: 'Change access?',

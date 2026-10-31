@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { UserViewComponent } from './user-view.component';
 import { User } from 'src/app/models/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 const makeUser = (overrides: Partial<User> = {}): User =>
   ({
@@ -26,6 +28,18 @@ describe('UserViewComponent', () => {
       imports: [AppModule, TestSharedModule],
       declarations: [ UserViewComponent ],
       schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            userObservable: new BehaviorSubject({ id: 'user-123', prefs: {} }).asObservable(),
+            authResolved$: new BehaviorSubject<boolean>(false).asObservable(),
+            isSignedOut: () => false,
+            user: { id: 'user-123', prefs: {} },
+            updateUser: vi.fn(),
+          },
+        },
+      ],
     })
     .compileComponents();
   });
@@ -83,18 +97,6 @@ describe('UserViewComponent', () => {
       fixture.detectChanges();
 
       expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Admin');
-    });
-
-    it('emits editClickedEvent on edit click', () => {
-      component.userOnCard = makeUser();
-      fixture.detectChanges();
-
-      let edited = false;
-      component.editClickedEvent.subscribe(() => (edited = true));
-      const button = (fixture.nativeElement as HTMLElement).querySelector('button');
-      expect(button).toBeTruthy();
-      button!.click();
-      expect(edited).toBe(true);
     });
   });
 });

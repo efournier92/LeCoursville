@@ -1,0 +1,59 @@
+# Critique Ledger: Destructive Button Color (M3 `warn`)
+
+- Goal: Decide and implement the best way to keep destructive buttons visually distinct (red) in light and dark themes, given `color="warn"` is a no-op in Angular Material 22 M3 and the new dark filled-button override forces every filled button to brand green.
+- Started: 2026-10-31
+- Branch: `2026-10-30_Feedback`
+- Lens set: correctness, visual, product, testing
+
+## Findings
+
+- C-20261031-01 | 2026-10-31 | correctness | high | high | addressed | color="warn" is inert in AM22 M3 (no warn/ThemePalette in button.mjs); warn controls keep the green fill. | `node_modules/@angular/material/fesm2022/button.mjs:63`
+  - rebuttal | addressed | `src/app/components/confirm-dialog/confirm-dialog.component.html` | dead binding removed; destructive class styles the confirm button instead.
+- C-20261031-02 | 2026-10-31 | correctness | high | high | addressed | Spec asserts the dead color input; MatButton v22 has no color, so it never fails on render. | `src/app/components/confirm-dialog/confirm-dialog.component.spec.ts:84`
+  - rebuttal | addressed | `npx ng test --watch=false --include=src/app/components/confirm-dialog/confirm-dialog.component.spec.ts` | 5 passed.
+- C-20261031-03 | 2026-10-31 | correctness | medium | high | addressed | Reusing `.admin-form-action-button-delete` on a flat button will not fill it red; it sets only text/outlined tokens. | `src/app/styles/admin-forms.scss:63`
+  - rebuttal | addressed | `src/styles.scss` | dedicated `.btn-destructive` sets the four filled-button tokens.
+- C-20261031-04 | 2026-10-31 | correctness | medium | high | addressed | prompt-modal is a second filled confirm; its color is inert, leaving chat delete and Sign Out green. | `src/app/components/prompt-modal/prompt-modal.component.html:19`
+  - rebuttal | addressed | `npx playwright test e2e/specs/chat.spec.ts --project=chromium` | prompt-modal gains a destructive flag + class; 10 passed.
+- C-20261031-05 | 2026-10-31 | correctness | medium | high | addressed | M3 has no hover container token; a hover token cannot drive hover and a raw background:hover loses to injected styles. | `src/styles.scss:258`
+  - rebuttal | addressed | `src/styles.scss` | no hover token added; hover rides the white state-layer overlay.
+- C-20261031-06 | 2026-10-31 | correctness | low | high | rejected | Disabled destructive buttons use M3 neutral greys identical to disabled primary. | `node_modules/@angular/material/fesm2022/button.mjs`
+  - rebuttal | rejected | `node_modules/@angular/material/fesm2022/button.mjs` | accepted as intended.
+- C-20261031-07 | 2026-10-31 | visual | high | high | addressed | Destructive confirm renders green in both themes; Delete is indistinguishable from Save/approve. | `src/styles.scss:250`
+  - rebuttal | addressed | `npx playwright test e2e/specs/admin-content.spec.ts --project=chromium` | passed; confirm asserts rgb(179, 38, 30) fill and white label.
+- C-20261031-08 | 2026-10-31 | visual | medium | high | addressed | #B3261E vs #2D5A27 is 1.23:1, so red-green colour-blind users rely on label and position. | `src/styles.scss:80`
+  - rebuttal | addressed | `src/app/components/confirm-dialog/confirm-dialog.component.html` | warning icon added; e2e asserts it is visible.
+- C-20261031-09 | 2026-10-31 | visual | medium | high | addressed | Dark focus ring is light green on a red fill (2.79:1), a green/red adjacency on a destructive control. | `src/styles.scss:369`
+  - rebuttal | addressed | `src/styles.scss` | destructive focus ring is theme-scoped in the compiled CSS.
+- C-20261031-10 | 2026-10-31 | visual | medium | medium | rejected | Mark-closed and remove-recipient get delete-level prominence; two tiers would be more honest. | `src/app/components/admin-recovery/admin-recovery.component.ts:400`
+  - rebuttal | rejected | `src/app/components/admin-recovery/admin-recovery.component.ts:400` | prominence tiering is a separate product decision.
+- C-20261031-11 | 2026-10-31 | visual | low | medium | rejected | #B3261E separates 2.53:1 from #1B1F24 but brand is worse; white-on-red 6.54:1 carries it. | `src/styles.scss:148`
+  - rebuttal | rejected | `src/styles.scss:148` | accepted residual.
+- C-20261031-12 | 2026-10-31 | product | high | high | addressed | Contact delete calls deleteContact with no confirm dialog, so dialog-scoped styling misses it. | `src/app/components/contacts/contact-edit/contact-edit.component.ts:56`
+  - rebuttal | addressed | `npx ng test --watch=false --include=src/app/components/contacts/contact-edit/contact-edit.component.spec.ts` | confirm added; 4 passed.
+- C-20261031-13 | 2026-10-31 | product | high | high | addressed | Chat delete confirms through prompt-modal, not confirm-dialog, so a dialog-scoped rule ships two languages. | `src/app/components/message-edit/message-edit.component.ts:137`
+  - rebuttal | addressed | `npx playwright test e2e/specs/chat.spec.ts --project=chromium` | chat delete confirm is red with a warning icon; 10 passed.
+- C-20261031-14 | 2026-10-31 | product | medium | high | addressed | Dark --color-error is #F2B8B5 with no on-error ink; white on it is about 1.9:1, a WCAG fail. | `src/styles.scss:148`
+  - rebuttal | addressed | `src/styles.scss` | the filled button consumes theme-invariant --color-error-solid, never pale dark --color-error.
+- C-20261031-15 | 2026-10-31 | product | medium | medium | addressed | Reject-upload hard-deletes Storage and RTDB but the copy says only removed from the queue. | `src/app/components/admin-user-uploads/admin-user-uploads.component.ts:247`
+  - rebuttal | addressed | `npx playwright test e2e/specs/admin-content.spec.ts --project=chromium` | copy now states permanent deletion; passed.
+- C-20261031-16 | 2026-10-31 | product | medium | medium | addressed | Remove-recipient is reversible yet flagged destructive; unflag it instead of a third tier. | `src/app/components/admin-recovery/admin-recovery.component.ts:462`
+  - rebuttal | addressed | `npx playwright test e2e/specs/account-recovery.spec.ts --project=chromium` | remove-recipient unflagged; e2e asserts it is not red; passed.
+- C-20261031-17 | 2026-10-31 | testing | high | high | addressed | Destructive-style assertion tests the dead color input; replace with class-presence true and false. | `src/app/components/confirm-dialog/confirm-dialog.component.spec.ts:84`
+  - rebuttal | addressed | `npx ng test --watch=false --include=src/app/components/confirm-dialog/confirm-dialog.component.spec.ts` | 5 passed; both class branches covered.
+- C-20261031-18 | 2026-10-31 | testing | high | high | addressed | jsdom cannot resolve var() colours, so rendered colour must be asserted in e2e, not unit. | `src/app/components/admin-users/admin-users.component.spec.ts:206`
+  - rebuttal | addressed | `src/app/components/admin-users/admin-users.component.spec.ts:206` | unit asserts class only; colour assertions live in e2e.
+- C-20261031-19 | 2026-10-31 | testing | high | high | addressed | The dark block re-emits filled-button tokens; assert dark fill and label with expectReadable. | `src/styles.scss:250`
+  - rebuttal | addressed | `npx playwright test e2e/specs/dark-mode.spec.ts --project=chromium` | passed; dark confirm asserts rgb(179, 38, 30) fill, white label, readable.
+- C-20261031-20 | 2026-10-31 | testing | medium | high | addressed | destructive:false is exercised but never asserted to stay non-red and readable. | `e2e/specs/account-recovery.spec.ts:300`
+  - rebuttal | addressed | `npx playwright test e2e/specs/account-recovery.spec.ts --project=chromium` | passed; non-destructive Generate confirm asserted not red.
+- C-20261031-21 | 2026-10-31 | testing | low | high | addressed | No existing e2e asserts confirm-button colour, so additions are additive. | `e2e/specs`
+  - rebuttal | addressed | `e2e/specs` | no existing colour assertion to break.
+- C-20261031-22 | 2026-10-31 | visual | high | high | addressed | An unscoped white focus ring would be invisible on the white light dialog surface (WCAG 2.4.7). | `src/styles.scss:369`
+  - rebuttal | addressed | `dist/lecoursville/browser/styles-OH6PZUZW.css` | compiled rule: light ring --color-error-solid, dark ring --color-on-brand.
+- C-20261031-23 | 2026-10-31 | testing | medium | high | addressed | dark-mode.spec helpers are file-local, so admin-content cannot reuse them. | `e2e/specs/dark-mode.spec.ts:29`
+  - rebuttal | addressed | `e2e/specs/admin-content.spec.ts` | light assertion uses toHaveCSS; dark assertion stays in dark-mode.spec.
+- C-20261031-24 | 2026-10-31 | maintainability | medium | high | rejected | A bare `.btn-destructive` may lose to the dark token re-emission. | `src/styles.scss:250`
+  - rebuttal | rejected | `npx playwright test e2e/specs/dark-mode.spec.ts --project=chromium` | passed; built CSS emits dark tokens on html, so the element-level class wins.
+- C-20261031-25 | 2026-10-31 | maintainability | low | high | addressed | Use --color-error-solid rather than a new danger stem, consume --color-on-brand, and fold dark e2e into dark-mode.spec. | `src/styles.scss:88`
+  - rebuttal | addressed | `src/styles.scss:88` | token named --color-error-solid; ink uses --color-on-brand; one dark assertion in dark-mode.spec.

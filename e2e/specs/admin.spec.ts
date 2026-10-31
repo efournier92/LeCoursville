@@ -119,6 +119,7 @@ test.describe('admin', () => {
       { name: 'Photo Albums', path: '/admin/photo-albums' },
       { name: 'Uploads', path: '/admin/uploads' },
       { name: 'Recovery', path: '/admin/recovery' },
+      { name: 'Analytics', path: '/admin/analytics' },
       { name: 'Features', path: '/admin/features' },
     ];
     const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
@@ -251,8 +252,9 @@ test.describe('admin', () => {
     // the next wraps to the last item.
     await page.keyboard.press('Shift+Tab');
     await expect(page.locator('.sidebar-header .logo-link')).toBeFocused();
+    // Analytics is the last sidebar item, so the second Shift+Tab wraps there.
     await page.keyboard.press('Shift+Tab');
-    await expect(page.getByTestId('admin-nav-link-recovery')).toBeFocused();
+    await expect(page.getByTestId('admin-nav-link-analytics')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(nav).not.toBeVisible();
     await expect(toggle).toBeFocused();
@@ -270,8 +272,8 @@ test.describe('admin', () => {
       const nav = page.getByTestId('admin-nav');
       const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
       await expect(nav.getByRole('link', { name: 'Photo Albums', exact: true })).toHaveCount(0);
-      await expect(navItems).toHaveCount(9);
-      for (const name of ['Users', 'Families', 'People', 'Calendars', 'Family Explorer', 'Media', 'Uploads', 'Recovery', 'Features']) {
+      await expect(navItems).toHaveCount(10);
+      for (const name of ['Users', 'Families', 'People', 'Calendars', 'Family Explorer', 'Media', 'Uploads', 'Recovery', 'Analytics', 'Features']) {
         await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
       }
     } finally {
@@ -290,6 +292,19 @@ test.describe('admin', () => {
     await page.goto('/admin/families');
     await expect(page.getByText('Mignonne').first()).toBeVisible();
     await expect(page.getByText('Denis').first()).toBeVisible();
+  });
+
+  test('users loading state renders the skeleton inside the card, then resolves', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    // First paint must already sit inside the card wrapper: skeleton while
+    // loading, table once ready — never a bare skeleton outside a card.
+    const inCard = page.locator(
+      '.users-table-card [data-testid="admin-users-loading"], .users-table-card [data-testid="admin-users-table"]'
+    );
+    await expect(inCard.first()).toBeVisible();
+    await expect(page.getByTestId('admin-users-loading')).toHaveCount(0);
+    await expect(page.getByTestId('admin-users-table')).toBeVisible();
   });
 
   test('media library header sits with the list and dates render zero-padded ISO', async ({ page }) => {

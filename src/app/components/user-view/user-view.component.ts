@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { User } from 'src/app/models/user';
 
 @Component({
@@ -10,8 +10,6 @@ import { User } from 'src/app/models/user';
 })
 export class UserViewComponent {
   @Input() userOnCard: User;
-
-  @Output() editClickedEvent = new EventEmitter();
 
   // PUBLIC METHODS
 
@@ -28,10 +26,6 @@ export class UserViewComponent {
 
   shouldDisplayRoles(): boolean {
     return this.isAdminUser();
-  }
-
-  onEdit(): void {
-    this.editClickedEvent.emit();
   }
 
   isAdminUser(): boolean {

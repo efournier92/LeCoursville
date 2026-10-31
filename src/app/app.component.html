@@ -4,22 +4,24 @@
   }
   @if (layout !== 'bare') {
   <mat-toolbar
-    class="d-inline-flex mat-elevation-z8 justify-content-between"
+    class="d-inline-flex justify-content-between"
     color="primary"
     >
-    <button
-      type="button"
-      class="toolbar-logo"
-      [attr.aria-label]="isSuperAdmin() ? 'Admin' : 'Home'"
-      (click)="onLogoClick()"
-      >
-      <img
-        src="./assets/img/logo/L.png"
-        class="toolbar-icon"
-        [alt]="isSuperAdmin() ? 'Admin' : 'L'"
-        height="80%"
-        />
-    </button>
+    <div class="toolbar-left d-inline-flex">
+      <button
+        type="button"
+        class="toolbar-logo"
+        [attr.aria-label]="isSuperAdmin() ? 'Admin' : 'Home'"
+        (click)="onLogoClick()"
+        >
+        <img
+          src="./assets/img/logo/L.png"
+          class="toolbar-icon"
+          [alt]="isSuperAdmin() ? 'Admin' : 'L'"
+          height="80%"
+          />
+      </button>
+    </div>
     <div class="icons-menu d-inline-flex">
       @if (!authResolved) {
         <div data-testid="nav-links-skeleton">
@@ -75,12 +77,19 @@
           }
         </div>
         <button
-          mat-icon-button
+          type="button"
+          class="theme-switch"
           data-testid="theme-toggle"
+          role="switch"
+          [attr.aria-checked]="(theme$ | async) === 'dark'"
           [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
           (click)="onThemeToggle()"
           >
-          <mat-icon [attr.data-testid]="'theme-state-' + (theme$ | async)">{{ (theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          @if ((theme$ | async) === 'dark') {
+            <mat-icon class="theme-switch-icon" data-testid="theme-icon-sun">light_mode</mat-icon>
+          } @else {
+            <mat-icon class="theme-switch-icon" data-testid="theme-icon-moon">nightlight_round</mat-icon>
+          }
         </button>
       }
     </div>
