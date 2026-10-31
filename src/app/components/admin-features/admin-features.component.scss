@@ -36,7 +36,7 @@
 .feature-group-label {
   @include admin-eyebrow;
   margin: 0 0 8px;
-  padding: 0 12px;
+  padding: 0 16px;
 }
 
 .feature-group + .feature-group .feature-group-label {
@@ -54,8 +54,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 12px;
+  gap: 16px;
+  // Matches the 14px 16px list-row scale used across the other admin pages.
+  padding: 14px 16px;
   min-height: 44px;
   border-bottom: 1px solid var(--color-border);
 
@@ -91,9 +92,21 @@
     border-radius: var(--radius-sm);
   }
 
+  // One right-aligned controls column: tag immediately left of the toggle,
+  // every row's toggle right edge on the same line.
+  .feature-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
   mat-slide-toggle {
     flex-shrink: 0;
-    margin-left: auto;
+    // MDC's track ends 4px inside the host; pull the visible track onto the
+    // page's 16px right rail.
+    margin-right: -4px;
     // Size and travel tokens move together: Material derives travel from
     // track width minus handle width.
     --mat-slide-toggle-track-width: 36px;
@@ -202,5 +215,8 @@
 
   .feature-row {
     gap: 8px;
+    // minimalist: wrap lets long labels take their own line; the controls
+    // block keeps tag+toggle together on one right-aligned line.
+    flex-wrap: wrap;
   }
 }
