@@ -229,6 +229,14 @@ html {
 // swaps every component's palette without duplicating typography/density.
 html[data-theme="dark"] {
   @include mat.all-component-colors($dark-theme);
+
+  // The dark palette's filled-button green is more saturated than the softened
+  // brand token, so filled CTAs clashed with every other brand surface. Re-emit
+  // the filled tokens only, with a dark ink that clears contrast on the token.
+  @include mat.button-overrides((
+    filled-container-color: var(--color-brand-primary),
+    filled-label-text-color: #14300F,
+  ));
 }
 
 // Material injects its dialog styles after this sheet, so the shared dialog
@@ -437,6 +445,12 @@ select:-webkit-autofill:focus {
 
 /* Printed pages are content sheets: the app toolbar is screen chrome only. */
 @media print {
+  // One page box for every printable surface. Lives here, not in a component
+  // stylesheet, so the margin cannot be scoped away.
+  @page {
+    margin: 14mm;
+  }
+
   // Beats Bootstrap's .d-inline-flex utility, which is also !important.
   mat-toolbar.mat-toolbar {
     display: none !important;
@@ -478,6 +492,14 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
   border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+/* Filter-row fields never show hints or errors, but M3 still reserves the
+   subscript band, which grew stacked mobile filter rows. Hide it for every
+   field projected into a filter bar (unscoped: the wrapper is Material's own
+   DOM, outside the page's encapsulation). */
+.admin-filter-bar .mat-mdc-form-field-subscript-wrapper {
+  display: none;
 }
 
 // ── Calendar (angular-calendar) overrides ─────────────────────────────────────

@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { Song } from 'src/app/models/song';
 import { Person } from 'src/app/models/person';
 import { PeopleService } from 'src/app/services/people.service';
-import { hasBracketChords, transposeBody, transposeKeyName } from 'src/app/services/chord-transpose';
+import { hasBracketChords, segmentSongBody, SongLine, transposeBody, transposeKeyName } from 'src/app/services/chord-transpose';
 import { SongsService } from 'src/app/services/songs.service';
 
 @Component({
@@ -45,6 +45,11 @@ export class SongDetailComponent implements OnInit, OnDestroy {
 
   get displayBody(): string {
     return this.song ? transposeBody(this.song.body, this.offset) : '';
+  }
+
+  /** Same transposed body, split for span rendering; never injected as HTML. */
+  get bodyLines(): SongLine[] {
+    return segmentSongBody(this.displayBody);
   }
 
   /** Empty at 0 so the badge disappears while its live region stays mounted. */

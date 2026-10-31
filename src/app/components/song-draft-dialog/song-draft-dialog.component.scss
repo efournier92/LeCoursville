@@ -4,6 +4,12 @@
   width: 100%;
 }
 
+// The dialog content is the only scroller; Cancel/Save are siblings and stay
+// visible while the picker scrolls inside .draft-options.
+mat-dialog-content {
+  overflow-y: auto;
+}
+
 .draft-row {
   display: flex;
   gap: 12px;
@@ -25,11 +31,11 @@
 }
 
 .draft-body-field textarea {
-  min-height: 200px;
+  min-height: 180px;
 }
 
 .draft-unmatched {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   padding: 10px 12px;
   border-left: 4px solid var(--color-warning, #b26a00);
   border-radius: var(--radius-sm);
@@ -39,7 +45,7 @@
 }
 
 .draft-section-title {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-ink);
@@ -49,7 +55,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .draft-chip {
@@ -76,8 +82,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  max-height: 200px;
+  // The picker scrolls inside its own box so Cancel/Save stay reachable.
+  max-height: 168px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .draft-option {
@@ -115,5 +123,13 @@
 
   .draft-key-field {
     flex: 1 1 auto;
+  }
+
+  .draft-body-field textarea {
+    min-height: 140px;
+  }
+
+  .draft-options {
+    max-height: 132px;
   }
 }

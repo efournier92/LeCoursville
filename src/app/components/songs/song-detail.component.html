@@ -71,7 +71,7 @@
               <mat-icon aria-hidden="true">remove</mat-icon>
             </button>
 
-            <span class="transpose-offset" data-testid="transpose-offset" aria-live="polite">
+            <span class="transpose-offset" data-testid="transpose-offset" aria-live="polite" [class.is-empty]="offset === 0">
               {{ offsetLabel }}
             </span>
 
@@ -91,6 +91,7 @@
             type="button"
             class="transpose-reset"
             data-testid="transpose-reset"
+            [disabled]="offset === 0"
             (click)="reset()"
             >
             Reset
@@ -98,7 +99,7 @@
         </div>
       }
 
-      <pre class="song-body" data-testid="song-body">{{ displayBody }}</pre>
+      <pre class="song-body" data-testid="song-body">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {<span [class]="segment.kind">{{ segment.text }}</span>}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
     </article>
   }
 </div>

@@ -174,7 +174,13 @@
   }
 
   tbody td {
-    height: 44px;
+    // A table cell treats `height` as a floor but outranks the stacked mobile
+    // rule, so a wrapped Leaders cell kept the fixed height and painted over
+    // the row below. min-height keeps the same ~44px desktop rhythm (padding
+    // carries it, cells ignore min-height) and lets mobile rows grow.
+    min-height: 44px;
+    padding-top: 11px;
+    padding-bottom: 11px;
   }
 
   tbody tr:hover {
@@ -206,7 +212,9 @@
       background: var(--color-surface);
     }
 
-    td {
+    // Matches the base `tbody td` specificity so the stacked padding wins over
+    // the desktop rhythm padding.
+    tbody td {
       display: flex;
       gap: 12px;
       padding: 6px 0;
@@ -221,6 +229,17 @@
 
       &[data-label=""]::before {
         content: none;
+      }
+    }
+
+    // Leaders own a full-width label line, then the chips wrap beneath it, so
+    // two leaders can never overlap the Updated cell below.
+    tbody td[data-label='Leaders'] {
+      flex-wrap: wrap;
+      row-gap: 4px;
+
+      &::before {
+        flex: 0 0 100%;
       }
     }
 

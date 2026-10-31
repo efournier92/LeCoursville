@@ -1,4 +1,9 @@
-import { hasBracketChords, transposeBody, transposeKeyName } from './chord-transpose';
+import {
+  hasBracketChords,
+  segmentSongBody,
+  transposeBody,
+  transposeKeyName,
+} from './chord-transpose';
 
 describe('chord-transpose', () => {
   it('detects bracket chords and bracket-less bodies (35)', () => {
@@ -42,5 +47,33 @@ describe('chord-transpose', () => {
     expect(transposeKeyName('Bb', 2)).toBe('C');
     expect(transposeKeyName('Gm', 2)).toBeNull();
     expect(transposeKeyName('H', 2)).toBeNull();
+  });
+
+  it('segments bracket chords, chord lines, and plain text without changing bytes (43)', () => {
+    const body = '[G]Amazing grace\nA          D\nPlain [Verse] line\n\n[Bb/D]Ends';
+    const lines = segmentSongBody(body);
+
+    expect(lines.map(line => line.segments.map(segment => segment.text).join('')).join('\n')).toBe(body);
+
+    // Bracket chord keeps its brackets and is tinted inside a lyric line.
+    expect(lines[0].segments).toEqual([
+      { text: '[G]', kind: 'chord' },
+      { text: 'Amazing grace', kind: 'text' },
+    ]);
+
+    // A line of bare chord tokens is a chord line; its spacing stays text.
+    expect(lines[1].segments).toEqual([
+      { text: 'A', kind: 'chord-line' },
+      { text: '          ', kind: 'text' },
+      { text: 'D', kind: 'chord-line' },
+    ]);
+
+    // A bracket that is not a chord stays plain text on a lyric line.
+    expect(lines[2].segments).toEqual([{ text: 'Plain [Verse] line', kind: 'text' }]);
+    expect(lines[3].segments).toEqual([]);
+    expect(lines[4].segments).toEqual([
+      { text: '[Bb/D]', kind: 'chord' },
+      { text: 'Ends', kind: 'text' },
+    ]);
   });
 });

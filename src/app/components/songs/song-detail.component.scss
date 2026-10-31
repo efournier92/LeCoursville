@@ -102,6 +102,14 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-ink);
+
+  // At offset 0 the badge is empty: no slot, no divider, no reserved width.
+  // The element stays mounted so its live region keeps announcing.
+  &.is-empty {
+    min-width: 0;
+    padding: 0;
+    border-left: 0;
+  }
 }
 
 .transpose-reset {
@@ -115,9 +123,17 @@
   font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
   white-space: pre-wrap;
   word-break: normal;
+  overflow-wrap: anywhere;
   font-size: 1.05rem;
   line-height: 1.75;
   color: var(--color-ink);
+
+  // Chord tint: bracket chords inline, whole chord-over lines as runs.
+  .chord,
+  .chord-line {
+    color: var(--color-brand-primary);
+    font-weight: 600;
+  }
 
   @media (max-width: 600px) {
     font-size: 0.95rem;
@@ -138,6 +154,33 @@
 
   &:hover {
     background: var(--color-surface-muted);
+  }
+}
+
+// 44px mobile hit areas: the transpose trio and the toolbar back button.
+@media (max-width: 600px) {
+  .transpose-pill {
+    height: 44px;
+
+    .mat-mdc-icon-button {
+      width: 44px;
+      height: 44px;
+      --mat-icon-button-state-layer-size: 44px;
+    }
+  }
+
+  .transpose-offset {
+    min-height: 44px;
+  }
+
+  .transpose-reset {
+    --mat-button-text-container-height: 44px;
+    min-height: 44px;
+  }
+
+  .song-back {
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -164,16 +207,11 @@
   50% { opacity: 0.5; }
 }
 
-@page {
-  margin: 14mm;
-}
-
 @media print {
   app-page-toolbar,
   .transpose-controls {
     display: none !important;
   }
-
   .song-detail {
     padding: 0;
   }
@@ -208,5 +246,12 @@
     max-width: none;
     white-space: pre-wrap;
     word-break: normal;
+
+    // Printed chords are plain ink: no brand tint, no extra weight.
+    .chord,
+    .chord-line {
+      color: inherit;
+      font-weight: inherit;
+    }
   }
 }

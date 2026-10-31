@@ -41,6 +41,11 @@
 .song-actions {
   white-space: nowrap;
   text-align: right;
+
+  // Destructive icon reads red; the edit icon stays neutral.
+  [data-testid='admin-delete-song'] {
+    color: var(--color-error);
+  }
 }
 
 .leader-chip {
@@ -49,18 +54,16 @@
   margin: 2px 4px 2px 0;
   padding: 0 10px;
   min-height: 28px;
+  min-width: 0;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface-muted);
   color: var(--color-ink-2);
   font-size: 0.8rem;
   white-space: nowrap;
-}
-
-// Chips wrap between each other; the mobile row turns the cell into a flex box.
-.admin-table td[data-label='Leaders'] {
-  flex-wrap: wrap;
 }
 
 .admin-empty {

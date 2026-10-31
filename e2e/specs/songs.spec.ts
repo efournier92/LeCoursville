@@ -106,7 +106,9 @@ test.describe('songs', () => {
     const body = page.getByTestId('song-body');
     const fontFamily = await body.evaluate(el => getComputedStyle(el).fontFamily);
     expect(fontFamily).toMatch(/monospace/i);
+    // Segmented spans must not change a single byte of the rendered body.
     expect(await body.textContent()).toBe(stored.body);
+    await expect(body.locator('.chord').first()).toBeVisible();
   });
 
   test('11. + transposes G to G# and shows the +1 badge', async ({ page }) => {
@@ -139,8 +141,12 @@ test.describe('songs', () => {
   });
 
   test('14. the chord-over-line song renders no transpose controls', async ({ page }) => {
+    const stored = (await readDb<Record<string, any>>('songs/song-b'))!;
     await openSong(page, 'song-b');
     await expect(page.getByTestId('transpose-controls')).toHaveCount(0);
+    // Bare chord-over lines are segmented too, still byte-identical.
+    await expect(page.locator('.song-body .chord-line').first()).toBeVisible();
+    expect(await page.getByTestId('song-body').textContent()).toBe(stored.body);
   });
 
   test('15. a reload shows the untransposed stored body', async ({ page }) => {
@@ -353,7 +359,7 @@ test.describe('songs', () => {
         await page.goto('/admin/songs');
         const row = page.getByTestId('admin-song-row').filter({ hasText: 'Come Thou Fount' });
         await expect(row).toBeVisible();
-        await expect(row.locator('td[data-label="Updated"]')).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
+        await expect(row.locator('td[data-label="Updated"]')).toHaveText(/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/);
         await row.getByTestId('admin-edit-song').click();
 
         await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
@@ -427,6 +433,30 @@ test.describe('songs', () => {
       } finally {
         await writeDb('songs', original);
       }
+    });
+
+    test('26. the draft dialog fits the Leaders picker on desktop and scrolls on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await openAddPanel(page);
+      await page.getByTestId('admin-paste-input').fill('Title: E2E Dialog Fit\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      // Desktop: the label, the search field, and one option are on first paint.
+      await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport();
+      await expect(page.getByTestId('draft-leader-search')).toBeInViewport();
+      await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport();
+
+      // Mobile: the content scrolls; the picker and the actions stay reachable.
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
+      await page.getByTestId('draft-leader-search').scrollIntoViewIfNeeded();
+      await expect(page.getByTestId('draft-leader-search')).toBeInViewport();
+      await page.getByTestId('draft-leader-option').first().click();
+      await expect(page.getByTestId('draft-leader-chip')).toHaveCount(1);
+      await page.getByTestId('draft-cancel').click();
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+      expect(await storedSongByTitle('E2E Dialog Fit')).toBeUndefined();
     });
   });
 });

@@ -17,6 +17,13 @@ function fold(value: string | null | undefined): string {
   return (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+/** Human column date: "Oct 31, 2026". */
+const UPDATED_FORMAT = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+
 @Component({
   selector: 'app-admin-songs',
   templateUrl: './admin-songs.component.html',
@@ -152,10 +159,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   }
 
   formatUpdated(timestamp: number): string {
-    const date = new Date(timestamp);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${date.getFullYear()}-${month}-${day}`;
+    return UPDATED_FORMAT.format(new Date(timestamp));
   }
 
   private openDraft(song: Song | null, parsed: ParsedSong | null): Promise<Song | null> {

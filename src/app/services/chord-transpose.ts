@@ -48,3 +48,63 @@ export function transposeBody(body: string, semitones: number): string {
     (_full: string, chord: string) => '[' + transposeChord(chord, semitones) + ']',
   );
 }
+
+/** One renderable run of a song line; `text` keeps the literal source bytes. */
+export type SongSegmentKind = 'text' | 'chord' | 'chord-line';
+
+export interface SongSegment {
+  text: string;
+  kind: SongSegmentKind;
+}
+
+export interface SongLine {
+  segments: SongSegment[];
+}
+
+// A bare chord token: letter, optional accidental, quality/digits, slash bass.
+const BARE_CHORD_TOKEN = /^[A-G](?:#|b)?(?:m|maj|min|sus|dim|aug|add|M)?[0-9]*(?:\([^)]*\))?(?:\/[A-G](?:#|b)?)?$/;
+const BRACKET_CHORD_TOKEN = new RegExp('^' + BRACKET_CHORD.source + '$');
+
+function isChordToken(token: string): boolean {
+  return BARE_CHORD_TOKEN.test(token) || BRACKET_CHORD_TOKEN.test(token);
+}
+
+/** Appends `text`, tinting bare chord tokens when the whole line is chords. */
+function pushTextRun(out: SongSegment[], text: string, chordLine: boolean): void {
+  if (!text) { return; }
+  if (!chordLine) {
+    out.push({ text, kind: 'text' });
+    return;
+  }
+  for (const part of text.split(/(\s+)/)) {
+    if (!part) { continue; }
+    out.push({ text: part, kind: /^\s+$/.test(part) ? 'text' : 'chord-line' });
+  }
+}
+
+/**
+ * Splits a song body into lines of segments for safe interpolation rendering.
+ * Bracket chords become `chord` segments (brackets kept verbatim); a line whose
+ * non-space tokens are all chords turns its tokens into `chord-line` segments.
+ * Joining every segment with "\n" between lines reproduces the input bytes.
+ */
+export function segmentSongBody(body: string): SongLine[] {
+  return body.split('\n').map(rawLine => {
+    const tokens = rawLine.split(/\s+/).filter(Boolean);
+    const chordLine = tokens.length > 0 && tokens.every(isChordToken);
+    const segments: SongSegment[] = [];
+    const pattern = new RegExp(BRACKET_CHORD.source, 'g');
+    let cursor = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(rawLine)) !== null) {
+      pushTextRun(segments, rawLine.slice(cursor, match.index), chordLine);
+      segments.push({ text: match[0], kind: 'chord' });
+      cursor = match.index + match[0].length;
+    }
+    pushTextRun(segments, rawLine.slice(cursor), chordLine);
+
+    // An empty line yields no segments; the template still emits its newline.
+    return { segments };
+  });
+}

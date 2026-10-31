@@ -112,8 +112,10 @@ export class SongsListComponent implements OnInit, OnDestroy {
       if (picked.length === 2) {
         break;
       }
-      if (line.trim()) {
-        picked.push(line);
+      // The card preview reads as lyrics; the detail keeps the chord brackets.
+      const preview = line.replace(/\[[^\]]*\]/g, '').trim();
+      if (preview) {
+        picked.push(preview);
       }
     }
     return picked.join('\n');
