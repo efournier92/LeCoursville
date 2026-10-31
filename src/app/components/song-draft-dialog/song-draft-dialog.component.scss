@@ -73,6 +73,10 @@ mat-dialog-content {
 
 .draft-body-field textarea {
   min-height: 180px;
+  // The dialog owns the geometry; a native resize grip would let the lyrics box
+  // grow past the content edge. Long lyrics still scroll inside the box.
+  resize: none;
+  overflow-y: auto;
 }
 
 .draft-unmatched {

@@ -969,6 +969,81 @@ test.describe('songs', () => {
       }
     });
 
+    test('25b. the admin empty library shows the centered medallion state', async ({ page }) => {
+      const original = await readDb<Record<string, any>>('songs');
+      try {
+        await deleteDb('songs');
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto('/admin/songs');
+        const empty = page.getByTestId('admin-songs-empty');
+        await expect(empty).toContainText('No songs yet');
+        await expect(page.getByTestId('admin-song-row')).toHaveCount(0);
+
+        // The medallion is the member empty state's tinted circle, not a bare
+        // text block: visible, round, and carrying the music glyph.
+        const medallion = page.locator('.admin-empty-icon');
+        await expect(medallion).toBeVisible();
+        await expect(medallion.locator('mat-icon')).toHaveText('music_note');
+        const mark = await medallion.evaluate(el => {
+          const style = getComputedStyle(el);
+          const box = el.getBoundingClientRect();
+          return {
+            background: style.backgroundColor,
+            border: Number.parseFloat(style.borderTopWidth),
+            width: box.width,
+            height: box.height,
+            radius: style.borderTopLeftRadius,
+            ground: getComputedStyle(document.body).backgroundColor,
+          };
+        });
+        expect(mark.background).not.toBe(mark.ground);
+        expect(mark.background).not.toBe('rgba(0, 0, 0, 0)');
+        expect(mark.border).toBeCloseTo(1, 1);
+        expect(mark.radius).toBe('50%');
+        expect(mark.width).toBeCloseTo(mark.height, 0);
+
+        // Room-sized state fills and centers in the content area.
+        const layout = await page.locator('.admin-empty-region').evaluate(el => {
+          const region = el.getBoundingClientRect();
+          const inner = el.querySelector('.admin-empty')!.getBoundingClientRect();
+          return {
+            minHeight: Number.parseFloat(getComputedStyle(el).minHeight),
+            centerDelta: Math.abs(
+              inner.top + inner.height / 2 - (region.top + region.height / 2),
+            ),
+          };
+        });
+        expect(layout.minHeight).toBeGreaterThan(300);
+        expect(layout.centerDelta).toBeLessThan(2);
+
+        // Mobile stays compact: no forced content-area height.
+        await page.setViewportSize({ width: 390, height: 844 });
+        await expect(empty).toBeVisible();
+        const mobileMin = await page.locator('.admin-empty-region').evaluate(el => {
+          const value = Number.parseFloat(getComputedStyle(el).minHeight);
+          return Number.isFinite(value) ? value : 0;
+        });
+        expect(mobileMin).toBeLessThan(300);
+      } finally {
+        await writeDb('songs', original);
+      }
+    });
+
+    test('25c. the paste and lyrics textareas have no resize grip but scroll', async ({ page }) => {
+      await openAddPanel(page);
+      const paste = page.getByTestId('admin-paste-input');
+      await expect(paste).toHaveCSS('resize', 'none');
+      await expect(paste).toHaveCSS('overflow-y', 'auto');
+
+      await paste.fill('Title: E2E Resize\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      const body = page.getByTestId('draft-body');
+      await expect(body).toBeVisible();
+      await expect(body).toHaveCSS('resize', 'none');
+      await expect(body).toHaveCSS('overflow-y', 'auto');
+      await page.getByTestId('draft-cancel').click();
+    });
+
     test('26. the draft dialog fits the Leaders picker on desktop and scrolls on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1000 });
       await openAddPanel(page);

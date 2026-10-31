@@ -122,9 +122,14 @@
 
   @if (status === 'ready') {
     @if (songs.length === 0) {
-      <div class="admin-empty" data-testid="admin-songs-empty">
-        <p class="admin-card-title">No songs yet</p>
-        <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
+      <div class="admin-empty-region" data-testid="admin-songs-empty">
+        <div class="admin-empty">
+          <div class="admin-empty-icon" aria-hidden="true">
+            <mat-icon>music_note</mat-icon>
+          </div>
+          <p class="admin-card-title">No songs yet</p>
+          <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
+        </div>
       </div>
     } @else if (filteredSongs.length === 0) {
       <div class="admin-empty-region">

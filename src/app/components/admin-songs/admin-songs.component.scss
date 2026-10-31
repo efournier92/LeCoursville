@@ -28,6 +28,13 @@
 
 .paste-field {
   width: 100%;
+
+  // Keep the paste box on the form's grid: no native resize grip can widen it
+  // past the card. Long pastes scroll inside the fixed rows height.
+  textarea {
+    resize: none;
+    overflow-y: auto;
+  }
 }
 
 .add-song-actions {
@@ -89,13 +96,37 @@
 }
 
 .admin-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding: 32px 16px;
   text-align: center;
+
+  // The shared card-title rule carries a 12px bottom margin; the column gap
+  // already spaces the stack, so drop it here to keep the rhythm even.
+  .admin-card-title {
+    margin: 0;
+  }
 }
 
-// On roomy screens the no-results state sits in the middle of the content
-// area below the toolbar (the member songs list's pattern: min-height plus a
-// flex center). Mobile stays top-aligned and compact.
+// Same brand-tinted medallion as the member empty state, so both empty
+// libraries read as one treatment.
+.admin-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
+  color: var(--color-ink-2);
+}
+
+// On roomy screens the empty / no-results state sits in the middle of the
+// content area below the toolbar (the member songs list's pattern: min-height
+// plus a flex center). Mobile stays top-aligned and compact.
 @media (min-width: 900px) {
   .admin-empty-region {
     display: flex;
