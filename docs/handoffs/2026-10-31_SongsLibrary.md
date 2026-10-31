@@ -2,13 +2,13 @@
 
 Date: 2026-10-31 · Branch: `2026-10-31_Songs` · Worktree: `/Users/e/mnt/bnk/cs/lecoursville-songs` · Base: `master` at `26755dcd` · Status: implementation and UX convergence complete, gate green, not pushed, not deployed.
 
-The discovery index was already above its 8 KB cap before this session; the ten new entries are appended, and the archive reconcile is deferred as pre-existing debt.
+The discovery index was already above its 8 KB cap before this session; the eleven new entries are appended, and the archive reconcile is deferred as pre-existing debt.
 
 ## Current State
 
-- 22 commits on the branch, working tree clean.
+- 24 commits on the branch, working tree clean.
 - Full gate `npm run e2e:gate` exit 0 after the final run.
-- Gate evidence in `.gate-results/`: `unit-tests.txt` (107 files, 740 tests), `functions-tests.txt` (24 files, 298 tests), `chromium.json`, `webkit.json`, `firefox.json` (320 expected each, 0 unexpected, 0 flaky, 0 skipped); rules 15 and storage-prod 9 passed inside the gate log.
+- Gate evidence in `.gate-results/`: `unit-tests.txt` (107 files, 740 tests), `functions-tests.txt` (24 files, 298 tests), `rules.txt` (15 passed), `storage-prod.txt` (9 passed), `chromium.json`, `webkit.json`, `firefox.json` (320 expected each, 0 unexpected, 0 flaky, 0 skipped), consolidated in `gate-summary.txt`.
 - No `functions/`, `storage.rules`, `storage.rules.prod`, or dependency changes. `database.rules.json` changed (Songs rules plus shape validation).
 - Nothing pushed: no `origin/2026-10-31_Songs`; no tag; `scripts/deploy.sh` untouched.
 
@@ -22,7 +22,7 @@ The discovery index was already above its 8 KB cap before this session; the ten 
 - RTDB rules: member read, admin write, id pin, plus server-side field type/length checks and unknown-child rejection.
 - Seed: Songs flag on plus `song-a` Amazing Grace, `song-b` Blessed Be the Name, `song-c` Come Thou Fount, `song-d` Noël.
 - Tests: `e2e/specs/songs.spec.ts` (member, transpose, print, flag, admin, race/dialog/file coverage), extended `nav`, `feature-flags`, `rules`, `security`, `dark-mode`, `admin` specs; unit specs for service, parser, transposer.
-- Discovery entries: D-20261031-01 through D-20261031-10 in `docs/discovery/DISCOVERY.md`.
+- Discovery entries: D-20261031-01 through D-20261031-11 in `docs/discovery/DISCOVERY.md`.
 
 ## Key Decisions
 
@@ -83,7 +83,7 @@ node -e "for(const f of ['chromium','webkit','firefox'])console.log(f,require('.
 npm run e2e:gate
 ```
 
-Expected: clean tree, 22 commits, each browser 320 expected / 0 unexpected / 0 flaky; gate exit 0.
+Expected: clean tree, 24 commits, each browser 320 expected / 0 unexpected / 0 flaky; gate exit 0.
 
 ## Next Actions
 
