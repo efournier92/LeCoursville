@@ -16,6 +16,9 @@ h2[mat-dialog-title] {
 // visible while the picker scrolls inside .draft-options.
 mat-dialog-content {
   overflow-y: auto;
+  // Material caps the content at 65vh; let the 98vh dialog height decide so the
+  // picker gets the full viewport at short heights.
+  max-height: none;
 }
 
 .draft-row {

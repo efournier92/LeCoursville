@@ -516,6 +516,16 @@ test.describe('songs', () => {
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-save')).toBeInViewport({ ratio: 1 });
+      // At first paint the first option must clear the actions row, not sit 22px
+      // behind it at scrollTop 0.
+      const overlap = await page.evaluate(() => {
+        const content = document.querySelector('mat-dialog-content')!;
+        content.scrollTop = 0;
+        const option = document.querySelector('[data-testid="draft-leader-option"]')!;
+        const actions = document.querySelector('mat-dialog-actions')!;
+        return option.getBoundingClientRect().bottom - actions.getBoundingClientRect().top;
+      });
+      expect(overlap).toBeLessThanOrEqual(0);
       await page.getByTestId('draft-leader-search').scrollIntoViewIfNeeded();
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport();
       await page.getByTestId('draft-leader-option').first().click();
