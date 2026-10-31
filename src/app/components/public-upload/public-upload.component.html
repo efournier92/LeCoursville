@@ -30,7 +30,7 @@
         </div>
         <div class="folder-upload-link">
           <input #folderInput type="file" webkitDirectory (change)="onFolderSelect($event)" hidden>
-          <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">Or Upload An Entire Folder</button>
+          <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">Or Upload A Whole Folder</button>
         </div>
         @if (uploadItems.length > 0 && !isComplete && !hasError) {
           <div class="file-list">
