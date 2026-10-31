@@ -136,7 +136,11 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-surface-muted);
+  // A brand-tinted medallion, not a gray disc: surface-muted on the page
+  // ground all but disappeared in both themes. The 8% wash plus the hairline
+  // ring reads as a mark on the page without becoming a filled button.
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
   color: var(--color-ink-2);
 }
 

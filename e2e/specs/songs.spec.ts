@@ -105,6 +105,16 @@ test.describe('songs', () => {
       }));
       expect(layout.minHeight).toBeGreaterThan(300);
       expect(layout.justify).toBe('center');
+
+      // The medallion is tinted brand, so it separates from the page ground.
+      const medallion = await page.locator('.songs-empty-icon').evaluate(el => ({
+        background: getComputedStyle(el).backgroundColor,
+        border: getComputedStyle(el).borderTopWidth,
+        ground: getComputedStyle(document.body).backgroundColor,
+      }));
+      expect(medallion.background).not.toBe(medallion.ground);
+      expect(medallion.background).not.toBe('rgba(0, 0, 0, 0)');
+      expect(medallion.border).toBe('1px');
     } finally {
       await writeDb('songs', original);
     }
@@ -222,8 +232,12 @@ test.describe('songs', () => {
     await expect(cards(page)).toHaveCount(4);
 
     const blessed = cards(page).filter({ hasText: 'Blessed Be the Name' });
-    const excerpt = (await blessed.locator('.song-excerpt').textContent())!.trim();
-    expect(excerpt.split('\n')[0]).toBe('Blessed be the name of the Lord');
+    const lines = (await blessed.locator('.song-excerpt').textContent())!.trim().split('\n');
+    expect(lines[0]).toBe('Blessed be the name of the Lord');
+    // Every chord-only line is filtered from the pool, not just a leading one:
+    // the second preview line is the next lyric, not the "A          E" run.
+    expect(lines[1]).toBe('Blessed be the name of the Lord');
+    expect(lines).toHaveLength(2);
 
     const grid = await page.locator('.songs-grid').evaluate(el => getComputedStyle(el).alignItems);
     expect(grid).toBe('stretch');
@@ -249,6 +263,16 @@ test.describe('songs', () => {
       .locator('.mat-mdc-button-persistent-ripple');
     await expect(stateLayer).toHaveCSS('border-radius', '0px');
     await expect(page.getByTestId('transpose-up')).toHaveCSS('border-radius', '0px');
+
+    // The state layer tints instead of flashing a hard gray fill.
+    const layerOpacity = await page.getByTestId('transpose-up').evaluate(el => {
+      const style = getComputedStyle(el);
+      return {
+        hover: Number(style.getPropertyValue('--mat-icon-button-hover-state-layer-opacity')),
+        focus: Number(style.getPropertyValue('--mat-icon-button-focus-state-layer-opacity')),
+      };
+    });
+    expect(layerOpacity).toEqual({ hover: 0.06, focus: 0.06 });
   });
 
   test('12. a flat-root bracket plus two renders C', async ({ page }) => {
@@ -328,8 +352,9 @@ test.describe('songs', () => {
     expect(print.titleTopFromSheet).toBeGreaterThanOrEqual(52);
     expect(print.titleTopFromSheet).toBeLessThan(54);
 
-    // Exactly one 14mm owner: @page contributes no margin, so real paper does
-    // not stack a second gutter on top of the sheet's own padding.
+    // Exactly one 14mm owner on songs: the sheet opts into the named `song`
+    // page (margin 0), so real paper does not stack a second gutter on top of
+    // the sheet's own 14mm padding.
     const cssText = await page.evaluate(async () => {
       const chunks: string[] = [];
       for (const sheet of Array.from(document.styleSheets)) {
@@ -346,13 +371,67 @@ test.describe('songs', () => {
       }
       return chunks.join('\n');
     });
-    const pageBlocks = [...cssText.matchAll(/@page\s*\{([^}]*)\}/g)];
-    expect(pageBlocks.length).toBeGreaterThan(0);
-    for (const block of pageBlocks) {
-      const margin = /margin\s*:\s*([^;]+)/.exec(block[1])?.[1].trim();
-      expect(['0', '0mm', '0px']).toContain(margin);
+    // index.html links the same stylesheet twice (eager + print-media onload),
+    // so collapse identical page rules before asserting.
+    const pageBlocks = [...new Map(
+      [...cssText.matchAll(/@page\s*([\w-]*)\s*\{([^}]*)\}/g)].map(block => {
+        const name = block[1];
+        const margin = /margin\s*:\s*([^;]+)/.exec(block[2])?.[1].trim();
+        return [`${name}:${margin}`, { name, margin }];
+      }),
+    ).values()];
+    // A 14mm default page box for every other route, plus the full-bleed named
+    // page that only the song sheet uses.
+    expect(pageBlocks).toEqual(
+      expect.arrayContaining([
+        { name: '', margin: '14mm' },
+        { name: 'song', margin: '0' },
+      ]),
+    );
+    expect(cssText).toMatch(/\.song-sheet[^{]*\{[^}]*page:\s*song/);
+    // One 14mm page margin, on the default page only; the named `song` page is
+    // marginless and the sheet's own padding is the single gutter.
+    expect(pageBlocks.filter(block => block.margin === '14mm')).toEqual([
+      { name: '', margin: '14mm' },
+    ]);
+
+    // Screen chrome is not paper content.
+    await expect(page.locator('.pending-banner')).toBeHidden();
+    await expect(page.locator('.app-skip-link')).toBeHidden();
+  });
+
+  test('16b. a dark-theme print renders dark ink on white paper', async ({ page }) => {
+    const users = (await readDb<Record<string, { email?: string }>>('users')) ?? {};
+    const userUid = Object.keys(users).find(id => users[id]?.email === 'user@e2e.local');
+    expect(userUid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
+    try {
+      // The member beforeEach already signed in as user@e2e.local.
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      // Let the preference write land before the finally deletes it.
+      await expect
+        .poll(() => readDb(`users/${userUid}/prefs/theme`), { timeout: 10000 })
+        .toBe('dark');
+
+      await openSong(page, 'song-a');
+      await page.emulateMedia({ media: 'print' });
+      const print = await page.evaluate(() => ({
+        ink: getComputedStyle(document.documentElement).getPropertyValue('--color-ink').trim(),
+        title: getComputedStyle(document.querySelector('.song-title')!).color,
+        body: getComputedStyle(document.querySelector('[data-testid="song-body"]')!).color,
+        meta: getComputedStyle(document.querySelector('[data-testid="song-key"]')!).color,
+        ground: getComputedStyle(document.body).backgroundColor,
+      }));
+      // Print re-declares the light ink tokens; the dark theme's light ink
+      // would be white-on-white once the grounds are forced to #fff.
+      expect(print.ink).toBe('#232A32');
+      expect(print.title).toBe('rgb(35, 42, 50)');
+      expect(print.body).toBe('rgb(35, 42, 50)');
+      expect(print.meta).toBe('rgb(91, 100, 112)');
+      expect(print.ground).toBe('rgb(255, 255, 255)');
+    } finally {
+      await deleteDb(`users/${userUid}/prefs`);
     }
-    expect(cssText.match(/14mm/g) || []).toHaveLength(1);
   });
 
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
@@ -675,6 +754,29 @@ test.describe('songs', () => {
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport({ ratio: 1 });
       await expect(page.getByTestId('draft-save')).toBeInViewport({ ratio: 1 });
+      // Cancel/Save read as the sheet's footer: hairline divider above, the
+      // sheet surface behind, and bottom padding clear of the safe area.
+      const footer = await page.locator('.song-draft-panel .mat-mdc-dialog-actions').evaluate(el => {
+        const style = getComputedStyle(el);
+        // Resolve the token in-place so the check follows the active theme.
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--color-border)';
+        document.body.appendChild(probe);
+        const borderToken = getComputedStyle(probe).color;
+        probe.remove();
+        return {
+          borderTopWidth: style.borderTopWidth,
+          borderTopColor: style.borderTopColor,
+          borderToken,
+          background: style.backgroundColor,
+          surface: getComputedStyle(el.closest('.mat-mdc-dialog-surface')!).backgroundColor,
+          paddingBottom: Number.parseFloat(style.paddingBottom),
+        };
+      });
+      expect(footer.borderTopWidth).toBe('1px');
+      expect(footer.borderTopColor).toBe(footer.borderToken);
+      expect(footer.background).toBe(footer.surface);
+      expect(footer.paddingBottom).toBeGreaterThanOrEqual(16);
       // At first paint the first option must clear the actions row, not sit 22px
       // behind it at scrollTop 0.
       const overlap = await page.evaluate(() => {

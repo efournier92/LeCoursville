@@ -239,9 +239,14 @@ html[data-theme="dark"] {
   ));
 }
 
-// Dark pages are near-black; the stock .32 scrim leaves the dialog floating in
-// the same value. Deepen it so the modal reads as a separate layer.
-html[data-theme="dark"] .cdk-overlay-backdrop {
+// Pale pages make the stock .32 scrim read as a faint tint; deepen it so the
+// dialog reads as a separate layer. Dark pages are near-black, where the same
+// .32 leaves the sheet floating in the page value — keep .55 there.
+.cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
   background: rgba(0, 0, 0, 0.55);
 }
 
@@ -273,6 +278,17 @@ html[data-theme="dark"] .cdk-overlay-backdrop {
 
     .mat-mdc-dialog-surface {
       border-radius: 0 !important;
+    }
+
+    // The Cancel/Save row is the sheet's footer, not two buttons floating on
+    // the content: hairline divider, the sheet's own surface, and bottom
+    // padding that clears the home-indicator inset.
+    .mat-mdc-dialog-actions {
+      border-top: 1px solid var(--color-border);
+      // The sheet's own surface (not the raw token: M3's dark dialog tone is
+      // re-emitted after the token override, and a mismatch would show a band).
+      background: var(--mat-dialog-container-color, var(--color-surface));
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
     }
   }
 }
@@ -469,9 +485,14 @@ select:-webkit-autofill:focus {
 
 /* Printed pages are content sheets: the app toolbar is screen chrome only. */
 @media print {
-  // The printable sheet owns the page box padding (14mm on .song-sheet), so
-  // @page must contribute no margin or real paper stacks two of them.
+  // Every route prints inside a sane page box. The song sheet opts into the
+  // named `song` page below, so only it loses the margin (its own 14mm padding
+  // stays the single gutter owner); other routes keep this 14mm default.
   @page {
+    margin: 14mm;
+  }
+
+  @page song {
     margin: 0;
   }
 
@@ -480,10 +501,40 @@ select:-webkit-autofill:focus {
     display: none !important;
   }
 
+  // Screen-only chrome never reaches paper.
+  .pending-banner,
+  .app-skip-link {
+    display: none !important;
+  }
+
   // The emulated print capture has no @page margin, so the page ground itself
   // must be white or the sheet prints on gray.
   body {
     background: #fff !important;
+  }
+
+  // Print is ink on paper. A dark page keeps its light ink tokens while the
+  // grounds are forced to #fff, which prints white-on-white; re-declare the
+  // light values (mirroring the :root block) for paper.
+  html[data-theme="dark"] {
+    --color-app-bg: #F3F4F6;
+    --color-surface: #FFFFFF;
+    --color-surface-muted: #EBEDF0;
+    --color-ink: #232A32;
+    --color-control-strong: #232A32;
+    --color-control-strong-hover: #313942;
+    --color-ink-2: #5B6470;
+    --color-ink-3: #8A919C;
+    --color-brand-primary: #2D5A27;
+    --color-brand-primary-hover: #3A7033;
+    --color-brand-primary-dark: #245020;
+    --color-brand-success: #2D5A27;
+    --color-brand-success-dark: #245020;
+    --color-accent: #A8762D;
+    --color-accent-strong: #9C6B26;
+    --color-error: #B3261E;
+    --color-border: #E1E4E8;
+    --color-link: #245020;
   }
 }
 

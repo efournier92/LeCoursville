@@ -124,18 +124,10 @@ export class SongsListComponent implements OnInit, OnDestroy {
       })
       .filter(entry => entry.text.length > 0);
 
-    // A leading chord-only line is sheet notation, not a lyric. When the first
-    // two lines are both chords, skip every chord line and take the first two
-    // lyric lines instead.
-    const firstLyric = candidates.findIndex(entry => !entry.chordOnly);
-    if (firstLyric === -1) {
-      return '';
-    }
-    const pool =
-      firstLyric >= 2
-        ? candidates.filter(entry => !entry.chordOnly)
-        : candidates.slice(firstLyric);
-    return pool.slice(0, 2).map(entry => entry.text).join('\n');
+    // Every chord-only line is sheet notation, not a lyric, so none of them
+    // enters the preview pool — only the first two lyric lines are shown.
+    const lyrics = candidates.filter(entry => !entry.chordOnly);
+    return lyrics.slice(0, 2).map(entry => entry.text).join('\n');
   }
 
   private matches(song: Song, needle: string): boolean {

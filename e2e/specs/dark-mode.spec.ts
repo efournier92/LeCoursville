@@ -143,6 +143,23 @@ test('toggle writes theme to RTDB', async ({ page }) => {
     .toBe('dark');
 });
 
+test('light dialog scrim separates the sheet from the pale page', async ({ page }) => {
+  await login(page, 'admin');
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+  await page.goto('/admin/songs');
+  await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+  await page.getByTestId('admin-add-song').click();
+  await page.getByTestId('admin-paste-input').fill('Title: E2E Light Scrim\n\nA lyric line');
+  await page.getByTestId('admin-parse-button').click();
+  await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+  await expect(page.locator('.cdk-overlay-backdrop')).toHaveCSS(
+    'background-color',
+    'rgba(0, 0, 0, 0.45)',
+  );
+  await page.getByTestId('draft-cancel').click();
+  await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+});
+
 test('dark dialog scrim separates the sheet from the dark page', async ({ page }) => {
   try {
     await login(page, 'admin');
