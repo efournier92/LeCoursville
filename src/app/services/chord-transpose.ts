@@ -82,6 +82,55 @@ function pushTextRun(out: SongSegment[], text: string, chordLine: boolean): void
   }
 }
 
+/** One display line of the derived chord-over presentation. */
+export interface ChordOverLine {
+  text: string;
+  kind: 'chord-line' | 'lyric' | 'plain';
+}
+
+/**
+ * Derives the chord-over presentation from a bracket-inline body. Bracket lines
+ * expand into a chord line above their lyric line; every other line is kept as
+ * a verbatim chord line or plain text.
+ */
+export function layoutChordOver(body: string): ChordOverLine[] {
+  const out: ChordOverLine[] = [];
+  for (const rawLine of body.split('\n')) {
+    const pattern = new RegExp(BRACKET_CHORD.source, 'g');
+    const matches = Array.from(rawLine.matchAll(pattern));
+    if (matches.length === 0) {
+      const tokens = rawLine.split(/\s+/).filter(Boolean);
+      const chordLine = tokens.length > 0 && tokens.every(isChordToken);
+      out.push({ text: rawLine, kind: chordLine ? 'chord-line' : 'plain' });
+      continue;
+    }
+
+    let lyric = '';
+    let chordLine = '';
+    let cursor = 0;
+    for (const match of matches) {
+      lyric += rawLine.slice(cursor, match.index);
+      const column = lyric.length;
+      if (chordLine.length > column) {
+        chordLine += ' ';
+      }
+      while (chordLine.length < column) {
+        chordLine += ' ';
+      }
+      chordLine += match[1];
+      cursor = match.index + match[0].length;
+    }
+    lyric += rawLine.slice(cursor);
+
+    const trimmed = chordLine.replace(/ +$/, '');
+    if (trimmed) {
+      out.push({ text: trimmed, kind: 'chord-line' });
+    }
+    out.push({ text: lyric, kind: 'lyric' });
+  }
+  return out;
+}
+
 /**
  * Splits a song body into lines of segments for safe interpolation rendering.
  * Bracket chords become `chord` segments (brackets kept verbatim); a line whose

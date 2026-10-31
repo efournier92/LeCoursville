@@ -184,6 +184,32 @@
   }
 }
 
+.song-body-chord-over {
+  display: none;
+}
+
+@media (min-width: 601px) {
+  .song-body-inline {
+    display: none;
+  }
+
+  .song-body-chord-over {
+    display: block;
+    white-space: pre;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .song-body-inline {
+    display: block;
+  }
+
+  .song-body-chord-over {
+    display: none;
+  }
+}
+
 .song-back {
   display: inline-flex;
   align-items: center;
@@ -331,5 +357,14 @@
       color: inherit;
       font-weight: 600;
     }
+  }
+
+  .song-body-inline {
+    display: none !important;
+  }
+
+  .song-body-chord-over {
+    display: block !important;
+    white-space: pre-wrap;
   }
 }

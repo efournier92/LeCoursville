@@ -224,6 +224,7 @@ No `ApprovedGuardService`: lyrics are not PII; this matches chat (`app-routing.m
 - Body: `<pre class="song-body">{{ song.body }}</pre>`. The class sets `font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;` and `white-space: pre-wrap; word-break: normal;`. Rendering is interpolation only; never `[innerHTML]` (deliberate divergence from `expression-view.component.html:8`).
 - Transpose controls, rendered only when `hasBracketChords(song.body)`: `-` and `+` icon buttons, current offset badge (`+2`, `-3`, hidden at 0), and `Reset`. Offset clamps to `-11..+11`. The rendered body is `transposeBody(song.body, offset)`. Transposition never calls the service; reload shows the stored body.
 - Print: in `@media print` the navbar, toolbar actions, and transpose controls are hidden (`display: none`), the body block spans full width, and the page prints title plus leaders plus body. Verified in e2e via `page.emulateMedia({ media: 'print' })`.
+- Presentation, 2026-10-31 amendment: bracket-inline authoring (`[G]Amazing grace`) stays the canonical format and the stored body is unchanged. On screens 601px or wider, and in print, the detail page derives a chord line above each lyric line from those brackets. On screens 600px or narrower it shows the inline `[G]` view. Chord-over input (chords on their own lines, no brackets) renders verbatim in every view.
 
 ### Admin page (`/admin/songs`)
 

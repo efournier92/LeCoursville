@@ -1,5 +1,6 @@
 import {
   hasBracketChords,
+  layoutChordOver,
   segmentSongBody,
   transposeBody,
   transposeKeyName,
@@ -74,6 +75,38 @@ describe('chord-transpose', () => {
     expect(lines[4].segments).toEqual([
       { text: '[Bb/D]', kind: 'chord' },
       { text: 'Ends', kind: 'text' },
+    ]);
+  });
+
+  it('derives a chord line above its lyric line at the right columns (44)', () => {
+    const lines = layoutChordOver('[G]Amazing grace [D]how sweet');
+
+    expect(lines).toEqual([
+      { text: 'G' + ' '.repeat(13) + 'D', kind: 'chord-line' },
+      { text: 'Amazing grace how sweet', kind: 'lyric' },
+    ]);
+    expect(lines.map(line => line.text).join('\n')).not.toMatch(/[[\]]/);
+  });
+
+  it('leaves chord-over input verbatim on its own lines (45)', () => {
+    const body = 'A          D\nBlessed be the name\nA          E\nBlessed be the name';
+    const lines = layoutChordOver(body);
+
+    expect(lines).toEqual([
+      { text: 'A          D', kind: 'chord-line' },
+      { text: 'Blessed be the name', kind: 'plain' },
+      { text: 'A          E', kind: 'chord-line' },
+      { text: 'Blessed be the name', kind: 'plain' },
+    ]);
+  });
+
+  it('keeps plain and empty lines and preserves empty lines (46)', () => {
+    const lines = layoutChordOver('Hello world\n\n[Verse] note');
+
+    expect(lines).toEqual([
+      { text: 'Hello world', kind: 'plain' },
+      { text: '', kind: 'plain' },
+      { text: '[Verse] note', kind: 'plain' },
     ]);
   });
 });

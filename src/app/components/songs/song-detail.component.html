@@ -112,7 +112,10 @@
         </div>
       }
 
-      <pre class="song-body" data-testid="song-body">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {<span [class]="segment.kind">{{ segment.text }}</span>}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+      <div class="song-body-wrap" data-testid="song-body">
+        <pre class="song-body song-body-inline" data-testid="song-body-inline">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {<span [class]="segment.kind">{{ segment.text }}</span>}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+        <pre class="song-body song-body-chord-over" data-testid="song-body-chord-over">@for (line of chordOverLines; track $index; let isLastLine = $last) {<span [class]="line.kind">{{ line.text }}</span>@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+      </div>
     </article>
   }
 </div>

@@ -4,7 +4,15 @@ import { Subscription } from 'rxjs';
 import { Song } from 'src/app/models/song';
 import { Person } from 'src/app/models/person';
 import { PeopleService } from 'src/app/services/people.service';
-import { hasBracketChords, segmentSongBody, SongLine, transposeBody, transposeKeyName } from 'src/app/services/chord-transpose';
+import {
+  ChordOverLine,
+  hasBracketChords,
+  layoutChordOver,
+  segmentSongBody,
+  SongLine,
+  transposeBody,
+  transposeKeyName,
+} from 'src/app/services/chord-transpose';
 import { SongsService } from 'src/app/services/songs.service';
 
 @Component({
@@ -53,6 +61,11 @@ export class SongDetailComponent implements OnInit, OnDestroy {
   /** Same transposed body, split for span rendering; never injected as HTML. */
   get bodyLines(): SongLine[] {
     return segmentSongBody(this.displayBody);
+  }
+
+  /** Derived chord-over lines shown on wide screens and in print. */
+  get chordOverLines(): ChordOverLine[] {
+    return layoutChordOver(this.displayBody);
   }
 
   /** Empty at 0 so the badge disappears while its live region stays mounted. */

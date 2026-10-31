@@ -307,19 +307,37 @@ test.describe('songs', () => {
 
   test('10. the detail body is monospace and preserves stored newlines', async ({ page }) => {
     const stored = (await readDb<Record<string, any>>('songs/song-a'))!;
+    await page.setViewportSize({ width: 1280, height: 900 });
     await openSong(page, 'song-a');
-    const body = page.getByTestId('song-body');
-    const fontFamily = await body.evaluate(el => getComputedStyle(el).fontFamily);
+    const inline = page.getByTestId('song-body-inline');
+    const chordOver = page.getByTestId('song-body-chord-over');
+
+    // Desktop derives the chord-over view and hides the inline brackets.
+    await expect(chordOver).toBeVisible();
+    await expect(inline).toBeHidden();
+    const fontFamily = await inline.evaluate(el => getComputedStyle(el).fontFamily);
     expect(fontFamily).toMatch(/monospace/i);
     // Segmented spans must not change a single byte of the rendered body.
-    expect(await body.textContent()).toBe(stored.body);
-    await expect(body.locator('.chord').first()).toBeVisible();
+    expect(await inline.textContent()).toBe(stored.body);
+    await expect(inline.locator('.chord').first()).toBeAttached();
+
+    // The chord line sits above its lyric and never carries brackets.
+    await expect(chordOver.locator('.chord-line').first()).toHaveText('G');
+    const lines = (await chordOver.textContent())!.split('\n');
+    expect(lines[0]).toBe('G');
+    expect(lines[1]).toBe('Amazing grace how sweet the sound');
+    expect(lines.join('\n')).not.toMatch(/[[\]]/);
+
+    // Phones keep the inline bracket view.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(inline).toBeVisible();
+    await expect(chordOver).toBeHidden();
   });
 
   test('10b. the body scales to 1.2rem on desktop and 0.95rem on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await openSong(page, 'song-a');
-    const body = page.getByTestId('song-body');
+    const body = page.getByTestId('song-body-inline');
     await expectCssNumber(body, 'font-size', 19.2, 0);
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -353,9 +371,12 @@ test.describe('songs', () => {
   test('11. + transposes G to G# and shows the +1 badge', async ({ page }) => {
     await openSong(page, 'song-a');
     await expect(page.locator('.transpose-label')).toHaveText('Transpose');
-    await expect(page.getByTestId('song-body')).toContainText('[G]Amazing grace');
+    await expect(page.getByTestId('song-body-inline')).toContainText('[G]Amazing grace');
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body')).toContainText('[G#]Amazing grace');
+    await expect(page.getByTestId('song-body-inline')).toContainText('[G#]Amazing grace');
+    await expect(page.getByTestId('song-body-chord-over').locator('.chord-line').first()).toHaveText('G#');
+    await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
+    await expect(page.getByTestId('song-body-chord-over')).not.toContainText(']');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+1');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G → G#');
     // The visible badge stays "+1"; the live region carries the sentence.
@@ -386,7 +407,9 @@ test.describe('songs', () => {
     await openSong(page, 'song-a');
     await page.getByTestId('transpose-up').click();
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body')).toContainText('[C]I once was lost');
+    await expect(page.getByTestId('song-body-inline')).toContainText('[C]I once was lost');
+    await expect(page.getByTestId('song-body-chord-over')).toContainText('C');
+    await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+2');
     await expect(page.getByTestId('transpose-announcement')).toHaveText(
       'Transposed up 2 semitones; key G → A',
@@ -403,7 +426,7 @@ test.describe('songs', () => {
     await expect(page.getByTestId('transpose-offset')).toHaveText('');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G');
     await expect(page.getByTestId('transpose-announcement')).toHaveText('Transpose reset; key G');
-    expect(await page.getByTestId('song-body').textContent()).toBe(stored.body);
+    expect(await page.getByTestId('song-body-inline').textContent()).toBe(stored.body);
 
     // Down spells flats, and the announcement names the direction and keys.
     await page.getByTestId('transpose-down').click();
@@ -417,19 +440,26 @@ test.describe('songs', () => {
     const stored = (await readDb<Record<string, any>>('songs/song-b'))!;
     await openSong(page, 'song-b');
     await expect(page.getByTestId('transpose-controls')).toHaveCount(0);
-    // Bare chord-over lines are segmented too, still byte-identical.
-    await expect(page.locator('.song-body .chord-line').first()).toBeVisible();
-    expect(await page.getByTestId('song-body').textContent()).toBe(stored.body);
+    // Bare chord-over input renders verbatim: chord lines stay above lyrics.
+    const chordOver = page.getByTestId('song-body-chord-over');
+    await expect(chordOver.locator('.chord-line').first()).toHaveText('A          D');
+    await expect(chordOver.locator('.chord-line').first()).toBeVisible();
+    await expect(chordOver).not.toContainText('[');
+    await expect(chordOver).not.toContainText(']');
+    // The inline view keeps the stored bytes, braces and all.
+    expect(await page.getByTestId('song-body-inline').textContent()).toBe(stored.body);
   });
 
   test('15. a reload shows the untransposed stored body', async ({ page }) => {
     await openSong(page, 'song-a');
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body')).toContainText('[G#]Amazing grace');
+    await expect(page.getByTestId('song-body-inline')).toContainText('[G#]Amazing grace');
 
     await page.reload();
-    await expect(page.getByTestId('song-body')).toContainText('[G]Amazing grace');
-    await expect(page.getByTestId('song-body')).not.toContainText('[G#]');
+    await expect(page.getByTestId('song-body-inline')).toContainText('[G]Amazing grace');
+    await expect(page.getByTestId('song-body-inline')).not.toContainText('[G#]');
+    await expect(page.getByTestId('song-body-chord-over').locator('.chord-line').first()).toHaveText('G');
+    await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
     await expect(page.getByTestId('transpose-offset')).toHaveText('');
   });
 
@@ -439,7 +469,9 @@ test.describe('songs', () => {
     await expect(page.locator('mat-toolbar').first()).toBeHidden();
     await expect(page.getByTestId('transpose-controls')).toBeHidden();
     await expect(page.getByTestId('song-title')).toBeVisible();
-    await expect(page.getByTestId('song-body')).toBeVisible();
+    await expect(page.getByTestId('song-body-chord-over')).toBeVisible();
+    await expect(page.getByTestId('song-body-inline')).toBeHidden();
+    await expect(page.getByTestId('song-body-chord-over')).toContainText('Amazing grace how sweet the sound');
 
     // The sheet prints on the page ground, not as a rounded card over gray.
     const print = await page.evaluate(() => {
@@ -548,7 +580,7 @@ test.describe('songs', () => {
         ink: getComputedStyle(document.documentElement).getPropertyValue('--color-ink').trim(),
         colorScheme: getComputedStyle(document.documentElement).colorScheme,
         title: getComputedStyle(document.querySelector('.song-title')!).color,
-        body: getComputedStyle(document.querySelector('[data-testid="song-body"]')!).color,
+        body: getComputedStyle(document.querySelector('[data-testid="song-body-chord-over"]')!).color,
         meta: getComputedStyle(document.querySelector('[data-testid="song-key"]')!).color,
         ground: getComputedStyle(document.body).backgroundColor,
       }));
