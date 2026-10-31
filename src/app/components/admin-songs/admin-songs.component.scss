@@ -1,0 +1,78 @@
+@use 'src/app/styles/admin-data' as *;
+@use 'src/app/styles/admin-forms' as *;
+
+.admin-songs-page {
+  padding-bottom: 24px;
+}
+
+.songs-filter-field {
+  width: 100%;
+}
+
+.add-song-card {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.paste-field {
+  width: 100%;
+}
+
+.add-song-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.file-import {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.file-import-label {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.songs-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.song-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.leader-chip {
+  display: inline-flex;
+  align-items: center;
+  margin: 2px 4px 2px 0;
+  padding: 0 10px;
+  min-height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-ink-2);
+  font-size: 0.8rem;
+}
+
+.admin-empty {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .admin-songs-page {
+    padding-bottom: 16px;
+  }
+
+  .song-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}

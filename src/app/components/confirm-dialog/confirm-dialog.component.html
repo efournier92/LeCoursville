@@ -9,6 +9,7 @@
   <button
     mat-flat-button
     [color]="data.destructive ? 'warn' : 'primary'"
+    [attr.data-testid]="data.confirmTestId"
     (click)="onConfirm()"
   >
     {{ data.confirmLabel || 'Delete' }}

@@ -1,0 +1,119 @@
+@use 'src/app/styles/admin-data' as *;
+
+.draft-field {
+  width: 100%;
+}
+
+.draft-row {
+  display: flex;
+  gap: 12px;
+}
+
+.draft-row .draft-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.draft-key-field {
+  flex: 0 0 140px;
+}
+
+.draft-body-input {
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.draft-body-field textarea {
+  min-height: 200px;
+}
+
+.draft-unmatched {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--color-warning, #b26a00);
+  border-radius: var(--radius-sm);
+  background: rgba(178, 106, 0, 0.08);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+}
+
+.draft-section-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.draft-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.draft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 4px 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+
+  .chip-remove {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    --mat-icon-button-state-layer-size: 40px;
+  }
+}
+
+.draft-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.draft-option {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-brand-primary-hover);
+  }
+
+  &.selected {
+    border-color: var(--color-brand-primary);
+    background: color-mix(in srgb, var(--color-brand-primary) 12%, var(--color-surface));
+  }
+}
+
+.draft-error {
+  margin: 12px 0 0;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 600px) {
+  .draft-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .draft-key-field {
+    flex: 1 1 auto;
+  }
+}

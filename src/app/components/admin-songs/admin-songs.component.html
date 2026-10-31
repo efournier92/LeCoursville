@@ -1,0 +1,161 @@
+<div class="admin-page admin-songs-page">
+  <app-page-toolbar title="Songs">
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      data-testid="admin-add-song"
+      (click)="toggleAddPanel()"
+      >
+      <mat-icon aria-hidden="true">{{ showAddPanel ? 'close' : 'add' }}</mat-icon>
+      {{ showAddPanel ? 'Close' : 'Add Song' }}
+    </button>
+  </app-page-toolbar>
+
+  <app-admin-filter-bar>
+    <mat-form-field class="songs-filter-field" admin-filter-search>
+      <mat-label>Search songs</mat-label>
+      <input
+        matInput
+        type="search"
+        aria-label="Search songs"
+        data-testid="admin-songs-search"
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchInput($event)"
+        />
+      @if (searchTerm) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear search"
+          (click)="onSearchInput('')"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </app-admin-filter-bar>
+
+  @if (actionError) {
+    <div class="admin-error" role="alert">{{ actionError }}</div>
+  }
+
+  @if (showAddPanel) {
+    <mat-card class="admin-surface add-song-card">
+      <mat-card-content>
+        <h2 class="admin-card-title">Add a song</h2>
+        <mat-form-field class="admin-upload-input paste-field">
+          <mat-label>Song text</mat-label>
+          <textarea
+            matInput
+            rows="6"
+            data-testid="admin-paste-input"
+            [(ngModel)]="pasteText"
+            placeholder="Paste lyrics, optionally with Title:, Source:, Key:, and Leader: header lines."
+            ></textarea>
+        </mat-form-field>
+        <div class="add-song-actions">
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            data-testid="admin-parse-button"
+            [disabled]="!pasteText.trim()"
+            (click)="onParse()"
+            >
+            Parse
+          </button>
+          <span class="admin-muted">Parse the pasted text into an editable draft.</span>
+        </div>
+        <div class="file-import">
+          <label class="file-import-label" for="admin-song-file">Import .txt files</label>
+          <input
+            id="admin-song-file"
+            type="file"
+            accept=".txt"
+            multiple
+            data-testid="admin-file-input"
+            (change)="onFilesPicked($event)"
+            />
+          <p class="admin-muted">Each file opens an editable draft. Files are never uploaded or kept.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (status === 'loading') {
+    <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading songs">
+      @for (i of skeletonIterations; track i) {
+        <div></div>
+      }
+    </div>
+  }
+
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load songs." (retry)="loadSongs()"></app-load-error>
+  }
+
+  @if (status === 'ready') {
+    @if (songs.length === 0) {
+      <div class="admin-empty" data-testid="admin-songs-empty">
+        <p class="admin-card-title">No songs yet</p>
+        <p class="admin-muted">Use Add Song to paste lyrics or import .txt files.</p>
+      </div>
+    } @else if (filteredSongs.length === 0) {
+      <app-no-results-message [searchTerm]="activeQuery" noun="songs"></app-no-results-message>
+    } @else {
+      <mat-card class="admin-surface songs-table-card">
+        <table class="admin-table" data-testid="admin-songs-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Source</th>
+              <th>Key</th>
+              <th>Leaders</th>
+              <th>Updated</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (song of filteredSongs; track song.id) {
+              <tr data-testid="admin-song-row">
+                <td data-label="Title">{{ song.title }}</td>
+                <td data-label="Source">{{ song.source || '—' }}</td>
+                <td data-label="Key">{{ song.musicalKey || '—' }}</td>
+                <td data-label="Leaders">
+                  @for (leaderId of song.leaderIds; track leaderId) {
+                    <span class="leader-chip">{{ leaderLabel(leaderId) }}</span>
+                  } @empty {
+                    <span class="admin-muted">—</span>
+                  }
+                </td>
+                <td data-label="Updated">{{ formatUpdated(song.updatedAt) }}</td>
+                <td data-label="" class="song-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    data-testid="admin-edit-song"
+                    [attr.aria-label]="'Edit ' + song.title"
+                    (click)="onEdit(song)"
+                    >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    type="button"
+                    data-testid="admin-delete-song"
+                    [attr.aria-label]="'Delete ' + song.title"
+                    (click)="onDelete(song)"
+                    >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </mat-card>
+    }
+  }
+</div>

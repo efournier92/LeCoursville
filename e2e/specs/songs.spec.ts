@@ -1,6 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
-import { readDb, writeDb } from '../helpers/admin-db';
+import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 
 const TITLES = ['Amazing Grace', 'Blessed Be the Name', 'Come Thou Fount', 'Noël'];
 
@@ -18,6 +18,7 @@ async function openSong(page, id: string) {
 }
 
 test.describe('songs', () => {
+  test.describe('member', () => {
   test.beforeEach(async ({ page }) => {
     await login(page, 'user');
   });
@@ -164,5 +165,232 @@ test.describe('songs', () => {
     } finally {
       await writeDb('features/songs/enabled', true);
     }
+  });
+  });
+
+  test.describe('admin', () => {
+    test.beforeEach(async ({ page }) => {
+      await login(page, 'admin');
+    });
+
+    function headerText(title: string): string {
+      return [
+        `Title: ${title}`,
+        'Source: E2E Hymnal',
+        'Key: D',
+        'Leader: Alice',
+        'Leader: Mallory',
+        '',
+        '[D]First line of the song',
+        'Second line',
+      ].join('\n');
+    }
+
+    async function storedSongByTitle(title: string): Promise<[string, Record<string, any>] | undefined> {
+      const songs = (await readDb<Record<string, any>>('songs')) ?? {};
+      return Object.entries(songs).find(([, song]) => song.title === title);
+    }
+
+    async function openAddPanel(page) {
+      await page.goto('/admin/songs');
+      await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+      await page.getByTestId('admin-add-song').click();
+      await expect(page.getByTestId('admin-paste-input')).toBeVisible();
+    }
+
+    test('18. paste flow parses a header block, flags an unmatched leader, and saves', async ({ page }) => {
+      const title = `E2E Paste ${Date.now()}`;
+      let createdId: string | null = null;
+      try {
+        await openAddPanel(page);
+        await page.getByTestId('admin-paste-input').fill(headerText(title));
+        await expect(page.getByTestId('admin-parse-button')).toBeEnabled();
+        await page.getByTestId('admin-parse-button').click();
+
+        const dialog = page.getByTestId('song-draft-dialog');
+        await expect(dialog).toBeVisible();
+        await expect(page.getByTestId('draft-title')).toHaveValue(title);
+        await expect(page.getByTestId('draft-source')).toHaveValue('E2E Hymnal');
+        await expect(page.getByTestId('draft-key')).toHaveValue('D');
+        await expect(page.getByTestId('draft-body')).toHaveValue('[D]First line of the song\nSecond line');
+        await expect(page.getByTestId('draft-unmatched')).toContainText('Mallory');
+        await expect(page.getByTestId('draft-leader-chip')).toHaveCount(1);
+
+        await page.getByTestId('draft-leader-search').fill('Ben');
+        await page.getByTestId('draft-leader-option').filter({ hasText: 'Ben' }).click();
+        await expect(page.getByTestId('draft-leader-chip')).toHaveCount(2);
+        await page.getByTestId('draft-save').click();
+        await expect(dialog).toHaveCount(0);
+
+        const entry = await storedSongByTitle(title);
+        expect(entry).toBeTruthy();
+        createdId = entry![0];
+        expect(entry![1]).toMatchObject({
+          title,
+          source: 'E2E Hymnal',
+          musicalKey: 'D',
+          leaderIds: ['person-a', 'person-b'],
+        });
+
+        await page.goto('/songs');
+        await expect(page.getByTestId('song-card').filter({ hasText: title })).toBeVisible();
+        await page.reload();
+        const card = page.getByTestId('song-card').filter({ hasText: title });
+        await expect(card).toBeVisible();
+        await expect(card.getByTestId('leader-chip')).toHaveText(['Alice', 'Ben']);
+      } finally {
+        if (createdId) {
+          await deleteDb(`songs/${createdId}`);
+        }
+      }
+    });
+
+    test('19. a .txt upload opens the identical draft and saves the same fields', async ({ page }) => {
+      const title = `E2E File ${Date.now()}`;
+      let createdId: string | null = null;
+      try {
+        await openAddPanel(page);
+        await page.getByTestId('admin-file-input').setInputFiles({
+          name: 'e2e-song.txt',
+          mimeType: 'text/plain',
+          buffer: Buffer.from(headerText(title)),
+        });
+
+        const dialog = page.getByTestId('song-draft-dialog');
+        await expect(dialog).toBeVisible();
+        await expect(page.getByTestId('draft-title')).toHaveValue(title);
+        await expect(page.getByTestId('draft-source')).toHaveValue('E2E Hymnal');
+        await expect(page.getByTestId('draft-key')).toHaveValue('D');
+        await expect(page.getByTestId('draft-body')).toHaveValue('[D]First line of the song\nSecond line');
+        await expect(page.getByTestId('draft-unmatched')).toContainText('Mallory');
+        await page.getByTestId('draft-save').click();
+        await expect(dialog).toHaveCount(0);
+
+        const entry = await storedSongByTitle(title);
+        expect(entry).toBeTruthy();
+        createdId = entry![0];
+        expect(entry![1]).toMatchObject({
+          title,
+          source: 'E2E Hymnal',
+          musicalKey: 'D',
+          body: '[D]First line of the song\nSecond line',
+          leaderIds: ['person-a'],
+        });
+
+        await page.goto('/songs');
+        await expect(page.getByTestId('song-card').filter({ hasText: title })).toBeVisible();
+        await page.reload();
+        await expect(page.getByTestId('song-card').filter({ hasText: title })).toBeVisible();
+      } finally {
+        if (createdId) {
+          await deleteDb(`songs/${createdId}`);
+        }
+      }
+    });
+
+    test('20. a header-less file takes the first non-empty line as title and the rest as body', async ({ page }) => {
+      const title = `E2E Headerless ${Date.now()}`;
+      let createdId: string | null = null;
+      try {
+        await openAddPanel(page);
+        await page.getByTestId('admin-file-input').setInputFiles({
+          name: 'headerless.txt',
+          mimeType: 'text/plain',
+          buffer: Buffer.from(`${title}\nLine one\nLine two`),
+        });
+
+        await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+        await expect(page.getByTestId('draft-title')).toHaveValue(title);
+        await expect(page.getByTestId('draft-body')).toHaveValue('Line one\nLine two');
+        await page.getByTestId('draft-save').click();
+        await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+
+        const entry = await storedSongByTitle(title);
+        expect(entry).toBeTruthy();
+        createdId = entry![0];
+        expect(entry![1]).toMatchObject({ title, body: 'Line one\nLine two' });
+
+        await page.goto('/songs');
+        await page.reload();
+        await expect(page.getByTestId('song-title').filter({ hasText: title })).toBeVisible();
+      } finally {
+        if (createdId) {
+          await deleteDb(`songs/${createdId}`);
+        }
+      }
+    });
+
+    test('21. saving with a cleared title is blocked with the exact message', async ({ page }) => {
+      await openAddPanel(page);
+      await page.getByTestId('admin-paste-input').fill('Title: E2E Validation\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      await page.getByTestId('draft-title').fill('');
+      await page.getByTestId('draft-save').click();
+      await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Title is required.');
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      await page.getByTestId('draft-cancel').click();
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+      expect(await storedSongByTitle('E2E Validation')).toBeUndefined();
+    });
+
+    test('22. editing a published song updates the member detail after reload', async ({ page }) => {
+      const original = await readDb<Record<string, any>>('songs/song-c');
+      expect(original).toBeTruthy();
+      const newTitle = `Come Thou Fount (E2E) ${Date.now()}`;
+      try {
+        await page.goto('/admin/songs');
+        const row = page.getByTestId('admin-song-row').filter({ hasText: 'Come Thou Fount' });
+        await expect(row).toBeVisible();
+        await row.getByTestId('admin-edit-song').click();
+
+        await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+        await expect(page.getByTestId('draft-title')).toHaveValue('Come Thou Fount');
+        await page.getByTestId('draft-title').fill(newTitle);
+        await page.getByTestId('draft-key').fill('Eb');
+        await page.getByTestId('draft-save').click();
+        await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+
+        const stored = (await readDb<Record<string, any>>('songs/song-c'))!;
+        expect(stored.title).toBe(newTitle);
+        expect(stored.musicalKey).toBe('Eb');
+
+        await page.goto('/songs/song-c');
+        await expect(page.getByTestId('song-title')).toHaveText(newTitle);
+        await expect(page.getByTestId('song-key')).toHaveText('Key: Eb');
+        await page.reload();
+        await expect(page.getByTestId('song-title')).toHaveText(newTitle);
+        await expect(page.getByTestId('song-key')).toHaveText('Key: Eb');
+      } finally {
+        await writeDb('songs/song-c', original);
+      }
+    });
+
+    test('23. delete confirmation names the song and removes it from both lists', async ({ page }) => {
+      const original = await readDb<Record<string, any>>('songs/song-d');
+      expect(original).toBeTruthy();
+      try {
+        await page.goto('/admin/songs');
+        const row = page.getByTestId('admin-song-row').filter({ hasText: 'Noël' });
+        await expect(row).toBeVisible();
+        await row.getByTestId('admin-delete-song').click();
+
+        const confirm = page.getByRole('dialog').filter({ hasText: 'Delete song?' });
+        await expect(confirm).toContainText('Delete Noël? This cannot be undone.');
+        await confirm.getByTestId('admin-delete-confirm').click();
+        await expect(row).toHaveCount(0);
+        expect(await readDb('songs/song-d')).toBeNull();
+
+        await page.goto('/songs');
+        await expect(page.getByTestId('song-title').filter({ hasText: 'Noël' })).toHaveCount(0);
+        await page.reload();
+        await expect(page.getByTestId('song-title').filter({ hasText: 'Noël' })).toHaveCount(0);
+        expect(await readDb('songs/song-d')).toBeNull();
+      } finally {
+        await writeDb('songs/song-d', original);
+      }
+    });
   });
 });
