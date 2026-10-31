@@ -46,7 +46,10 @@
     <div class="admin-sidebar-backdrop" (click)="closeSidenav()"></div>
   }
 
-  <main class="admin-content" id="admin-content" tabindex="-1">
+  <!-- While the mobile drawer is up, the page behind the scrim is inert: the
+       Tab trap only stops keyboard focus, not a screen reader's touch
+       exploration, which could still reach this content. -->
+  <main class="admin-content" id="admin-content" tabindex="-1" [attr.inert]="sidenavOpen ? '' : null">
     <router-outlet></router-outlet>
   </main>
 </div>

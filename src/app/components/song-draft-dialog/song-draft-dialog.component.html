@@ -21,6 +21,7 @@
       matInput
       data-testid="draft-title"
       maxlength="200"
+      cdkFocusInitial
       [(ngModel)]="title"
       aria-required="true"
       [attr.aria-invalid]="errorField === 'title' ? 'true' : null"

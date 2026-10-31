@@ -12,6 +12,19 @@
   }
 }
 
+// The magnifier is a `matTextPrefix`, which Material drops into its own wrapper
+// outside this component's scope. The default baseline alignment rides the icon
+// ~6px above the input's text line (only visible once a query is typed), so
+// center it on the field's container height the way Material's own icon prefix
+// does.
+.songs-search ::ng-deep .mat-mdc-form-field-text-prefix {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  height: var(--mat-form-field-container-height, 56px);
+  line-height: 0;
+}
+
 .songs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

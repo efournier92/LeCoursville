@@ -131,6 +131,24 @@ describe('AdminComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
   });
 
+  it('makes the page content inert while the drawer is open', () => {
+    fixture.detectChanges();
+    flags$.next({});
+    fixture.detectChanges();
+    const content = fixture.nativeElement.querySelector('#admin-content') as HTMLElement;
+    const routing = TestBed.inject(RoutingService);
+
+    expect(content.hasAttribute('inert')).toBe(false);
+
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(true);
+
+    routing.closeSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
   it('focuses the first nav link when the drawer opens below 992px', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });

@@ -51,6 +51,23 @@ async function expectCssNumber(locator, prop: string, expected: number, precisio
   expect(actual).toBeCloseTo(expected, precision);
 }
 
+// Vertical distance between the search magnifier's center and the input text
+// line's center. The icon is a `matTextPrefix`, which rode ~6px above the
+// value once the field was filled.
+async function searchIconCenterDelta(page, testId: string): Promise<number> {
+  return page.evaluate((id) => {
+    const input = document.querySelector(`[data-testid="${id}"]`) as HTMLInputElement;
+    const icon = input
+      .closest('mat-form-field')!
+      .querySelector('.mat-mdc-form-field-text-prefix mat-icon')!;
+    const inputBox = input.getBoundingClientRect();
+    const iconBox = icon.getBoundingClientRect();
+    return Math.abs(
+      inputBox.top + inputBox.height / 2 - (iconBox.top + iconBox.height / 2),
+    );
+  }, testId);
+}
+
 test.describe('songs', () => {
   test.describe('member', () => {
   test.beforeEach(async ({ page }) => {
@@ -103,6 +120,22 @@ test.describe('songs', () => {
     await expect(page.getByTestId('song-search')).toHaveValue('');
     await expect(page.getByTestId('song-search')).toBeFocused();
     await expect(cards(page)).toHaveCount(4);
+  });
+
+  test('5b. the search icon stays on the input text line empty and filled', async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/songs');
+      await expect(cards(page)).toHaveCount(4);
+      expect(await searchIconCenterDelta(page, 'song-search')).toBeLessThanOrEqual(2);
+
+      await page.getByTestId('song-search').fill('Amazing');
+      await expect(cards(page)).toHaveCount(1);
+      await page.getByTestId('song-search').blur();
+      // The filled field is where the floating label and the value exposed the
+      // icon riding high.
+      expect(await searchIconCenterDelta(page, 'song-search')).toBeLessThanOrEqual(2);
+    }
   });
 
   test('6. a no-match search shows the no-results message with the query', async ({ page }) => {
@@ -908,6 +941,20 @@ test.describe('songs', () => {
       await expect(page.getByTestId('admin-song-row')).toHaveCount(4);
     });
 
+    test('24b. the admin search icon stays on the input text line empty and filled', async ({ page }) => {
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/admin/songs');
+        await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+        expect(await searchIconCenterDelta(page, 'admin-songs-search')).toBeLessThanOrEqual(2);
+
+        await page.getByTestId('admin-songs-search').fill('Amazing');
+        await expect(page.getByTestId('admin-song-row')).toHaveCount(1);
+        await page.getByTestId('admin-songs-search').blur();
+        expect(await searchIconCenterDelta(page, 'admin-songs-search')).toBeLessThanOrEqual(2);
+      }
+    });
+
     test('25. the empty library renders the empty state and the admin CTA', async ({ page }) => {
       const original = await readDb<Record<string, any>>('songs');
       try {
@@ -1142,6 +1189,22 @@ test.describe('songs', () => {
       await page.getByTestId('draft-close').click();
       await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
       expect(await storedSongByTitle('E2E Close kept')).toBeUndefined();
+    });
+
+    test('29c. opening the draft dialog focuses Title, not the mobile close', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openAddPanel(page);
+      await page.getByTestId('admin-paste-input').fill('Title: E2E Focus\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      // The mobile close sits earlier in the DOM; the dialog must land on the
+      // first field instead of the title-row button.
+      await expect(page.getByTestId('draft-title')).toBeFocused();
+      await expect(page.getByTestId('draft-close')).not.toBeFocused();
+
+      await page.getByTestId('draft-cancel').click();
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
     });
 
     for (const width of [320, 390]) {

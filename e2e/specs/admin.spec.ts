@@ -263,6 +263,11 @@ test.describe('admin', () => {
     await toggle.click();
     await expect(nav).toBeVisible();
     await expect(page.getByTestId('admin-nav-link-families')).toBeFocused();
+    // The page behind the scrim is inert, not just Tab-trapped: a screen
+    // reader's touch exploration must not reach the toolbar or the routed page.
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', true);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', true);
+    await expect(nav).toHaveJSProperty('inert', false);
     // The trap now includes the sidebar logo, so one Shift+Tab lands there and
     // the next wraps to the last item.
     await page.keyboard.press('Shift+Tab');
@@ -272,10 +277,14 @@ test.describe('admin', () => {
     await page.keyboard.press('Escape');
     await expect(nav).not.toBeVisible();
     await expect(toggle).toBeFocused();
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', false);
     await toggle.click();
     await page.getByTestId('admin-nav-link-features').click();
     await expect(page).toHaveURL(/\/admin\/features$/);
     await expect(nav).not.toBeVisible();
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', false);
   });
 
   test('photo albums nav follows its feature flag', async ({ page }) => {

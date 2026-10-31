@@ -154,7 +154,10 @@ export class AdminComponent implements OnInit, OnDestroy {
         document.getElementById('admin-sidebar')?.focus();
       }
     } else if (!open && document.activeElement?.closest('.admin-sidebar')) {
-      this.focusMenuToggle();
+      // The toolbar is inert while the drawer is open, and focusing a button
+      // inside an inert subtree is a no-op. Yield a frame so change detection
+      // has cleared the attribute before restoring focus to the toggle.
+      requestAnimationFrame(() => this.focusMenuToggle());
     }
   }
 
