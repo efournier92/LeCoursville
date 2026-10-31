@@ -48,6 +48,14 @@
   }
 }
 
+.leader-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .leader-chip {
   display: inline-flex;
   align-items: center;
@@ -61,7 +69,9 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface-muted);
-  color: var(--color-ink-2);
+  // Same link-colored ink as the member card and detail chips, so a leader
+  // reads as one treatment everywhere (the admin chip is a label, not a link).
+  color: var(--color-link);
   font-size: 0.8rem;
   white-space: nowrap;
 }
@@ -69,6 +79,18 @@
 .admin-empty {
   padding: 32px 16px;
   text-align: center;
+}
+
+// On roomy screens the no-results state sits in the middle of the content
+// area below the toolbar (the member songs list's pattern: min-height plus a
+// flex center). Mobile stays top-aligned and compact.
+@media (min-width: 900px) {
+  .admin-empty-region {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 248px);
+  }
 }
 
 @media (max-width: 600px) {

@@ -257,18 +257,9 @@
     display: none !important;
   }
 
-  // Emulated print captures ignore @page margins, so the sheet owns its own
-  // page box: kill the warm ground, the centered column, and every gutter.
-  .song-detail,
-  .page-ground,
-  .page-content {
-    background: #fff !important;
-    max-width: none !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
+  // The white ground, full width, and zero page gutter are hoisted into the
+  // global print block (they apply to every route). The sheet keeps only its
+  // own horizontal gutter below.
   .song-sheet {
     // Horizontal gutter lives in the element (measurable in print emulation);
     // the vertical gutter is owned by the `song` page box in styles.scss so it

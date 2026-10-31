@@ -144,7 +144,15 @@ export class AdminComponent implements OnInit, OnDestroy {
       // Apply the open class before focusing: a link inside a
       // visibility:hidden drawer cannot take focus.
       this.cdr.detectChanges();
-      document.querySelector<HTMLElement>('[data-testid^="admin-nav-link-"]')?.focus();
+      const firstLink = document.querySelector<HTMLElement>('[data-testid^="admin-nav-link-"]');
+      if (firstLink) {
+        firstLink.focus();
+      } else {
+        // Flags have not emitted yet (skeleton nav, no links): focus the
+        // drawer container so focus never stays on the toggle behind the
+        // open scrim.
+        document.getElementById('admin-sidebar')?.focus();
+      }
     } else if (!open && document.activeElement?.closest('.admin-sidebar')) {
       this.focusMenuToggle();
     }

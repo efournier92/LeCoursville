@@ -1,4 +1,17 @@
-<h2 mat-dialog-title data-testid="song-draft-dialog">{{ data.song ? 'Edit song' : 'Add song' }}</h2>
+<div class="draft-title-row">
+  <h2 mat-dialog-title data-testid="song-draft-dialog">{{ data.song ? 'Edit song' : 'Add song' }}</h2>
+  <button
+    mat-icon-button
+    type="button"
+    class="draft-close"
+    data-testid="draft-close"
+    aria-label="Close"
+    [disabled]="saving"
+    (click)="onCancel()"
+    >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
 
 <mat-dialog-content [attr.aria-busy]="saving">
   <span class="visually-hidden" role="status">{{ saving ? 'Saving…' : '' }}</span>

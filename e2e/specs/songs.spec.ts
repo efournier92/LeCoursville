@@ -1,8 +1,33 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
+import zlib from 'node:zlib';
 
 const TITLES = ['Amazing Grace', 'Blessed Be the Name', 'Come Thou Fount', 'Noël'];
+
+/**
+ * Inflate every FlateDecode stream in a PDF and concatenate its operators, so
+ * a test can assert what the renderer actually painted (colors, fills).
+ */
+function pdfContent(pdf: Buffer): string {
+  const raw = pdf.toString('latin1');
+  const chunks: string[] = [];
+  let index = 0;
+  while (true) {
+    const start = raw.indexOf('stream', index);
+    if (start === -1) break;
+    const bodyStart = raw.indexOf('\n', start) + 1;
+    const end = raw.indexOf('endstream', bodyStart);
+    if (end === -1) break;
+    try {
+      chunks.push(zlib.inflateSync(Buffer.from(raw.slice(bodyStart, end), 'latin1')).toString('latin1'));
+    } catch {
+      // Not a Flate stream (XObject/image/font payload): nothing to inspect.
+    }
+    index = end + 'endstream'.length;
+  }
+  return chunks.join('\n');
+}
 
 function cards(page) {
   return page.getByTestId('song-card');
@@ -223,6 +248,28 @@ test.describe('songs', () => {
     // "Led by" pins to the first chip row instead of floating between rows.
     await expect(page.locator('.song-leaders')).toHaveCSS('align-items', 'flex-start');
     expect(Math.abs(geometry.label.top - geometry.firstChip.top)).toBeLessThanOrEqual(1);
+  });
+
+  test('9d. an unresolved leader prints "Unknown" with the card\'s not-found label', async ({ page }) => {
+    const id = `e2e-orphan-${Date.now()}`;
+    await writeDb(`songs/${id}`, {
+      id,
+      title: 'E2E Orphan Leader',
+      body: 'A lyric line without a known leader',
+      source: null,
+      musicalKey: null,
+      leaderIds: ['missing-person'],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    try {
+      await openSong(page, id);
+      const chip = page.getByTestId('leader-chip');
+      await expect(chip).toHaveText('Unknown');
+      await expect(chip).toHaveAttribute('aria-label', 'Leader not found');
+    } finally {
+      await deleteDb(`songs/${id}`);
+    }
   });
 
   test('10. the detail body is monospace and preserves stored newlines', async ({ page }) => {
@@ -449,7 +496,7 @@ test.describe('songs', () => {
     await expect(page.locator('.app-skip-link')).toBeHidden();
   });
 
-  test('16b. a dark-theme print renders dark ink on white paper', async ({ page }) => {
+  test('16b. a dark-theme print renders dark ink on white paper', async ({ page, browserName }) => {
     const users = (await readDb<Record<string, { email?: string }>>('users')) ?? {};
     const userUid = Object.keys(users).find(id => users[id]?.email === 'user@e2e.local');
     expect(userUid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
@@ -466,6 +513,7 @@ test.describe('songs', () => {
       await page.emulateMedia({ media: 'print' });
       const print = await page.evaluate(() => ({
         ink: getComputedStyle(document.documentElement).getPropertyValue('--color-ink').trim(),
+        colorScheme: getComputedStyle(document.documentElement).colorScheme,
         title: getComputedStyle(document.querySelector('.song-title')!).color,
         body: getComputedStyle(document.querySelector('[data-testid="song-body"]')!).color,
         meta: getComputedStyle(document.querySelector('[data-testid="song-key"]')!).color,
@@ -478,6 +526,20 @@ test.describe('songs', () => {
       expect(print.body).toBe('rgb(35, 42, 50)');
       expect(print.meta).toBe('rgb(91, 100, 112)');
       expect(print.ground).toBe('rgb(255, 255, 255)');
+      // Blink paints the page canvas — the @page margin band — from the
+      // document's color-scheme. Dark would fill every margin with #121212.
+      expect(print.colorScheme).toBe('light');
+
+      // Chromium is the only engine that can emit a PDF. With printBackground
+      // the canvas is painted, so a dark color-scheme shows up as a #121212
+      // fill operator (.0706 .0706 .0706 rg) covering the sheet. Paper margins
+      // are white when that fill is absent and the ground paints white.
+      if (browserName === 'chromium') {
+        const pdf = await page.pdf({ format: 'A4', printBackground: true });
+        const content = pdfContent(pdf);
+        expect(content).not.toMatch(/\.0706\s+\.0706\s+\.0706\s+rg/);
+        expect(content).toMatch(/1\s+1\s+1\s+rg/);
+      }
     } finally {
       await deleteDb(`users/${userUid}/prefs`);
     }
@@ -518,6 +580,31 @@ test.describe('songs', () => {
     }
   });
 
+  test('16d. every route prints on white paper with no second side gutter', async ({ page }) => {
+    await page.goto('/songs');
+    await expect(page.getByTestId('song-card').first()).toBeVisible();
+    await page.emulateMedia({ media: 'print' });
+    const print = await page.evaluate(() => {
+      const ground = document.querySelector('.songs-page')!;
+      return {
+        background: getComputedStyle(ground).backgroundColor,
+        paddingLeft: Number.parseFloat(getComputedStyle(ground).paddingLeft),
+        paddingRight: Number.parseFloat(getComputedStyle(ground).paddingRight),
+        maxWidth: getComputedStyle(ground).maxWidth,
+        width: ground.getBoundingClientRect().width,
+        bodyWidth: document.body.getBoundingClientRect().width,
+      };
+    });
+    // The page ground reset is global now: a non-song route prints white,
+    // full width, and without its screen side padding (the @page box owns the
+    // paper margins, so no route stacks a second gutter).
+    expect(print.background).toBe('rgb(255, 255, 255)');
+    expect(print.paddingLeft).toBe(0);
+    expect(print.paddingRight).toBe(0);
+    expect(print.maxWidth).toBe('none');
+    expect(print.width).toBeGreaterThanOrEqual(print.bodyWidth - 16);
+  });
+
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
     await writeDb('features/songs/enabled', false);
     try {
@@ -528,6 +615,9 @@ test.describe('songs', () => {
       // feature-specific string.
       await expect(page.getByRole('heading', { level: 1, name: 'Feature unavailable' })).toBeVisible();
       await expect(page.locator('.disabled-card .disabled-icon')).toHaveText('power_settings_new');
+      // The disabled page is the route's content: it exposes one main landmark.
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.getByRole('main')).toContainText('Feature Disabled');
     } finally {
       await writeDb('features/songs/enabled', true);
     }
@@ -799,6 +889,19 @@ test.describe('songs', () => {
       await expect(noResults.locator('.no-results-title')).toHaveText('No results');
       await expect(noResults).toContainText('zzz-no-match');
 
+      // Desktop centers the state in the area below the toolbar (the member
+      // songs list's pattern) instead of pinning it under the filter bar.
+      const centered = await page.evaluate(() => {
+        const message = document.querySelector('.no-results-message')!.getBoundingClientRect();
+        const filter = document.querySelector('.admin-filter-bar')!.getBoundingClientRect();
+        const content = document.querySelector('.admin-content')!.getBoundingClientRect();
+        return {
+          messageCenter: message.top + message.height / 2,
+          areaCenter: (filter.bottom + content.bottom) / 2,
+        };
+      });
+      expect(Math.abs(centered.messageCenter - centered.areaCenter)).toBeLessThan(40);
+
       await page.getByRole('button', { name: 'Clear search' }).click();
       await expect(page.getByTestId('admin-songs-search')).toHaveValue('');
       await expect(page.getByTestId('admin-songs-search')).toBeFocused();
@@ -829,6 +932,8 @@ test.describe('songs', () => {
       const pane = page.locator('.cdk-overlay-pane.song-draft-panel');
       // Desktop keeps the centered 640px dialog.
       await expectCssNumber(pane, 'width', 640);
+      // The thumb-sized title-row close is mobile-only.
+      await expect(page.getByTestId('draft-close')).toBeHidden();
 
       // Desktop: the label, the search field, and one option are on first paint.
       await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport();
@@ -851,6 +956,14 @@ test.describe('songs', () => {
         .evaluate(el => el.getBoundingClientRect().bottom);
       expect(Math.abs(surfaceBottom - 844)).toBeLessThanOrEqual(1);
       await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
+      // The title row carries a right-aligned close on phones.
+      const close = page.getByTestId('draft-close');
+      await expect(close).toBeVisible();
+      await expect(close).toBeInViewport({ ratio: 1 });
+      await expect(page.locator('.draft-title-row')).toHaveCSS('display', 'flex');
+      const closeBox = (await close.boundingBox())!;
+      const surface = (await page.locator('.mat-mdc-dialog-surface').boundingBox())!;
+      expect(closeBox.x + closeBox.width / 2).toBeGreaterThan(surface.x + surface.width / 2);
       // The tighter title band and 80px body keep the Leaders search whole on
       // first paint instead of slicing it at the content edge.
       await expectCssNumber(page.getByTestId('draft-body'), 'min-height', 80);
@@ -1018,6 +1131,19 @@ test.describe('songs', () => {
       expect(await storedSongByTitle('E2E Escape kept')).toBeUndefined();
     });
 
+    test('29b. the mobile title-row close discards the draft like Cancel', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openAddPanel(page);
+      await page.getByTestId('admin-paste-input').fill('Title: E2E Close\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      await page.getByTestId('draft-title').fill('E2E Close kept');
+      await page.getByTestId('draft-close').click();
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+      expect(await storedSongByTitle('E2E Close kept')).toBeUndefined();
+    });
+
     for (const width of [320, 390]) {
       test(`30. at ${width}px the toolbar shares one row and the filter bar collapses`, async ({ page }) => {
         await page.setViewportSize({ width, height: 844 });
@@ -1044,10 +1170,12 @@ test.describe('songs', () => {
       await page.goto('/admin/songs');
       await expect(page.getByTestId('admin-songs-table')).toBeVisible();
       const toggle = page.getByTestId('admin-add-song');
-      await expect(toggle).toHaveAttribute('aria-controls', 'add-song-panel');
+      // Collapsed: no dangling reference to a panel that is not in the DOM.
+      await expect(toggle).not.toHaveAttribute('aria-controls', /.+/);
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
       await toggle.click();
       await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(toggle).toHaveAttribute('aria-controls', 'add-song-panel');
       await expect(page.locator('#add-song-panel')).toBeVisible();
 
       // Only the visible Choose .txt files button reaches the picker; the
@@ -1064,7 +1192,44 @@ test.describe('songs', () => {
 
       await toggle.click();
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(toggle).not.toHaveAttribute('aria-controls', /.+/);
       await expect(page.locator('#add-song-panel')).toHaveCount(0);
+    });
+
+    test('32. stacked leader chips align with the value column and use link ink', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/admin/songs');
+      await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+      const row = page.getByTestId('admin-song-row').filter({ hasText: 'Amazing Grace' });
+      const chips = row.locator('td[data-label="Leaders"] .leader-chip');
+      await expect(chips).toHaveText(['Alice Anderson', 'Ben Brown']);
+
+      const geometry = await page.evaluate(() => {
+        const rowEl = document.querySelector('[data-testid="admin-song-row"]')!;
+        const leadersTd = rowEl.querySelector('td[data-label="Leaders"]')!;
+        const chip = leadersTd.querySelector('.leader-chip') as HTMLElement;
+        const titleTd = rowEl.querySelector('td[data-label="Title"]')!;
+        const range = document.createRange();
+        range.selectNodeContents(titleTd);
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--color-link)';
+        document.body.appendChild(probe);
+        const linkToken = getComputedStyle(probe).color;
+        probe.remove();
+        return {
+          chipLeft: chip.getBoundingClientRect().left,
+          valueLeft: range.getBoundingClientRect().left,
+          chipRight: chip.getBoundingClientRect().right,
+          cellRight: leadersTd.getBoundingClientRect().right,
+          chipColor: getComputedStyle(chip).color,
+          linkToken,
+        };
+      });
+      // Same value column as every other stacked row: not the lone full-bleed
+      // outlier, and the chips still wrap inside the cell.
+      expect(Math.abs(geometry.chipLeft - geometry.valueLeft)).toBeLessThanOrEqual(1);
+      expect(geometry.chipRight).toBeLessThanOrEqual(geometry.cellRight + 1);
+      expect(geometry.chipColor).toBe(geometry.linkToken);
     });
   });
 });

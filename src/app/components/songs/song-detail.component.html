@@ -56,7 +56,7 @@
                     [queryParams]="{ selected: leaderId }"
                     >{{ leaderLabel(leaderId) }}</a>
                 } @else {
-                  <span class="leader-chip leader-chip-unknown" data-testid="leader-chip">Unknown</span>
+                  <span class="leader-chip leader-chip-unknown" data-testid="leader-chip" aria-label="Leader not found">Unknown</span>
                 }
               }
             </div>

@@ -7,7 +7,7 @@
       color="primary"
       type="button"
       data-testid="admin-add-song"
-      aria-controls="add-song-panel"
+      [attr.aria-controls]="showAddPanel ? 'add-song-panel' : null"
       [attr.aria-expanded]="showAddPanel"
       (click)="toggleAddPanel()"
       >
@@ -127,7 +127,9 @@
         <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
       </div>
     } @else if (filteredSongs.length === 0) {
-      <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs" title="No results"></app-no-results-message>
+      <div class="admin-empty-region">
+        <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs" title="No results"></app-no-results-message>
+      </div>
     } @else {
       <mat-card class="admin-surface songs-table-card">
         <table class="admin-table" data-testid="admin-songs-table">
@@ -148,11 +150,13 @@
                 <td data-label="Source">{{ song.source || '—' }}</td>
                 <td data-label="Key">{{ song.musicalKey || '—' }}</td>
                 <td data-label="Leaders">
-                  @for (leaderId of song.leaderIds; track leaderId) {
-                    <span class="leader-chip">{{ leaderLabel(leaderId) }}</span>
-                  } @empty {
-                    <span class="admin-muted">—</span>
-                  }
+                  <span class="leader-chips">
+                    @for (leaderId of song.leaderIds; track leaderId) {
+                      <span class="leader-chip">{{ leaderLabel(leaderId) }}</span>
+                    } @empty {
+                      <span class="admin-muted">—</span>
+                    }
+                  </span>
                 </td>
                 <td data-label="Updated">{{ formatUpdated(song.updatedAt) }}</td>
                 <td data-label="" class="song-actions">

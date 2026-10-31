@@ -133,6 +133,21 @@ test.describe('admin', () => {
     }
   });
 
+  test('the sidebar brand is not a page heading; admin pages keep their h1', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/songs');
+    await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+    // The routed page owns the only h1; the sidebar wordmark is a styled label
+    // inside its home link.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Songs');
+    const brand = page.locator('.sidebar-header .sidebar-brand');
+    await expect(brand).toHaveText('Admin');
+    await expect(brand).toHaveJSProperty('tagName', 'DIV');
+    await expect(page.getByRole('heading', { name: 'Admin', exact: true })).toHaveCount(0);
+    await expect(page.locator('.sidebar-header .logo-link')).toHaveAttribute('href', '/admin');
+  });
+
   test('admin nav badges count pending uploads and open recovery requests', async ({ page }) => {
     const uploadKey = `badge-upload-${Date.now()}`;
     const recoveryKey = `badge-recovery-${Date.now()}`;

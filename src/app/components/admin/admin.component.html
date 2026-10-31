@@ -1,8 +1,8 @@
 <div class="admin-layout">
-  <nav class="admin-sidebar" id="admin-sidebar" [class.admin-sidebar-open]="sidenavOpen" [attr.aria-busy]="!isNavReady" aria-label="Admin sections" data-testid="admin-nav">
+  <nav class="admin-sidebar" id="admin-sidebar" tabindex="-1" [class.admin-sidebar-open]="sidenavOpen" [attr.aria-busy]="!isNavReady" aria-label="Admin sections" data-testid="admin-nav">
     <div class="sidebar-header">
       <a routerLink="/admin" class="logo-link">
-        <h1>Admin</h1>
+        <div class="sidebar-brand">Admin</div>
       </a>
     </div>
     @if (isNavReady) {

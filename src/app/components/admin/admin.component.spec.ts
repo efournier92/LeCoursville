@@ -148,6 +148,23 @@ describe('AdminComponent', () => {
     Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
   });
 
+  it('focuses the sidebar container while the nav is still loading', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
+    fixture.detectChanges();
+    // Flags have not emitted: the nav is a skeleton, so there is no link to
+    // focus and focus must not stay on the toggle behind the scrim.
+    const sidebar = fixture.nativeElement.querySelector('#admin-sidebar') as HTMLElement;
+    expect(sidebar.getAttribute('tabindex')).toBe('-1');
+    const focusSpy = vi.spyOn(sidebar, 'focus');
+
+    TestBed.inject(RoutingService).openSidenav();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    expect(focusSpy).toHaveBeenCalled();
+    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+  });
+
   it('traps Tab inside the sidebar, including the logo link', () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });

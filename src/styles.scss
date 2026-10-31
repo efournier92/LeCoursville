@@ -523,10 +523,26 @@ select:-webkit-autofill:focus {
     background: #fff !important;
   }
 
+  // Every route prints on white paper: the warm ground, the centered column,
+  // and its side gutters are screen chrome. Paper margins come from the @page
+  // boxes above, so a page must not stack a second gutter of its own.
+  .page-ground,
+  .page-content {
+    background: #fff !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
   // Print is ink on paper. A dark page keeps its light ink tokens while the
   // grounds are forced to #fff, which prints white-on-white; re-declare the
   // light values (mirroring the :root block) for paper.
   html[data-theme="dark"] {
+    // Blink paints the page canvas (the @page margin band) #121212 whenever
+    // the document advertises a dark color-scheme, even with printBackground
+    // and white body/grounds. Paper is always a light surface.
+    color-scheme: light;
     --color-app-bg: #F3F4F6;
     --color-surface: #FFFFFF;
     --color-surface-muted: #EBEDF0;

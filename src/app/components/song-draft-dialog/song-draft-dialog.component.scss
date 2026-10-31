@@ -21,6 +21,36 @@ mat-dialog-content {
   max-height: none;
 }
 
+// Mobile-only close (×) in the title row. It calls the same discard path as
+// Cancel and is disabled while saving, so it never adds a second close path.
+// Desktop keeps the title row as a plain block: Cancel is the only close.
+.draft-title-row {
+  display: block;
+}
+
+.draft-close {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .draft-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .draft-title-row h2[mat-dialog-title] {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .draft-close {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-right: 8px;
+  }
+}
+
 .draft-row {
   display: flex;
   gap: 12px;

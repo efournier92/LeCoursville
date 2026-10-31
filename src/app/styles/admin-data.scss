@@ -233,15 +233,12 @@
       }
     }
 
-    // Leaders own a full-width label line, then the chips wrap beneath it, so
-    // two leaders can never overlap the Updated cell below.
+    // Leaders sit in the value column like every other value: the .leader-chips
+    // wrapper wraps there, so a second chip indents under the first instead of
+    // starting at the row edge. The cell grows rather than overlapping the
+    // Updated row below.
     tbody td[data-label='Leaders'] {
-      flex-wrap: wrap;
-      row-gap: 4px;
-
-      &::before {
-        flex: 0 0 100%;
-      }
+      align-items: center;
     }
 
     // Row actions are icon-only: keep the 24px glyph but give the button a
