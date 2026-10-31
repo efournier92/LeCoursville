@@ -8,10 +8,13 @@
   </button>
   <button
     mat-flat-button
-    [color]="data.destructive ? 'warn' : 'primary'"
-    [attr.data-testid]="data.confirmTestId"
+    [class.btn-destructive]="data.destructive"
+    [attr.data-testid]="data.confirmTestId || 'confirm-dialog-confirm'"
     (click)="onConfirm()"
   >
+    @if (data.destructive) {
+      <mat-icon aria-hidden="true">warning</mat-icon>
+    }
     {{ data.confirmLabel || 'Delete' }}
   </button>
 </mat-dialog-actions>

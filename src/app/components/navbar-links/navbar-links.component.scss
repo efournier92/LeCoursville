@@ -1,5 +1,10 @@
 .navbar-link-icon {
-  margin-right: 6px;
+  margin-right: 8px;
+}
+
+// M3's label-large recipe renders 14px; pin the prod-feel 15px explicitly.
+.toolbar-routes-buttons-inline button {
+  font-size: 15px;
 }
 
 button span {
@@ -7,9 +12,54 @@ button span {
   letter-spacing: -0.02em;
 }
 
-button.active .first-char {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+// Active marker: white bar flush with the toolbar's bottom edge. The flex
+// row below centers the 40px button exactly in the 64px toolbar, and the
+// offset derives from the toolbar height token instead of a magic -12px.
+// e2e verifies the flush via boundingBox math.
+:host {
+  display: block;
+}
+
+// Flex kills the 22px toolbar strut's inline line box, which otherwise
+// leaves the button a hair above true center. Id-scoped: the mat-menu
+// branch reuses the class and must keep stacking vertically.
+#lecoursville-navbar-links {
+  display: flex;
+  align-items: center;
+}
+
+button.active {
+  position: relative;
+}
+
+// Weight must be re-asserted on the span: `button span` above sets 400
+// directly on the label and would beat inheritance from the button.
+button.active,
+button.active span {
+  font-weight: 600;
+}
+
+.active-indicator {
+  display: none;
+}
+
+// MDC positions .mdc-button__label relative and keeps the icon outside it,
+// so left/right would resolve to the label box; neutralize to span the button.
+button.active ::ng-deep .mdc-button__label {
+  position: static;
+}
+
+button.active .active-indicator {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  // 100% = button height, so this spans button-bottom → toolbar-bottom.
+  // minimalist: assumes vertical centering; upgrade path is measuring the
+  // row at runtime.
+  bottom: calc((100% - var(--mat-toolbar-standard-height, 64px)) / 2);
+  height: 3px;
+  background: var(--color-on-brand);
 }
 
 @media (max-width: 768px) {

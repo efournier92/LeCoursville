@@ -403,7 +403,9 @@ test.describe('admin system surfaces', () => {
 
     await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
     await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('feature-changed-chat')).toContainText('changed');
+    // Engine-agnostic stamp check: title-case prefix + digits in the suffix.
+    await expect(page.getByTestId('feature-changed-chat')).toContainText(/^\s*Changed\b/);
+    await expect(page.getByTestId('feature-changed-chat')).toContainText(/\d/);
   });
 
   test('features: warns when the stored promoted route belongs to a disabled flag', async ({ page }) => {

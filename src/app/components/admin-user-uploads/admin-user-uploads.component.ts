@@ -244,7 +244,7 @@ export class AdminUserUploadsComponent implements OnInit, OnDestroy {
     this.pageError = null;
     const confirmed = await this.confirmDialog.confirm({
       title: 'Reject upload?',
-      message: `Reject “${upload.fileName}” from ${this.getUploaderName(upload) || 'this guest'}? The file will be removed from the review queue.`,
+      message: `Reject “${upload.fileName}” from ${this.getUploaderName(upload) || 'this guest'}? This permanently deletes the file; it cannot be undone.`,
       confirmLabel: 'Reject upload',
       destructive: true,
     });

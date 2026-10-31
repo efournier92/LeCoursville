@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NO_ERRORS_SCHEMA } from "@angular/core";
-import { By } from "@angular/platform-browser";
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from "@angular/material/dialog";
-import { MatButton, MatButtonModule } from "@angular/material/button";
+import { MatButtonModule } from "@angular/material/button";
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
@@ -32,17 +31,9 @@ describe("ConfirmDialogComponent", () => {
     const buttons = Array.from(
       fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
     );
-    const button = buttons.find((candidate) => candidate.textContent?.trim() === label);
+    const button = buttons.find((candidate) => candidate.textContent?.includes(label));
     expect(button).toBeTruthy();
     return button as HTMLButtonElement;
-  }
-
-  function confirmButton(): any {
-    const debugElement = fixture.debugElement
-      .queryAll(By.css('button'))
-      .find((candidate) => candidate.nativeElement.textContent.trim() === 'Delete');
-    expect(debugElement).toBeTruthy();
-    return debugElement!.injector.get(MatButton);
   }
 
   beforeEach(() => {
@@ -81,9 +72,21 @@ describe("ConfirmDialogComponent", () => {
     expect(dialogRef.close).toHaveBeenCalledWith(false);
   });
 
-  it("sets the warn color on the confirm button when destructive", async () => {
+  it("marks the confirm button destructive when destructive is true", async () => {
     await create();
 
-    expect(confirmButton().color).toBe('warn');
+    const button = findButton('Delete');
+    expect(button.classList.contains('btn-destructive')).toBe(true);
+    expect(button.querySelector('mat-icon')).toBeTruthy();
+  });
+
+  it("leaves the confirm button non-destructive when destructive is false", async () => {
+    data.destructive = false;
+    data.confirmLabel = 'Continue';
+    await create();
+
+    const button = findButton('Continue');
+    expect(button.classList.contains('btn-destructive')).toBe(false);
+    expect(button.querySelector('mat-icon')).toBeNull();
   });
 });

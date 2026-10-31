@@ -138,6 +138,10 @@ export abstract class MessageEditComponent implements OnInit {
     const dialogRef = this.promptModal.openDialog(
       "Are You Sure?",
       "Do you want to remove this message from LeCoursville?",
+      [
+        { label: "No", color: "warn", isConfirmAction: false },
+        { label: "Yes", color: "primary", isConfirmAction: true, destructive: true },
+      ],
     );
     dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
       if (confirmedAction) {

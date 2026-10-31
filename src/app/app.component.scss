@@ -51,6 +51,11 @@
   cursor: pointer;
 }
 
+.toolbar-left {
+  height: 100%;
+  align-items: center;
+}
+
 .toolbar-logo {
   display: inline-flex;
   align-items: center;
@@ -78,6 +83,58 @@
 :host ::ng-deep mat-toolbar :focus-visible {
   outline-color: currentColor !important;
   outline-offset: 2px !important;
+}
+
+/* Minimal theme toggle: one sun/moon glyph swapped by state, no track or
+   knob. Transparent and muted so it stays present but does not compete with
+   the nav; it brightens on hover/focus only. */
+.icons-menu {
+  align-items: center;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  // Sits at the far right end of the nav, after the Account entry.
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-brand);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--color-on-brand) 15%, transparent);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid currentColor !important;
+    outline-offset: 2px !important;
+  }
+}
+
+.theme-switch-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+// Mobile: the hamburger stays anchored at the right edge (primary menu
+// control, thumb-reachable); the theme toggle tucks in just to its left.
+@media (max-width: 991.98px) {
+  .theme-switch {
+    order: -1;
+    margin-left: 0;
+    margin-right: 8px;
+  }
 }
 
 /* Nav loading skeleton styles live globally in styles.scss (shared by

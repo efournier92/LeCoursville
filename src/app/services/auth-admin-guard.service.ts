@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 
 import { User } from 'src/app/models/user';
@@ -14,10 +15,11 @@ export class AuthAdminGuardService  {
 
   constructor(
     public authService: AuthService,
-    public routingService: RoutingService
+    public routingService: RoutingService,
+    private router: Router,
   ) { }
 
-  canActivate(): Observable<boolean> {
+  canActivate(): Observable<boolean | UrlTree> {
     return this.authService.userObservable.pipe(
       // Wait for the first RTDB-backed record — skip the initial empty {}.
       filter((user: any) => !!user?.id),
@@ -31,13 +33,12 @@ export class AuthAdminGuardService  {
         if (user?.roles?.admin === true || user?.roles?.super === true) {
           return true;
         }
-        this.routingService.NavigateToSignIn();
-        return false;
+        // Send a signed-in non-admin to the same place root sends a member,
+        // directly. Redirecting through '/' relied on the app-level promoted
+        // route bounce and could strand the user on the account page.
+        return this.router.parseUrl(this.routingService.getPromotedRoute());
       }),
-      catchError(() => {
-        this.routingService.NavigateToSignIn();
-        return of(false);
-      }),
+      catchError(() => of(this.router.parseUrl('/'))),
     );
   }
 }

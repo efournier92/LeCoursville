@@ -259,7 +259,7 @@ describe('AdminFeaturesComponent', () => {
     ) as NodeListOf<HTMLElement>;
     expect(rows.length).toBe(10);
     expect(rows[0].textContent).toContain('admin-11@e2e.local');
-    expect(rows[0].textContent).toContain('Promoted route');
+    expect(rows[0].textContent).toContain('Promoted Route');
     expect(rows[0].textContent).toContain('/calendar');
     expect(rows[0].textContent).toContain('/chat');
     expect(rows[0].textContent).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
@@ -305,6 +305,6 @@ describe('AdminFeaturesComponent', () => {
     };
     fixture.detectChanges();
 
-    expect(component.changedLabel('music')).toBe('changed Jan 2, 03:04');
+    expect(component.changedLabel('music')).toBe('Changed Jan 2, 03:04');
   });
 });

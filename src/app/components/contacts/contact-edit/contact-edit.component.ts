@@ -6,6 +6,7 @@ import { AppSettings } from 'src/environments/app-settings';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ArrayService } from 'src/app/services/array.service';
+import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
 
 @Component({
     selector: 'app-contact-edit',
@@ -25,6 +26,7 @@ export class ContactEditComponent implements OnInit {
     private contactsService: ContactsService,
     private analyticsService: AnalyticsService,
     private arrayService: ArrayService,
+    private confirmDialog: ConfirmDialogService,
   ) { }
 
   // LIFECYCLE HOOKS
@@ -53,7 +55,16 @@ export class ContactEditComponent implements OnInit {
     });
   }
 
-  deleteContact(contact: Contact): void {
+  async deleteContact(contact: Contact): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete contact?',
+      message: `Delete ${contact?.name || 'this contact'}? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
     this.contactsService.deleteContact(contact);
     this.analyticsService.logEvent('contacts_delete', {
       id: contact?.id, name: contact?.name,

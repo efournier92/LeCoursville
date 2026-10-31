@@ -74,12 +74,22 @@ html {
   --color-brand-primary: #2D5A27;
   --color-brand-primary-hover: #3A7033;
   --color-brand-primary-dark: #245020;
+  // Filled brand surfaces that always carry white ink (filled buttons, brand
+  // bars, avatar tiles). Theme-invariant: --color-brand-primary lightens in
+  // dark mode for accents/text, which would otherwise put white on pale green.
+  --color-brand-solid: #2D5A27;
+  --color-brand-solid-hover: #3A7033;
+  --color-brand-solid-dark: #245020;
   // Success/upload semantics alias the brand green — one green language.
   --color-brand-success: #2D5A27;
   --color-brand-success-dark: #245020;
   --color-accent: #A8762D;          // honey — today marker, highlights
   --color-accent-strong: #9C6B26;   // honey, dark enough for white text
   --color-error: #B3261E;
+  // Filled destructive surfaces that always carry white ink. Theme-invariant:
+  // --color-error lightens in dark mode for text/borders, which would put
+  // white on pale pink. Mirrors the --color-brand-solid approach.
+  --color-error-solid: #B3261E;
   --color-border: #E1E4E8;          // hairlines on gray
   --color-link: #245020;            // brand-dark green links
 
@@ -102,6 +112,9 @@ html {
   // Cross-theme constants: identical in light and dark, tokenized so the
   // sweep grep stays clean.
   --color-on-brand: #ffffff;      // text/icons on saturated brand or accent fills
+  // Topnav toolbar keeps the legacy prod green (#2D5A27) in both themes,
+  // independent of the theme-varying --color-brand-primary.
+  --color-topnav-bg: #2D5A27;
   --color-media-backdrop: #000000; // slideshow / video letterbox surround
   --color-scrim: rgba(0, 0, 0, 0.65); // gradient scrim over photo captions
 
@@ -200,10 +213,10 @@ html {
   @include mat.all-component-themes($theme);
   // M3 drops the color="primary" palette variants for mat-toolbar, so the top
   // nav rendered as plain surface. Restore brand green via toolbar tokens.
-  // The green toolbar is identical across themes, so its text token is white
-  // in both blocks.
+  // The toolbar background token is theme-invariant (legacy prod green), so
+  // its text token is white in both blocks.
   @include mat.toolbar-overrides((
-    container-background-color: var(--color-brand-primary),
+    container-background-color: var(--color-topnav-bg),
     container-text-color: var(--color-on-brand),
   ));
   // M3 derives its neutral "surface" tones from the primary palette, which
@@ -229,14 +242,39 @@ html {
 // swaps every component's palette without duplicating typography/density.
 html[data-theme="dark"] {
   @include mat.all-component-colors($dark-theme);
-
-  // The dark palette's filled-button green is more saturated than the softened
-  // brand token, so filled CTAs clashed with every other brand surface. Re-emit
-  // the filled tokens only, with a dark ink that clears contrast on the token.
-  @include mat.button-overrides((
-    filled-container-color: var(--color-brand-primary),
-    filled-label-text-color: #14300F,
+  // all-component-colors re-emits the toolbar tokens on this more specific
+  // selector, clobbering the html-level green override; re-apply it after.
+  @include mat.toolbar-overrides((
+    container-background-color: var(--color-topnav-bg),
+    container-text-color: var(--color-on-brand),
   ));
+  // Filled buttons keep the brand-green + white language in dark mode too,
+  // instead of M3 swapping to its pale-green primary with dark ink. Stroked
+  // and text buttons are unaffected.
+  @include mat.button-overrides((
+    filled-container-color: var(--color-brand-solid),
+    filled-label-text-color: var(--color-on-brand),
+    filled-state-layer-color: var(--color-on-brand),
+    filled-ripple-color: var(--color-on-brand),
+  ));
+}
+
+/* Destructive filled buttons: theme-invariant red fill with white ink, so a
+   delete confirm reads red in both themes even though M3 dropped color="warn".
+   Declared on the element itself, so it beats the html-level dark override. */
+.btn-destructive {
+  --mat-button-filled-container-color: var(--color-error-solid);
+  --mat-button-filled-label-text-color: var(--color-on-brand);
+  --mat-button-filled-state-layer-color: var(--color-on-brand);
+  --mat-button-filled-ripple-color: var(--color-on-brand);
+}
+
+.btn-destructive:focus-visible {
+  outline-color: var(--color-error-solid) !important;
+}
+
+html[data-theme="dark"] .btn-destructive:focus-visible {
+  outline-color: var(--color-on-brand) !important;
 }
 
 // The app's top nav paints on its own layer (1100); CDK's overlay container
@@ -354,6 +392,8 @@ html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
   50% { opacity: 0.5; }
 }
 mat-toolbar {
+  /* Angular Material 22 no longer emits the legacy .mat-elevation-z# utilities, so `mat-elevation-z8` on the toolbar is a dead class; keep the elevation-8 shadow here. */
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
   .mat-mdc-button,
   .mat-mdc-icon-button {
     color: var(--color-on-brand);

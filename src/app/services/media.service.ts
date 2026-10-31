@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
@@ -12,7 +12,8 @@ import { RtdbService } from './rtdb.service';
 export class MediaService {
   user: any;
 
-  private mediaSource: BehaviorSubject<UploadableMedia[]> = new BehaviorSubject<UploadableMedia[]>([]);
+  // A BehaviorSubject's seed [] is indistinguishable from a loaded-but-empty library, so it flashed the empty state over the loading skeleton. ReplaySubject(1) emits only after the RTDB list actually resolves and still replays the latest value to late subscribers.
+  private mediaSource: ReplaySubject<UploadableMedia[]> = new ReplaySubject<UploadableMedia[]>(1);
   mediaObservable: Observable<UploadableMedia[]> = this.mediaSource.asObservable();
   allMedia: UploadableMedia[];
 

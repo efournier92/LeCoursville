@@ -54,4 +54,19 @@ describe("PromptModalComponent", () => {
     component.onActionClick(true);
     expect(dialogRef.close).toHaveBeenCalledWith(true);
   });
+
+  it("marks a destructive button with the red class and a warning icon", () => {
+    component.buttons = [
+      { label: 'No', color: 'warn', isConfirmAction: false },
+      { label: 'Delete', color: 'primary', isConfirmAction: true, destructive: true },
+    ];
+    fixture.detectChanges();
+
+    const buttons = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    );
+    const destructive = buttons.find((button) => button.textContent?.includes('Delete'))!;
+    expect(destructive.classList.contains('btn-destructive')).toBe(true);
+    expect(destructive.querySelector('mat-icon')).toBeTruthy();
+  });
 });

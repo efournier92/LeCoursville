@@ -80,6 +80,29 @@ test.describe('chat', () => {
     await expect(page.getByText('Second seed — edited by e2e')).toBeVisible();
   });
 
+  test('delete message: destructive confirm is red with a warning icon', async ({ page }) => {
+    await openChatAs(page, 'admin');
+    await page.goto('/chat');
+    // Only saved (not seeded) messages expose the delete tool in edit mode.
+    await page.getByRole('button', { name: 'New Message' }).first().click();
+    await page.getByPlaceholder('Title').fill('E2E Delete Title');
+    await page.getByTestId('chat-message-input').fill('E2E delete body');
+    await page.getByTestId('chat-send').click();
+    await page.getByRole('button', { name: 'Yes' }).click();
+    await expect(page.getByText('E2E Delete Title')).toBeVisible();
+
+    const card = page.locator('.message-card-container', { hasText: 'E2E Delete Title' }).first();
+    await card.locator('.message-button', { hasText: 'Edit' }).locator('mat-icon').click();
+    await page.locator('.message-button', { hasText: 'Delete' }).first().locator('mat-icon').click();
+    const dialog = page.locator('mat-dialog-container');
+    await expect(dialog.getByRole('heading', { name: 'Are You Sure?' })).toBeVisible();
+    const yes = dialog.getByRole('button', { name: 'Yes', exact: true });
+    await expect(yes).toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(yes).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(yes.locator('mat-icon')).toBeVisible();
+    await dialog.getByRole('button', { name: 'No', exact: true }).click();
+  });
+
   test('author self-edit: user edits the seeded msg-4 and it persists', async ({ page }) => {
     await openChatAs(page, 'user');
     await page.goto('/chat');

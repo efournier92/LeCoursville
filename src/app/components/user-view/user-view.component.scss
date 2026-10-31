@@ -11,8 +11,8 @@
   border-radius: 50%;
   background: linear-gradient(
     135deg,
-    var(--color-brand-primary) 0%,
-    var(--color-brand-primary-dark) 100%
+    var(--color-brand-solid) 0%,
+    var(--color-brand-solid-dark) 100%
   );
   color: var(--color-on-brand);
   font-size: 1.5rem;
@@ -80,19 +80,4 @@
     font-size: 0.9rem;
     color: var(--color-ink);
     text-align: right;
-  }}.account-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 22px;
-
-  button {
-    min-width: 160px;
-    height: 44px;
-    border-radius: 999px;
-
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 4px;
-    }}}
+  }}
