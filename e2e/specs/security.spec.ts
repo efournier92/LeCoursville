@@ -117,6 +117,68 @@ test.describe('security', () => {
     expect(xss).toBe(0);
   });
 
+  test('XSS: song fields and leader names must render as literal text', async ({ page }) => {
+    const stamp = Date.now();
+    const songId = `e2e-xss-song-${stamp}`;
+    const leaderId = `e2e-xss-leader-${stamp}`;
+    const title = '<img src=x onerror=alert(1)>';
+    const body = '<script>window.__xss="song"</script>\nplain lyric line';
+    const source = '"><img src=x onerror=alert(1)>';
+    const musicalKey = '<img src=x onerror=alert(1)>';
+    const leader = '<script>window.__xss="leader"</script>';
+
+    await writeDb(`people/${leaderId}`, {
+      id: leaderId,
+      name: { firstGiven: leader, firstPreferred: leader, maiden: null, last: null, suffix: null },
+    });
+    await writeDb(`songs/${songId}`, {
+      id: songId,
+      title,
+      body,
+      source,
+      musicalKey,
+      leaderIds: [leaderId],
+      createdAt: stamp,
+      updatedAt: stamp,
+    });
+
+    const dialogs: string[] = [];
+    page.on('dialog', (dialog) => {
+      dialogs.push(dialog.message());
+      void dialog.dismiss();
+    });
+
+    try {
+      await login(page, 'user');
+
+      // List card: every hostile field renders as text, never as markup.
+      await page.goto('/songs');
+      const card = page.getByTestId('song-card').filter({ hasText: title });
+      await expect(card).toBeVisible();
+      await expect(card.getByTestId('song-title')).toHaveText(title);
+      await expect(card.getByTestId('song-source')).toHaveText(`Source: ${source}`);
+      await expect(card.getByTestId('leader-chip')).toHaveText(leader);
+
+      // Detail: the same fields, plus the key and leader chip.
+      await page.goto(`/songs/${songId}`);
+      await expect(page.getByTestId('song-title')).toHaveText(title);
+      await expect(page.getByTestId('song-source')).toHaveText(`Source: ${source}`);
+      await expect(page.getByTestId('song-key')).toHaveText(`Key: ${musicalKey}`);
+      await expect(page.getByTestId('song-body')).toContainText(body);
+      await expect(page.getByTestId('leader-chip')).toHaveText(leader);
+
+      // No element was created from any payload, and no handler fired.
+      await expect(page.locator('img[src="x"]')).toHaveCount(0);
+      await expect(page.locator('.song-detail script')).toHaveCount(0);
+      await expectNoInjectedHandler(page);
+      expect(await page.evaluate(() => (window as any).__xss ?? 0)).toBe(0);
+      expect(dialogs).toEqual([]);
+    } finally {
+      await deleteDb(`songs/${songId}`);
+      await deleteDb(`people/${leaderId}`);
+    }
+  });
+
   test('outbound requests: a feature walk must not hit external hosts', async ({ page }) => {
     const external: string[] = [];
     await page.route('**/*', (route) => {
@@ -145,6 +207,8 @@ test.describe('security', () => {
       { route: '/people', content: (p) => p.locator('.family-group').first() },
       { route: '/media/explorer', content: (p) => p.locator('.media-list-item', { hasText: 'E2E Doc' }) },
       { route: '/upload', content: (p) => p.getByRole('heading', { name: 'Upload Files' }) },
+      { route: '/songs', content: (p) => p.locator('.songs-page') },
+      { route: '/songs/song-a', content: (p) => p.getByTestId('song-body') },
     ];
     for (const { route, content } of walks) {
       await page.goto(route);

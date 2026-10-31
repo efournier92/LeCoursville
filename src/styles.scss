@@ -523,11 +523,13 @@ select:-webkit-autofill:focus {
     background: #fff !important;
   }
 
-  // Every route prints on white paper: the warm ground, the centered column,
-  // and its side gutters are screen chrome. Paper margins come from the @page
-  // boxes above, so a page must not stack a second gutter of its own.
-  .page-ground,
-  .page-content {
+  // The song detail prints on white paper: its warm ground, centered column,
+  // and side gutters are screen chrome. Paper margins come from the @page
+  // boxes above, so the sheet must not stack a second gutter of its own.
+  // Other routes keep their screen layout on paper.
+  .song-detail,
+  .song-detail .page-ground,
+  .song-detail .page-content {
     background: #fff !important;
     max-width: none !important;
     width: 100% !important;
