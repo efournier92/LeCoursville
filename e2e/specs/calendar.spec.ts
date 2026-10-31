@@ -19,6 +19,31 @@ test.describe('calendar', () => {
     }
   });
 
+  test('all seven day columns fit the viewport at desktop and 900px', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [1280, 900]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/calendar');
+        await expect(page.locator('.cal-days')).toBeVisible();
+        const grid = page.locator('.calendar-month-view-container');
+        const saturday = page.locator('.cal-header .cal-cell').last();
+        await expect(saturday).toContainText('Saturday');
+        const gridBox = await grid.boundingBox();
+        const satBox = await saturday.boundingBox();
+        expect(gridBox).not.toBeNull();
+        expect(satBox).not.toBeNull();
+        // Grid never extends past the viewport and Saturday is fully visible.
+        expect(gridBox!.x + gridBox!.width).toBeLessThanOrEqual(width);
+        expect(satBox!.x).toBeGreaterThanOrEqual(0);
+        expect(satBox!.x + satBox!.width).toBeLessThanOrEqual(width);
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('current month shows the seeded birthdays and anniversary', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
