@@ -68,6 +68,13 @@ describe('parseSongText', () => {
     expect(result.unmatchedLeaders).toEqual([]);
   });
 
+  it('deduplicates a leader named more than once', () => {
+    const result = parseSongText('Title: T\nLeader: Ada\nLeader: Ada\nLeader: Ada', [ada]);
+
+    expect(result.leaderIds).toEqual(['p-ada']);
+    expect(result.unmatchedLeaders).toEqual([]);
+  });
+
   it('folds case and diacritics when matching leaders (31)', () => {
     const result = parseSongText('Title: T\nLeader: eric', [eric]);
 

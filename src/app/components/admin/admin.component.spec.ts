@@ -15,8 +15,20 @@ describe('AdminComponent', () => {
   let flags$: Subject<Record<string, any>>;
   let pendingUploads$: Subject<number>;
   let openRecovery$: Subject<number>;
+  let viewportListener: ((event: MediaQueryListEvent) => void) | undefined;
+  const originalMatchMedia = window.matchMedia;
 
   beforeEach(async () => {
+    viewportListener = undefined;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+        viewportListener = listener;
+      },
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
     flags$ = new Subject();
     pendingUploads$ = new Subject();
     openRecovery$ = new Subject();
@@ -44,6 +56,10 @@ describe('AdminComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminComponent);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    window.matchMedia = originalMatchMedia;
   });
 
   it('should create', () => {
@@ -145,6 +161,33 @@ describe('AdminComponent', () => {
     expect(content.hasAttribute('inert')).toBe(true);
 
     routing.closeSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
+  it('resets the shared drawer state when the admin shell is destroyed', () => {
+    fixture.detectChanges();
+    const routing = TestBed.inject(RoutingService);
+    let open: boolean | undefined;
+    routing.sidenavOpen$.subscribe(value => (open = value));
+
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(open).toBe(true);
+
+    fixture.destroy();
+    expect(open).toBe(false);
+  });
+
+  it('closes the drawer when the viewport crosses to desktop', () => {
+    fixture.detectChanges();
+    const routing = TestBed.inject(RoutingService);
+    const content = fixture.nativeElement.querySelector('#admin-content') as HTMLElement;
+    routing.openSidenav();
+    fixture.detectChanges();
+    expect(content.hasAttribute('inert')).toBe(true);
+
+    viewportListener!({ matches: true } as MediaQueryListEvent);
     fixture.detectChanges();
     expect(content.hasAttribute('inert')).toBe(false);
   });

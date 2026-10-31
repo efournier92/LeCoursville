@@ -76,7 +76,9 @@ export function parseSongText(raw: string, people: Person[]): ParsedSong {
       fold(p.name.firstPreferred) === folded || fold(p.name.firstGiven) === folded
     );
     if (person) {
-      leaderIds.push(person.id);
+      if (!leaderIds.includes(person.id)) {
+        leaderIds.push(person.id);
+      }
     } else {
       unmatchedLeaders.push(candidate);
     }

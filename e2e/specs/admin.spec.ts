@@ -287,6 +287,38 @@ test.describe('admin', () => {
     await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', false);
   });
 
+  test('browser Back after opening the mobile drawer leaves the toolbar interactive', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const toolbar = page.locator('mat-toolbar').first();
+
+    await page.getByTestId('nav-menu-toggle').click();
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await expect(toolbar).toHaveJSProperty('inert', true);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/calendar$/);
+    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
+    await expect(toolbar).toHaveJSProperty('inert', false);
+  });
+
+  test('resizing to desktop while the drawer is open clears inert', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const toolbar = page.locator('mat-toolbar').first();
+
+    await page.getByTestId('nav-menu-toggle').click();
+    await expect(toolbar).toHaveJSProperty('inert', true);
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', true);
+
+    await page.setViewportSize({ width: 1200, height: 844 });
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await expect(toolbar).toHaveJSProperty('inert', false);
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
+  });
+
   test('photo albums nav follows its feature flag', async ({ page }) => {
     await login(page, 'admin');
     await setFeatureFlag(page, 'enablePhotoAlbums', false);
