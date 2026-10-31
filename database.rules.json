@@ -193,6 +193,13 @@
       ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
+    "songs": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      "$id": {
+        ".validate": "newData.child('id').val() === $id"
+      }
+    },
     "userUploads": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
