@@ -1,10 +1,20 @@
 # Discovery
 
 One line per finding, decision, assumption, trap, question, or outcome. Newest first. Evidence required.
-Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy
+Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy, songs/data, songs/ui
 
 ## Entries
 
+- D-20261031-01 | 2026-10-31 | [trap] | songs/ui | Playwright print emulation ignores @page boxes; assert real PDF margins with page.pdf + pdftotext -bbox, not only emulated CSS | e2e/specs/songs.spec.ts
+- D-20261031-02 | 2026-10-31 | [trap] | songs/ui | Material 22 caps mat-dialog-content at 65vh; set max-height none plus a 98vh panel for a usable mobile sheet | src/app/components/song-draft-dialog/song-draft-dialog.component.scss
+- D-20261031-03 | 2026-10-31 | [trap] | build/perf | A dark color-scheme leaks into print and paints #121212 @page margins; force color-scheme light in @media print | src/styles.scss
+- D-20261031-04 | 2026-10-31 | [decision] | songs/data | Spec transpose spelling contradicts its test plan (D-1=Db); downward shifts spell flat, upward shifts sharp | src/app/services/chord-transpose.ts
+- D-20261031-05 | 2026-10-31 | [decision] | songs/data | Songs rules harden beyond spec with field type/length checks, $other false, and numeric leaderIds indices capped 0-49 | database.rules.json
+- D-20261031-06 | 2026-10-31 | [outcome] | songs/ui | Songs Library shipped gate-green: 320 per browser, rules 15, storage 9, unit 740, functions 298 | .gate-results/firefox.json
+- D-20261031-07 | 2026-10-31 | [trap] | songs/ui | WebKit/Firefox return subpixel CSS px; use parseFloat + toBeCloseTo instead of exact toHaveCSS strings | e2e/specs/songs.spec.ts
+- D-20261031-08 | 2026-10-31 | [trap] | build/perf | Firefox reload stress exceeded 30s after adding ~50 Songs tests; a 45s stress-wait fixed it with no selector change | e2e/specs/loading.spec.ts
+- D-20261031-09 | 2026-10-31 | [decision] | admin/ui | Admin drawer inert state must reset on route exit and at >=992px, or the member toolbar stays inert after Back | src/app/components/admin/admin.component.ts
+- D-20261031-10 | 2026-10-31 | [trap] | songs/ui | matTextPrefix magnifiers ride the floating label when filled; center them on --mat-form-field-container-height | src/app/components/songs/songs-list.component.scss
 - D-20261030-13 | 2026-10-30 | [outcome] | admin/ui | Canonical e2e gate green end to end: unit 708, functions 298, storage-prod 7, rules 13, chromium/webkit/firefox 245 each | .gate-results/firefox.json
 - D-20261030-14 | 2026-10-30 | [trap] | rules/deploy | A one-off ENOENT wipe of dist hosting fixtures mid-gate came from an external process, not the suite; check for a parallel ng build before diagnosing late-browser fixture failures | docs/critique/2026-10-28_FamilyExplorerFeedback.md
 - D-20261030-12 | 2026-10-30 | [trap] | build/perf | Playwright transpiles spec-imported .mjs to CommonJS: import.meta in any transitively imported file is a load-time SyntaxError; keep e2e fixture modules pure and import.meta-free | scripts/e2e/seed-fixtures.mjs
