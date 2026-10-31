@@ -64,7 +64,7 @@
         }
       </header>
 
-      @if (showTranspose) {
+      @if (showTranspose && !hideChords) {
         <div class="transpose-controls" data-testid="transpose-controls" role="group" aria-label="Transpose">
           <span class="transpose-label">Transpose</span>
           <div class="transpose-pill">
@@ -112,9 +112,40 @@
         </div>
       }
 
+      <div class="song-tools">
+        @if (hasChords) {
+          <button
+            mat-stroked-button
+            type="button"
+            data-testid="toggle-chords"
+            [attr.aria-pressed]="hideChords"
+            (click)="toggleChords()"
+            >
+            <mat-icon aria-hidden="true">{{ hideChords ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ hideChords ? 'Show chords' : 'Lyrics only' }}
+          </button>
+        }
+
+        <button
+          mat-stroked-button
+          type="button"
+          data-testid="print-song"
+          title="Opens the print dialog. Choose Save as PDF."
+          aria-label="Print or save as PDF"
+          (click)="printSong()"
+          >
+          <mat-icon aria-hidden="true">print</mat-icon>
+          Print / PDF
+        </button>
+      </div>
+
       <div class="song-body-wrap" data-testid="song-body">
-        <pre class="song-body song-body-inline" data-testid="song-body-inline">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {<span [class]="segment.kind">{{ segment.text }}</span>}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
-        <pre class="song-body song-body-chord-over" data-testid="song-body-chord-over">@for (line of chordOverLines; track $index; let isLastLine = $last) {<span [class]="line.kind">{{ line.text }}</span>@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+        @if (hideChords) {
+          <pre class="song-body song-body-lyrics" data-testid="song-body-lyrics">{{ lyricsOnlyBody }}</pre>
+        } @else {
+          <pre class="song-body song-body-inline" data-testid="song-body-inline">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {@switch (segment.kind) {@case ('chord') {<span class="chord">{{ segment.text.slice(1, -1) }}</span>}@case ('chord-line') {<span class="chord-tag">{{ segment.text }}</span>}@default {<span [class]="segment.kind">{{ segment.text }}</span>}}}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+          <pre class="song-body song-body-chord-over" data-testid="song-body-chord-over">@for (line of chordOverLines; track $index; let isLastLine = $last) {<span [class]="line.kind">@for (segment of line.segments; track $index) {@if (segment.chord) {<span class="chord-tag">{{ segment.text }}</span>}@else {<span class="text">{{ segment.text }}</span>}}</span>@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+        }
       </div>
     </article>
   }

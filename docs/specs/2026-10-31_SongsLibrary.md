@@ -371,6 +371,16 @@ Sign-off checklist:
 4. `npm run e2e:gate`: full matrix green (Chromium, WebKit, Firefox, rules, storage-prod).
 5. Manual: paste a real Ultimate-Guitar export, print one song, transpose one bracket song on a phone.
 
+## 2026-10-31 Amendment: Chord Tags, Lyrics Only, Print For All
+
+Three detail-page behaviors amend the presentation rules above. Canonical `[G]` authoring, stored bodies, the parser, and transposition remain unchanged.
+
+1. Chords render as faint gray tags, not brand-green text. `ChordOverLine` gains `segments: ChordOverSegment[]` (`{ text, chord }`): chord lines split on whitespace into chord runs and space runs; lyric and plain lines carry one text run. The chord-over view renders those runs as `.chord-tag` spans, and the inline view strips the display-only brackets into a `.chord` span. `line.text` stays the source of truth for chord-over alignment.
+2. A `Lyrics only` toggle appears whenever the song has a chord line. It hides the transpose controls and renders the derived lyrics-only body (`layoutChordOver` with chord lines removed) instead of the inline and chord-over blocks. Toggling back restores the normal views.
+3. A `Print / PDF` button is always present on the detail page. It sets `document.title` to the song title, calls `window.print()` (so Save-as-PDF names the file after the song), and restores the previous title. Print hides the toolbar, transpose controls, and the actions row, and prints whichever view is current, including the lyrics-only sheet.
+
+Unit coverage extends `chord-transpose.spec.ts` for `segments`, `hasChords`, and `lyricsOnlyBody`. E2E coverage asserts gray tag fills in both responsive views, the toggle across bracket and chord-over songs (and its absence on a lyrics-only song), and the print button for every song plus lyrics-only print output.
+
 ## Open Questions
 
 None. All frontier decisions resolved in rounds (nav/flag slot, single body field, multiple leaders, search-only discovery, print + transpose scope, brackets-only transpose, optional-header import, client-side parse with plain text in RTDB, both paste and file input doors, confirmed test seams).

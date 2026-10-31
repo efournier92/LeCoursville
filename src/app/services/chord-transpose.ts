@@ -82,10 +82,31 @@ function pushTextRun(out: SongSegment[], text: string, chordLine: boolean): void
   }
 }
 
+/** One renderable run of a chord-over line; spaces stay their own run. */
+export interface ChordOverSegment {
+  text: string;
+  chord: boolean;
+}
+
 /** One display line of the derived chord-over presentation. */
 export interface ChordOverLine {
   text: string;
   kind: 'chord-line' | 'lyric' | 'plain';
+  segments: ChordOverSegment[];
+}
+
+function chordOverSegments(text: string, kind: ChordOverLine['kind']): ChordOverSegment[] {
+  if (kind !== 'chord-line') {
+    return [{ text, chord: false }];
+  }
+  return text
+    .split(/(\s+)/)
+    .filter(Boolean)
+    .map(part => ({ text: part, chord: !/^\s+$/.test(part) }));
+}
+
+function chordOverLine(text: string, kind: ChordOverLine['kind']): ChordOverLine {
+  return { text, kind, segments: chordOverSegments(text, kind) };
 }
 
 /**
@@ -101,7 +122,7 @@ export function layoutChordOver(body: string): ChordOverLine[] {
     if (matches.length === 0) {
       const tokens = rawLine.split(/\s+/).filter(Boolean);
       const chordLine = tokens.length > 0 && tokens.every(isChordToken);
-      out.push({ text: rawLine, kind: chordLine ? 'chord-line' : 'plain' });
+      out.push(chordOverLine(rawLine, chordLine ? 'chord-line' : 'plain'));
       continue;
     }
 
@@ -124,11 +145,24 @@ export function layoutChordOver(body: string): ChordOverLine[] {
 
     const trimmed = chordLine.replace(/ +$/, '');
     if (trimmed) {
-      out.push({ text: trimmed, kind: 'chord-line' });
+      out.push(chordOverLine(trimmed, 'chord-line'));
     }
-    out.push({ text: lyric, kind: 'lyric' });
+    out.push(chordOverLine(lyric, 'lyric'));
   }
   return out;
+}
+
+/** True when the body has at least one chord-only line in either notation. */
+export function hasChords(body: string): boolean {
+  return layoutChordOver(body).some(line => line.kind === 'chord-line');
+}
+
+/** The body with every chord line removed, suitable for a lyrics-only sheet. */
+export function lyricsOnlyBody(body: string): string {
+  return layoutChordOver(body)
+    .filter(line => line.kind !== 'chord-line')
+    .map(line => line.text)
+    .join('\n');
 }
 
 /**

@@ -1,6 +1,8 @@
 import {
   hasBracketChords,
+  hasChords,
   layoutChordOver,
+  lyricsOnlyBody,
   segmentSongBody,
   transposeBody,
   transposeKeyName,
@@ -82,8 +84,20 @@ describe('chord-transpose', () => {
     const lines = layoutChordOver('[G]Amazing grace [D]how sweet');
 
     expect(lines).toEqual([
-      { text: 'G' + ' '.repeat(13) + 'D', kind: 'chord-line' },
-      { text: 'Amazing grace how sweet', kind: 'lyric' },
+      {
+        text: 'G' + ' '.repeat(13) + 'D',
+        kind: 'chord-line',
+        segments: [
+          { text: 'G', chord: true },
+          { text: ' '.repeat(13), chord: false },
+          { text: 'D', chord: true },
+        ],
+      },
+      {
+        text: 'Amazing grace how sweet',
+        kind: 'lyric',
+        segments: [{ text: 'Amazing grace how sweet', chord: false }],
+      },
     ]);
     expect(lines.map(line => line.text).join('\n')).not.toMatch(/[[\]]/);
   });
@@ -93,10 +107,34 @@ describe('chord-transpose', () => {
     const lines = layoutChordOver(body);
 
     expect(lines).toEqual([
-      { text: 'A          D', kind: 'chord-line' },
-      { text: 'Blessed be the name', kind: 'plain' },
-      { text: 'A          E', kind: 'chord-line' },
-      { text: 'Blessed be the name', kind: 'plain' },
+      {
+        text: 'A          D',
+        kind: 'chord-line',
+        segments: [
+          { text: 'A', chord: true },
+          { text: '          ', chord: false },
+          { text: 'D', chord: true },
+        ],
+      },
+      {
+        text: 'Blessed be the name',
+        kind: 'plain',
+        segments: [{ text: 'Blessed be the name', chord: false }],
+      },
+      {
+        text: 'A          E',
+        kind: 'chord-line',
+        segments: [
+          { text: 'A', chord: true },
+          { text: '          ', chord: false },
+          { text: 'E', chord: true },
+        ],
+      },
+      {
+        text: 'Blessed be the name',
+        kind: 'plain',
+        segments: [{ text: 'Blessed be the name', chord: false }],
+      },
     ]);
   });
 
@@ -104,9 +142,23 @@ describe('chord-transpose', () => {
     const lines = layoutChordOver('Hello world\n\n[Verse] note');
 
     expect(lines).toEqual([
-      { text: 'Hello world', kind: 'plain' },
-      { text: '', kind: 'plain' },
-      { text: '[Verse] note', kind: 'plain' },
+      { text: 'Hello world', kind: 'plain', segments: [{ text: 'Hello world', chord: false }] },
+      { text: '', kind: 'plain', segments: [{ text: '', chord: false }] },
+      { text: '[Verse] note', kind: 'plain', segments: [{ text: '[Verse] note', chord: false }] },
     ]);
+  });
+
+  it('detects chords and strips only chord lines for a lyrics-only body (47)', () => {
+    expect(hasChords('[G]Amazing grace [D]how sweet\nThat saved a wretch')).toBe(true);
+    expect(lyricsOnlyBody('[G]Amazing grace [D]how sweet\nThat saved a wretch')).toBe(
+      'Amazing grace how sweet\nThat saved a wretch',
+    );
+
+    expect(hasChords('A          D\nBlessed be the name')).toBe(true);
+    expect(lyricsOnlyBody('A          D\nBlessed be the name')).toBe('Blessed be the name');
+
+    const lyrics = 'Come thou fount\nTune my heart';
+    expect(hasChords(lyrics)).toBe(false);
+    expect(lyricsOnlyBody(lyrics)).toBe(lyrics);
   });
 });

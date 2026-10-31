@@ -38,6 +38,11 @@ function titles(page) {
   return page.getByTestId('song-title');
 }
 
+// What the inline and chord-over views display: bracket chords lose brackets.
+function chordFree(body: string): string {
+  return body.replace(/[\[\]]/g, '');
+}
+
 async function openSong(page, id: string) {
   await page.goto(`/songs/${id}`);
   await expect(page.getByTestId('song-body')).toBeVisible();
@@ -318,9 +323,12 @@ test.describe('songs', () => {
     await expect(inline).toBeHidden();
     const fontFamily = await inline.evaluate(el => getComputedStyle(el).fontFamily);
     expect(fontFamily).toMatch(/monospace/i);
-    // Segmented spans must not change a single byte of the rendered body.
-    expect(await inline.textContent()).toBe(stored.body);
-    await expect(inline.locator('.chord').first()).toBeAttached();
+    // Segmented spans preserve the body except for chord brackets, which are
+    // display-only; the stored body keeps them.
+    expect(await inline.textContent()).toBe(chordFree(stored.body));
+    await expect(inline.locator('.chord').first()).toHaveText('G');
+    expect(await inline.textContent()).not.toContain('[G]');
+    expect(stored.body).toContain('[G]');
 
     // The chord line sits above its lyric and never carries brackets.
     await expect(chordOver.locator('.chord-line').first()).toHaveText('G');
@@ -370,11 +378,16 @@ test.describe('songs', () => {
   });
 
   test('11. + transposes G to G# and shows the +1 badge', async ({ page }) => {
+    const inline = page.getByTestId('song-body-inline');
     await openSong(page, 'song-a');
     await expect(page.locator('.transpose-label')).toHaveText('Transpose');
-    await expect(page.getByTestId('song-body-inline')).toContainText('[G]Amazing grace');
+    await expect(inline.locator('.chord').first()).toHaveText('G');
+    await expect(inline).not.toContainText('[G]');
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body-inline')).toContainText('[G#]Amazing grace');
+    await expect(inline.locator('.chord').first()).toHaveText('G#');
+    await expect(inline).toContainText('Amazing grace');
+    await expect(inline).not.toContainText('[G#]');
+    await expect(page.getByTestId('song-body-chord-over').locator('.chord-tag').first()).toHaveText('G#');
     await expect(page.getByTestId('song-body-chord-over').locator('.chord-line').first()).toHaveText('G#');
     await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
     await expect(page.getByTestId('song-body-chord-over')).not.toContainText(']');
@@ -408,7 +421,9 @@ test.describe('songs', () => {
     await openSong(page, 'song-a');
     await page.getByTestId('transpose-up').click();
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body-inline')).toContainText('[C]I once was lost');
+    await expect(page.getByTestId('song-body-inline')).toContainText('I once was lost');
+    await expect(page.getByTestId('song-body-inline').locator('.chord').nth(1)).toHaveText('C');
+    await expect(page.getByTestId('song-body-inline')).not.toContainText('[C]');
     await expect(page.getByTestId('song-body-chord-over')).toContainText('C');
     await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+2');
@@ -427,7 +442,7 @@ test.describe('songs', () => {
     await expect(page.getByTestId('transpose-offset')).toHaveText('');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G');
     await expect(page.getByTestId('transpose-announcement')).toHaveText('Transpose reset; key G');
-    expect(await page.getByTestId('song-body-inline').textContent()).toBe(stored.body);
+    expect(await page.getByTestId('song-body-inline').textContent()).toBe(chordFree(stored.body));
 
     // Down spells flats, and the announcement names the direction and keys.
     await page.getByTestId('transpose-down').click();
@@ -452,16 +467,117 @@ test.describe('songs', () => {
   });
 
   test('15. a reload shows the untransposed stored body', async ({ page }) => {
+    const stored = (await readDb<Record<string, any>>('songs/song-a'))!;
+    const inline = page.getByTestId('song-body-inline');
     await openSong(page, 'song-a');
     await page.getByTestId('transpose-up').click();
-    await expect(page.getByTestId('song-body-inline')).toContainText('[G#]Amazing grace');
+    await expect(inline.locator('.chord').first()).toHaveText('G#');
 
     await page.reload();
-    await expect(page.getByTestId('song-body-inline')).toContainText('[G]Amazing grace');
-    await expect(page.getByTestId('song-body-inline')).not.toContainText('[G#]');
+    await expect(page.getByTestId('song-body-inline')).toBeAttached();
+    expect(await inline.textContent()).toBe(chordFree(stored.body));
+    await expect(inline.locator('.chord').first()).toHaveText('G');
+    await expect(inline).not.toContainText('[G#]');
     await expect(page.getByTestId('song-body-chord-over').locator('.chord-line').first()).toHaveText('G');
     await expect(page.getByTestId('song-body-chord-over')).not.toContainText('[');
     await expect(page.getByTestId('transpose-offset')).toHaveText('');
+  });
+
+  test('15b. chord tags are faint gray tags with a fill on desktop and mobile', async ({ page }) => {
+    const tagStyle = (locator) => locator.evaluate(el => {
+      const probe = document.createElement('span');
+      probe.style.background = 'var(--color-surface-muted)';
+      document.body.appendChild(probe);
+      const muted = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      const style = getComputedStyle(el);
+      return { background: style.backgroundColor, muted, color: style.color };
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openSong(page, 'song-a');
+    const desktopTag = page.getByTestId('song-body-chord-over').locator('.chord-tag').first();
+    await expect(desktopTag).toHaveText('G');
+    const desktop = await tagStyle(desktopTag);
+    expect(desktop.background).toBe(desktop.muted);
+    expect(desktop.background).not.toBe('rgba(0, 0, 0, 0)');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileTag = page.getByTestId('song-body-inline').locator('.chord').first();
+    await expect(mobileTag).toHaveText('G');
+    const mobile = await tagStyle(mobileTag);
+    expect(mobile.background).toBe(mobile.muted);
+    expect(mobile.background).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('15c. the lyrics-only toggle hides chords for bracket and chord-over songs', async ({ page }) => {
+    await openSong(page, 'song-a');
+    const toggle = page.getByTestId('toggle-chords');
+    await expect(toggle).toHaveText(/Lyrics only/);
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(toggle).toHaveText(/Show chords/);
+    await expect(page.getByTestId('transpose-controls')).toHaveCount(0);
+    const lyrics = page.getByTestId('song-body-lyrics');
+    await expect(lyrics).toBeVisible();
+    await expect(lyrics).toContainText('Amazing grace how sweet the sound');
+    await expect(lyrics).not.toContainText('[G]');
+    await expect(page.locator('.chord, .chord-tag')).toHaveCount(0);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByTestId('transpose-controls')).toHaveCount(1);
+    await expect(page.getByTestId('song-body-inline')).toBeAttached();
+
+    await openSong(page, 'song-b');
+    await page.getByTestId('toggle-chords').click();
+    expect(await page.getByTestId('song-body-lyrics').textContent()).toBe(
+      'Blessed be the name of the Lord\nBlessed be the name of the Lord',
+    );
+    await page.getByTestId('toggle-chords').click();
+    await expect(page.getByTestId('song-body-chord-over').locator('.chord-line').first()).toBeVisible();
+
+    await openSong(page, 'song-c');
+    await expect(page.getByTestId('toggle-chords')).toHaveCount(0);
+  });
+
+  test('15d. Print / PDF is offered for every song and restores the title', async ({ page }) => {
+    const pageTitle = await page.title();
+    for (const id of ['song-a', 'song-b', 'song-c']) {
+      await openSong(page, id);
+      const title = await page.getByTestId('song-title').textContent();
+      await page.evaluate(() => {
+        (window as any).__printed = 0;
+        (window as any).__printTitle = '';
+        window.print = () => {
+          (window as any).__printed++;
+          (window as any).__printTitle = document.title;
+        };
+      });
+      const button = page.getByTestId('print-song');
+      await expect(button).toBeVisible();
+      await expect(button).toContainText('Print / PDF');
+      await button.click();
+      expect(await page.evaluate(() => (window as any).__printed)).toBe(1);
+      expect(await page.evaluate(() => (window as any).__printTitle)).toBe(title);
+      expect(await page.title()).toBe(pageTitle);
+    }
+  });
+
+  test('15e. lyrics-only print shows the lyrics sheet with no chord tags', async ({ page }) => {
+    await openSong(page, 'song-a');
+    await page.getByTestId('toggle-chords').click();
+    await expect(page.getByTestId('song-body-lyrics')).toBeVisible();
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.getByTestId('song-body-lyrics')).toBeVisible();
+    await expect(page.getByTestId('song-body-lyrics')).toContainText('Amazing grace how sweet the sound');
+    await expect(page.getByTestId('song-body-lyrics')).not.toContainText('[G]');
+    await expect(page.locator('.chord, .chord-tag')).toHaveCount(0);
+    await expect(page.getByTestId('song-body-chord-over')).toHaveCount(0);
+    await expect(page.getByTestId('song-body-inline')).toHaveCount(0);
+    await expect(page.getByTestId('toggle-chords')).toBeHidden();
+    await expect(page.getByTestId('print-song')).toBeHidden();
   });
 
   test('16. print hides the navbar and transpose controls but keeps title and body', async ({ page }) => {

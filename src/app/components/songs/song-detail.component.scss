@@ -157,6 +157,13 @@
   --mat-button-text-label-text-color: var(--color-ink-2);
 }
 
+.song-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .song-body {
   margin: 0;
   max-width: 72ch;
@@ -168,11 +175,25 @@
   line-height: 1.75;
   color: var(--color-ink);
 
-  // Chord tint: bracket chords inline, whole chord-over lines as runs.
+  // Faint gray tags: inline bracket chords and every chord-over token.
   .chord,
-  .chord-line {
-    color: var(--color-brand-primary);
+  .chord-tag {
+    background: var(--color-surface-muted);
+    color: var(--color-ink-2);
+    border-radius: 4px;
     font-weight: 600;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .chord {
+    padding: 0 2px;
+  }
+
+  // Negative margin cancels the padding so chord columns stay aligned.
+  .chord-tag {
+    padding: 0 3px;
+    margin: 0 -3px;
   }
 
   @media (max-width: 600px) {
@@ -279,7 +300,8 @@
 
 @media print {
   app-page-toolbar,
-  .transpose-controls {
+  .transpose-controls,
+  .song-tools {
     display: none !important;
   }
 
@@ -350,12 +372,15 @@
     orphans: 3;
     widows: 3;
 
-    // Printed chords keep their 600 weight (no ink cost), but print as plain
-    // ink instead of the brand tint.
+    // Keep the faint tag fill on paper: the background is what makes a chord
+    // read as a tag once the brand tint is gone.
     .chord,
-    .chord-line {
-      color: inherit;
+    .chord-tag {
+      background: var(--color-surface-muted) !important;
+      color: var(--color-ink) !important;
       font-weight: 600;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
     }
   }
 
@@ -363,7 +388,8 @@
     display: none !important;
   }
 
-  .song-body-chord-over {
+  .song-body-chord-over,
+  .song-body-lyrics {
     display: block !important;
     white-space: pre-wrap;
   }

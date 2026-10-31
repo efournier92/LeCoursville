@@ -7,7 +7,9 @@ import { PeopleService } from 'src/app/services/people.service';
 import {
   ChordOverLine,
   hasBracketChords,
+  hasChords as bodyHasChords,
   layoutChordOver,
+  lyricsOnlyBody as toLyricsOnlyBody,
   segmentSongBody,
   SongLine,
   transposeBody,
@@ -27,6 +29,7 @@ export class SongDetailComponent implements OnInit, OnDestroy {
   song: Song | null = null;
   peopleById = new Map<string, Person>();
   offset = 0;
+  hideChords = false;
   status: 'loading' | 'error' | 'notfound' | 'ready' = 'loading';
 
   /** True once the user has transposed; keeps the live region silent on load. */
@@ -116,6 +119,14 @@ export class SongDetailComponent implements OnInit, OnDestroy {
     return !!this.song && hasBracketChords(this.song.body);
   }
 
+  get hasChords(): boolean {
+    return !!this.song && bodyHasChords(this.song.body);
+  }
+
+  get lyricsOnlyBody(): string {
+    return toLyricsOnlyBody(this.displayBody);
+  }
+
   transpose(delta: number): void {
     this.offset = Math.max(-11, Math.min(11, this.offset + delta));
     this.hasTransposed = true;
@@ -124,6 +135,21 @@ export class SongDetailComponent implements OnInit, OnDestroy {
   reset(): void {
     this.offset = 0;
     this.hasTransposed = true;
+  }
+
+  toggleChords(): void {
+    this.hideChords = !this.hideChords;
+  }
+
+  /** The song title names the Save-as-PDF file, so restore it afterwards. */
+  printSong(): void {
+    const previousTitle = document.title;
+    try {
+      document.title = this.song?.title || previousTitle;
+      window.print();
+    } finally {
+      document.title = previousTitle;
+    }
   }
 
   retry(): void {
