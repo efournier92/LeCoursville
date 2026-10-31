@@ -69,7 +69,32 @@ test.describe('songs', () => {
     await expect(cards(page)).toHaveCount(4);
     await page.getByTestId('song-search').fill('zzz-no-match');
     await expect(cards(page)).toHaveCount(0);
-    await expect(page.locator('.no-results-message')).toContainText('zzz-no-match');
+    const noResults = page.locator('.no-results-message');
+    await expect(noResults.locator('.no-results-title')).toHaveText('No results');
+    await expect(noResults).toContainText('zzz-no-match');
+  });
+
+  test('6b. a non-admin empty library greets the viewer without an admin CTA', async ({ page }) => {
+    const original = await readDb<Record<string, any>>('songs');
+    try {
+      await deleteDb('songs');
+      await page.goto('/songs');
+      const empty = page.getByTestId('songs-empty');
+      await expect(empty).toContainText('No songs yet');
+      await expect(empty).toContainText("Once songs are added, they'll show up here.");
+      await expect(empty.getByRole('link')).toHaveCount(0);
+    } finally {
+      await writeDb('songs', original);
+    }
+  });
+
+  test('6c. an unknown song id shows the not-found copy without a retry action', async ({ page }) => {
+    await page.goto('/songs/e2e-missing-song');
+    const alert = page.locator('app-load-error');
+    await expect(alert).toContainText(
+      "This song couldn't be found. It may have been removed. Head back to the songs list to find another.",
+    );
+    await expect(alert.getByRole('button', { name: 'Try again' })).toHaveCount(0);
   });
 
   test('7. cards show leader chips and the detail adds last names', async ({ page }) => {
@@ -98,6 +123,31 @@ test.describe('songs', () => {
     await openSong(page, 'song-c');
     await expect(page.getByTestId('leader-chip')).toHaveCount(0);
     await expect(page.getByTestId('song-leaders')).toHaveCount(0);
+  });
+
+  test('9b. the detail labels its leaders "Led by" and prints them as one line', async ({ page }) => {
+    await openSong(page, 'song-a');
+    const leaders = page.getByTestId('song-leaders');
+    await expect(leaders.locator('.song-leaders-label')).toHaveText('Led by');
+    await expect(leaders.getByTestId('leader-chip')).toHaveText(['Alice Anderson', 'Ben Brown']);
+
+    await page.emulateMedia({ media: 'print' });
+    const print = await leaders.evaluate(el => {
+      const label = el.querySelector('.song-leaders-label') as HTMLElement;
+      const chips = Array.from(
+        el.querySelectorAll('[data-testid="leader-chip"]'),
+      ) as HTMLElement[];
+      return {
+        label: label.textContent,
+        spaced: label.getBoundingClientRect().right <= chips[0].getBoundingClientRect().left,
+        border: getComputedStyle(chips[0]).borderTopWidth,
+        comma: getComputedStyle(chips[0], '::after').content,
+      };
+    });
+    expect(print.label).toBe('Led by');
+    expect(print.spaced).toBe(true);
+    expect(print.border).toBe('0px');
+    expect(print.comma).toContain(',');
   });
 
   test('10. the detail body is monospace and preserves stored newlines', async ({ page }) => {
@@ -143,11 +193,19 @@ test.describe('songs', () => {
 
   test('11. + transposes G to G# and shows the +1 badge', async ({ page }) => {
     await openSong(page, 'song-a');
+    await expect(page.locator('.transpose-label')).toHaveText('Transpose');
     await expect(page.getByTestId('song-body')).toContainText('[G]Amazing grace');
     await page.getByTestId('transpose-up').click();
     await expect(page.getByTestId('song-body')).toContainText('[G#]Amazing grace');
     await expect(page.getByTestId('transpose-offset')).toHaveText('+1');
     await expect(page.getByTestId('song-key')).toHaveText('Key: G → G#');
+    // The M3 state layer is square inside the pill, so no ink spills over the
+    // "+1" divider or the right cap after the click.
+    const stateLayer = page
+      .getByTestId('transpose-up')
+      .locator('.mat-mdc-button-persistent-ripple');
+    await expect(stateLayer).toHaveCSS('border-radius', '0px');
+    await expect(page.getByTestId('transpose-up')).toHaveCSS('border-radius', '0px');
   });
 
   test('12. a flat-root bracket plus two renders C', async ({ page }) => {
@@ -274,13 +332,19 @@ test.describe('songs', () => {
       const title = `E2E Paste ${Date.now()}`;
       let createdId: string | null = null;
       try {
-        await openAddPanel(page);
+        await page.goto('/admin/songs');
+        await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+        await expect(page.getByTestId('admin-add-song')).toContainText('Add song');
+        await page.getByTestId('admin-add-song').click();
+        await expect(page.getByTestId('admin-paste-input')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Add song' })).toBeVisible();
         await page.getByTestId('admin-paste-input').fill(headerText(title));
         await expect(page.getByTestId('admin-parse-button')).toBeEnabled();
         await page.getByTestId('admin-parse-button').click();
 
         const dialog = page.getByTestId('song-draft-dialog');
         await expect(dialog).toBeVisible();
+        await expect(dialog).toHaveText('Add song');
         await expect(page.getByTestId('draft-title')).toHaveValue(title);
         await expect(page.getByTestId('draft-source')).toHaveValue('E2E Hymnal');
         await expect(page.getByTestId('draft-key')).toHaveValue('D');
@@ -322,6 +386,9 @@ test.describe('songs', () => {
       let createdId: string | null = null;
       try {
         await openAddPanel(page);
+        await expect(page.locator('.file-import .admin-muted')).toContainText(
+          'Each file can be up to 2 MB and opens as an editable draft. Files are never uploaded or kept.',
+        );
         await expect(page.getByRole('button', { name: 'Choose .txt files' })).toBeVisible();
         await page.getByTestId('admin-file-input').setInputFiles({
           name: 'e2e-song.txt',
@@ -473,6 +540,13 @@ test.describe('songs', () => {
       await expect(page.getByTestId('admin-songs-table')).toBeVisible();
       await page.getByTestId('admin-songs-search').fill('Amazing');
       await expect(page.getByTestId('admin-song-row')).toHaveCount(1);
+
+      await page.getByTestId('admin-songs-search').fill('zzz-no-match');
+      await expect(page.getByTestId('admin-song-row')).toHaveCount(0);
+      const noResults = page.locator('.no-results-message');
+      await expect(noResults.locator('.no-results-title')).toHaveText('No results');
+      await expect(noResults).toContainText('zzz-no-match');
+
       await page.getByRole('button', { name: 'Clear search' }).click();
       await expect(page.getByTestId('admin-songs-search')).toHaveValue('');
       await expect(page.getByTestId('admin-songs-search')).toBeFocused();
@@ -601,6 +675,40 @@ test.describe('songs', () => {
       await expect(page.locator('.admin-error')).toContainText('huge.txt');
       await expect(page.locator('.admin-error')).toContainText('larger than 2 MB');
       await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+    });
+
+    test('28b. failures across one pick collapse into one line and survive a later success', async ({ page }) => {
+      const title = `E2E Mixed ${Date.now()}`;
+      try {
+        await openAddPanel(page);
+
+        // Two bad files: one aggregate line, no per-file detail.
+        await page.getByTestId('admin-file-input').setInputFiles([
+          { name: 'first-empty.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) },
+          { name: 'second-empty.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) },
+        ]);
+        await expect(page.locator('.admin-error')).toHaveText(
+          "We couldn't import 2 of 2 files. Check that each one is a .txt file under 2 MB, then try again.",
+        );
+        await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+
+        // One bad file then a good one: the specific line is not overwritten by
+        // the draft the good file opens.
+        await page.getByTestId('admin-file-input').setInputFiles([
+          { name: 'short.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) },
+          { name: 'mixed.txt', mimeType: 'text/plain', buffer: Buffer.from(headerText(title)) },
+        ]);
+        await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+        await page.getByTestId('draft-cancel').click();
+        await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+        await expect(page.locator('.admin-error')).toHaveText('"short.txt" is empty.');
+        expect(await storedSongByTitle(title)).toBeUndefined();
+      } finally {
+        const entry = await storedSongByTitle(title);
+        if (entry) {
+          await deleteDb(`songs/${entry[0]}`);
+        }
+      }
     });
 
     test('29. Escape never discards a typed draft; Cancel is the discard path', async ({ page }) => {

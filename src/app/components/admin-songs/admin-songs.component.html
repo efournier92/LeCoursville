@@ -10,7 +10,7 @@
       (click)="toggleAddPanel()"
       >
       <mat-icon aria-hidden="true">{{ showAddPanel ? 'close' : 'add' }}</mat-icon>
-      {{ showAddPanel ? 'Close' : 'Add Song' }}
+      {{ showAddPanel ? 'Close' : 'Add song' }}
     </button>
   </app-page-toolbar>
 
@@ -47,7 +47,7 @@
   @if (showAddPanel) {
     <mat-card class="admin-surface add-song-card">
       <mat-card-content>
-        <h2 class="admin-card-title">Add a song</h2>
+        <h2 class="admin-card-title">Add song</h2>
         <mat-form-field class="admin-upload-input paste-field">
           <mat-label>Song text</mat-label>
           <textarea
@@ -95,7 +95,7 @@
             Choose .txt files
           </button>
           <p class="admin-muted">
-            Each file opens an editable draft. Files are never uploaded or kept.
+            Each file can be up to 2 MB and opens as an editable draft. Files are never uploaded or kept.
             @if (pickedFileCount > 0) {
               <span>{{ pickedFileCount }} file{{ pickedFileCount === 1 ? '' : 's' }} selected.</span>
             }
@@ -121,10 +121,10 @@
     @if (songs.length === 0) {
       <div class="admin-empty" data-testid="admin-songs-empty">
         <p class="admin-card-title">No songs yet</p>
-        <p class="admin-muted">Use Add Song to paste lyrics or import .txt files.</p>
+        <p class="admin-muted">Use Add song to paste lyrics or import .txt files.</p>
       </div>
     } @else if (filteredSongs.length === 0) {
-      <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs"></app-no-results-message>
+      <app-no-results-message [searchTerm]="activeQuery" [isCentered]="true" noun="songs" title="No results"></app-no-results-message>
     } @else {
       <mat-card class="admin-surface songs-table-card">
         <table class="admin-table" data-testid="admin-songs-table">

@@ -155,7 +155,7 @@ export class SongDraftDialogComponent {
       this.error =
         error instanceof Error && error.message === 'Song no longer exists.'
           ? error.message
-          : 'Couldn’t save this song. Please try again.';
+          : 'Couldn\'t save this song. Please try again.';
     } finally {
       this.saving = false;
     }

@@ -50,9 +50,11 @@
           <mat-icon>music_note</mat-icon>
         </div>
         <p class="songs-empty-title">No songs yet</p>
-        <p class="songs-empty-hint">Paste lyrics or import .txt files on the admin Songs page.</p>
         @if (isAdmin) {
+          <p class="songs-empty-hint">Paste lyrics or import .txt files on the admin Songs page.</p>
           <a mat-flat-button color="primary" routerLink="/admin/songs">Add songs</a>
+        } @else {
+          <p class="songs-empty-hint">Once songs are added, they'll show up here.</p>
         }
       </div>
     } @else {
@@ -61,6 +63,7 @@
           [searchTerm]="activeQuery"
           [isCentered]="true"
           noun="songs"
+          title="No results"
           ></app-no-results-message>
       }
 

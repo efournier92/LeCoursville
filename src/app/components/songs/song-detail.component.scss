@@ -38,8 +38,16 @@
 .song-leaders {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-top: 4px;
+}
+
+.song-leaders-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
 }
 
 .leader-chip {
@@ -71,6 +79,11 @@
   margin-bottom: 16px;
 }
 
+.transpose-label {
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+
 // One bordered pill: − | offset | +. Reset sits outside it as plain text.
 .transpose-pill {
   display: inline-flex;
@@ -87,6 +100,15 @@
     padding: 0;
     border-radius: 0;
     --mat-icon-button-state-layer-size: 36px;
+    // M3 rounds the button and its state layer to a circle by default; in a
+    // segmented pill that ink spills past the divider and the cap. Square it
+    // (the pill's own overflow clips the rest) so both states stay inside.
+    --mat-icon-button-container-shape: 0;
+
+    .mat-mdc-button-persistent-ripple,
+    .mat-ripple-element {
+      border-radius: 0;
+    }
   }
 }
 
@@ -237,9 +259,9 @@
     max-width: none !important;
   }
 
-  // Leaders print as plain text, not filled pills.
+  // Leaders print as plain text, not filled pills: "Led by Alice, Ben".
   .song-leaders {
-    gap: 4px;
+    gap: 0.35em;
   }
 
   .leader-chip {

@@ -130,28 +130,38 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     this.actionError = null;
     this.pickedFileCount = files.length;
     this.importing = true;
+    // Failures collect across the whole pick: a later success must not
+    // overwrite an earlier line, so the report lands after the loop.
+    const failures: string[] = [];
     try {
       for (const file of files) {
         if (file.size === 0) {
-          this.actionError = `“${file.name}” is empty.`;
+          failures.push(`"${file.name}" is empty.`);
           continue;
         }
         if (file.size > MAX_IMPORT_BYTES) {
-          this.actionError = `“${file.name}” is larger than 2 MB.`;
+          failures.push(`"${file.name}" is larger than 2 MB.`);
           continue;
         }
         try {
           const text = await readFileText(file);
           if (!text.trim()) {
-            this.actionError = `“${file.name}” is empty.`;
+            failures.push(`"${file.name}" is empty.`);
             continue;
           }
           await this.openDraft(null, parseSongText(text, this.people));
         } catch {
-          this.actionError = `Couldn’t read “${file.name}”.`;
+          failures.push(`Couldn't read "${file.name}".`);
         }
       }
     } finally {
+      if (failures.length > 1) {
+        this.actionError =
+          `We couldn't import ${failures.length} of ${files.length} files. ` +
+          'Check that each one is a .txt file under 2 MB, then try again.';
+      } else if (failures.length === 1) {
+        this.actionError = failures[0];
+      }
       this.importing = false;
     }
   }
@@ -175,7 +185,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
     try {
       await this.songsService.deleteSong(song.id);
     } catch {
-      this.actionError = `Couldn’t delete “${song.title}”. Please try again.`;
+      this.actionError = `Couldn't delete "${song.title}". Please try again.`;
     }
   }
 

@@ -24,7 +24,10 @@
   }
 
   @if (status === 'notfound') {
-    <app-load-error message="This song couldn't be found." (retry)="retry()"></app-load-error>
+    <app-load-error
+      message="This song couldn't be found. It may have been removed. Head back to the songs list to find another."
+      [showRetry]="false"
+      ></app-load-error>
   }
 
   @if (status === 'ready' && song) {
@@ -42,6 +45,7 @@
 
         @if (song.leaderIds.length > 0) {
           <div class="song-leaders" data-testid="song-leaders">
+            <span class="song-leaders-label">Led by</span>
             @for (leaderId of song.leaderIds; track leaderId) {
               @if (isResolved(leaderId)) {
                 <a
@@ -60,6 +64,7 @@
 
       @if (showTranspose) {
         <div class="transpose-controls" data-testid="transpose-controls" role="group" aria-label="Transpose">
+          <span class="transpose-label">Transpose</span>
           <div class="transpose-pill">
             <button
               mat-icon-button

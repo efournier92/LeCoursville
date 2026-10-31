@@ -217,13 +217,14 @@
     tbody td {
       display: flex;
       gap: 12px;
-      padding: 6px 0;
+      padding: 4px 0;
       border-bottom: none;
       height: auto;
 
       &::before {
         content: attr(data-label);
-        flex: 0 0 40%;
+        flex: 0 0 auto;
+        min-width: 88px;
         @include admin-eyebrow;
       }
 
