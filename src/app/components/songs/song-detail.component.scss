@@ -138,6 +138,10 @@
   @media (max-width: 600px) {
     font-size: 0.95rem;
   }
+
+  @media (min-width: 900px) {
+    font-size: 1.2rem;
+  }
 }
 
 .song-back {
@@ -212,6 +216,14 @@
   .transpose-controls {
     display: none !important;
   }
+
+  // Print on white: the warm app ground and the sheet's card chrome would
+  // otherwise print the lyrics as a floating card on gray.
+  .page-ground,
+  .song-detail {
+    background: #fff;
+  }
+
   .song-detail {
     padding: 0;
   }
@@ -221,6 +233,7 @@
     // Keeps the first line's ascenders off the page-box edge.
     padding: 8px 0 0;
     border: 0;
+    border-radius: 0;
     box-shadow: none;
   }
 

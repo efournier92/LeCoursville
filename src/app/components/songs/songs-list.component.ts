@@ -13,6 +13,15 @@ function fold(value: string | null | undefined): string {
   return (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+/** Chord-over tokens: root, optional accidental and quality/suspension, slash bass. */
+const CHORD_TOKEN = /^[A-G][#b]?(?:maj|min|m|dim|aug|sus|add|M|°|ø|\d)*(?:\/[A-G][#b]?)?$/;
+
+/** A line whose every token is a chord name carries no lyric to preview. */
+function isChordOnlyLine(line: string): boolean {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  return tokens.length > 0 && tokens.every(token => CHORD_TOKEN.test(token.replace(/[()]/g, '')));
+}
+
 @Component({
   selector: 'app-songs-list',
   templateUrl: './songs-list.component.html',
@@ -106,19 +115,27 @@ export class SongsListComponent implements OnInit, OnDestroy {
   }
 
   excerpt(song: Song): string {
-    const lines = song.body.split('\n');
-    const picked: string[] = [];
-    for (const line of lines) {
-      if (picked.length === 2) {
-        break;
-      }
-      // The card preview reads as lyrics; the detail keeps the chord brackets.
-      const preview = line.replace(/\[[^\]]*\]/g, '').trim();
-      if (preview) {
-        picked.push(preview);
-      }
+    // The card preview reads as lyrics; the detail keeps the chord brackets.
+    const candidates = song.body
+      .split('\n')
+      .map(line => {
+        const text = line.replace(/\[[^\]]*\]/g, '').trim();
+        return { text, chordOnly: isChordOnlyLine(text) };
+      })
+      .filter(entry => entry.text.length > 0);
+
+    // A leading chord-only line is sheet notation, not a lyric. When the first
+    // two lines are both chords, skip every chord line and take the first two
+    // lyric lines instead.
+    const firstLyric = candidates.findIndex(entry => !entry.chordOnly);
+    if (firstLyric === -1) {
+      return '';
     }
-    return picked.join('\n');
+    const pool =
+      firstLyric >= 2
+        ? candidates.filter(entry => !entry.chordOnly)
+        : candidates.slice(firstLyric);
+    return pool.slice(0, 2).map(entry => entry.text).join('\n');
   }
 
   private matches(song: Song, needle: string): boolean {

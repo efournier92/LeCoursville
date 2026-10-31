@@ -4,6 +4,14 @@
   width: 100%;
 }
 
+// Material's shared dialog padding leaves 40-48px between the heading and the
+// first field (headline bottom + content top). Drop the headline's own bottom
+// band so the field sits on the content's normal 24px rhythm.
+h2[mat-dialog-title] {
+  margin-bottom: 0;
+  padding-bottom: 0 !important;
+}
+
 // The dialog content is the only scroller; Cancel/Save are siblings and stay
 // visible while the picker scrolls inside .draft-options.
 mat-dialog-content {
@@ -125,8 +133,12 @@ mat-dialog-content {
     flex: 1 1 auto;
   }
 
+  // `rows` sets the textarea's intrinsic height, so cap the box itself at
+  // mobile: the picker below must fit without being sliced at the content edge.
   .draft-body-field textarea {
-    min-height: 140px;
+    height: 104px;
+    min-height: 104px;
+    overflow-y: auto;
   }
 
   .draft-options {

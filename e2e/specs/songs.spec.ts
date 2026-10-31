@@ -111,6 +111,36 @@ test.describe('songs', () => {
     await expect(body.locator('.chord').first()).toBeVisible();
   });
 
+  test('10b. the body scales to 1.2rem on desktop and 0.95rem on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openSong(page, 'song-a');
+    const body = page.getByTestId('song-body');
+    await expect(body).toHaveCSS('font-size', '19.2px');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(body).toHaveCSS('font-size', '15.2px');
+    // The 72ch measure still applies; no width regression from the scale bump.
+    const measure = await body.evaluate(el => parseFloat(getComputedStyle(el).maxWidth));
+    expect(measure).toBeGreaterThan(500);
+  });
+
+  test('10c. the preview skips a leading chord-only line and cards stretch to a row', async ({ page }) => {
+    await page.goto('/songs');
+    await expect(cards(page)).toHaveCount(4);
+
+    const blessed = cards(page).filter({ hasText: 'Blessed Be the Name' });
+    const excerpt = (await blessed.locator('.song-excerpt').textContent())!.trim();
+    expect(excerpt.split('\n')[0]).toBe('Blessed be the name of the Lord');
+
+    const grid = await page.locator('.songs-grid').evaluate(el => getComputedStyle(el).alignItems);
+    expect(grid).toBe('stretch');
+
+    const heights = await cards(page).evaluateAll(els =>
+      els.slice(0, 3).map(el => Math.round(el.getBoundingClientRect().height)),
+    );
+    expect(new Set(heights).size).toBe(1);
+  });
+
   test('11. + transposes G to G# and shows the +1 badge', async ({ page }) => {
     await openSong(page, 'song-a');
     await expect(page.getByTestId('song-body')).toContainText('[G]Amazing grace');
@@ -167,6 +197,18 @@ test.describe('songs', () => {
     await expect(page.getByTestId('transpose-controls')).toBeHidden();
     await expect(page.getByTestId('song-title')).toBeVisible();
     await expect(page.getByTestId('song-body')).toBeVisible();
+
+    // The sheet prints on the page ground, not as a rounded card over gray.
+    const print = await page.evaluate(() => {
+      const sheet = document.querySelector('.song-sheet')!;
+      const ground = document.querySelector('.song-detail')!;
+      return {
+        radius: parseFloat(getComputedStyle(sheet).borderTopLeftRadius),
+        ground: getComputedStyle(ground).backgroundColor,
+      };
+    });
+    expect(print.radius).toBe(0);
+    expect(print.ground).toBe('rgb(255, 255, 255)');
   });
 
   test('17. disabling the songs flag redirects to feature-disabled', async ({ page }) => {
@@ -450,6 +492,13 @@ test.describe('songs', () => {
       // Mobile: the content scrolls; the picker and the actions stay reachable.
       await page.setViewportSize({ width: 390, height: 844 });
       await expect(page.locator('mat-dialog-content')).toHaveCSS('overflow-y', 'auto');
+      // The tighter title band and 104px body keep the Leaders search whole on
+      // first paint instead of slicing it at the content edge.
+      await expect(page.getByTestId('draft-body')).toHaveCSS('min-height', '104px');
+      await expect(page.getByRole('heading', { name: 'Leaders' })).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('draft-leader-search')).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('draft-leader-option').first()).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('draft-save')).toBeInViewport({ ratio: 1 });
       await page.getByTestId('draft-leader-search').scrollIntoViewIfNeeded();
       await expect(page.getByTestId('draft-leader-search')).toBeInViewport();
       await page.getByTestId('draft-leader-option').first().click();
@@ -458,5 +507,111 @@ test.describe('songs', () => {
       await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
       expect(await storedSongByTitle('E2E Dialog Fit')).toBeUndefined();
     });
+
+    test('27. saving a draft whose song was deleted reports it and never recreates the node', async ({ page }) => {
+      const id = `e2e-ghost-${Date.now()}`;
+      const title = `E2E Ghost ${Date.now()}`;
+      await writeDb(`songs/${id}`, {
+        id,
+        title,
+        body: 'Ghost lyric line',
+        source: null,
+        musicalKey: null,
+        leaderIds: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      try {
+        await page.goto('/admin/songs');
+        const row = page.getByTestId('admin-song-row').filter({ hasText: title });
+        await expect(row).toBeVisible();
+        await row.getByTestId('admin-edit-song').click();
+        await expect(page.getByTestId('draft-title')).toHaveValue(title);
+
+        await deleteDb(`songs/${id}`);
+        // The live list drops the row; the open draft keeps its snapshot.
+        await expect(row).toHaveCount(0);
+        await page.getByTestId('draft-title').fill(`${title} edited`);
+        await page.getByTestId('draft-save').click();
+
+        await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Song no longer exists.');
+        await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+        expect(await readDb(`songs/${id}`)).toBeNull();
+
+        await page.getByTestId('draft-cancel').click();
+        await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+      } finally {
+        await deleteDb(`songs/${id}`);
+      }
+    });
+
+    test('28. empty and oversized files are rejected by name without a draft', async ({ page }) => {
+      await openAddPanel(page);
+
+      await page.getByTestId('admin-file-input').setInputFiles({
+        name: 'empty.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.alloc(0),
+      });
+      await expect(page.locator('.admin-error')).toContainText('empty.txt');
+      await expect(page.locator('.admin-error')).toContainText('is empty');
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+
+      await page.getByTestId('admin-file-input').setInputFiles({
+        name: 'blank.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('   \n\n'),
+      });
+      await expect(page.locator('.admin-error')).toContainText('blank.txt');
+      await expect(page.locator('.admin-error')).toContainText('is empty');
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+
+      await page.getByTestId('admin-file-input').setInputFiles({
+        name: 'huge.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.alloc(2 * 1024 * 1024 + 1, 97),
+      });
+      await expect(page.locator('.admin-error')).toContainText('huge.txt');
+      await expect(page.locator('.admin-error')).toContainText('larger than 2 MB');
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+    });
+
+    test('29. Escape never discards a typed draft; Cancel is the discard path', async ({ page }) => {
+      await openAddPanel(page);
+      await page.getByTestId('admin-paste-input').fill('Title: E2E Escape\n\nA lyric line');
+      await page.getByTestId('admin-parse-button').click();
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+
+      await page.getByTestId('draft-title').fill('E2E Escape kept');
+      await page.keyboard.press('Escape');
+      await expect(page.getByTestId('song-draft-dialog')).toBeVisible();
+      await expect(page.getByTestId('draft-title')).toHaveValue('E2E Escape kept');
+
+      await page.getByTestId('draft-cancel').click();
+      await expect(page.getByTestId('song-draft-dialog')).toHaveCount(0);
+      expect(await storedSongByTitle('E2E Escape kept')).toBeUndefined();
+    });
+
+    for (const width of [320, 390]) {
+      test(`30. at ${width}px the toolbar shares one row and the filter bar collapses`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('/admin/songs');
+        await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+
+        const titleBox = (await page.locator('.page-toolbar-title').boundingBox())!;
+        const ctaBox = (await page.getByTestId('admin-add-song').boundingBox())!;
+        // Same row: the CTA's vertical span overlaps the title's.
+        expect(ctaBox.y).toBeLessThan(titleBox.y + titleBox.height);
+        expect(titleBox.y).toBeLessThan(ctaBox.y + ctaBox.height);
+        // CTA right-aligned, title left.
+        expect(ctaBox.x).toBeGreaterThan(titleBox.x);
+
+        const filterHeight = await page
+          .locator('.admin-filter-bar')
+          .evaluate(el => el.getBoundingClientRect().height);
+        expect(filterHeight).toBeLessThan(60);
+        await expect(page.locator('.admin-filter-actions')).toHaveCSS('display', 'none');
+      });
+    }
   });
 });

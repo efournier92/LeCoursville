@@ -151,8 +151,11 @@ export class SongDraftDialogComponent {
         await this.songsService.saveSong(song);
       }
       this.dialogRef.close(song);
-    } catch {
-      this.error = 'Couldn’t save this song. Please try again.';
+    } catch (error) {
+      this.error =
+        error instanceof Error && error.message === 'Song no longer exists.'
+          ? error.message
+          : 'Couldn’t save this song. Please try again.';
     } finally {
       this.saving = false;
     }

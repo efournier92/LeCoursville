@@ -24,6 +24,9 @@ const UPDATED_FORMAT = new Intl.DateTimeFormat('en', {
   year: 'numeric',
 });
 
+/** Reject oversized imports before reading them into the draft flow. */
+const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+
 @Component({
   selector: 'app-admin-songs',
   templateUrl: './admin-songs.component.html',
@@ -41,10 +44,13 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   pasteText = '';
   pickedFileCount = 0;
   actionError: string | null = null;
+  peopleLoaded = false;
+  importing = false;
   skeletonIterations = [1, 2, 3, 4, 5, 6];
 
   private songsSub: Subscription | null = null;
   private peopleSub: Subscription | null = null;
+  private peopleLoadedSub: Subscription | null = null;
   private peopleById = new Map<string, Person>();
 
   constructor(
@@ -60,11 +66,15 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
       this.people = people || [];
       this.peopleById = new Map(this.people.map(person => [person.id, person]));
     });
+    this.peopleLoadedSub = this.peopleService.peopleLoaded$.subscribe(loaded => {
+      this.peopleLoaded = loaded;
+    });
   }
 
   ngOnDestroy(): void {
     this.songsSub?.unsubscribe();
     this.peopleSub?.unsubscribe();
+    this.peopleLoadedSub?.unsubscribe();
   }
 
   get filteredSongs(): Song[] {
@@ -104,25 +114,45 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
 
   async onParse(): Promise<void> {
     const text = this.pasteText;
-    if (!text.trim()) {
+    if (!this.peopleLoaded || !text.trim()) {
       return;
     }
     await this.openDraft(null, parseSongText(text, this.people));
   }
 
   async onFilesPicked(event: Event): Promise<void> {
+    if (!this.peopleLoaded || this.importing) {
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const files = input.files ? Array.from(input.files) : [];
     input.value = '';
     this.actionError = null;
     this.pickedFileCount = files.length;
-    for (const file of files) {
-      try {
-        const text = await readFileText(file);
-        await this.openDraft(null, parseSongText(text, this.people));
-      } catch {
-        this.actionError = `Couldn’t read “${file.name}”.`;
+    this.importing = true;
+    try {
+      for (const file of files) {
+        if (file.size === 0) {
+          this.actionError = `“${file.name}” is empty.`;
+          continue;
+        }
+        if (file.size > MAX_IMPORT_BYTES) {
+          this.actionError = `“${file.name}” is larger than 2 MB.`;
+          continue;
+        }
+        try {
+          const text = await readFileText(file);
+          if (!text.trim()) {
+            this.actionError = `“${file.name}” is empty.`;
+            continue;
+          }
+          await this.openDraft(null, parseSongText(text, this.people));
+        } catch {
+          this.actionError = `Couldn’t read “${file.name}”.`;
+        }
       }
+    } finally {
+      this.importing = false;
     }
   }
 
@@ -170,6 +200,9 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
         width: '640px',
         maxWidth: 'calc(100vw - 32px)',
         autoFocus: 'first-tabbable',
+        // Escape/backdrop must never discard a typed draft; Cancel is the
+        // explicit discard and the only close path while a save is in flight.
+        disableClose: true,
       },
     );
     return firstValueFrom(ref.afterClosed()).then(result => result ?? null);

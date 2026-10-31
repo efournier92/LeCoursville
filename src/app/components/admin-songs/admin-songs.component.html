@@ -64,12 +64,16 @@
             color="primary"
             type="button"
             data-testid="admin-parse-button"
-            [disabled]="!pasteText.trim()"
+            [disabled]="!pasteText.trim() || !peopleLoaded || importing"
             (click)="onParse()"
             >
             Parse
           </button>
-          <span class="admin-muted">Parse the pasted text into an editable draft.</span>
+          @if (!peopleLoaded) {
+            <span class="admin-muted" role="status" data-testid="add-people-loading">Loading people…</span>
+          } @else {
+            <span class="admin-muted">Parse the pasted text into an editable draft.</span>
+          }
         </div>
         <div class="file-import">
           <input
@@ -85,6 +89,7 @@
           <button
             mat-stroked-button
             type="button"
+            [disabled]="!peopleLoaded || importing"
             (click)="fileInput.click()"
             >
             Choose .txt files

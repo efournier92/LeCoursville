@@ -81,4 +81,24 @@
     justify-content: flex-end;
     flex-wrap: wrap;
   }
+
+  // Title and the Add Song CTA share one row: the shared toolbar drops tools
+  // onto a second row below 600px, which left the title's row half empty.
+  :host ::ng-deep .page-toolbar .page-toolbar-content:has(> *) {
+    flex-basis: auto;
+  }
+
+  // This page's filter row holds only the search field. Collapse the empty
+  // actions row and the bar's phantom height so it does not reserve ~100px.
+  :host
+    ::ng-deep
+    app-admin-filter-bar
+    .admin-filter-bar:not(:has(.admin-filter-actions > *)) {
+    min-height: 0;
+    padding: 4px 16px 12px;
+
+    .admin-filter-actions {
+      display: none;
+    }
+  }
 }

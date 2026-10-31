@@ -33,7 +33,7 @@ describe('SongsService', () => {
     rtdbSpy.list.and.returnValue({ valueChanges: () => of([makeSong()]) } as any);
 
     objectRef = {
-      valueChanges: () => of(null),
+      valueChanges: () => of(makeSong()),
       set: jasmine.createSpy('set').and.returnValue(Promise.resolve()),
       update: jasmine.createSpy('update').and.returnValue(Promise.resolve()),
       remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve()),
@@ -84,6 +84,15 @@ describe('SongsService', () => {
     const payload = (objectRef.update as any).mock.calls[0][0] as Partial<Song>;
     expect(payload.title).toBe('New Title');
     expect(payload.updatedAt).toBeGreaterThan(0);
+  });
+
+  it('updateSong rejects a deleted node instead of upserting a partial record', async () => {
+    objectRef.valueChanges = () => of(null);
+
+    await expect(service.updateSong('s1', { title: 'Ghost' })).rejects.toThrow(
+      'Song no longer exists.',
+    );
+    expect(objectRef.update).not.toHaveBeenCalled();
   });
 
   it('deleteSong removes the record', async () => {

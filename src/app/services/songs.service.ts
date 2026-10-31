@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Song } from 'src/app/models/song';
 import { RtdbService } from './rtdb.service';
 
@@ -28,7 +28,14 @@ export class SongsService {
   }
 
   async updateSong(id: string, patch: Partial<Song>): Promise<void> {
-    await this.rtdb.object<Song>('songs/' + id).update({ ...patch, updatedAt: Date.now() });
+    const ref = this.rtdb.object<Song>('songs/' + id);
+    // Firebase `update` upserts, so a draft saved after another admin deleted
+    // the song would resurrect a partial record. Read first and refuse.
+    const existing = await firstValueFrom(ref.valueChanges());
+    if (!existing) {
+      throw new Error('Song no longer exists.');
+    }
+    await ref.update({ ...patch, updatedAt: Date.now() });
   }
 
   async deleteSong(id: string): Promise<void> {
