@@ -4,6 +4,7 @@ import { AuthService } from "src/app/services/auth.service";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
+import { ThemeService } from "src/app/services/theme.service";
 import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
 import { filter, take } from "rxjs/operators";
 
@@ -32,6 +33,7 @@ export class AuthComponent implements OnInit {
     private authService: AuthService,
     private routingService: RoutingService,
     private analyticsService: AnalyticsService,
+    private themeService: ThemeService,
     private dialog: MatDialog
   ) {}
 
@@ -154,6 +156,15 @@ export class AuthComponent implements OnInit {
 
   onEdit(): void {
     this.isEditMode = true;
+  }
+
+  get alwaysDark(): boolean {
+    return this.user?.prefs?.theme === 'dark';
+  }
+
+  onAlwaysDarkChange(checked: boolean): void {
+    this.themeService.setAccountTheme(checked ? 'dark' : 'light');
+    this.themeService.clearSessionOverride();
   }
 
   onCancelEdit(): void {

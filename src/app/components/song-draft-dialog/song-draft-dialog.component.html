@@ -1,0 +1,132 @@
+<div class="draft-title-row">
+  <h2 mat-dialog-title data-testid="song-draft-dialog">{{ data.song ? 'Edit song' : 'Add song' }}</h2>
+  <button
+    mat-icon-button
+    type="button"
+    class="draft-close"
+    data-testid="draft-close"
+    aria-label="Close"
+    [disabled]="saving"
+    (click)="onCancel()"
+    >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content [attr.aria-busy]="saving">
+  <span class="visually-hidden" role="status">{{ saving ? 'Saving…' : '' }}</span>
+  <mat-form-field class="draft-field">
+    <mat-label>Title</mat-label>
+    <input
+      matInput
+      data-testid="draft-title"
+      maxlength="200"
+      cdkFocusInitial
+      [(ngModel)]="title"
+      aria-required="true"
+      [attr.aria-invalid]="errorField === 'title' ? 'true' : null"
+      [attr.aria-describedby]="errorField === 'title' ? 'draft-error' : null"
+      />
+  </mat-form-field>
+
+  <div class="draft-row">
+    <mat-form-field class="draft-field">
+      <mat-label>Source</mat-label>
+      <input matInput data-testid="draft-source" maxlength="200" [(ngModel)]="source" />
+    </mat-form-field>
+    <mat-form-field class="draft-field draft-key-field">
+      <mat-label>Key</mat-label>
+      <input matInput data-testid="draft-key" maxlength="16" [(ngModel)]="musicalKey" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field class="draft-field draft-body-field">
+    <mat-label>Lyrics</mat-label>
+    <textarea
+      matInput
+      rows="10"
+      class="draft-body-input"
+      data-testid="draft-body"
+      [(ngModel)]="body"
+      aria-required="true"
+      [attr.aria-invalid]="errorField === 'body' ? 'true' : null"
+      [attr.aria-describedby]="errorField === 'body' ? 'draft-error' : null"
+      ></textarea>
+  </mat-form-field>
+
+  @if (unmatchedLeaders.length > 0) {
+    <p class="draft-unmatched" data-testid="draft-unmatched" role="status">
+      Not found: {{ unmatchedLeaders.join(', ') }}. Pick leaders manually below.
+    </p>
+  }
+
+  <section class="draft-leaders" aria-labelledby="draft-leaders-heading">
+    <h3 id="draft-leaders-heading" class="draft-section-title">Leaders</h3>
+
+    @if (selectedLeaderIds.length > 0) {
+      <div class="draft-chips">
+        @for (leaderId of selectedLeaderIds; track leaderId) {
+          <span class="draft-chip" data-testid="draft-leader-chip">
+            {{ leaderLabel(leaderId) }}
+            <button
+              mat-icon-button
+              type="button"
+              class="chip-remove"
+              [attr.aria-label]="'Remove ' + leaderLabel(leaderId)"
+              (click)="removeLeader(leaderId)"
+              >
+              <mat-icon>close</mat-icon>
+            </button>
+          </span>
+        }
+      </div>
+    }
+
+    <mat-form-field class="draft-field">
+      <mat-label>Search people</mat-label>
+      <input
+        matInput
+        data-testid="draft-leader-search"
+        [(ngModel)]="leaderSearch"
+        aria-label="Search people to add as leaders"
+        />
+    </mat-form-field>
+
+    <div class="draft-options">
+      @for (person of filteredPeople; track person.id) {
+        <button
+          type="button"
+          class="draft-option"
+          data-testid="draft-leader-option"
+          [class.selected]="isSelected(person.id)"
+          [attr.aria-pressed]="isSelected(person.id)"
+          (click)="toggleLeader(person.id)"
+          >
+          {{ personName(person) }}
+        </button>
+      } @empty {
+        <p class="admin-muted">No people match.</p>
+      }
+    </div>
+  </section>
+
+  @if (error) {
+    <p id="draft-error" class="draft-error" role="alert">{{ error }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" data-testid="draft-cancel" [disabled]="saving" (click)="onCancel()">
+    Cancel
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    data-testid="draft-save"
+    [disabled]="saving"
+    (click)="onSave()"
+    >
+    {{ saving ? 'Saving…' : 'Save' }}
+  </button>
+</mat-dialog-actions>

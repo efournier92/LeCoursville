@@ -37,6 +37,18 @@ const routes: Routes =
       loadChildren: () => import('./components/calendar/calendar.module').then(m => m.CalendarFeatureModule),
     },
     {
+      path: 'songs',
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'songs' },
+      loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
+    },
+    {
+      path: 'songs/:id',
+      canActivate: [AuthGuardService, FeatureFlagGuard],
+      data: { featureId: 'songs' },
+      loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
+    },
+    {
       path: 'chat',
       component: ChatComponent,
       canActivate: [AuthGuardService, FeatureFlagGuard],

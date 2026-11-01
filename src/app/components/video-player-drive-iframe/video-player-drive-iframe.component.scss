@@ -20,7 +20,9 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(255, 255, 255, 0.9);
+  // minimalist: token-based color-mix so the toast follows the theme, ink token for icon contrast.
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  color: var(--color-ink);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
 }

@@ -5,3 +5,13 @@
 .prompt-modal-message {
   text-align: center;
 }
+
+// Destructive buttons carry the shared red fill plus a warning glyph, so the
+// action is distinguishable without relying on colour alone.
+.btn-destructive mat-icon {
+  vertical-align: middle;
+  margin-right: 6px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

@@ -69,21 +69,23 @@
                   <span class="feature-label">{{ feature.label }}</span>
                   <span class="feature-route">{{ feature.route }}</span>
                 </div>
-                <mat-slide-toggle
-                  [id]="'feature-id-' + feature.id"
-                  [checked]="isEnabled(feature.id)"
-                  (change)="onToggle(feature.id, $event.checked)"
-                  [hideIcon]="true"
-                  color="primary"
-                  [aria-label]="feature.label"
-                  [attr.data-testid]="'feature-toggle-' + feature.id">
-                  <span class="feature-toggle-label" aria-hidden="true">{{ feature.label }}</span>
-                </mat-slide-toggle>
-                @if (changedLabel(feature.id)) {
-                  <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
-                    {{ changedLabel(feature.id) }}
-                  </span>
-                }
+                <div class="feature-controls">
+                  @if (changedLabel(feature.id)) {
+                    <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
+                      {{ changedLabel(feature.id) }}
+                    </span>
+                  }
+                  <mat-slide-toggle
+                    [id]="'feature-id-' + feature.id"
+                    [checked]="isEnabled(feature.id)"
+                    (change)="onToggle(feature.id, $event.checked)"
+                    [hideIcon]="true"
+                    color="primary"
+                    [aria-label]="feature.label"
+                    [attr.data-testid]="'feature-toggle-' + feature.id">
+                    <span class="feature-toggle-label" aria-hidden="true">{{ feature.label }}</span>
+                  </mat-slide-toggle>
+                </div>
               </div>
             }
           </div>
@@ -95,7 +97,7 @@
 
 <mat-card class="admin-surface feature-audit-card">
   <mat-card-header>
-    <mat-card-title class="admin-card-title">Recent flag changes</mat-card-title>
+    <mat-card-title class="admin-card-title">Recent Flag Changes</mat-card-title>
     <mat-card-subtitle>Latest 10, newest first</mat-card-subtitle>
   </mat-card-header>
 

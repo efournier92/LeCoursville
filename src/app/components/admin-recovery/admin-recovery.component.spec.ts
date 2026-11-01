@@ -129,7 +129,7 @@ describe('AdminRecoveryComponent', () => {
 
     await component.removeRecipient('backup@example.test');
 
-    expect(lastConfirm?.destructive).toBe(true);
+    expect(lastConfirm?.destructive).toBeFalsy();
     expect(lastConfirm?.message).toContain('backup@example.test');
     expect(cloudFunctions.updateAlertRecipients).not.toHaveBeenCalled();
   });

@@ -71,7 +71,7 @@ export class FeatureFlagsService {
 
   getEnabledFeatures(): string[] {
     const flags = this.flagsSubject.getValue();
-    const toggleableFeatureIds = ['expressions', 'music', 'videos', 'calendar', 'contacts', 'photos', 'chat'];
+    const toggleableFeatureIds = ['expressions', 'songs', 'music', 'videos', 'calendar', 'contacts', 'photos', 'chat'];
     return toggleableFeatureIds.filter(id => {
       const flag = flags[id];
       return flag === null || flag === undefined || flag.enabled === true;

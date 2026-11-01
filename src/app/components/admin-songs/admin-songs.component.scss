@@ -1,0 +1,187 @@
+@use 'src/app/styles/admin-data' as *;
+@use 'src/app/styles/admin-forms' as *;
+
+.admin-songs-page {
+  padding-bottom: 24px;
+}
+
+.songs-filter-field {
+  width: 100%;
+}
+
+// Same prefix treatment as the member songs search: the `matTextPrefix`
+// magnifier lives in Material's wrapper, whose baseline alignment lifts it
+// above the input's text line once a query fills the field. Center it on the
+// container height instead.
+.songs-filter-field ::ng-deep .mat-mdc-form-field-text-prefix {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  height: var(--mat-form-field-container-height, 56px);
+  line-height: 0;
+}
+
+.add-song-card {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.format-guide {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .admin-muted {
+    margin: 0;
+    max-width: 70ch;
+  }
+}
+
+.paste-field {
+  width: 100%;
+
+  // Keep the paste box on the form's grid: no native resize grip can widen it
+  // past the card. Long pastes scroll inside the fixed rows height.
+  textarea {
+    resize: none;
+    overflow-y: auto;
+  }
+}
+
+.add-song-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.file-import {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.songs-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.song-actions {
+  white-space: nowrap;
+  text-align: right;
+
+  // Destructive icon reads red; the edit icon stays neutral.
+  [data-testid='admin-delete-song'] {
+    color: var(--color-error);
+  }
+}
+
+.leader-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.leader-chip {
+  display: inline-flex;
+  align-items: center;
+  margin: 2px 4px 2px 0;
+  padding: 0 10px;
+  min-height: 28px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  // Same link-colored ink as the member card and detail chips, so a leader
+  // reads as one treatment everywhere (the admin chip is a label, not a link).
+  color: var(--color-link);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.admin-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+
+  // The shared card-title rule carries a 12px bottom margin; the column gap
+  // already spaces the stack, so drop it here to keep the rhythm even.
+  .admin-card-title {
+    margin: 0;
+  }
+}
+
+// Same brand-tinted medallion as the member empty state, so both empty
+// libraries read as one treatment.
+.admin-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
+  color: var(--color-ink-2);
+}
+
+// On roomy screens the empty / no-results state sits in the middle of the
+// content area below the toolbar (the member songs list's pattern: min-height
+// plus a flex center). Mobile stays top-aligned and compact.
+@media (min-width: 900px) {
+  .admin-empty-region {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 248px);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-songs-page {
+    padding-bottom: 16px;
+  }
+
+  .song-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .format-guide {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  // Title and the Add Song CTA share one row: the shared toolbar drops tools
+  // onto a second row below 600px, which left the title's row half empty.
+  :host ::ng-deep .page-toolbar .page-toolbar-content:has(> *) {
+    flex-basis: auto;
+  }
+
+  // This page's filter row holds only the search field. Collapse the empty
+  // actions row and the bar's phantom height so it does not reserve ~100px.
+  :host
+    ::ng-deep
+    app-admin-filter-bar
+    .admin-filter-bar:not(:has(.admin-filter-actions > *)) {
+    min-height: 0;
+    padding: 4px 16px 12px;
+
+    .admin-filter-actions {
+      display: none;
+    }
+  }
+}

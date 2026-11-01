@@ -40,7 +40,7 @@ export async function login(page: Page, who: 'admin' | 'user' | 'other' | 'spars
 
 /** Signs out through the real UI (confirm dialog included). */
 export async function logout(page: Page) {
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.getByRole('button', { name: 'Sign Out' }).click();
   await page.getByRole('button', { name: 'Yes' }).click();
   await expect(page.getByTestId('auth-email')).toBeVisible();
 }

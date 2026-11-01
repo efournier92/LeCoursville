@@ -5,8 +5,18 @@
   padding: 48px 32px;
   color: var(--color-ink-2);
 
+  // Centered state stacks the icon above the copy so the block reads as one
+  // centered unit rather than a lopsided row.
   &.centered {
+    flex-direction: column;
     justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 12px;
     text-align: center;
   }
 }

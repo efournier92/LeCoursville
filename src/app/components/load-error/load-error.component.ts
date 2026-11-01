@@ -6,7 +6,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   template: `
     <div class="lv-load-error" role="alert">
       <span>{{ message }}</span>
-      <button type="button" (click)="retry.emit()">Try again</button>
+      @if (showRetry) {
+        <button type="button" (click)="retry.emit()">Try again</button>
+      }
     </div>
   `,
   styles: `
@@ -35,5 +37,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 })
 export class LvLoadErrorComponent {
   @Input() message = 'Something went wrong loading this.';
+  /** A not-found state has nothing to retry; hide the action there. */
+  @Input() showRetry = true;
   @Output() retry = new EventEmitter<void>();
 }

@@ -11,8 +11,10 @@ export const ADMIN_ROUTE = {
   expressions: 'expressions',
   media: 'media',
   photoAlbums: 'photo-albums',
+  songs: 'songs',
   uploads: 'uploads',
   recovery: 'recovery',
+  analytics: 'analytics',
   features: 'features',
 } as const;
 
@@ -40,10 +42,12 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { key: 'expressions', path: '/admin/' + ADMIN_ROUTE.expressions, label: 'Expressions', icon: 'format_quote', group: 'Content' },
   { key: 'media', path: '/admin/' + ADMIN_ROUTE.media, label: 'Media', icon: 'perm_media', group: 'Content' },
   { key: 'photoAlbums', path: '/admin/' + ADMIN_ROUTE.photoAlbums, label: 'Photo Albums', icon: 'photo_library', group: 'Content', featureFlag: 'enablePhotoAlbums' },
+  { key: 'songs', path: '/admin/' + ADMIN_ROUTE.songs, label: 'Songs', icon: 'queue_music', group: 'Content' },
   { key: 'uploads', path: '/admin/' + ADMIN_ROUTE.uploads, label: 'Uploads', icon: 'upload_file', group: 'Content' },
   { key: 'users', path: '/admin/' + ADMIN_ROUTE.users, label: 'Users', icon: 'manage_accounts', group: 'System' },
   { key: 'features', path: '/admin/' + ADMIN_ROUTE.features, label: 'Features', icon: 'toggle_on', group: 'System' },
   { key: 'recovery', path: '/admin/' + ADMIN_ROUTE.recovery, label: 'Recovery', icon: 'lock_reset', group: 'System' },
+  { key: 'analytics', path: '/admin/' + ADMIN_ROUTE.analytics, label: 'Analytics', icon: 'insights', group: 'System' },
 ];
 
 export function visibleAdminNav(

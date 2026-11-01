@@ -174,7 +174,13 @@
   }
 
   tbody td {
-    height: 44px;
+    // A table cell treats `height` as a floor but outranks the stacked mobile
+    // rule, so a wrapped Leaders cell kept the fixed height and painted over
+    // the row below. min-height keeps the same ~44px desktop rhythm (padding
+    // carries it, cells ignore min-height) and lets mobile rows grow.
+    min-height: 44px;
+    padding-top: 11px;
+    padding-bottom: 11px;
   }
 
   tbody tr:hover {
@@ -206,22 +212,33 @@
       background: var(--color-surface);
     }
 
-    td {
+    // Matches the base `tbody td` specificity so the stacked padding wins over
+    // the desktop rhythm padding.
+    tbody td {
       display: flex;
       gap: 12px;
-      padding: 6px 0;
+      padding: 4px 0;
       border-bottom: none;
       height: auto;
 
       &::before {
         content: attr(data-label);
-        flex: 0 0 40%;
+        flex: 0 0 auto;
+        min-width: 88px;
         @include admin-eyebrow;
       }
 
       &[data-label=""]::before {
         content: none;
       }
+    }
+
+    // Leaders sit in the value column like every other value: the .leader-chips
+    // wrapper wraps there, so a second chip indents under the first instead of
+    // starting at the row edge. The cell grows rather than overlapping the
+    // Updated row below.
+    tbody td[data-label='Leaders'] {
+      align-items: center;
     }
 
     // Row actions are icon-only: keep the 24px glyph but give the button a

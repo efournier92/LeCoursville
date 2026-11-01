@@ -1,0 +1,91 @@
+<div class="admin-page admin-analytics-component-container">
+
+  <app-page-toolbar title="Analytics"></app-page-toolbar>
+
+  @if (state === 'loading') {
+    <mat-card class="admin-surface">
+      <mat-card-content>
+        <div class="admin-skeleton-rows" data-testid="admin-analytics-loading" aria-busy="true" aria-label="Loading analytics">
+          @for (row of [1, 2, 3, 4, 5]; track row) {
+            <span></span>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (state === 'error') {
+    <div class="admin-error" role="alert">
+      {{ errorMessage }}
+      <button mat-button type="button" (click)="load()">Retry</button>
+    </div>
+  }
+
+  @if (state === 'ready' && summary) {
+    <mat-card class="admin-surface analytics-totals-card">
+      <h2 class="admin-card-title">Last 30 Days</h2>
+      <table class="admin-table" data-testid="admin-analytics-totals">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Metric">Users</td>
+            <td data-label="Value" data-testid="admin-analytics-users">{{ summary.totals.users }}</td>
+          </tr>
+          <tr>
+            <td data-label="Metric">Sessions</td>
+            <td data-label="Value" data-testid="admin-analytics-sessions">{{ summary.totals.sessions }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-card>
+
+    <mat-card class="admin-surface">
+      <h2 class="admin-card-title">Top Pages</h2>
+      <table class="admin-table" data-testid="admin-analytics-pages">
+        <thead>
+          <tr>
+            <th>Path</th>
+            <th>Views</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of summary.topPages; track row.label) {
+            <tr>
+              <td data-label="Path">{{ row.label }}</td>
+              <td data-label="Views">{{ row.value }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="2" class="admin-muted">No page data.</td></tr>
+          }
+        </tbody>
+      </table>
+    </mat-card>
+
+    <mat-card class="admin-surface">
+      <h2 class="admin-card-title">Top Events</h2>
+      <table class="admin-table" data-testid="admin-analytics-events">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of summary.topEvents; track row.label) {
+            <tr>
+              <td data-label="Event">{{ row.label }}</td>
+              <td data-label="Count">{{ row.value }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="2" class="admin-muted">No event data.</td></tr>
+          }
+        </tbody>
+      </table>
+    </mat-card>
+  }
+</div>

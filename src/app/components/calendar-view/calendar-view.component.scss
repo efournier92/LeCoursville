@@ -105,7 +105,12 @@
   box-shadow: var(--shadow-card);
   overflow: visible;
   min-width: 700px;
+  // minimalist: max-content let long event text push the 7-column grid past
+  // the scroll container, clipping Saturday. Cap at 100% so the grid always
+  // fits when the column is >= 700px; below that the min-width keeps the
+  // intentional horizontal scroller. Upgrade path: per-cell minmax grid.
   width: max-content;
+  max-width: 100%;
 }
 
 @media (max-width: 768px) {

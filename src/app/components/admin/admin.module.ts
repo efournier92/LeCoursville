@@ -8,6 +8,7 @@ import { AdminContactsComponent } from 'src/app/components/admin-contacts/admin-
 import { ExpressionsComponent } from 'src/app/components/expressions/expressions.component';
 import { AdminPhotoAlbumsComponent } from 'src/app/components/admin-photo-albums/admin-photo-albums.component';
 import { AdminUserUploadsComponent } from 'src/app/components/admin-user-uploads/admin-user-uploads.component';
+import { AdminAnalyticsComponent } from 'src/app/components/admin-analytics/admin-analytics.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
@@ -21,7 +22,9 @@ import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-fam
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
 import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-import.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
+import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
+import { SongDraftDialogComponent } from '../song-draft-dialog/song-draft-dialog.component';
 
 const routes: Routes = [
   {
@@ -39,6 +42,10 @@ const routes: Routes = [
         component: AdminPhotoAlbumsComponent,
         canActivate: [PhotoAlbumsFeatureGuard],
         data: { fallbackUrl: '/admin' },
+      },
+      {
+        path: ADMIN_ROUTE.songs,
+        component: AdminSongsComponent,
       },
       {
         path: ADMIN_ROUTE.users,
@@ -90,6 +97,10 @@ const routes: Routes = [
         component: AdminRecoveryComponent,
       },
       {
+        path: ADMIN_ROUTE.analytics,
+        component: AdminAnalyticsComponent,
+      },
+      {
         path: '',
         redirectTo: 'users',
         pathMatch: 'full',
@@ -108,6 +119,9 @@ const routes: Routes = [
     AdminCalendarsComponent,
     AdminFamilyExplorerComponent,
     AdminRecoveryComponent,
+    AdminSongsComponent,
+    SongDraftDialogComponent,
+    AdminAnalyticsComponent,
   ],
   imports: [
     CommonModule,

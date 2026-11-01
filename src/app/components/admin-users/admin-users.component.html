@@ -65,12 +65,15 @@
   </app-admin-filter-bar>
 
   @if (state === 'loading') {
-    <div class="admin-skeleton-rows" aria-busy="true" aria-label="Loading users">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
+    <mat-card class="admin-surface users-table-card">
+      <mat-card-content>
+        <div class="admin-skeleton-rows" data-testid="admin-users-loading" aria-busy="true" aria-label="Loading users">
+          @for (row of [1, 2, 3, 4, 5]; track row) {
+            <span></span>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
   }
 
   @if (state === 'error') {

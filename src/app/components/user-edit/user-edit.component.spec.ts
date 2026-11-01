@@ -41,7 +41,16 @@ describe('UserEditComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, TestSharedModule],
       providers: [
-        { provide: AuthService, useValue: { userObservable: user$.asObservable() } },
+        {
+          provide: AuthService,
+          useValue: {
+            userObservable: user$.asObservable(),
+            authResolved$: new BehaviorSubject<boolean>(false).asObservable(),
+            isSignedOut: () => false,
+            user: { id: 'admin-1', prefs: {} },
+            updateUser: vi.fn(),
+          },
+        },
         { provide: AdminService, useValue: adminService },
         { provide: ConfirmDialogService, useValue: confirmDialog },
       ],

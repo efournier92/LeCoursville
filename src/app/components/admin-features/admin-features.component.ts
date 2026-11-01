@@ -16,7 +16,7 @@ interface FeatureGroup {
 // decides which section each entry renders under.
 const FEATURE_GROUPS: { label: string; ids: string[] }[] = [
   { label: 'People', ids: ['people', 'contacts'] },
-  { label: 'Content', ids: ['calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions'] },
+  { label: 'Content', ids: ['calendar', 'songs', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions'] },
   { label: 'System', ids: ['chat'] },
 ];
 
@@ -183,7 +183,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       minute: '2-digit',
       hour12: false,
     });
-    return `changed ${local}`;
+    return `Changed ${local}`;
   }
 
   auditActor(record: FeatureFlagAuditRecord): string {
@@ -192,7 +192,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
 
   auditFlag(record: FeatureFlagAuditRecord): string {
     if (record.flagId === 'promotedRoute') {
-      return 'Promoted route';
+      return 'Promoted Route';
     }
     return FEATURES.find(feature => feature.id === record.flagId)?.label || record.flagId;
   }

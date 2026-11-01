@@ -1,0 +1,152 @@
+<div class="song-detail page-ground page-content" role="main">
+  <app-page-toolbar title="Songs">
+    <button
+      page-toolbar-left
+      type="button"
+      class="song-back"
+      aria-label="Back to songs"
+      routerLink="/songs"
+      >
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    </button>
+  </app-page-toolbar>
+
+  @if (status === 'loading') {
+    <div class="song-sheet surface-card" aria-busy="true">
+      <span class="skeleton-line title"></span>
+      <span class="skeleton-line"></span>
+      <span class="skeleton-line short"></span>
+    </div>
+  }
+
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load this song." (retry)="retry()"></app-load-error>
+  }
+
+  @if (status === 'notfound') {
+    <app-load-error
+      message="This song couldn't be found. It may have been removed. Head back to the songs list to find another."
+      [showRetry]="false"
+      ></app-load-error>
+  }
+
+  @if (status === 'ready' && song) {
+    <article class="song-sheet surface-card">
+      <header class="song-header">
+        <h1 class="song-title" data-testid="song-title">{{ song.title }}</h1>
+
+        @if (song.source) {
+          <p class="song-meta" data-testid="song-source">Source: {{ song.source }}</p>
+        }
+
+        @if (song.musicalKey) {
+          <p class="song-meta" data-testid="song-key">Key: {{ displayKey }}</p>
+        }
+
+        @if (song.leaderIds.length > 0) {
+          <div class="song-leaders" data-testid="song-leaders">
+            <span class="song-leaders-label">Led by</span>
+            <div class="song-leaders-chips">
+              @for (leaderId of song.leaderIds; track leaderId) {
+                @if (isResolved(leaderId)) {
+                  <a
+                    class="leader-chip"
+                    data-testid="leader-chip"
+                    [routerLink]="['/people']"
+                    [queryParams]="{ selected: leaderId }"
+                    >{{ leaderLabel(leaderId) }}</a>
+                } @else {
+                  <span class="leader-chip leader-chip-unknown" data-testid="leader-chip" aria-label="Leader not found">Unknown</span>
+                }
+              }
+            </div>
+          </div>
+        }
+      </header>
+
+      @if (showTranspose && !hideChords) {
+        <div class="transpose-controls" data-testid="transpose-controls" role="group" aria-label="Transpose">
+          <span class="transpose-label">Transpose</span>
+          <div class="transpose-pill">
+            <button
+              mat-icon-button
+              type="button"
+              data-testid="transpose-down"
+              aria-label="Transpose down one semitone"
+              (click)="transpose(-1)"
+              >
+              <mat-icon aria-hidden="true">remove</mat-icon>
+            </button>
+
+            <span class="transpose-offset" data-testid="transpose-offset" [class.is-empty]="offset === 0" aria-hidden="true">
+              {{ offsetLabel }}
+            </span>
+
+            <!-- The badge is visual shorthand; the live region carries the
+                 meaningful sentence (direction, count, key change). -->
+            <span class="visually-hidden" role="status" aria-live="polite" data-testid="transpose-announcement">
+              {{ offsetAnnouncement }}
+            </span>
+
+            <button
+              mat-icon-button
+              type="button"
+              data-testid="transpose-up"
+              aria-label="Transpose up one semitone"
+              (click)="transpose(1)"
+              >
+              <mat-icon aria-hidden="true">add</mat-icon>
+            </button>
+          </div>
+
+          <button
+            mat-button
+            type="button"
+            class="transpose-reset"
+            data-testid="transpose-reset"
+            [disabled]="offset === 0"
+            (click)="reset()"
+            >
+            Reset
+          </button>
+        </div>
+      }
+
+      <div class="song-tools">
+        @if (hasChords) {
+          <button
+            mat-stroked-button
+            type="button"
+            data-testid="toggle-chords"
+            [attr.aria-pressed]="hideChords"
+            (click)="toggleChords()"
+            >
+            <mat-icon aria-hidden="true">{{ hideChords ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ hideChords ? 'Show chords' : 'Lyrics only' }}
+          </button>
+        }
+
+        <button
+          mat-stroked-button
+          type="button"
+          data-testid="print-song"
+          title="Opens the print dialog. Choose Save as PDF."
+          aria-label="Print or save as PDF"
+          (click)="printSong()"
+          >
+          <mat-icon aria-hidden="true">print</mat-icon>
+          Print / PDF
+        </button>
+      </div>
+
+      <div class="song-body-wrap" data-testid="song-body">
+        @if (hideChords) {
+          <pre class="song-body song-body-lyrics" data-testid="song-body-lyrics">{{ lyricsOnlyBody }}</pre>
+        } @else {
+          <pre class="song-body song-body-inline" data-testid="song-body-inline">@for (line of bodyLines; track $index; let isLastLine = $last) {@for (segment of line.segments; track $index) {@switch (segment.kind) {@case ('chord') {<span class="chord">{{ segment.text.slice(1, -1) }}</span>}@case ('chord-line') {<span class="chord-tag">{{ segment.text }}</span>}@default {<span [class]="segment.kind">{{ segment.text }}</span>}}}@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+          <pre class="song-body song-body-chord-over" data-testid="song-body-chord-over">@for (line of chordOverLines; track $index; let isLastLine = $last) {<span [class]="line.kind">@for (segment of line.segments; track $index) {@if (segment.chord) {<span class="chord-tag">{{ segment.text }}</span>}@else {<span class="text">{{ segment.text }}</span>}}</span>@if (!isLastLine) {<span class="song-newline">{{ '\n' }}</span>}}</pre>
+        }
+      </div>
+    </article>
+  }
+</div>

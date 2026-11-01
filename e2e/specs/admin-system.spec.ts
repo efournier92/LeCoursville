@@ -389,11 +389,11 @@ test.describe('admin system surfaces', () => {
     }
   });
 
-  test('features: nine grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
+  test('features: ten grouped toggles with the seeded chat OFF and contacts ON', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
 
-    const ids = ['people', 'contacts', 'calendar', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat'];
+    const ids = ['people', 'contacts', 'calendar', 'songs', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat'];
     for (const id of ids) {
       await expect(page.getByTestId(`feature-toggle-${id}`)).toBeVisible();
     }
@@ -403,7 +403,9 @@ test.describe('admin system surfaces', () => {
 
     await expect(page.getByTestId('feature-toggle-chat').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'false');
     await expect(page.getByTestId('feature-toggle-contacts').locator('button[role="switch"]')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('feature-changed-chat')).toContainText('changed');
+    // Engine-agnostic stamp check: title-case prefix + digits in the suffix.
+    await expect(page.getByTestId('feature-changed-chat')).toContainText(/^\s*Changed\b/);
+    await expect(page.getByTestId('feature-changed-chat')).toContainText(/\d/);
   });
 
   test('features: warns when the stored promoted route belongs to a disabled flag', async ({ page }) => {

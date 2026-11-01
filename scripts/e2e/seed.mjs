@@ -38,7 +38,7 @@ const USERS = [
 ];
 
 const FEATURE_IDS = [
-  'people', 'contacts', 'calendar', 'music', 'videos',
+  'people', 'contacts', 'calendar', 'songs', 'music', 'videos',
   'photos', 'enablePhotoAlbums', 'expressions', 'chat',
 ];
 
@@ -430,6 +430,33 @@ async function main() {
     wolf: WOLF_ARCHIVE(adminUid),
   };
 
+  const songs = {
+    'song-a': {
+      id: 'song-a', title: 'Amazing Grace',
+      body: '[G]Amazing grace how sweet the sound\nThat saved a wretch like me\n[Bb]I once was lost but now am found\nWas blind but now I see',
+      source: 'John Newton', musicalKey: 'G', leaderIds: ['person-a', 'person-b'],
+      createdAt: now, updatedAt: now,
+    },
+    'song-b': {
+      id: 'song-b', title: 'Blessed Be the Name',
+      body: 'A          D\nBlessed be the name of the Lord\nA          E\nBlessed be the name of the Lord',
+      source: 'Hymn', musicalKey: 'A', leaderIds: ['person-c'],
+      createdAt: now, updatedAt: now,
+    },
+    'song-c': {
+      id: 'song-c', title: 'Come Thou Fount',
+      body: 'Come thou fount of every blessing\nTune my heart to sing thy grace',
+      source: null, musicalKey: null, leaderIds: [],
+      createdAt: now, updatedAt: now,
+    },
+    'song-d': {
+      id: 'song-d', title: 'Noël',
+      body: 'Noel, noel, born is the King of Israel',
+      source: null, musicalKey: null, leaderIds: [],
+      createdAt: now, updatedAt: now,
+    },
+  };
+
   const tree = {
     users: {
       [adminUid]: { id: adminUid, name: 'Admin User', email: 'admin@e2e.local', roles: { user: true, admin: true, super: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
@@ -456,6 +483,7 @@ async function main() {
     photos,
     messages,
     media,
+    songs,
     addresses: {
       'addr-1': { id: 'addr-1', full: '1 Main St', street: '1 Main St', city: 'Austin', state: 'TX', zip: '78701', label: 'Home' },
       'addr-2': { id: 'addr-2', full: '2 Oak Ave', street: '2 Oak Ave', city: 'Dallas', state: 'TX', zip: '75201', label: 'Cabin' },

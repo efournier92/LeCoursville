@@ -276,14 +276,19 @@ test.describe('admin consistency fixes', () => {
       await expect(page.locator('.mdc-switch__icons')).toHaveCount(0);
     }
 
-    const changed = await page.getByTestId('feature-changed-contacts').evaluate((el) => {
+    // Layout moved the Changed tag left of its toggle; the toggle is now the
+    // rightmost control. The host carries a -4px right margin because MDC's
+    // track ends 4px inside the host, so the visible track owns the
+    // flush-to-content-edge invariant.
+    const rightmost = await page.getByTestId('feature-toggle-contacts').evaluate((el) => {
       const row = el.closest('.feature-row') as HTMLElement;
+      const track = el.querySelector('.mdc-switch__track')!;
       return {
-        right: Math.round(el.getBoundingClientRect().right),
+        right: Math.round(track.getBoundingClientRect().right),
         rowContentRight: Math.round(row.getBoundingClientRect().right - parseFloat(getComputedStyle(row).paddingRight)),
       };
     });
-    expect(Math.abs(changed.right - changed.rowContentRight)).toBeLessThanOrEqual(1);
+    expect(Math.abs(rightmost.right - rightmost.rowContentRight)).toBeLessThanOrEqual(1);
   });
 
   test('users and photo albums use one bordered 36px sort pill', async ({ page }) => {

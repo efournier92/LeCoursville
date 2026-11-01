@@ -1,0 +1,115 @@
+<div class="songs-page page-ground page-content" role="main">
+  <h1 class="visually-hidden">Songs</h1>
+
+  <app-page-toolbar title="Songs">
+    <mat-form-field class="songs-search">
+      <mat-label>Search songs</mat-label>
+      <mat-icon matTextPrefix>search</mat-icon>
+      <input
+        matInput
+        type="search"
+        aria-label="Search songs"
+        data-testid="song-search"
+        #songSearch
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchInput($event)"
+        />
+      @if (searchTerm) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear search"
+          (click)="clearSearch(songSearch)"
+          >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </app-page-toolbar>
+
+  @if (status === 'error') {
+    <app-load-error message="We couldn't load songs." (retry)="retry()"></app-load-error>
+  }
+
+  @if (status === 'loading') {
+    <div class="songs-grid" aria-busy="true">
+      @for (i of skeletonIterations; track i) {
+        <div class="song-card skeleton-card">
+          <span class="skeleton-line title"></span>
+          <span class="skeleton-line"></span>
+          <span class="skeleton-line short"></span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (status === 'ready') {
+    @if (songs.length === 0) {
+      <div class="songs-empty" data-testid="songs-empty">
+        <div class="songs-empty-icon" aria-hidden="true">
+          <mat-icon>music_note</mat-icon>
+        </div>
+        <p class="songs-empty-title">No songs yet</p>
+        @if (isAdmin) {
+          <p class="songs-empty-hint">Paste lyrics or import .txt files on the admin Songs page.</p>
+          <a mat-flat-button color="primary" routerLink="/admin/songs">Add songs</a>
+        } @else {
+          <p class="songs-empty-hint">Once songs are added, they'll show up here.</p>
+        }
+      </div>
+    } @else {
+      @if (filteredSongs.length === 0) {
+        <div class="songs-empty-region">
+          <app-no-results-message
+            [searchTerm]="activeQuery"
+            [isCentered]="true"
+            noun="songs"
+            title="No results"
+            ></app-no-results-message>
+        </div>
+      }
+
+      <div class="songs-grid">
+        @for (song of filteredSongs; track song.id) {
+          <article class="song-card surface-card" data-testid="song-card">
+            <h2 class="song-title-heading">
+              <a
+                class="song-title"
+                data-testid="song-title"
+                [routerLink]="['/songs', song.id]"
+                >{{ song.title }}</a>
+            </h2>
+
+            @if (song.source) {
+              <p class="song-source" data-testid="song-source">Source: {{ song.source }}</p>
+            }
+
+            @if (song.leaderIds.length > 0) {
+              <div class="song-leaders" role="group" aria-label="Leaders">
+                @for (leaderId of song.leaderIds; track leaderId) {
+                  @if (isResolved(leaderId)) {
+                    <a
+                      class="leader-chip"
+                      data-testid="leader-chip"
+                      [routerLink]="['/people']"
+                      [queryParams]="{ selected: leaderId }"
+                      [attr.aria-label]="'Leader: ' + leaderLabel(leaderId, true)"
+                      >{{ leaderLabel(leaderId) }}</a>
+                  } @else {
+                    <span
+                      class="leader-chip leader-chip-unknown"
+                      data-testid="leader-chip"
+                      aria-label="Leader not found"
+                      >Unknown</span>
+                  }
+                }
+              </div>
+            }
+
+            <pre class="song-excerpt">{{ excerpt(song) }}</pre>
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

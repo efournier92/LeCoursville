@@ -11,8 +11,8 @@
   border-radius: var(--radius-avatar);
   background: linear-gradient(
     135deg,
-    var(--color-brand-primary) 0%,
-    var(--color-brand-primary-dark) 100%
+    var(--color-brand-solid) 0%,
+    var(--color-brand-solid-dark) 100%
   );
   color: var(--color-on-brand);
   font-size: 1.5rem;
@@ -41,7 +41,7 @@
   margin-top: 12px;
 }.account-role {
   padding: 3px 10px;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-sm); // role badges: spec section 4 locks radius-sm
   background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
   color: var(--color-brand-primary-dark);
   font-size: 0.72rem;
@@ -80,19 +80,22 @@
     font-size: 0.9rem;
     color: var(--color-ink);
     text-align: right;
-  }}.account-actions {
+  }
+}.account-actions {
   display: flex;
   justify-content: center;
   margin-top: 22px;
 
   button {
     min-width: 160px;
-    height: 44px;
-  border-radius: var(--radius-sm); // role badges: spec section 4 locks radius-sm
+    height: var(--height-control);
+    border-radius: var(--radius-control);
 
     mat-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
       margin-right: 4px;
-    }}}
+    }
+  }
+}

@@ -119,8 +119,10 @@ test.describe('admin', () => {
       { name: 'Media', path: '/admin/media' },
       { name: 'Expressions', path: '/admin/expressions' },
       { name: 'Photo Albums', path: '/admin/photo-albums' },
+      { name: 'Songs', path: '/admin/songs' },
       { name: 'Uploads', path: '/admin/uploads' },
       { name: 'Recovery', path: '/admin/recovery' },
+      { name: 'Analytics', path: '/admin/analytics' },
       { name: 'Features', path: '/admin/features' },
     ];
     const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
@@ -132,6 +134,21 @@ test.describe('admin', () => {
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.locator('app-page-toolbar').first()).toBeVisible();
     }
+  });
+
+  test('the sidebar brand is not a page heading; admin pages keep their h1', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/songs');
+    await expect(page.getByTestId('admin-songs-table')).toBeVisible();
+    // The routed page owns the only h1; the sidebar wordmark is a styled label
+    // inside its home link.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Songs');
+    const brand = page.locator('.sidebar-header .sidebar-brand');
+    await expect(brand).toHaveText('Admin');
+    await expect(brand).toHaveJSProperty('tagName', 'DIV');
+    await expect(page.getByRole('heading', { name: 'Admin', exact: true })).toHaveCount(0);
+    await expect(page.locator('.sidebar-header .logo-link')).toHaveAttribute('href', '/admin');
   });
 
   test('admin nav badges count pending uploads and open recovery requests', async ({ page }) => {
@@ -249,19 +266,61 @@ test.describe('admin', () => {
     await toggle.click();
     await expect(nav).toBeVisible();
     await expect(page.getByTestId('admin-nav-link-families')).toBeFocused();
+    // The page behind the scrim is inert, not just Tab-trapped: a screen
+    // reader's touch exploration must not reach the toolbar or the routed page.
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', true);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', true);
+    await expect(nav).toHaveJSProperty('inert', false);
     // The trap now includes the sidebar logo, so one Shift+Tab lands there and
     // the next wraps to the last item.
     await page.keyboard.press('Shift+Tab');
     await expect(page.locator('.sidebar-header .logo-link')).toBeFocused();
+    // Analytics is the last sidebar item, so the second Shift+Tab wraps there.
     await page.keyboard.press('Shift+Tab');
-    await expect(page.getByTestId('admin-nav-link-recovery')).toBeFocused();
+    await expect(page.getByTestId('admin-nav-link-analytics')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(nav).not.toBeVisible();
     await expect(toggle).toBeFocused();
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', false);
     await toggle.click();
     await page.getByTestId('admin-nav-link-features').click();
     await expect(page).toHaveURL(/\/admin\/features$/);
     await expect(nav).not.toBeVisible();
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
+    await expect(page.locator('mat-toolbar').first()).toHaveJSProperty('inert', false);
+  });
+
+  test('browser Back after opening the mobile drawer leaves the toolbar interactive', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const toolbar = page.locator('mat-toolbar').first();
+
+    await page.getByTestId('nav-menu-toggle').click();
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await expect(toolbar).toHaveJSProperty('inert', true);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/calendar$/);
+    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
+    await expect(toolbar).toHaveJSProperty('inert', false);
+  });
+
+  test('resizing to desktop while the drawer is open clears inert', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const toolbar = page.locator('mat-toolbar').first();
+
+    await page.getByTestId('nav-menu-toggle').click();
+    await expect(toolbar).toHaveJSProperty('inert', true);
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', true);
+
+    await page.setViewportSize({ width: 1200, height: 844 });
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await expect(toolbar).toHaveJSProperty('inert', false);
+    await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
   });
 
   test('photo albums nav follows its feature flag', async ({ page }) => {
@@ -272,8 +331,8 @@ test.describe('admin', () => {
       const nav = page.getByTestId('admin-nav');
       const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
       await expect(nav.getByRole('link', { name: 'Photo Albums', exact: true })).toHaveCount(0);
-      await expect(navItems).toHaveCount(11);
-      for (const name of ['Users', 'Families', 'People', 'Contacts', 'Calendars', 'Family Explorer', 'Media', 'Expressions', 'Uploads', 'Recovery', 'Features']) {
+      await expect(navItems).toHaveCount(13);
+      for (const name of ['Users', 'Families', 'People', 'Contacts', 'Calendars', 'Family Explorer', 'Media', 'Songs', 'Expressions', 'Uploads', 'Recovery', 'Analytics', 'Features']) {
         await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
       }
     } finally {
@@ -292,6 +351,19 @@ test.describe('admin', () => {
     await page.goto('/admin/families');
     await expect(page.getByText('Mignonne').first()).toBeVisible();
     await expect(page.getByText('Denis').first()).toBeVisible();
+  });
+
+  test('users loading state renders the skeleton inside the card, then resolves', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    // First paint must already sit inside the card wrapper: skeleton while
+    // loading, table once ready — never a bare skeleton outside a card.
+    const inCard = page.locator(
+      '.users-table-card [data-testid="admin-users-loading"], .users-table-card [data-testid="admin-users-table"]'
+    );
+    await expect(inCard.first()).toBeVisible();
+    await expect(page.getByTestId('admin-users-loading')).toHaveCount(0);
+    await expect(page.getByTestId('admin-users-table')).toBeVisible();
   });
 
   test('media library header sits with the list and dates render zero-padded ISO', async ({ page }) => {

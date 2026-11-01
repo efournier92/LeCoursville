@@ -13,7 +13,8 @@ test.describe('navigation', () => {
     await expect(nav.getByRole('button', { name: 'People' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Contacts' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Calendar' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Music' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Videos' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Photos' })).toBeVisible();
     await expect(nav.getByRole('button', { name: 'Expressions' })).toBeVisible();
@@ -23,6 +24,19 @@ test.describe('navigation', () => {
     // Family Explorer is a URL-shared public page, never app chrome.
     await expect(nav.getByRole('button', { name: 'Family Explorer' })).toHaveCount(0);
     await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
+  });
+
+  test('Songs navigates to /songs and Audio still opens the audio library', async ({ page }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
+
+    await nav.getByRole('button', { name: 'Songs' }).click();
+    await expect(page).toHaveURL(/\/songs/);
+
+    await nav.getByRole('button', { name: 'Audio' }).click();
+    await expect(page).toHaveURL(/\/media\/audio/);
   });
 
   test('cached session renders nav links immediately, never Sign In', async ({ page }) => {
@@ -50,6 +64,67 @@ test.describe('navigation', () => {
     await expect(page.getByTestId('nav-flags-skeleton')).toHaveCount(0);
   });
 
+  test('the mobile member hamburger has an accessible name and opens the menu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    // The member twin of the admin toggle must not be an unnamed icon button.
+    const hamburger = page.getByRole('button', { name: 'Open navigation menu' });
+    await expect(hamburger).toBeVisible();
+    await hamburger.click();
+    await expect(page.locator('.mat-mdc-menu-panel')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Songs' })).toBeVisible();
+  });
+
+  test('at 600px the inline links are hidden and the hamburger carries them', async ({ page }) => {
+    await login(page, 'admin');
+    await page.setViewportSize({ width: 600, height: 800 });
+    // Below lg the inline nav collapses; only the hamburger shows.
+    await expect(page.locator('#lecoursville-navbar-links')).toBeHidden();
+    const hamburger = page.locator('.icons-menu .menu-icon-container');
+    await expect(hamburger).toBeVisible();
+    // The hamburger menu carries the same links.
+    await hamburger.click();
+    const menu = page.locator('.toolbar-routes-menu');
+    // mat-menu items carry role=menuitem, not button.
+    await expect(menu.getByRole('menuitem', { name: 'People' })).toBeVisible();
+    await expect(menu.getByRole('menuitem', { name: 'Calendar' })).toBeVisible();
+  });
+
+  test('active nav button shows a 3px bar flush with the toolbar bottom', async ({ page }) => {
+    await login(page, 'admin');
+    await page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'People' }).click();
+    await expect(page).toHaveURL(/\/people/);
+
+    const bar = page.locator('button.active .active-indicator');
+    await expect(bar).toBeVisible();
+    await expect(bar).toHaveCSS('height', '3px');
+
+    const barBox = (await bar.boundingBox())!;
+    const toolbarBox = (await page.locator('mat-toolbar').first().boundingBox())!;
+    // Flush: the bar's bottom edge sits on the toolbar's bottom edge.
+    expect(Math.abs(barBox.y + barBox.height - (toolbarBox.y + toolbarBox.height))).toBeLessThanOrEqual(1);
+    // Full-width: the bar spans the active button (icon + label + padding).
+    const buttonBox = (await page.locator('button.active').boundingBox())!;
+    expect(Math.abs(barBox.width - buttonBox.width)).toBeLessThanOrEqual(1);
+    expect(Math.abs(barBox.x - buttonBox.x)).toBeLessThanOrEqual(1);
+  });
+
+  test('nav link computed font-size is 15px', async ({ page }) => {
+    await login(page, 'admin');
+    const people = page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'People' });
+    await expect(people).toBeVisible();
+    await expect(people).toHaveCSS('font-size', '15px');
+  });
+
+  test('toolbar renders the elevation-8 drop shadow', async ({ page }) => {
+    await login(page, 'admin');
+    const toolbar = page.locator('mat-toolbar').first();
+    await expect(toolbar).toBeVisible();
+    const boxShadow = await toolbar.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(boxShadow).not.toBe('none');
+    expect(boxShadow).toContain('rgba(0, 0, 0, 0.2)');
+  });
+
   test('clicking each toolbar link navigates to its route', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');
@@ -57,7 +132,8 @@ test.describe('navigation', () => {
       ['People', /\/people/],
       ['Contacts', /\/contacts/],
       ['Calendar', /\/calendar/],
-      ['Music', /\/media\/audio/],
+      ['Songs', /\/songs/],
+      ['Audio', /\/media\/audio/],
       ['Videos', /\/media\/video/],
       ['Photos', /\/photos/],
       ['Expressions', /\/expressions/],

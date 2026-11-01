@@ -106,6 +106,11 @@ async function trackAlertRows(email: string): Promise<void> {
 
 async function addRecoveryRequest(page: Page, email: string, name: string, alternateContact?: string) {
   await page.goto('/');
+  // Settle on a quiescent signed-out app before clicking: right after a
+  // sign-out, Firefox can still be flipping auth state and re-rendering the
+  // form region, and a click dispatched mid-flip lands on a detached node.
+  await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+  await expect(page.getByTestId('auth-email')).toBeVisible();
   await page.getByTestId('auth-recovery-open').click();
   await expect(page.getByTestId('recovery-email')).toBeVisible();
   await page.getByTestId('recovery-email').fill(email);
@@ -291,10 +296,13 @@ test.describe('account recovery', () => {
     await row.getByTestId('admin-recovery-email-alternate').locator('input').check();
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
-    await page
+    const generateButton = page
       .locator('mat-dialog-container')
-      .getByRole('button', { name: 'Generate', exact: true })
-      .click();
+      .getByRole('button', { name: 'Generate', exact: true });
+    await expect(generateButton).toBeVisible();
+    // Non-destructive confirms must not pick up the destructive red.
+    await expect(generateButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await generateButton.click();
 
     const linkEl = row.getByTestId('admin-recovery-link');
     await expect(linkEl).toBeVisible();
@@ -506,13 +514,16 @@ test.describe('account recovery', () => {
     await logout(page);
     await addRecoveryRequest(page, triggerEmail, 'Recovery Eleven');
 
+    // 30s: the functions emulator can cold-start onAdminAlertCreated while
+    // the rest of the matrix is still settling; the wait itself is
+    // event-based on the outbound mail.
     await expect
       .poll(
         async () =>
           (await findOutboundEmails('admin_alert', { to: added })).some((mail) =>
             (mail.text ?? '').includes(triggerEmail),
           ),
-        { timeout: 15000 },
+        { timeout: 30000 },
       )
       .toBe(true);
 
@@ -526,10 +537,12 @@ test.describe('account recovery', () => {
     const row = page.locator('.recipient-row', { hasText: added });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recipient-remove').click();
-    await page
+    const removeButton = page
       .locator('mat-dialog-container')
-      .getByRole('button', { name: 'Remove', exact: true })
-      .click();
+      .getByRole('button', { name: 'Remove', exact: true });
+    // Removing a recipient is reversible, so it is no longer marked destructive.
+    await expect(removeButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await removeButton.click();
     await expect(page.locator('.recipient-row', { hasText: added })).toHaveCount(0);
 
     const restored = await readDb<string[]>('config/adminAlertRecipients');

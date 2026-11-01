@@ -115,6 +115,31 @@ test.describe('auth', () => {
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   });
 
+  test('account action bar spaces the theme toggle evenly and Sign Out is neutral', async ({ page }) => {
+    await login(page, 'user');
+    await page.getByRole('button', { name: 'Account' }).click();
+    const edit = page.getByRole('button', { name: 'Edit profile' });
+    const out = page.getByRole('button', { name: 'Sign Out', exact: true });
+    await expect(out).toHaveAccessibleName('Sign Out');
+    const chip = page.locator('.account-theme-pref');
+    const [e, c, o] = await Promise.all([edit.boundingBox(), chip.boundingBox(), out.boundingBox()]);
+    expect(e && c && o).toBeTruthy();
+    // Same row: vertical centers align.
+    const cy = (b: { y: number; height: number }) => b.y + b.height / 2;
+    expect(Math.abs(cy(e!) - cy(c!))).toBeLessThanOrEqual(1);
+    expect(Math.abs(cy(c!) - cy(o!))).toBeLessThanOrEqual(1);
+    // Equal gaps left and right of the whole chip.
+    const left = c!.x - (e!.x + e!.width);
+    const right = o!.x - (c!.x + c!.width);
+    expect(Math.abs(left - right)).toBeLessThanOrEqual(1);
+    // The chip is horizontally centered in the card.
+    const card = await page.locator('.auth-card--account').boundingBox();
+    expect(Math.abs((c!.x + c!.width / 2) - (card!.x + card!.width / 2))).toBeLessThanOrEqual(2);
+    // Sign Out no longer uses brand green in light theme.
+    const color = await out.evaluate((el) => getComputedStyle(el).color);
+    expect(color).toBe('rgb(91, 100, 112)'); // --color-ink-2 light
+  });
+
   test('signed-in email/password user sees their profile on the account page', async ({ page }) => {
     await login(page, 'user');
     await page.getByRole('button', { name: 'Account' }).click();

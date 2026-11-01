@@ -19,8 +19,12 @@
         mat-flat-button
         class="col"
         color="{{ button.color }}"
+        [class.btn-destructive]="button.destructive"
         (click)="onActionClick(button.isConfirmAction)"
         >
+        @if (button.destructive) {
+          <mat-icon aria-hidden="true">warning</mat-icon>
+        }
         {{ button.label }}
       </button>
     }

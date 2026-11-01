@@ -352,6 +352,45 @@ test.describe('media', () => {
     await expect(page.locator('.media-list-item')).toHaveCount(0);
   });
 
+  test('media list keeps the loading skeleton up instead of flashing the empty state', async ({ page }) => {
+    await login(page, 'admin');
+    // Hold only the media list query: auth must resolve so app-media-list mounts,
+    // but the list data stays pending underneath the loading skeleton.
+    let release = () => {};
+    await page.routeWebSocket(/ws:\/\/[^/]*:9000\/.*/, (ws) => {
+      const server = ws.connectToServer();
+      const held: (string | Buffer)[] = [];
+      let released = false;
+      release = () => {
+        released = true;
+        for (const message of held.splice(0)) {
+          server.send(message);
+        }
+      };
+      ws.onMessage((message) => {
+        const text = message.toString();
+        const isMediaListQuery = (() => {
+          try {
+            return JSON.parse(text)?.d?.b?.p === '/media';
+          } catch {
+            return false;
+          }
+        })();
+        if (isMediaListQuery && !released) {
+          held.push(message);
+          return;
+        }
+        server.send(message);
+      });
+    });
+    await page.goto('/media/explorer');
+    // Data is held: the list must still be loading, not claim it found nothing.
+    await expect(page.getByTestId('media-skeleton')).toBeVisible();
+    await expect(page.getByText("We couldn't find any media.")).toHaveCount(0);
+    release();
+    await expect(page.locator('.media-list-item').first()).toBeVisible({ timeout: 15000 });
+  });
+
   test('explorer lists the seeded media entries', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');

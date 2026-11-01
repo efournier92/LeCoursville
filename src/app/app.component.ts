@@ -63,8 +63,16 @@ export class AppComponent implements OnInit {
       filter((user: any) => !!user?.id),
     ).subscribe((user: User) => {
       this.user = user;
-      if (this.shouldNavigateToPromotedRoute()) {
-        this.routingService.NavigateToPromotedRoute();
+      // Bounce off root at most once per app lifetime, on the first resolved
+      // user emission only. Later emissions come from profile/theme writes
+      // (e.g. the Account "Always dark" toggle) and must never yank someone
+      // off the Account page at '/'. The auth service already redirects on
+      // sign-in/restore, so this is only a one-shot safety net.
+      if (!this.promotedRouteBounceDone) {
+        this.promotedRouteBounceDone = true;
+        if (this.shouldNavigateToPromotedRoute()) {
+          this.routingService.NavigateToPromotedRoute();
+        }
       }
     });
   }
@@ -106,6 +114,8 @@ export class AppComponent implements OnInit {
     }
     this.layout = 'default';
   }
+
+  private promotedRouteBounceDone = false;
 
   private shouldNavigateToPromotedRoute(): boolean {
     return this.isSignedIn(this.user) && this.routingService.IsRootRoute();

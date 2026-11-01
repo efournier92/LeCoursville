@@ -82,6 +82,11 @@ test.describe('admin content surfaces', () => {
     // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
     await expect(confirm).toBeVisible({ timeout: 30_000 });
     await expect(confirm).toContainText('E2E Throwaway Album');
+    // Destructive confirm renders brand red with white ink, not M3 green.
+    const deleteAlbumButton = confirm.getByRole('button', { name: 'Delete album' });
+    await expect(deleteAlbumButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(deleteAlbumButton).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(deleteAlbumButton.locator('mat-icon')).toBeVisible();
     await confirm.getByRole('button', { name: 'Cancel' }).click();
     await expect(confirm).toBeHidden();
     await expect(throwaway).toBeVisible();
@@ -89,8 +94,7 @@ test.describe('admin content surfaces', () => {
     await throwaway.locator('button[matTooltip="Delete"]').click();
     // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
     await expect(confirm).toBeVisible({ timeout: 30_000 });
-    await page.locator('app-confirm-dialog').getByRole('button', { name: 'Delete album' }).click();
-    await expect(throwaway).toBeHidden();
+    await page.locator('app-confirm-dialog').getByRole('button', { name: 'Delete album' }).click();    await expect(throwaway).toBeHidden();
     await expect(page.getByText('E2E Album One')).toBeVisible();
   });
 
@@ -193,6 +197,7 @@ test.describe('admin content surfaces', () => {
       await page.getByRole('button', { name: 'Reject fixture.png' }).click();
       const confirm = page.locator('app-confirm-dialog');
       await expect(confirm).toContainText('Reject upload?');
+      await expect(confirm).toContainText('permanently deletes');
       await expect(confirm).toContainText('fixture.png');
       await confirm.getByRole('button', { name: 'Reject upload' }).click();
 
@@ -384,7 +389,7 @@ test.describe('admin content surfaces', () => {
     await expect(page.getByTestId('feature-toggle-people')).toBeVisible();
 
     const rows = page.locator('.feature-row');
-    await expect(rows).toHaveCount(9);
+    await expect(rows).toHaveCount(10);
 
     const tiles = await page.locator('.feature-row .feature-icon').evaluateAll((elements) =>
       elements.map((el) => {
@@ -397,7 +402,7 @@ test.describe('admin content surfaces', () => {
         };
       }),
     );
-    expect(tiles).toHaveLength(9);
+    expect(tiles).toHaveLength(10);
     for (const tile of tiles) {
       expect(tile.width).toBe(32);
       expect(tile.height).toBe(32);

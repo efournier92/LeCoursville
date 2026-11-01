@@ -1,0 +1,396 @@
+.song-detail {
+  min-width: 0;
+}
+
+.song-sheet {
+  padding: 28px 32px;
+  min-width: 0;
+
+  @media (max-width: 600px) {
+    padding: 20px;
+  }
+}
+
+.song-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.song-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+
+.song-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+
+.song-leaders {
+  display: flex;
+  flex-wrap: wrap;
+  // Top-align so the label pins to the first chip row when the chips wrap.
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.song-leaders-label {
+  display: inline-flex;
+  align-items: center;
+  // Matches .leader-chip's min-height: the label's first line sits on the
+  // first chip row instead of floating between two rows at 320px.
+  line-height: 40px;
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+
+// Chips wrap inside their own column so continuation chips indent under the
+// first chip instead of snapping back to the card edge under the label.
+.song-leaders-chips {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.leader-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-link);
+  font-size: 0.85rem;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-brand-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+.leader-chip-unknown {
+  color: var(--color-ink-2);
+}
+
+.transpose-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.transpose-label {
+  font-size: 0.9rem;
+  color: var(--color-ink-2);
+}
+
+// One bordered pill: − | offset | +. Reset sits outside it as plain text.
+.transpose-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  overflow: hidden;
+
+  .mat-mdc-icon-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 0;
+    --mat-icon-button-state-layer-size: 36px;
+    // M3 rounds the button and its state layer to a circle by default; in a
+    // segmented pill that ink spills past the divider and the cap. Square it
+    // (the pill's own overflow clips the rest) so both states stay inside.
+    --mat-icon-button-container-shape: 0;
+    // M3's 0.08/0.12 state layers read as a hard gray fill against the pill's
+    // white surface. Lower both so + / − tint instead of flashing a block.
+    --mat-icon-button-hover-state-layer-opacity: 0.06;
+    --mat-icon-button-focus-state-layer-opacity: 0.06;
+
+    .mat-mdc-button-persistent-ripple,
+    .mat-ripple-element {
+      border-radius: 0;
+    }
+  }
+}
+
+.transpose-offset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5em;
+  height: 100%;
+  padding: 0 8px;
+  border-left: 1px solid var(--color-border);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-ink);
+
+  // At offset 0 the badge is empty: no slot, no divider, no reserved width.
+  // The element stays mounted so its live region keeps announcing.
+  &.is-empty {
+    min-width: 0;
+    padding: 0;
+    border-left: 0;
+  }
+}
+
+.transpose-reset {
+  // M3 text buttons colour their label from the token, not the host color.
+  --mat-button-text-label-text-color: var(--color-ink-2);
+}
+
+.song-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.song-body {
+  margin: 0;
+  max-width: 72ch;
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-ink);
+
+  // Faint gray tags: inline bracket chords and every chord-over token.
+  .chord,
+  .chord-tag {
+    background: var(--color-surface-muted);
+    color: var(--color-ink-2);
+    border-radius: 4px;
+    font-weight: 600;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .chord {
+    padding: 0 2px;
+  }
+
+  // Negative margin cancels the padding so chord columns stay aligned.
+  .chord-tag {
+    padding: 0 3px;
+    margin: 0 -3px;
+  }
+
+  @media (max-width: 600px) {
+    font-size: 0.95rem;
+  }
+
+  @media (min-width: 900px) {
+    font-size: 1.2rem;
+  }
+}
+
+.song-body-chord-over {
+  display: none;
+}
+
+@media (min-width: 601px) {
+  .song-body-inline {
+    display: none;
+  }
+
+  .song-body-chord-over {
+    display: block;
+    white-space: pre;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .song-body-inline {
+    display: block;
+  }
+
+  .song-body-chord-over {
+    display: none;
+  }
+}
+
+.song-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink-2);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-muted);
+  }
+}
+
+// 44px mobile hit areas: the transpose trio and the toolbar back button.
+@media (max-width: 600px) {
+  .transpose-pill {
+    height: 44px;
+
+    .mat-mdc-icon-button {
+      width: 44px;
+      height: 44px;
+      --mat-icon-button-state-layer-size: 44px;
+    }
+  }
+
+  .transpose-offset {
+    min-height: 44px;
+  }
+
+  .transpose-reset {
+    --mat-button-text-container-height: 44px;
+    min-height: 44px;
+  }
+
+  .song-back {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.skeleton-line {
+  display: block;
+  height: 13px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  animation: song-pulse 1.5s ease-in-out infinite;
+
+  &.title {
+    width: 50%;
+    height: 20px;
+  }
+
+  &.short {
+    width: 30%;
+  }
+}
+
+@keyframes song-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media print {
+  app-page-toolbar,
+  .transpose-controls,
+  .song-tools {
+    display: none !important;
+  }
+
+  // The white ground, full width, and zero page gutter are hoisted into the
+  // global print block (they apply to every route). The sheet keeps only its
+  // own horizontal gutter below.
+  .song-sheet {
+    // Horizontal gutter lives in the element (measurable in print emulation);
+    // the vertical gutter is owned by the `song` page box in styles.scss so it
+    // repeats on page 2+ instead of leaking only onto the first/last fragment.
+    padding: 0 14mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    // Named page with a 14mm top/bottom margin; the sheet pads the sides only,
+    // so real paper never stacks two gutters.
+    page: song;
+  }
+
+  // Keep the heading with its metadata and let the first body line follow it.
+  .song-header {
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
+  // Leaders print as plain text, not filled pills: "Led by Alice, Ben".
+  .song-leaders {
+    gap: 0.35em;
+    align-items: baseline;
+  }
+
+  // The on-screen 40px pin is a chip-row alignment device; print drops the
+  // chips' box, so the label returns to the text baseline.
+  .song-leaders-label {
+    line-height: inherit;
+  }
+
+  .song-leaders-chips {
+    gap: 0.35em;
+  }
+
+  .leader-chip {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+
+    &:not(:last-child)::after {
+      content: ',';
+    }
+  }
+
+  .song-body {
+    max-width: none;
+    white-space: pre-wrap;
+    word-break: normal;
+    // break-word (not anywhere): one oversized token wraps instead of running
+    // off the sheet, while short chord tokens stay whole.
+    overflow-wrap: break-word;
+    // LIMITATION: every line here is only a run of inline spans inside this
+    // one <pre>, so a chord-only line has no block box to carry
+    // `break-after: avoid` and cannot be bound to its lyric across a page
+    // break. Wrapping each line would risk the byte-identical textContent
+    // contract, so orphans/widows remain the only break guard.
+    orphans: 3;
+    widows: 3;
+
+    // Keep the faint tag fill on paper: the background is what makes a chord
+    // read as a tag once the brand tint is gone.
+    .chord,
+    .chord-tag {
+      background: var(--color-surface-muted) !important;
+      color: var(--color-ink) !important;
+      font-weight: 600;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+
+  .song-body-inline {
+    display: none !important;
+  }
+
+  .song-body-chord-over,
+  .song-body-lyrics {
+    display: block !important;
+    white-space: pre-wrap;
+  }
+}

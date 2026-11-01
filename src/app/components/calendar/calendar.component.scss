@@ -29,17 +29,17 @@
   color: var(--color-ink-2);
   margin: 0;
 
-  .mat-mdc-checkbox.mat-mdc-checkbox-checked {
-    ::ng-deep .mdc-checkbox__background {
-      background-color: var(--color-brand-primary);
-      border-color: var(--color-brand-primary);
-    }
-  }
+  // Keep the checked box on the brand solid green with a white check in both
+  // themes; M3's dark palette would otherwise render it pale/neon green.
+  --mat-checkbox-selected-icon-color: var(--color-brand-solid);
+  --mat-checkbox-selected-hover-icon-color: var(--color-brand-solid-dark);
+  --mat-checkbox-selected-focus-icon-color: var(--color-brand-solid-dark);
+  --mat-checkbox-selected-checkmark-color: var(--color-on-brand);
 }
 
 .calendar-print-button {
   border-radius: var(--radius-control);
-  background: var(--color-brand-primary);
+  background: var(--color-brand-solid);
   color: var(--color-on-brand);
   width: auto;
   height: var(--height-control);
@@ -55,12 +55,12 @@
 }
 
 .calendar-print-button:hover {
-  background: var(--color-brand-primary-hover);
-  color: var(--color-on-brand);
+  background: var(--color-brand-solid-hover);
+  color: var(--color-on-brand-solid);
 }
 
 .calendar-print-button:active {
-  background: var(--color-brand-primary-hover);
+  background: var(--color-brand-solid-dark);
   transform: scale(0.98);
 }
 
@@ -241,7 +241,7 @@
 }
 
 .calendar-datepicker-cell.is-selected {
-  background-color: var(--color-brand-primary);
+  background-color: var(--color-brand-solid);
   color: var(--color-on-brand);
 }
 
