@@ -5,6 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261101-06 | 2026-11-01 | [outcome] | admin/ui | theme+input-standardization shipped on its branch: emerald + control standard + read-only user face, master #49/#50 merged in, gate 366x3 green, theme:check clean; 5 HUMAN findings open in the ledger | docs/handoffs/2026-11-01_ThemeInputStandardization.md
+- D-20261101-05 | 2026-11-01 | [trap] | admin/ui | A singleton BehaviorSubject service replays REAL DATA as a late subscriber's first emission after list-to-detail nav; skip(1) drops it forever - filter empties with skipWhile, not by position | src/app/components/admin-contacts/admin-contacts.component.ts:38
 - D-20261101-04 | 2026-11-01 | [find] | admin/ui | theme:check completeness script gates zero raw hex (incl .ts, data-color exemptions), radius ladder, roles-ban, rules audit, dark parity; wired pre-build in gate.sh | scripts/check-theme-standardization.mjs
 - D-20261101-03 | 2026-11-01 | [decision] | admin/ui | User-facing app read-only: expressions and contacts editing admin-only via /admin/expressions + /admin/contacts (reused components, route-based isAdminRoute); messaging and /upload preserved | docs/specs/2026-10-31_ThemeInputStandardization.md
 - D-20261101-02 | 2026-11-01 | [decision] | admin/ui | Emerald palette #27744A light / #8CCDA3 dark with theme-invariant brand-solid fills; success split from brand; input borders computed to true 3:1 (#878E99 / #6B7683) | docs/specs/2026-10-31_ThemeInputStandardization.md
