@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { skip } from 'rxjs/operators';
+import { skipWhile } from 'rxjs/operators';
 import { Contact } from 'src/app/models/contact';
 import { ContactsService } from 'src/app/services/contacts.service';
 
@@ -31,11 +31,12 @@ export class AdminContactsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Skip the BehaviorSubject's synchronous [] seed so the first real
-    // (possibly empty) DB emission is what flips the list ready — the same
-    // trap the expressions base class documents.
+    // Skip empty emissions (the BehaviorSubject seed and any pre-data
+    // replay) so a data-bearing emission flips the list ready. skip(1) is
+    // wrong here: on list->detail navigation the singleton service REPLAYS
+    // real data as its first emission and skip(1) would drop it forever.
     this.contactsSub = this.contactsService.userContacts
-      .pipe(skip(1))
+      .pipe(skipWhile((contacts) => !contacts || contacts.length === 0))
       .subscribe((contacts) => {
         this.contacts = (contacts ?? []).slice().sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
         this.status = 'ready';
