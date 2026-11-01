@@ -7,7 +7,8 @@
 
 ## Findings
 
-- C-20261031-01 | 2026-10-31 | maintainability | medium | high | open | Merge collision ahead: main checkout carries an uncommitted destructive-button session (--color-error-solid, .btn-destructive) that this branch re-introduces per spec; landing both will conflict in styles.scss | docs/specs/2026-10-31_ThemeInputStandardization.md:25
+- C-20261031-01 | 2026-10-31 | maintainability | medium | high | addressed | Merge collision ahead: main checkout carries an uncommitted destructive-button session (--color-error-solid, .btn-destructive) that this branch re-introduces per spec; landing both will conflict in styles.scss | docs/specs/2026-10-31_ThemeInputStandardization.md:25
+  - rebuttal | addressed | b465409d merge of origin/master | Master #49/#50 merged in; destructive-button work adopted onto the emerald token system (on-brand-solid ink); no semantic conflicts remain; post-merge gate running
 - C-20261031-02 | 2026-10-31 | correctness | low | high | addressed | Spec internal tension (delete Create button vs create works on admin route) was resolved in code as route-based isAdminRoute gate; spec text not updated to record this mechanism | src/app/components/expressions/expressions.component.ts:25
 - C-20261031-03 | 2026-10-31 | correctness | high | high | addressed | Pill container-shape (999px) on outlined mat-form-fields is geometrically invalid: notched-outline layout inflates (wrapper 999px, infix and input 0px), hiding every form input; 47 gate failures across auth/recovery/admin before diagnosis | src/styles.scss:251
   - rebuttal | addressed | `npx playwright test e2e/specs/auth.spec.ts --project=chromium` 12/12 after shape change to var(--radius-card); probe: input w 0px to 298px

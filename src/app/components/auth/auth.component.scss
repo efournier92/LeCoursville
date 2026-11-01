@@ -250,7 +250,7 @@
   width: 100%;
   min-width: 0;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
 
   // minimalist: M3 renders the light-theme fill as vivid green; pin it to the brand token shared with dark mode and the topnav.
@@ -277,7 +277,7 @@
   justify-self: center;      // center the whole chip in the auto grid column
   padding: 5px 8px 5px 14px;
   border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
   transition: background 150ms, border-color 150ms;
   appearance: none;
@@ -315,7 +315,7 @@
   height: 26px;
   padding: 2px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--color-ink) 9%, transparent);
   pointer-events: none;
 }
@@ -326,7 +326,7 @@
   justify-content: center;
   width: 24px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--color-ink-2);
 
   mat-icon {

@@ -123,9 +123,6 @@ html {
   // Cross-theme constants: identical in light and dark, tokenized so the
   // sweep grep stays clean.
   --color-on-brand: #ffffff;      // text/icons on saturated brand or accent fills
-  // Topnav toolbar keeps the legacy prod green (#2D5A27) in both themes,
-  // independent of the theme-varying --color-brand-primary.
-  --color-topnav-bg: #2D5A27;
   --color-media-backdrop: #000000; // slideshow / video letterbox surround
   --color-scrim: rgba(0, 0, 0, 0.65); // gradient scrim over photo captions
 

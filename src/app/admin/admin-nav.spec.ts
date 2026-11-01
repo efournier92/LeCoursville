@@ -1,10 +1,10 @@
 import { ADMIN_NAV, ADMIN_NAV_GROUPS, visibleAdminNav } from './admin-nav';
 
 describe('admin-nav', () => {
-  it('has twelve unique route keys', () => {
+  it('has fourteen unique route keys', () => {
     const keys = ADMIN_NAV.map(item => item.key);
-    expect(keys.length).toBe(12);
-    expect(new Set(keys).size).toBe(12);
+    expect(keys.length).toBe(14);
+    expect(new Set(keys).size).toBe(14);
   });
 
   it('every path starts with /admin/', () => {
@@ -29,18 +29,18 @@ describe('admin-nav', () => {
   it('hides photo albums when no flags are loaded', () => {
     const keys = visibleAdminNav(undefined).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
-    expect(keys.length).toBe(11);
+    expect(keys.length).toBe(13);
   });
 
   it('hides photo albums when the flag is disabled', () => {
     const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: false } }).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
-    expect(keys.length).toBe(11);
+    expect(keys.length).toBe(13);
   });
 
-  it('shows photo albums when the flag is enabled and keeps the other eleven', () => {
+  it('shows photo albums when the flag is enabled and keeps the other thirteen', () => {
     const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: true } }).map(item => item.key);
     expect(keys).toContain('photoAlbums');
-    expect(keys.length).toBe(12);
+    expect(keys.length).toBe(14);
   });
 });

@@ -45,7 +45,8 @@ for (const f of scss.filter(p => !p.includes('photos-legacy'))) {
     const m = line.match(/border-radius:\s*([^;]+);/);
     if (!m) return;
     for (const part of m[1].trim().split(/\s+/)) {
-      if (part === '0' || part.startsWith('var(--radius-')) continue;
+      // A token may carry a CSS suffix (!important); it is still ladder-conformant.
+      if (part === '0' || part === '!important' || part.startsWith('var(--radius-')) continue;
       fail(`non-ladder radius "${part}": ${f}:${i + 1}`);
     }
   });

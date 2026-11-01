@@ -78,7 +78,7 @@ describe('AdminComponent', () => {
     expect(nav.getAttribute('aria-busy')).toBe('false');
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(14);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(13);
   });
 
   it('renders no badges at zero', () => {

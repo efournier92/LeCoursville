@@ -5,6 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261101-04 | 2026-11-01 | [find] | admin/ui | theme:check completeness script gates zero raw hex (incl .ts, data-color exemptions), radius ladder, roles-ban, rules audit, dark parity; wired pre-build in gate.sh | scripts/check-theme-standardization.mjs
+- D-20261101-03 | 2026-11-01 | [decision] | admin/ui | User-facing app read-only: expressions and contacts editing admin-only via /admin/expressions + /admin/contacts (reused components, route-based isAdminRoute); messaging and /upload preserved | docs/specs/2026-10-31_ThemeInputStandardization.md
+- D-20261101-02 | 2026-11-01 | [decision] | admin/ui | Emerald palette #27744A light / #8CCDA3 dark with theme-invariant brand-solid fills; success split from brand; input borders computed to true 3:1 (#878E99 / #6B7683) | docs/specs/2026-10-31_ThemeInputStandardization.md
+- D-20261101-01 | 2026-11-01 | [trap] | admin/ui | Pill container-shape on outlined mat-form-fields inflates the notched-outline layout and collapses inputs to 0px width; fields take the 16px card radius, pills stay on buttons | src/styles.scss:249
 - D-20261031-22 | 2026-10-31 | [outcome] | songs/ui | Songs Library findings D-20261031-08..21 archived; gate, print, rules, and UX evidence linked | .gate-results/gate-summary.txt
 
 - D-20261031-07 | 2026-10-31 | [find] | admin/ui | Only the inner icon pill toggled the dark/light chip; make the outer chip `<button role="switch">` with the pill `pointer-events: none` | src/app/components/auth/auth.component.html:79
