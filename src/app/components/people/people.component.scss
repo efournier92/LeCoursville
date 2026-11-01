@@ -62,7 +62,7 @@
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   white-space: nowrap;
 }// ── Tree ─────────────────────────────────────────────────────────────────────
 // Roots sit in the same column as the family name; every child level indents
@@ -98,7 +98,7 @@
     &:focus-visible {
       outline: 2px solid var(--color-ink);
       outline-offset: 2px;
-      border-radius: 2px;
+      border-radius: var(--radius-sm);
     }&.deceased {
       color: var(--color-ink-2);
       font-style: italic;
@@ -109,7 +109,7 @@
 
 .skeleton-state {
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 16px;
   min-height: calc(100vh - 150px);
 }.skeleton-family {
@@ -126,7 +126,7 @@
   height: 16px;
   width: 120px;
   background: var(--color-surface-muted);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   animation: pulse 1.5s ease-in-out infinite;
 }.skeleton-tree {
   display: flex;
@@ -141,7 +141,7 @@
 }.skeleton-bar {
   height: 14px;
   background: var(--color-surface-muted);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   animation: pulse 1.5s ease-in-out infinite;
   width: 16em;
   max-width: 100%;
@@ -171,7 +171,7 @@
     --tree-indent: 16px;
   }.family-group {
     padding: 14px 16px 10px;
-    border-radius: 14px;
+    border-radius: var(--radius-card);
 
     &::before {
       width: 4px;

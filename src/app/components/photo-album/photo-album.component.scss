@@ -1,6 +1,6 @@
 body {
   padding: 40px;
-  background-image: linear-gradient(rgba(45, 90, 39, 0.10) 0%, var(--color-surface) 52.08%);
+  background-image: linear-gradient(color-mix(in srgb, var(--color-brand-primary) 10%, transparent) 0%, var(--color-surface) 52.08%);
   color: var(--color-brand-primary-dark);
   min-height: 100vh;
 }

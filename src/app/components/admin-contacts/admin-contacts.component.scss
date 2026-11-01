@@ -1,0 +1,49 @@
+.admin-contacts-status {
+  color: var(--color-ink-2);
+  padding: 16px;
+}
+
+.admin-contacts-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-contacts-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: var(--color-ink);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--color-surface-muted);
+  }
+}
+
+.admin-contacts-name {
+  font-weight: 600;
+}
+
+.admin-contacts-detail {
+  color: var(--color-ink-2);
+}
+
+.admin-contacts-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--color-link);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

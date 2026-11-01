@@ -22,7 +22,7 @@
       height: 48px;
       color: var(--color-error);
       background-color: rgba(179, 38, 30, 0.10);
-      border-radius: 50%;
+      border-radius: var(--radius-avatar);
       display: flex;
       align-items: center;
       justify-content: center;

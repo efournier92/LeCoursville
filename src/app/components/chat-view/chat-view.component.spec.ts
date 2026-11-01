@@ -47,4 +47,19 @@ describe('ChatViewComponent', () => {
     component.message.attachmentUrl = '';
     expect(component.getAttachmentType(component.message)).toBeUndefined();
   });
+
+  it('shows the Edit control only for the author, never for admins on foreign messages', () => {
+    const editControl = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('.message-button'))
+        .find((el: Element) => el.textContent?.includes('Edit'));
+
+    component.user = { id: 'user-1', roles: { admin: true } } as any;
+    fixture.detectChanges();
+    expect(editControl()).toBeTruthy();
+
+    // Admin on another author's message: no edit control (self-service only).
+    component.user = { id: 'someone-else', roles: { admin: true } } as any;
+    fixture.detectChanges();
+    expect(editControl()).toBeUndefined();
+  });
 });

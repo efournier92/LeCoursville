@@ -24,12 +24,12 @@
 
 .media-upload-success-messages {
   color: var(--color-brand-primary);
-  background: rgba(45, 90, 39, 0.08);
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
 }
 
 .message-dismiss {
   border: 1px solid currentColor;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   font: inherit;

@@ -55,16 +55,31 @@ describe('ExpressionsComponent', () => {
     expect(cards()).toBe(1);
   });
 
-  it('shows Create only to admins', () => {
+  it('shows Create only on the admin route, never for members', () => {
     showExpressions();
     const createButton = () =>
       fixture.nativeElement.querySelector('.create-expression-button');
 
-    expect(createButton()).toBeNull();
-
+    // Member route: no Create control regardless of role.
     component.user = { roles: { admin: true } } as any;
     fixture.detectChanges();
+    expect(createButton()).toBeNull();
+
+    // Admin route (/admin/expressions): Create appears.
+    component.isAdminRoute = true;
+    fixture.detectChanges();
     expect(createButton()).not.toBeNull();
+  });
+
+  it('renders items via expression-view with no inline edit surface for members', () => {
+    showExpressions();
+    component.allItems[0].isEditable = true;
+    component.displayedItems = component.allItems as unknown as Expression[];
+    fixture.detectChanges();
+
+    // The inline app-expression-edit branch renders for admins only via the
+    // admin route; on the member route the item falls through to view mode.
+    expect(fixture.nativeElement.querySelector('app-expression-edit')).toBeNull();
   });
 
   it('flips the sort icon when the direction reverses', () => {

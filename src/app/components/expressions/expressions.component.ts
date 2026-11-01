@@ -19,6 +19,10 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
   isLoading: boolean = true;
   messageType: string = MessageConstants.Types.Expression;
   sortSettings: SortSettingsForExpressions = new SortSettingsForExpressions();
+  // Editing lives only on the admin route (/admin/expressions); member routes
+  // are read-only. Route-based, not role-based: the completeness check bans
+  // user.roles reads in user-facing templates.
+  isAdminRoute = location.pathname.startsWith('/admin');
   // The base class skips the service's synchronous [] seed, so the first
   // real emission may arrive after the first render; never leave this
   // unassigned or the template's displayedItems.length throws.

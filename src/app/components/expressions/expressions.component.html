@@ -39,7 +39,7 @@
       </button>
     </div>
 
-    @if (user && user.roles && user.roles.admin) {
+    @if (isAdminRoute) {
       <div
         class="create-expression"
         >
@@ -112,7 +112,7 @@
               >
             </app-expression-view>
           }
-          @if (expression.isEditable) {
+          @if (expression.isEditable && isAdminRoute) {
             <app-expression-edit
               [message]="expression"
               [parent]="expression"

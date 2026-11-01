@@ -22,7 +22,7 @@ test.describe('expressions', () => {
   test('create expression: admin creates one via the edit card', async ({ page }) => {
     try {
       await login(page, 'admin');
-      await page.goto('/expressions');
+      await page.goto('/admin/expressions');
       await page.getByRole('button', { name: 'Create Expression' }).click();
       await page.getByLabel('Expression').fill(CREATED_TITLE);
       await page.getByLabel('Attribution').fill('E2E Family');
@@ -48,7 +48,7 @@ test.describe('expressions', () => {
     const seeded = await readDb<Record<string, any>>('messages/expr-2');
     try {
       await login(page, 'admin');
-      await page.goto('/expressions');
+      await page.goto('/admin/expressions');
       const card = page.locator('.expression-card-wrapper', { hasText: 'Make it so' }).first();
       await card.locator('.expression-actions button').first().click();
       await page.getByLabel('Expression').fill(EDITED_TITLE);
@@ -75,5 +75,27 @@ test.describe('expressions', () => {
     await expect(
       page.getByText('We couldn\'t find any expressions matching "zzznope".'),
     ).toBeVisible();
+  });
+
+  test('member read-only: no Create button, no inline edit, no edit action', async ({ page }) => {
+    await login(page, 'user');
+    await page.goto('/expressions');
+    await expect(page.getByRole('button', { name: 'Create Expression' })).toHaveCount(0);
+    await expect(page.locator('.expression-actions')).toHaveCount(0);
+    await expect(page.locator('app-expression-edit')).toHaveCount(0);
+  });
+
+  test('admin on the member route also sees the read-only library', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/expressions');
+    await expect(page.getByRole('button', { name: 'Create Expression' })).toHaveCount(0);
+    await expect(page.locator('.expression-actions')).toHaveCount(0);
+  });
+
+  test('admin route shows the Create control and edit actions', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/expressions');
+    await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
+    await expect(page.locator('.expression-actions').first()).toBeVisible();
   });
 });

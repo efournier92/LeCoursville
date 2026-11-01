@@ -70,3 +70,35 @@ test.describe('navigation', () => {
     }
   });
 });
+
+test.describe('admin sidebar navigation', () => {
+  test('super admin sidebar shows Contacts (People) and Expressions (Content)', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const nav = page.getByTestId('admin-nav');
+    const contacts = nav.getByTestId('admin-nav-link-contacts');
+    await expect(contacts).toBeVisible();
+    await expect(contacts).toHaveText(/Contacts/);
+    await expect(
+      page.getByTestId('admin-nav-group-people').locator('.admin-nav-link-contacts, [data-testid="admin-nav-link-contacts"]'),
+    ).toHaveCount(1);
+    const expressions = nav.getByTestId('admin-nav-link-expressions');
+    await expect(expressions).toBeVisible();
+    await expect(expressions).toHaveText(/Expressions/);
+    await expect(
+      page.getByTestId('admin-nav-group-content').locator('[data-testid="admin-nav-link-expressions"]'),
+    ).toHaveCount(1);
+    // The entries navigate to their admin routes.
+    await contacts.click();
+    await expect(page).toHaveURL(/\/admin\/contacts/);
+    await expressions.click();
+    await expect(page).toHaveURL(/\/admin\/expressions/);
+  });
+
+  test('member navbar is unchanged by the admin route additions', async ({ page }) => {
+    await login(page, 'user');
+    const nav = page.locator('#lecoursville-navbar-links');
+    await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
+    await expect(nav.getByRole('button', { name: 'Expressions' })).toBeVisible();
+  });
+});

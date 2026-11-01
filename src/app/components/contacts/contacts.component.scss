@@ -76,8 +76,8 @@
 .skeleton-name-line {
   height: 20px;
   width: 55%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--color-surface-muted) 25%, rgba(45, 90, 39, 0.08) 50%, var(--color-surface-muted) 75%);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-muted) 25%, color-mix(in srgb, var(--color-brand-primary) 8%, transparent) 50%, var(--color-surface-muted) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -91,8 +91,8 @@
 
 .skeleton-line {
   height: 13px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--color-surface-muted) 25%, rgba(45, 90, 39, 0.08) 50%, var(--color-surface-muted) 75%);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-muted) 25%, color-mix(in srgb, var(--color-brand-primary) 8%, transparent) 50%, var(--color-surface-muted) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 

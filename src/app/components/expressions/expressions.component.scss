@@ -51,18 +51,18 @@
 
   .create-expression-button {
     border-radius: var(--radius-control);
-    background: var(--color-surface-muted);
-    color: var(--color-ink-2);
+    background: var(--color-brand-primary);
+    color: var(--color-on-brand);
     width: auto;
-    height: 36px;
+    height: var(--height-control);
 
     &:hover {
-      background: var(--color-border);
-      color: var(--color-ink);
+      background: var(--color-brand-primary-hover);
+      color: var(--color-on-brand);
     }
 
     &:active {
-      background: var(--color-border);
+      background: var(--color-brand-primary-hover);
       transform: scale(0.98);
     }
   }

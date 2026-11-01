@@ -42,7 +42,7 @@
   color: var(--color-surface);
   background: color-mix(in srgb, var(--color-surface) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-surface) 35%, transparent);
-  border-radius: var(--radius-input);
+  border-radius: var(--radius-control);
 
   &::placeholder {
     color: color-mix(in srgb, var(--color-surface) 65%, transparent);
@@ -145,7 +145,7 @@
 .root-btn:focus-visible {
   outline: 2px solid var(--color-brand-primary);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .explorer-body {
@@ -172,7 +172,7 @@
   &:focus-visible {
     outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 }
 
