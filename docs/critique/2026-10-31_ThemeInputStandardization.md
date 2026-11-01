@@ -22,7 +22,7 @@
 - C-20261031-11 | 2026-10-31 | correctness | low | high | addressed | Raw brand hex in TS (contact-card fallback) bypasses styles.scss token authority; theme:c | src/app/components/contacts/contact-card/contact-card.component.ts:72
 - C-20261031-12 | 2026-10-31 | correctness | low | medium | addressed | Role badges moved to radius-control while spec section 4 locks badge radius to radius-sm | src/app/components/user-view/user-view.component.scss:44
 - C-20261031-13 | 2026-10-31 | visual | high | high | addressed | Dark toolbar override re-emits brand-primary which is mint #8CCDA3 in dark, with white text 1.85:1; the comment claims an invariant toolbar tha | src/styles.scss:271
-- C-20261031-14 | 2026-10-31 | visual | medium | high | addressed | 58 of 70 form-fields are filled-appearance and render M3-derived green-tinted neutrals (#dfe4d7/#43483f) against th | dist/lecoursville/browser/styles-KZIORKV7.css
+- C-20261031-14 | 2026-10-31 | visual | medium | high | addressed | 58 of 70 form-fields are filled-appearance and render M3-derived green-tinted neutrals (#dfe4d7/#43483f) against th | src/styles.scss:313
 - C-20261031-15 | 2026-10-31 | visual | medium | high | addressed | Light input border #C9CED4 is 1.58:1 on white, not the claimed 3:1; the strict-border decision's value was never contrast-verified | src/styles.scss:94
 - C-20261031-16 | 2026-10-31 | visual | low | high | addressed | ink-3 #8A919C is 2.89:1 on app-bg, below the 3:1 its own comment claims for large text on that ground | src/styles.scss:74
 - C-20261031-17 | 2026-10-31 | security | medium | high | open | Expressions read-only is UI-only: messages rules accept member writes with messageType expression and empty authorName, so members can publis | database.rules.json:25
