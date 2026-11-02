@@ -244,6 +244,10 @@ export class PhotosLegacyComponent implements OnInit {
     });
   }
 
+  hasMorePhotos(): boolean {
+    return this.loadedPhotos.length < this.loadablePhotos.length;
+  }
+
   onSearchTermChange(value: string): void {
     if (value.trim()) {
       this.searchPhotos(value);
@@ -279,6 +283,15 @@ export class PhotosLegacyComponent implements OnInit {
           this.allPhotos = photos;
           this.sortPhotosBy(this.sortRandomly);
           this.loadMorePhotos(3);
+        } else if (photos && photos.length === 0) {
+          // An empty list never satisfies shouldRefreshPhotos (its length
+          // guard is falsy at zero), so resolve the skeleton here to let the
+          // no-photos empty state render.
+          this.allPhotos = [];
+          this.loadablePhotos = [];
+          this.loadedPhotos = [];
+          this.updateLoadedPhotos([]);
+          this.showSpinner = false;
         }
       });
   }

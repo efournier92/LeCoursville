@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, OnInit, Inject, Optional, ChangeDetectionStrategy } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { map } from 'rxjs/operators';
 import { Calendar } from 'src/app/models/calendar';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -20,9 +20,14 @@ export class CalendarPrinterComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<CalendarPrinterComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: { filtersSummary?: string } | null,
     private rtdb: RtdbService,
     private analyticsService: AnalyticsService,
   ) {}
+
+  get filtersSummary(): string {
+    return this.data?.filtersSummary ?? '';
+  }
 
   ngOnInit(): void {
     this.loadAvailableYears();

@@ -13,6 +13,12 @@
   margin: 0;
 }
 
+.calendar-printer-summary {
+  margin: 0 0 16px;
+  font-size: 0.85em;
+  color: var(--color-ink-2);
+}
+
 .calendar-printer-years {
   display: flex;
   gap: 8px;

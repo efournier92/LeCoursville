@@ -21,6 +21,12 @@
     <button class="gallery-segmented-btn" [class.active]="sortType === 'recent'" (click)="sortType = 'recent'">Recent</button>
     <button class="gallery-segmented-btn" [class.active]="sortType === 'title'" (click)="sortType = 'title'">A–Z</button>
   </div>
+  @if (user && !(user.roles && user.roles.admin)) {
+    <a class="gallery-primary-btn gallery-upload-cta" routerLink="/upload">
+      <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+      Upload photos
+    </a>
+  }
 </app-page-toolbar>
 
 @if (status === 'loading') {
@@ -50,7 +56,8 @@
             loading="lazy" decoding="async" />
         } @else {
           <div class="album-tile-placeholder">
-            <mat-icon>photo_library</mat-icon>
+            <mat-icon aria-hidden="true">photo_library</mat-icon>
+            <span class="album-tile-initial">{{ album.title.charAt(0) }}</span>
           </div>
         }
         <div class="album-tile-scrim">

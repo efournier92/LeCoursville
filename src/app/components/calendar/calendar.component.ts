@@ -236,8 +236,15 @@ export class CalendarComponent implements OnInit {
   }
 
   printPdf(): void {
+    const included: string[] = [];
+    if (this.showBirthdays) included.push('birthdays');
+    if (this.showAnniversaries) included.push('anniversaries');
+    if (this.showNotLiving) included.push('relatives who have passed');
+    const filtersSummary = included.length
+      ? `Including ${included.join(', ')}.`
+      : 'No event types selected.';
     this.printerPrompt.open(CalendarPrinterComponent, {
-      data: { events: this.allEvents },
+      data: { events: this.allEvents, filtersSummary },
     });
     this.analyticsService.logEvent('calendar_open_print_dialog', {
       date: this.viewDate.toString(),

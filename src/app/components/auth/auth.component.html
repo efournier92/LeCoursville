@@ -32,8 +32,15 @@
         <mat-form-field appearance="outline" class="auth-field">
           <mat-icon matPrefix aria-hidden="true">lock</mat-icon>
           <mat-label>Password</mat-label>
-          <input matInput type="password" name="password" [(ngModel)]="password"
-            autocomplete="current-password" required data-testid="auth-password" />
+          <input matInput [type]="showPassword ? 'text' : 'password'" name="password"
+            [(ngModel)]="password" autocomplete="current-password" required
+            data-testid="auth-password" />
+          <button mat-icon-button matSuffix type="button" class="auth-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            data-testid="auth-password-toggle">
+            <mat-icon aria-hidden="true">{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
         </mat-form-field>
         @if (error) {
           <div class="auth-banner auth-banner--error" role="alert" data-testid="auth-error">

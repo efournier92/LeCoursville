@@ -16,12 +16,16 @@
     <app-page-toolbar title="Calendar">
       <div class="calendar-toolbar">
         <div class="calendar-toolbar-row">
-          <div class="calendar-toolbar-filters">
+          <div class="calendar-toolbar-filters" role="group" aria-label="Calendar filters">
             <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
             <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
-            <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Include Not Living</mat-checkbox>
+            <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Show relatives who have passed</mat-checkbox>
           </div>
-          <button mat-button (click)="printPdf()" class="calendar-print-button">Print</button>
+          <div class="calendar-toolbar-actions">
+            <button mat-flat-button color="primary" (click)="printPdf()" class="calendar-print-button">
+              <mat-icon aria-hidden="true">print</mat-icon>Print
+            </button>
+          </div>
         </div>
       </div>
     </app-page-toolbar>
@@ -73,14 +77,15 @@
         </div>
       </div>
     }
-    @if (status === 'empty') {
-      <div class="calendar-empty">
-        <p class="calendar-empty-title">We couldn't find any events.</p>
-        <p class="calendar-empty-hint">Check back later.</p>
-      </div>
-    } @else {
+    <div class="calendar-view-wrap">
       <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
-    }
+      @if (status === 'empty') {
+        <div class="calendar-empty">
+          <p class="calendar-empty-title">We couldn't find any events.</p>
+          <p class="calendar-empty-hint">Check back later.</p>
+        </div>
+      }
+    </div>
     @if (selectedPersonId) {
       <app-person-detail-modal [personId]="selectedPersonId" (closeModal)="closeModal()" (openPerson)="openPersonModal($event)"></app-person-detail-modal>
     }

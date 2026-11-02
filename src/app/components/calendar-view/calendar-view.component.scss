@@ -71,7 +71,27 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-3) var(--color-surface-muted);
   display: block;
+}
+
+// The month grid is intentionally wider than a phone viewport; the hint is
+// the affordance that tells a first-time viewer the grid pans sideways.
+.calendar-pan-hint {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 0.85em;
+  color: var(--color-ink-2);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @media (min-width: 1350px) {
@@ -118,6 +138,10 @@
     border-radius: 8px;
     min-width: 700px;
     width: max-content;
+  }
+
+  .calendar-pan-hint {
+    display: flex;
   }
 
   .calendar-title-date {
