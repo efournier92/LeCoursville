@@ -15,7 +15,7 @@
         >
         <span>Cancel</span>
       </button>
-      @if (userSignedIn?.roles?.super) {
+      @if (isSuperUser) {
         <button
           mat-stroked-button
           class="admin-form-action-button admin-form-action-button-delete"
@@ -56,7 +56,7 @@
           >
           <span>Save</span>
         </button>
-        @if (userSignedIn?.roles?.super) {
+        @if (isSuperUser) {
           <button
             mat-stroked-button
             class="admin-form-action-button admin-form-action-button-delete col m-2"
@@ -96,7 +96,7 @@
       </div>
     </div>
   </div>
-  @if (isSuperUser()) {
+  @if (isSuperUser) {
     <div class="user-roles-container mt-3">
       <mat-checkbox name="user-roles-user" [(ngModel)]="formUser.roles.user">
         User

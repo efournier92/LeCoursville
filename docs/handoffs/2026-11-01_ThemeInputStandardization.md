@@ -1,55 +1,62 @@
 # Handoff | Theme + Input Standardization (Emerald, Read-Only User Face)
 
-- Date: 2026-11-01
+- Date: 2026-11-01 (second round, evening)
 - Branch: `theme+input-standardization` in worktree `/Users/e/mnt/bnk/cs/lecoursville-theme`
-- Commits: `f67e64ce` (implementation) -> `b465409d` (merge origin/master #49+#50) -> post-merge spec-count fix
-- Spec: `docs/specs/2026-10-31_ThemeInputStandardization.md` (one deviation recorded in section 2)
-- Ledger: `docs/critique/2026-10-31_ThemeInputStandardization.md` (30 findings; 5 open, all HUMAN-routed)
+- Committed: `f67e64ce` (implementation) -> `b465409d` (merge origin/master #49+#50) -> `4ca10bcc` (ledger evidence)
+- Uncommitted: the second redteam round (rules hardening, role-read refactor, radius unification, spec + ledger + discovery updates). Nothing pushed.
+- Spec: `docs/specs/2026-10-31_ThemeInputStandardization.md`
+- Ledger: `docs/critique/2026-10-31_ThemeInputStandardization.md` (35 findings, validator clean, referee verdict CONVERGED)
 
 ## Current State
 
-### Done And Verified
+### Shipped On The Branch
 
-- Emerald palette both modes; `$evergreen` M3 palette; theme-invariant brand-solid fills (toolbar dark-mode 1.85:1 white-on-mint defect fixed en route, C-13).
-- Control standard: 44px controls, radius ladder (buttons/raw inputs pill, mat fields 16px - documented deviation after the pill shape collapsed outlined fields, C-03), input borders computed to true 3:1 (#878E99 light / #6B7683 dark; the original #C9CED4 was 1.58:1 - my math error, C-15).
-- User-facing read-only: expressions/contacts edit surfaces gone from member routes; admin parity via /admin/expressions + /admin/contacts reusing components (route-based `isAdminRoute`, no role reads in templates except photos-legacy, badges kept).
-- Master merged: destructive buttons, songs, analytics all on the emerald token system; admin nav now 14 entries (13 with albums flag off).
-- `npm run theme:check` (completeness script) wired into the gate pre-build; covers raw hex incl. .ts, radius ladder, roles-ban, rules audit, dark parity.
-- Gate 5 (pre-merge): unit 714, functions 298, rules 13, storage 9, e2e 278x chromium/webkit/firefox, 0 failures. Gate 7 (post-merge) result: see `.gate-results/*.json` timestamps.
+- Emerald palette both modes. `$evergreen` M3 palette. theme-invariant brand-solid fills.
+- Control standard: 44px controls, radius ladder. Text-entry controls (Material and raw) take the 16px card radius. the pill radius is buttons-only.
+- User-facing read-only for expressions and contacts. admin parity via `/admin/expressions` + `/admin/contacts`. `isAdminRoute` is a live `Router.url` getter.
+- `npm run theme:check` wired pre-build: raw hex including `.ts`, radius ladder, role ban, rules audit, dark parity.
 
-### Redteam Outcome
+### Second Round (this session)
 
-Four lenses (correctness/visual/security/testing) + rebut + un-ship + referee. Verdict NOT-CONVERGED on 5 open mediums, all classified HUMAN with referee recommendations (below). 21 findings addressed with executed evidence, 2 rejected as churn.
+- `C-17` expressions read-only is now enforced server-side: expression-create validate requires admin-or-super, and a `messageType` child validate limits member writes to `'chat'` at message and reply level.
+- `C-18` `/contacts` read tightened from `roles/user` to admin-or-super. verified no member-reachable client reads that node (member contacts derive from `/people`).
+- `C-09` role reads left the templates (`canDelete`, `isSuperUser` getters), exemptions dropped, ban regex widened to any identifier `.roles` except the `formUser` edit model.
+- `C-05` gallery search wrapper moved off the 999px pill. computed-radius assertions in the family-explorer and photos specs.
+- `C-01..C-34` settled with evidence. Two lows escalated to the human (below).
 
-## HUMAN Agenda (walkthrough pending; referee recommendations)
+### Verification (executed this session, post-change)
 
-1. C-18 contacts PII member-wide read (rules :19) - recommend accept + follow-up
-2. C-17 expressions read-only is UI-only (messages rules allow member expression writes) - recommend accept + follow-up rules tighten
-3. C-19 admin chat moderation UI removed - recommend accept + queued rebuild-or-drop decision
-4. C-09 user-edit roles exemption vs spec exception list - recommend amend spec
-5. C-05 two input shapes (16px mat vs pill raw) - recommend accept (documented)
-6. C-21 pre-existing open reads (/media true; /messages auth) - recommend defer, bundle with 1-2 follow-up
-7. C-10 isAdminRoute unit bypass - recommend accept
+- `npm run e2e:gate` -> chromium 367, webkit 367, firefox 367, 0 failed, 0 skipped. unit 752. functions 298. rules project 22.
+- `npm run theme:check` -> PASS.
+- `python3 ~/.config/opencode/scripts/check_critique.py <ledger>` -> clean.
+- Referee -> CONVERGED, no blocking findings.
+
+## Human Agenda (2 items, both low, neither blocking)
+
+1. `C-21` data-exposure posture. `/media` is anonymously readable, `/messages` and `/photos` require any signed-in account, and self-registration grants `roles/user`. Decide whether that stays. Recommend: keep `/media` public (the public gallery depends on it), and treat messages/photos as member-only by decision, not accident.
+2. `C-35` admin tiering. The `/admin` shell is super-only while rules let plain `roles.admin` users read contacts and write expressions. Decide: admit plain admins to `/admin/expressions` + `/admin/contacts`, or tighten the rules to super.
 
 ## Next Actions
 
-1. User: walk the agenda above (accept/override each), then ship-changes (commit hygiene done; push + PR is the user's call per AGENTS).
-2. If gate 7 is red: diagnose from .gate-results + test-results; the merge touched admin nav counts (most likely culprit class - all updated).
-3. Deploy sign-off per AGENTS.md is separate; no deploy ran.
+1. Commit the uncommitted round via `ship-changes` (user's call). Rules are emulator-verified but not deployed.
+2. Any deploy must go through `scripts/deploy.sh` sign-off. the rules changes only take effect when the database rules are deployed with the bundle.
+3. Maintenance contract: any new message or reply write must stamp `messageType: 'chat'` on create and must not re-send `messageType` on update, or members will be denied.
 
 ## Verify Commands
 
 ```bash
 npm run theme:check
 npm run e2e:gate
+python3 ~/.config/opencode/scripts/check_critique.py /Users/e/mnt/bnk/cs/lecoursville-theme/docs/critique/2026-10-31_ThemeInputStandardization.md
 ```
 
 ## Open Risks And Blockers
 
-- Gate 7 (post-merge full matrix) is the authoritative green; gate 5 green was pre-merge.
-- The 5 HUMAN-open findings in the ledger are accepted-risk until walked.
+- Uncommitted work: a crash before commit loses the second round.
+- Playwright browser binaries vanished from the cache mid-session. `npx playwright install webkit firefox` restored them. A whole-browser failure with "Executable doesn't exist" is an environment fault, not a regression.
+- `C-21` and `C-35` are accepted risk until the user decides.
 
 ## References
 
-- Discovery: D-20261101-01..04 (worktree docs/discovery/DISCOVERY.md)
-- Evidence pack: /var/folders/px/4kz2zhts5wb7ph04p303k2840000gn/T/opencode/rta-20261031-theme-standardization/pack.md (session-temp, may be gone)
+- Discovery: `D-20261101-01..08` in `docs/discovery/DISCOVERY.md`
+- Gate artifacts: `.gate-results/{chromium,webkit,firefox}.json`, `unit-tests.txt`, `functions-tests.txt`

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { vi } from 'vitest';
+import { Router } from '@angular/router';
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
@@ -56,6 +57,8 @@ describe('ExpressionsComponent', () => {
   });
 
   it('shows Create only on the admin route, never for members', () => {
+    const router = TestBed.inject(Router);
+    const url = vi.spyOn(router, 'url', 'get').mockReturnValue('/expressions');
     showExpressions();
     const createButton = () =>
       fixture.nativeElement.querySelector('.create-expression-button');
@@ -66,7 +69,7 @@ describe('ExpressionsComponent', () => {
     expect(createButton()).toBeNull();
 
     // Admin route (/admin/expressions): Create appears.
-    component.isAdminRoute = true;
+    url.mockReturnValue('/admin/expressions');
     fixture.detectChanges();
     expect(createButton()).not.toBeNull();
   });

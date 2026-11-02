@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { MessageViewComponent } from 'src/app/components/message-view/message-view.component';
 
 @Component({
@@ -14,5 +15,9 @@ export class ExpressionViewComponent extends MessageViewComponent {
 
   // Edit control shows only when the expressions list is rendered on the
   // admin route (/admin/expressions); member routes are read-only.
-  isAdminRoute = location.pathname.startsWith('/admin');
+  private readonly router = inject(Router);
+
+  get isAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
 }

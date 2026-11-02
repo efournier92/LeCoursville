@@ -5,6 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261101-08 | 2026-11-01 | [outcome] | admin/security | Redteam round 2 closed the medium set: `/contacts` read admin-or-super, expression-create and `messageType` writes admin-only at message and reply level, role reads moved to TS getters, text-entry radius unified at 16px. gate 367 e2e x3, unit 752, functions 298, rules 22 | docs/critique/2026-10-31_ThemeInputStandardization.md
+- D-20261101-07 | 2026-11-01 | [trap] | build/perf | Playwright browser binaries can vanish from the cache between runs. a webkit stage then fails all 367 with "Executable doesn't exist" and looks like a product regression. Run `npx playwright install webkit firefox` before trusting a red browser stage | playwright.config.ts:25
 - D-20261101-06 | 2026-11-01 | [outcome] | admin/ui | theme+input-standardization shipped on its branch: emerald + control standard + read-only user face, master #49/#50 merged in, gate 366x3 green, theme:check clean; 5 HUMAN findings open in the ledger | docs/handoffs/2026-11-01_ThemeInputStandardization.md
 - D-20261101-05 | 2026-11-01 | [trap] | admin/ui | A singleton BehaviorSubject service replays REAL DATA as a late subscriber's first emission after list-to-detail nav; skip(1) drops it forever - filter empties with skipWhile, not by position | src/app/components/admin-contacts/admin-contacts.component.ts:38
 - D-20261101-04 | 2026-11-01 | [find] | admin/ui | theme:check completeness script gates zero raw hex (incl .ts, data-color exemptions), radius ladder, roles-ban, rules audit, dark parity; wired pre-build in gate.sh | scripts/check-theme-standardization.mjs

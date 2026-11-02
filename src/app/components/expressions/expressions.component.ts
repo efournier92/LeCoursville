@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { MessageComponent } from 'src/app/components/message/message.component';
 import { Expression } from 'src/app/models/expression';
 import { ExpressionConstants } from 'src/app/constants/expression-constants';
@@ -22,7 +23,11 @@ export class ExpressionsComponent extends MessageComponent implements OnInit {
   // Editing lives only on the admin route (/admin/expressions); member routes
   // are read-only. Route-based, not role-based: the completeness check bans
   // user.roles reads in user-facing templates.
-  isAdminRoute = location.pathname.startsWith('/admin');
+  private readonly router = inject(Router);
+
+  get isAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
   // The base class skips the service's synchronous [] seed, so the first
   // real emission may arrive after the first render; never leave this
   // unassigned or the template's displayedItems.length throws.

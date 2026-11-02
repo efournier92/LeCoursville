@@ -60,7 +60,7 @@ All paths relative to the worktree root. Line numbers verified at `26755dcd`.
 - user-view.component.ts:30/:37/:46 - `isAdminUser`/`isSuperUser`/combined; used for role badges (informational display) - **these stay** (decision 4).
 - photos-legacy.component.html:60/:152/:162 - role gates around legacy photo edit/delete, with `updatePhoto`/`deletePhoto` at photos-legacy.component.ts:94-96/:103-113. **Explicitly out of scope this run (decision 3).** photos-legacy renders only via photo-shell.component.html:2-6 when the `enablePhotoAlbums` flag is off.
 - chat-view.component.html:72 - `message.authorId === user.id || (user && user.roles && user.roles.admin)`: KEEP the authorId disjunct, DROP the `roles.admin` disjunct (self-service only).
-- Rule (decision 4): role-conditional *controls* are banned on user-facing templates except photos-legacy. Informational role display (user-view badges) stays.
+- Rule (decision 4): role-conditional *controls* are banned on user-facing templates except admin* components, photos-legacy (decision 3), and user-view (informational badges). user-edit and contact-edit compute their role flags in TypeScript.
 
 ### Mutation inventory (who can write what)
 
@@ -84,10 +84,16 @@ All paths relative to the worktree root. Line numbers verified at `26755dcd`.
 Write-rule audit result: every node that a user-facing mutation could touch is already admin-gated or author-scoped:
 
 - `/contacts`, `/photos`, `/videos`, `/media`, `/people`, `/addresses`, `/photoAlbums`, `/calendars`, `/calendarEvents`, `/clans`, `/families` - write requires `roles/admin === true`.
-- `/messages/**` - write requires `roles/user === true` AND author scoping (authorId rules); authorName is admin-only. This is the preserved messaging self-service.
+- `/messages/**` - write requires `roles/user === true` AND author scoping (authorId rules); authorName is admin-only. This is the preserved messaging self-service. Member writes are limited to `messageType === 'chat'` at both the message and reply level, and expression records are admin-or-super only.
 - `/users/$uid` - self-create with role constraints. `/userUploads/$id` - `False` (public-create pending records for the /upload flow, written via admin SDK paths elsewhere). `/mediaUploads`, `/mediaDeletions`, `/recoveryRequests`, `/adminAlerts`, `/rateLimits`, `/outboundEmails`, `/config/adminAlertRecipients` - `False` (admin SDK / functions only). `/features`, `/promotedRoute` - super only. `/roleAudit/$id` - super, create-once.
 
-**Conclusion: NO database.rules.json change is required.** Removing UI plus the existing rules yields real enforcement. The spec still requires a rules-diff assertion in verification (grep for member-writable nodes beyond `messages`, `users/$uid`, and the public-create `False` set) so a future drift cannot silently reopen a write path.
+**Applied rules changes (2026-11-01 second round).** The first pass concluded that removing UI was enough. Redteam round 2 showed two write or read surfaces were still open, so three rules changed:
+
+- `/contacts` read tightened from `roles/user` to admin-or-super. The member contacts view derives from `/people`, so no member client reads this node.
+- The `/messages/$id` create validate now requires admin-or-super on the `messageType === 'expression'` branch, so members cannot create expression records with an empty author name.
+- A `messageType` child validate at the message and reply level limits member writes to `'chat'`.
+
+The drift assertion in verification stays: grep for member-writable nodes beyond `messages`, `users/$uid`, and the public-create `False` set, so a future change cannot silently reopen a write path. The completeness script also re-audits every `.write` in `database.rules.json` on each `theme:check` run.
 
 ### Discovery citations
 
@@ -100,7 +106,7 @@ Write-rule audit result: every node that a user-facing mutation could touch is a
 ## Goals
 
 1. Replace the brand palette with "Evergreen Emerald" in both modes, plus the new accent-AA, success-split, brand-solid, and input-border tokens - with zero raw hex outside `src/styles.scss`.
-2. Standardize every interactive control app-wide: one 44px field height, pill controls (buttons AND inputs, 999px), one border/focus/invalid contract, tokenized radii everywhere.
+2. Standardize every interactive control app-wide: one 44px field height, text-entry controls at the 16px card radius, pill buttons only, one border/focus/invalid contract, tokenized radii everywhere.
 3. Make the user-facing app honestly read-only (except preserved self-service), moving contact and expression editing behind `/admin` by reusing existing components unchanged.
 4. Prove all of it with executable completeness checks plus the full gate.
 
@@ -178,8 +184,8 @@ Light (`html`, :57-117) / dark (`html[data-theme="dark"]`, :121-158). Values bel
 | NEW `--color-input-border-invalid` | - | `#B3261E` | - | `#F2B8B5` |
 | NEW `--color-focus` | - | `var(--color-brand-primary)` (per mode) | - | `var(--color-brand-primary)` |
 | NEW `--height-control` | - | `44px` | - | inherited |
-| `--radius-control` | `999px` | `999px` (unchanged, now also covers inputs) | inherited | inherited |
-| `--radius-input` | `14px` | **DELETED** - replace all uses with `var(--radius-control)` | inherited | inherited |
+| `--radius-control` | `999px` | `999px` (unchanged, buttons only - text entry uses `--radius-card`) | inherited | inherited |
+| `--radius-input` | `14px` | **DELETED** - text-entry uses `var(--radius-card)` | inherited | inherited |
 | `--radius-card` | `16px` | `16px` (unchanged) | inherited | inherited |
 | `--radius-sm` | `8px` | `8px` (unchanged; inner chips) | inherited | inherited |
 | NEW `--radius-avatar` | - | `50%` | - | inherited |
@@ -199,7 +205,7 @@ Mechanics: edit both blocks; the brand-solid, error-solid, and `--height-control
   ));
   ```
   Use `primary: $evergreen` in both `define-theme` calls (styles.scss:169-182, :184-197). Tertiary stays `mat.$orange-palette`. (Exact API: if M2 `define-palette` is unavailable in the Angular Material version in use, use `mat.define-palette` / the M3 system-palette map variant - implementer picks the version-correct spelling; the tone map above is the contract.)
-- Keep/extend the per-component override block at styles.scss:199-226: form-field `filled-container-shape`/`outlined-container-shape` change from `var(--radius-input)` (:223-224) to `var(--radius-control)` (pill inputs). **Deviation recorded 2026-10-31 (implementation):** the full pill (999px) is geometrically invalid for outlined mat-form-fields — the notched-outline layout inflates and collapses the input to zero width (47 gate failures, auth input invisible; fixed in src/styles.scss:251). Implemented as `var(--radius-card)` (16px) for mat-form-field containers; raw non-Material inputs keep the pill.
+- Keep/extend the per-component override block at styles.scss:199-226: form-field `filled-container-shape`/`outlined-container-shape` change from `var(--radius-input)` (:223-224) to `var(--radius-card)` (16px text-entry shape). **Deviation recorded 2026-10-31 (implementation):** the full pill (999px) is geometrically invalid for outlined mat-form-fields — the notched-outline layout inflates and collapses the input to zero width (47 gate failures, auth input invisible; fixed in src/styles.scss:251). Implemented as `var(--radius-card)` (16px) for mat-form-field containers, and raw text-entry inputs follow the same 16px card radius. Pill stays for buttons only.
 - **Dark re-emission (D-20261030-15):** any new color-bearing override added inside the light `html` block at :199-226 (e.g. form-field outline colors, toggle colors) MUST be re-emitted inside the dark block at :230-232 alongside `all-component-colors($dark-theme)`. Add the new input-border/invalid overrides in BOTH places.
 - mat-slide-toggle (admin-only; D-20261022-04): wherever toggle overrides land, set `--mat-slide-toggle-handle-width` explicitly; do not rely on Material's null default.
 
@@ -209,11 +215,11 @@ Replace every raw `border-radius` in `src/**/*.scss` (outside `src/styles.scss`)
 
 | Raw value found | Replaces with |
 |---|---|
-| `999px`, `50%` on avatars-as-pill, `9999px`, `100px` | `var(--radius-control)` (buttons AND inputs, pills) |
+| `999px`, `50%` on avatars-as-pill, `9999px`, `100px` | `var(--radius-control)` (buttons only, pills) |
 | `50%` on round avatars/circles | `var(--radius-avatar)` |
 | `16px` | `var(--radius-card)` |
 | `8px`, `6px` (small corners, chips, thumbnails) | `var(--radius-sm)` |
-| `14px`, `12px`, `4px`, `2px`, `24px` on inputs/fields/cards/badges | map by role: inputs/fields -> `var(--radius-control)`; badges/inner chips -> `var(--radius-sm)`; cards -> `var(--radius-card)` |
+| `14px`, `12px`, `4px`, `2px`, `24px` on inputs/fields/cards/badges | map by role: text-entry fields -> `var(--radius-card)`; badges/inner chips -> `var(--radius-sm)`; cards -> `var(--radius-card)` |
 | `0` on containers that must square against the viewport edge (sidenav :213 family-explorer, page grounds) | keep as literal `0` - allowlisted (see completeness script) |
 | `50%` on icon-only circular buttons | `var(--radius-avatar)` (or `--radius-control` if pill geometry; implementer judgment, logged in commit) |
 
@@ -222,7 +228,7 @@ Known concentration sites: admin-media-upload-audio-album.component.scss:54/:80/
 ### 4. One control standard contract
 
 - **Buttons:** all buttons (Material `mat-button`/`mat-raised-button`/`mat-unelevated-button`/`mat-stroked-button` AND raw `.gallery-*`, `.btn-*`, `.message-button`, Print button) conform to: height 44px (`var(--height-control)`), radius `var(--radius-control)`, focus = 2px `var(--color-focus)` outline per styles.scss:345-348 (already global). Variants: filled (brand primary bg + `--color-on-brand`), container (brand container bg + `--color-on-brand-container`), destructive (`--color-error-solid` bg + white ink; extend styles.scss:265-270 `.btn-destructive` if present, else the `.btn-*` destructive classes in public-upload), text/ghost (transparent, ink). Hover: `--color-brand-primary-hover`. The calendar Print button (calendar.component.scss:40-65) becomes the filled variant; Create Expression (expressions.component.scss:52-70) - after the read-only removal, its button lives admin-side and takes the filled variant too.
-- **Inputs:** one height 44px (`var(--height-control)`); default border 1px `var(--color-input-border)` (light `#C9CED4`, dark `#333940` - strict WCAG 1.4.11 3:1); radius `var(--radius-control)` (pill) via form-field overrides + raw inputs; invalid border `var(--color-input-border-invalid)` (`#B3261E` light / `#F2B8B5` dark); focus = notched outline `var(--color-focus)` + container ring (M3 handles the notch; the global `:focus-visible` suppression at styles.scss:353-355 stays).
+- **Inputs:** one height 44px (`var(--height-control)`); default border 1px `var(--color-input-border)` (light `#C9CED4`, dark `#333940` - strict WCAG 1.4.11 3:1); radius `var(--radius-card)` (16px) via form-field overrides and raw text-entry inputs, the pill is for buttons only; invalid border `var(--color-input-border-invalid)` (`#B3261E` light / `#F2B8B5` dark); focus = notched outline `var(--color-focus)` + container ring (M3 handles the notch; the global `:focus-visible` suppression at styles.scss:353-355 stays).
 - **Slide-toggle:** admin-only; standard 44px row height around it, handle-width pinned (D-20261022-04), on-color = brand primary per mode, re-emitted dark.
 - **Chips:** inner chips `var(--radius-sm)` (8px); role badges (styles.scss:89-94 pairs) unchanged values, radius -> `var(--radius-sm)`.
 - **Badges:** role badges and calendar tag styles keep their bg/fg pairs; radii tokenized.
@@ -237,7 +243,7 @@ Known concentration sites: admin-media-upload-audio-album.component.scss:54/:80/
 | expressions.component.ts | Remove `onCreate()`, `cancelEdit()` and any now-unused edit plumbing; `message.service` write methods that become dead from this surface stay (used by chat + new admin route) |
 | expression-view.component.html:28-40 | Remove the admin edit button block (expression-view becomes pure read surface on user routes) |
 | contact-view.component.html:72-84 | Remove the `@if (user.roles.admin)` edit footer |
-| contact-edit.component.html:232 | Keep as-is - component moves to admin routing where the gate passes (reuse verbatim) |
+| contact-edit.component.html:232 | Gate moves to a TypeScript `canDelete` getter, component moves to admin routing (reuse as-is) |
 | chat-view.component.html:72 | Change `message.authorId === user.id \|\| (user && user.roles && user.roles.admin)` to `message.authorId === user.id` |
 | user-view.component.ts:30/:37/:46 | KEEP (informational badges, decision 4) |
 | photos-legacy.component.html:60/:152/:162 + photos-legacy.component.ts:94-113 | LEAVE UNTOUCHED (decision 3, out of scope) |
@@ -289,7 +295,7 @@ Exits non-zero with file:line output on violation:
 
 1. **Zero raw hex colors** in `src/**/*.scss` and `src/**/*.html` (inline styles) outside `src/styles.scss` - allowlist: none (styles.scss itself exempt; `color-mix()` wrappers around tokens are fine as long as the mixed values are `var(--*)`).
 2. **Zero non-token border-radius** outside `src/styles.scss`: every `border-radius` must be `var(--radius-*)` or literal `0`; collect and diff against the section-3 mapping (any unlisted raw value fails).
-3. **Zero `user.roles` reads in user-facing templates** (`src/app/components/**` excluding `admin*`, `photos-legacy`, and `user-view` which reads in TS for badges): grep `user.roles` / `roles?.admin` / `roles.admin` in `.html` files; violations fail. photos-legacy.component.html:60/:152/:162 and chat-view's removed disjunct are the documented exception set.
+3. **Zero `user.roles` reads in user-facing templates** (`src/app/components/**` excluding `admin*`, `photos-legacy`, and `user-view` which reads in TS for badges): grep `user.roles` / `roles?.admin` / `roles.admin` / `userSignedIn.roles` in `.html` files and fail on violations. The final exception set is exactly admin*, photos-legacy, and user-view (informational badges). user-edit and contact-edit now compute their role flags in TypeScript, so their templates carry no role reads.
 4. **No `--radius-input`** token or usage anywhere (deleted).
 5. **Rules audit:** parse `database.rules.json`; fail if any `.write` evaluates to a rule NOT containing `roles/admin` or `roles/super`, excluding: `/messages/**` (author-scoped - assert the rule string contains `authorId`), `/users/$uid` (assert `auth.uid` self-match), and the `False` public-create set listed in Backend Requirements.
 6. **Dark parity:** every `@include mat.*-overrides` color-bearing call inside the light `html` block has a counterpart inside the dark block (structural check on styles.scss).
@@ -310,7 +316,7 @@ Per repo routing table:
 
 ### Unit tests (`npx ng test --include`)
 
-- `expressions.component.spec.ts`: no `onCreate` / Create button renders for admin or member; `isEditable` items render via expression-view.
+- `expressions.component.spec.ts`: no `onCreate` / Create button renders for admin or member; `isEditable` items render via expression-view. The admin-route case stubs `Router.url` to exercise the live `isAdminRoute` getter (`isAdminRoute` is derived from `Router.url`, not a one-shot `location.pathname` read).
 - `chat-view.component.spec.ts` (or message-view spec): edit control renders only when `authorId === user.id`, not for admin on foreign messages.
 - `contact-view.component.spec.ts`: no edit footer regardless of roles.
 - `admin-nav` / `visibleAdminNav` spec: Contacts and Expressions entries present with correct groups; featureFlag filtering intact.
@@ -328,7 +334,7 @@ Per repo routing table:
 ## Summary of Changes (sign-off checklist)
 
 1. `src/styles.scss`: token migration per table (brand emerald both modes, success split, accent AA variants, new brand-solid/container/input-border/focus/height tokens, `--radius-input` deleted); custom `$evergreen` M3 palette in both `define-theme` calls; form-field container shapes to `var(--radius-control)`; new overrides re-emitted in dark block.
-2. `src/app/styles/admin-forms.scss` + all component SCSS: raw hex -> tokens; raw radii -> ladder per mapping; fields/buttons to 44px/pill; Print button and Create Expression unified to filled pill; `.gallery-*`, `.btn-*`, `.message-button` families tokenized.
+2. `src/app/styles/admin-forms.scss` + all component SCSS: raw hex -> tokens; raw radii -> ladder per mapping; text-entry fields to 44px/16px card radius and buttons to 44px/pill; Print button and Create Expression unified to filled pill; `.gallery-*`, `.btn-*`, `.message-button` families tokenized.
 3. Read-only removals: expressions.component.html:42-51/:115-123, expression-view.component.html:28-40, contact-view.component.html:72-84, chat-view.component.html:72 disjunct trimmed. photos-legacy untouched. user-view badges untouched.
 4. Admin: `ADMIN_ROUTE`/`ADMIN_NAV` + admin.module routes for `/admin/contacts` (+`:id` reusing `ContactEditComponent` with a minimal list surface) and `/admin/expressions` (reusing `ExpressionsComponent`).
 5. `scripts/check-theme-standardization.mjs` completeness script + npm script.

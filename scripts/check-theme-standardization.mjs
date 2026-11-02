@@ -53,14 +53,14 @@ for (const f of scss.filter(p => !p.includes('photos-legacy'))) {
 }
 
 // 3. Role-conditional controls banned in user-facing templates. Exceptions:
-//    admin* components, photos-legacy (decision 3), user-view + user-edit
-//    (informational display / own-profile form), contact-edit (component now
-//    rendered only on admin routes, spec section 5).
-const templateExceptions = /\/(admin[^/]*|photos-legacy|user-view|user-edit|contact-edit)\//;
+//    admin* components (the admin portal), photos-legacy (decision 3, out of
+//    scope this run), user-view (informational role badges). user-edit and
+//    contact-edit now compute their role flags in TypeScript, not templates.
+const templateExceptions = /\/(admin[^/]*|photos-legacy|user-view)\//;
 for (const f of html.filter(p => p.startsWith('src/app/components/') && !templateExceptions.test(p))) {
   const lines = readFileSync(f, 'utf8').split('\n');
   lines.forEach((line, i) => {
-    if (/\buser\??\.roles\b|\buserOnCard\??\.roles\b/.test(line)) {
+    if (/\b(?!formUser\b)\w+\??\.roles\b/.test(line)) {
       fail(`role-conditional read in user-facing template: ${f}:${i + 1}: ${line.trim()}`);
     }
   });
