@@ -35,7 +35,7 @@
       color: var(--color-ink-2);
       background-color: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
       border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
-      border-radius: 50%;
+      border-radius: var(--radius-avatar);
       display: flex;
       align-items: center;
       justify-content: center;

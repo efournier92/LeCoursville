@@ -111,7 +111,7 @@ describe('ContactCardComponent', () => {
     it('returns fallback brand green when family is null', () => {
       component.contactCard = createContactCard({ family: null });
       fixture.detectChanges();
-      expect(component.getFamilyColor()).toBe('#2D5A27');
+      expect(component.getFamilyColor()).toBe('var(--color-brand-primary)');
     });
   });
 

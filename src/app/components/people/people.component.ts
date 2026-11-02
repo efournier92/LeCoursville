@@ -472,7 +472,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
     if (family) {
       return family.hexColor;
     }
-    return '#e0e0e0';
+    return 'var(--color-border)';
   }
 
   getFamilyDisplayName(name: string, roots: PersonNode[]): string {
@@ -510,7 +510,7 @@ export class PeopleComponent implements OnInit, OnDestroy {
         return this.hexToRgba(family.hexColor, 0.5);
       }
     }
-    return '#e0e0e080';
+    return 'color-mix(in srgb, var(--color-border) 50%, transparent)';
   }
 
   private hexToRgba(hex: string, alpha: number): string {

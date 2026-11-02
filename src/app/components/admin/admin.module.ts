@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
+import { AdminContactsComponent } from 'src/app/components/admin-contacts/admin-contacts.component';
+import { ExpressionsComponent } from 'src/app/components/expressions/expressions.component';
 import { AdminPhotoAlbumsComponent } from 'src/app/components/admin-photo-albums/admin-photo-albums.component';
 import { AdminUserUploadsComponent } from 'src/app/components/admin-user-uploads/admin-user-uploads.component';
 import { AdminAnalyticsComponent } from 'src/app/components/admin-analytics/admin-analytics.component';
@@ -59,6 +61,23 @@ const routes: Routes = [
       {
         path: ADMIN_ROUTE.people,
         component: AdminPeopleImportComponent,
+      },
+      {
+        // Contact fixups after CSV import. AdminContactsComponent is declared
+        // in AppModule so it can embed ContactEditComponent (same pattern as
+        // AdminMedia: routed here, declared eagerly).
+        path: ADMIN_ROUTE.contacts,
+        component: AdminContactsComponent,
+      },
+      {
+        path: ADMIN_ROUTE.contacts + '/:id',
+        component: AdminContactsComponent,
+      },
+      {
+        // Expressions reuse: the member route stays read-only; admin
+        // create/edit lives here via route-aware controls.
+        path: ADMIN_ROUTE.expressions,
+        component: ExpressionsComponent,
       },
       {
         path: ADMIN_ROUTE.families,

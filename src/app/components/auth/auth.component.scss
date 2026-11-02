@@ -12,8 +12,8 @@
   // Replaces the old fixed watermark image that overlapped content on every
   // viewport size.
   background:
-    radial-gradient(900px 420px at 50% -8%, rgba(45, 90, 39, 0.12), transparent 65%),
-    linear-gradient(180deg, rgba(45, 90, 39, 0.08) 0%, var(--color-app-bg) 48%);
+    radial-gradient(900px 420px at 50% -8%, color-mix(in srgb, var(--color-brand-primary) 12%, transparent), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-brand-primary) 8%, transparent) 0%, var(--color-app-bg) 48%);
 
   @media (max-width: 480px) {
     padding: 20px 12px 40px;
@@ -24,8 +24,8 @@
   width: 100%;
   max-width: 440px;
   padding: 40px 36px 32px;
-  border-radius: 24px;
-  // minimalist: color-mix over the surface token keeps the frosted-glass look in both themes.
+  border-radius: var(--radius-card);
+  // color-mix over the surface token keeps the frosted-glass look in both themes.
   background: color-mix(in srgb, var(--color-surface) 86%, transparent);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
@@ -41,7 +41,7 @@
 
   @media (max-width: 480px) {
     padding: 32px 20px 26px;
-    border-radius: 20px;
+    border-radius: var(--radius-card);
   }
 }
 
@@ -65,7 +65,7 @@
   width: 56px;
   height: 56px;
   margin: 0 auto 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   background: var(--color-brand-solid);
   padding: 8px;
   object-fit: contain;
@@ -105,7 +105,7 @@
   gap: 8px;
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   font-size: 0.85rem;
   line-height: 1.4;
 
@@ -124,7 +124,7 @@
 }
 
 .auth-banner--info {
-  background: rgba(45, 90, 39, 0.08);
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
   color: var(--color-brand-primary);
 }
 
@@ -133,7 +133,7 @@
   width: 100%;
   height: 48px;
   margin-top: 24px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-weight: 600;
   font-size: 0.95rem;
   letter-spacing: 0.01em;
@@ -143,7 +143,7 @@
   display: block;
   width: 100%;
   height: 48px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-weight: 600;
 }
 
@@ -206,13 +206,13 @@
 .auth-get-help {
   width: 100%;
   min-height: 48px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-weight: 600;
-  border-color: rgba(45, 90, 39, 0.4);
+  border-color: color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
   color: var(--color-brand-primary);
 
   &:hover {
-    background: rgba(45, 90, 39, 0.06);
+    background: color-mix(in srgb, var(--color-brand-primary) 6%, transparent);
   }
 
   mat-icon {
@@ -250,7 +250,7 @@
   width: 100%;
   min-width: 0;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
 
   // minimalist: M3 renders the light-theme fill as vivid green; pin it to the brand token shared with dark mode and the topnav.
@@ -277,7 +277,7 @@
   justify-self: center;      // center the whole chip in the auto grid column
   padding: 5px 8px 5px 14px;
   border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
   transition: background 150ms, border-color 150ms;
   appearance: none;
@@ -315,7 +315,7 @@
   height: 26px;
   padding: 2px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--color-ink) 9%, transparent);
   pointer-events: none;
 }
@@ -326,7 +326,7 @@
   justify-content: center;
   width: 24px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: var(--color-ink-2);
 
   mat-icon {

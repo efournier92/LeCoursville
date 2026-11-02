@@ -47,4 +47,24 @@ describe('ChatViewComponent', () => {
     component.message.attachmentUrl = '';
     expect(component.getAttachmentType(component.message)).toBeUndefined();
   });
+
+  it('shows the Edit control for the author and for admins on foreign messages', () => {
+    const editControl = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('.message-button'))
+        .find((el: Element) => el.textContent?.includes('Edit'));
+
+    component.user = { id: 'user-1', roles: { user: true } } as any;
+    fixture.detectChanges();
+    expect(editControl()).toBeTruthy();
+
+    // A member on another author's message cannot edit it.
+    component.user = { id: 'someone-else', roles: { user: true } } as any;
+    fixture.detectChanges();
+    expect(editControl()).toBeUndefined();
+
+    // An admin moderates a foreign message.
+    component.user = { id: 'someone-else', roles: { admin: true } } as any;
+    fixture.detectChanges();
+    expect(editControl()).toBeTruthy();
+  });
 });

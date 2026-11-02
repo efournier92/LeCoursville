@@ -27,7 +27,7 @@
   align-self: center;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: var(--family-color, var(--color-brand-primary));
 }
 
@@ -100,7 +100,7 @@
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   white-space: nowrap;
 }
 

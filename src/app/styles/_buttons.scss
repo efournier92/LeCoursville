@@ -1,6 +1,7 @@
 @mixin btn-upload {
   width: 100%;
-  padding: 16px;
+  min-height: var(--height-control);
+  padding: 12px 16px;
   margin-top: 16px;
   background: var(--color-brand-success);
   color: var(--color-on-brand);

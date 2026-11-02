@@ -180,7 +180,7 @@
   .chord-tag {
     background: var(--color-surface-muted);
     color: var(--color-ink-2);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;

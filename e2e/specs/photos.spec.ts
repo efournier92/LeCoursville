@@ -103,3 +103,28 @@ test.describe('photos', () => {
     await expect(page.getByText('E2E Upload Album').first()).toBeVisible({ timeout: 30000 });
   });
 });
+
+test.describe('control standard geometry (gallery)', () => {
+  test('gallery search field is a 44px card-radius control and the slideshow button is a 44px pill', async ({ page }) => {
+    await login(page, 'user');
+    await page.goto('/photos');
+    const search = page.locator('.gallery-search').first();
+    await expect(search).toBeVisible();
+    const searchStyle = await search.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { height: s.height, radius: s.borderRadius };
+    });
+    expect(searchStyle.height).toBe('44px');
+    expect(searchStyle.radius).toBe('16px');
+
+    await page.goto('/photos/album-1');
+    const slideshow = page.locator('.gallery-slideshow-btn');
+    await expect(slideshow).toBeVisible();
+    const btnStyle = await slideshow.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { height: s.height, radius: s.borderRadius };
+    });
+    expect(btnStyle.height).toBe('44px');
+    expect(btnStyle.radius).toBe('999px');
+  });
+});

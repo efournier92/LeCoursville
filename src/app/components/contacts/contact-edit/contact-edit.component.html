@@ -229,7 +229,7 @@
       </div>
     }
   </mat-card-content>
-  @if (user.roles.admin) {
+  @if (canDelete) {
     <mat-card-footer
       class="d-flex justify-content-end mb-1"
       >

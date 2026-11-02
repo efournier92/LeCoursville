@@ -1,7 +1,7 @@
 import { test, expect } from '../helpers/fixture';
-import { login } from '../helpers/auth';
+import { login, logout } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
-import { writeDb } from '../helpers/admin-db';
+import { writeDb, readDb, deleteDb } from '../helpers/admin-db';
 
 // Chat is seeded OFF; the chat double-submit test turns it ON.
 test.afterEach(async () => {
@@ -137,5 +137,96 @@ test.describe('edge cases', () => {
     expect(handlers).toEqual([]);
     const xss = await page.evaluate(() => (window as any).__xss ?? 0);
     expect(xss).toBe(0);
+  });
+});
+
+test.describe('theme control contract (light/dark parity)', () => {
+  test('input border tokens, focus color, and invalid border follow the mode', async ({ page }) => {
+    await login(page, 'user');
+    await page.goto('/contacts');
+    const field = page.locator('.filter-people-form-field');
+    await expect(field).toBeVisible();
+
+    const varOn = (name: string) =>
+      page.evaluate(
+        (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+        name,
+      );
+
+    // The theme toggle persists to users/$uid/prefs; resolve the actor so a
+    // failure anywhere below can still restore the seeded no-prefs state.
+    const users = (await readDb<Record<string, { email?: string }>>('users')) ?? {};
+    const uid = Object.keys(users).find((id) => users[id]?.email === 'user@e2e.local');
+    expect(uid, 'seeded user@e2e.local must resolve to a uid').toBeTruthy();
+
+    // Light: field edges at WCAG 1.4.11 3:1, focus derived from brand.
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+    expect(await varOn('--color-input-border')).toBe('#878E99');
+    expect(await varOn('--color-input-border-invalid')).toBe('#B3261E');
+    expect(await varOn('--color-focus')).toBe('#27744A');
+
+    // Keyboard focus paints the brand-derived outline on the field notch
+    // (the global :focus-visible ring is suppressed inside mat form fields).
+    await page.locator('.filter-people-form-field input').focus();
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const el = document.querySelector(
+            '.filter-people-form-field.mat-focused .mdc-notched-outline__leading',
+          );
+          return el ? getComputedStyle(el).borderTopColor : 'missing';
+        }),
+      )
+      .toBe('rgb(39, 116, 74)');
+
+    // Dark: the same contract re-derives per mode (D-20261030-15 parity).
+    try {
+      await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    expect(await varOn('--color-input-border')).toBe('#6B7683');
+    expect(await varOn('--color-input-border-invalid')).toBe('#F2B8B5');
+    expect(await varOn('--color-focus')).toBe('#8CCDA3');
+    await page.locator('.filter-people-form-field input').focus();
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const el = document.querySelector(
+            '.filter-people-form-field.mat-focused .mdc-notched-outline__leading',
+          );
+          return el ? getComputedStyle(el).borderTopColor : 'missing';
+        }),
+      )
+      .toBe('rgb(140, 205, 163)');
+
+    // Restore the seeded light preference (the toggle persists to
+    // users/$uid/prefs) while still signed in and on the contacts page.
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+
+    // Invalid surface: a malformed required email (auth form) flags the field
+    // and the error edge override is wired to the invalid token. Sign out
+    // first (via the Account page, the only home of the Sign out control).
+    await page.getByRole('button', { name: 'Account' }).click();
+    await logout(page);
+    // Touch the required email (focus), then blur it (focus the password):
+    // empty + required + touched flags the field, engaging the error edge.
+    await page.getByTestId('auth-email').click();
+    await page.getByTestId('auth-password').focus();
+    await expect(page.locator('.auth-field.mat-form-field-invalid').first()).toBeVisible();
+    const errorEdge = await page.evaluate(() => {
+      const field = document.querySelector('.mat-form-field-invalid');
+      return field ? getComputedStyle(field).getPropertyValue('--mat-form-field-outlined-error-outline-color').trim() : '';
+    });
+    // Sign-out resets to the light default, so the invalid edge resolves to
+    // the light token value (the chain itself was asserted per mode above).
+    expect(errorEdge).toBe('#B3261E');
+    expect(await page.evaluate(
+      () => getComputedStyle(document.documentElement).getPropertyValue('--color-input-border-invalid').trim(),
+    )).toBe('#B3261E');
+    } finally {
+      // Failure-safe restore (C-20261031-22): an assertion failure after the
+      // toggle would otherwise persist dark for every later spec.
+      await deleteDb(`users/${uid}/prefs`);
+    }
   });
 });

@@ -43,6 +43,7 @@ import { ExpressionsComponent } from "./components/expressions/expressions.compo
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
 import { PeopleComponent } from "./components/people/people.component";
+import { AdminContactsComponent } from "./components/admin-contacts/admin-contacts.component";
 import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
@@ -76,6 +77,7 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         ExpressionViewComponent,
         ExpressionEditComponent,
         PeopleComponent,
+        AdminContactsComponent,
         AuthActionComponent,
         RecoveryRequestComponent,
     ],

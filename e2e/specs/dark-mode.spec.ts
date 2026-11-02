@@ -331,7 +331,7 @@ test('dark mode keeps filled brand controls on brand green with white ink', asyn
   await expect(print).toBeVisible();
   // Brand solid (#2D5A27) survives dark mode; text stays white.
   const { text, background } = await surfaceColors(print);
-  expect(background).toBe('rgb(45, 90, 39)');
+  expect(background).toBe('rgb(39, 116, 74)'); // emerald brand-solid
   expect(text).toBe('rgb(255, 255, 255)');
   await expectReadable(print);
   // M3 filled buttons (Edit profile) follow the same brand-green + white rule.
@@ -339,7 +339,7 @@ test('dark mode keeps filled brand controls on brand green with white ink', asyn
   const edit = page.getByRole('button', { name: 'Edit profile' });
   await expect(edit).toBeVisible();
   const editColors = await surfaceColors(edit);
-  expect(editColors.background).toBe('rgb(45, 90, 39)');
+  expect(editColors.background).toBe('rgb(39, 116, 74)'); // emerald brand-solid
   expect(editColors.text).toBe('rgb(255, 255, 255)');
   await expectReadable(edit);
 });
@@ -473,13 +473,13 @@ test('account card surface follows the dark theme', async ({ page }) => {
   expect(dark, 'card surface follows the theme').not.toBe(light);
 });
 
-test('topnav toolbar keeps the legacy prod green in both themes', async ({ page }) => {
+test('topnav toolbar keeps the theme-invariant brand solid green in both themes', async ({ page }) => {
   await login(page, 'user');
   const toolbar = page.locator('mat-toolbar').first();
   await expect(toolbar).toBeVisible();
-  await expect(toolbar).toHaveCSS('background-color', 'rgb(45, 90, 39)');
+  await expect(toolbar).toHaveCSS('background-color', 'rgb(39, 116, 74)'); // emerald brand-solid
 
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(toolbar).toHaveCSS('background-color', 'rgb(45, 90, 39)');
+  await expect(toolbar).toHaveCSS('background-color', 'rgb(39, 116, 74)'); // emerald brand-solid
 });

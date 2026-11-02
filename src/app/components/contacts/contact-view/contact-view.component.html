@@ -69,17 +69,4 @@
         }
       </mat-list>
     </mat-card-content>
-    @if (user.roles.admin) {
-      <mat-card-footer
-        class="d-flex justify-content-end"
-        >
-        <button
-          mat-button
-          class="mb-1"
-          (click)="contact.isEditable = true"
-          >
-          <mat-icon>edit</mat-icon>
-        </button>
-      </mat-card-footer>
-    }
   </mat-card>

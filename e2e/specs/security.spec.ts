@@ -105,7 +105,8 @@ test.describe('security', () => {
 
   test('XSS: expression bodies must not execute injected HTML', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/expressions');
+    // Read-only user side: expression creation lives on the admin route.
+    await page.goto('/admin/expressions');
     await page.getByRole('button', { name: 'Create Expression' }).click();
     await page.getByLabel('Expression').fill('XSS expression');
     await page.getByLabel('Description').fill('<img src=x onerror="window.__xss=2">');
@@ -115,6 +116,33 @@ test.describe('security', () => {
     await expectNoInjectedHandler(page);
     const xss = await page.evaluate(() => (window as any).__xss ?? 0);
     expect(xss).toBe(0);
+  });
+
+  test('XSS: seeded expression body renders safe for members', async ({ page }) => {
+    // C-20261031-20: creation moved behind /admin, but members still RENDER
+    // expression bodies ([innerHTML]); seed the payload directly so the
+    // member-visible surface stays exercised by the gate.
+    const id = 'xss-e2e-seeded-expression';
+    try {
+      await writeDb(`messages/${id}`, {
+        id,
+        title: 'XSS seeded expression',
+        body: '<img src=x onerror="window.__xss=2">',
+        attachmentId: '', attachmentType: '', attachmentUrl: '',
+        authorName: 'Admin User', authorId: 'admin-uid-seed',
+        isReply: false, replyLevel: 0, likes: [], replies: [],
+        dateSent: Date.now(), isEditable: false, isSaved: false,
+        isDeleted: false, isSticky: false, messageType: 'expression',
+      });
+      await login(page, 'user');
+      await page.goto('/expressions');
+      await expect(page.getByText('XSS seeded expression')).toBeVisible();
+      await expectNoInjectedHandler(page);
+      const xss = await page.evaluate(() => (window as any).__xss ?? 0);
+      expect(xss).toBe(0);
+    } finally {
+      await deleteDb(`messages/${id}`);
+    }
   });
 
   test('XSS: song fields and leader names must render as literal text', async ({ page }) => {
@@ -441,4 +469,30 @@ test.describe('security', () => {
     expect((await readDb<{ title?: string }>('familyExplorer/wolf'))?.title).toBe('Wolf Family');
   });
 
+});
+
+test.describe('read-only boundary (theme+input standardization)', () => {
+  test('member is blocked from /admin/contacts and /admin/expressions', async ({ page }) => {
+    await login(page, 'user');
+    for (const route of ['/admin/contacts', '/admin/expressions', '/admin/contacts/contact-1']) {
+      await page.goto(route);
+      await expect(page).not.toHaveURL(/\/admin/);
+      await expect(page.locator('app-admin')).toHaveCount(0);
+      await expect(page.getByTestId('admin-nav')).toHaveCount(0);
+    }
+  });
+
+  test('rules probe: a member write to /contacts/$id is permission-denied', async () => {
+    const token = await signIn('user');
+    const res = await put('contacts/contact-1', { name: 'tampered' }, token);
+    expect(res.status).toBe(401);
+    const record = await readDb<Record<string, any>>('contacts/contact-1');
+    expect(record?.name).not.toBe('tampered');
+  });
+
+  test('/upload stays reachable without auth', async ({ page }) => {
+    await page.goto('/upload');
+    await expect(page).toHaveURL(/\/upload/);
+    await expect(page.locator('app-public-upload')).toBeVisible();
+  });
 });

@@ -36,7 +36,7 @@
   &:hover {
     border-color: var(--color-brand-primary);
     color: var(--color-brand-primary);
-    background: rgba(45, 90, 39, 0.04);
+    background: color-mix(in srgb, var(--color-brand-primary) 4%, transparent);
   }
 
   &.is-selected {

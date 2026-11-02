@@ -45,7 +45,7 @@ app-person-tree {
   .person-name:focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 
   .spouse-separator {
@@ -65,7 +65,7 @@ app-person-tree {
     width: $tree-bar-width;
     min-height: 32px;
     margin-right: $tree-bar-margin;
-    border-radius: 1px;
+    border-radius: 0;
     flex-shrink: 0;
     align-self: stretch;
   }

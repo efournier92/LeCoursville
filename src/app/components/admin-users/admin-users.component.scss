@@ -21,7 +21,7 @@
   display: inline-block;
   margin-right: 4px;
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm); // role badges: spec section 4 locks radius-sm
   background-color: var(--role-member-bg);
   color: var(--role-member-fg);
   font-size: 0.7rem;

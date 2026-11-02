@@ -80,7 +80,7 @@
   width: 6px;
   height: 6px;
   margin-right: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: var(--family-color, var(--color-brand-primary));
 }
 
@@ -97,7 +97,7 @@
   color: var(--color-ink-2);
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 1px 8px;
 }
 

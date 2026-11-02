@@ -169,7 +169,7 @@ test.describe('calendar', () => {
     const year = new Date().getFullYear().toString();
     await expect(page.getByRole('button', { name: year, exact: true })).toBeVisible();
 
-    await expect(page.locator('.calendar-printer-action-btn')).toHaveCSS('background-color', 'rgb(45, 90, 39)');
+    await expect(page.locator('.calendar-printer-action-btn')).toHaveCSS('background-color', 'rgb(39, 116, 74)');
 
     const content = page.locator('.mat-mdc-dialog-content');
     await expect(content).toBeVisible();
@@ -187,5 +187,22 @@ test.describe('calendar', () => {
     const birthEvent = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first();
     await birthEvent.locator('.event-title-link').click();
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
+  });
+});
+
+test.describe('control standard geometry', () => {
+  test('Print button is the filled pill variant: 44px tall, radius 999, brand fill', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const print = page.locator('.calendar-print-button');
+    await expect(print).toBeVisible();
+    const style = await print.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { height: s.height, radius: s.borderRadius, bg: s.backgroundColor, border: s.borderTopWidth };
+    });
+    expect(style.height).toBe('44px');
+    expect(style.radius).toBe('999px');
+    expect(style.bg).toBe('rgb(39, 116, 74)');
+    expect(style.border).toBe('0px');
   });
 });

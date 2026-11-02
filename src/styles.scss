@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 @use "@angular/material" as mat;
+@use "sass:map";
 
 // Framework stylesheets the app's component markup was written against.
 // These bundle at build time (no CDN). They must stay: dozens of templates
@@ -70,28 +71,38 @@ html {
   --color-control-strong: #232A32;  // filled transport controls
   --color-control-strong-hover: #313942; // one step lighter on hover
   --color-ink-2: #5B6470;           // secondary text
-  --color-ink-3: #8A919C;           // meta / captions (large text only)
-  --color-brand-primary: #2D5A27;
-  --color-brand-primary-hover: #3A7033;
-  --color-brand-primary-dark: #245020;
+  --color-ink-3: #8A919C;           // meta / captions (3:1 on white surfaces; 2.9:1 on the app ground - decorative there)
+  --color-brand-primary: #27744A;   // Evergreen Emerald
+  --color-brand-primary-hover: #1F5F3C;
+  --color-brand-primary-dark: #1F5F3C;
   // Filled brand surfaces that always carry white ink (filled buttons, brand
   // bars, avatar tiles). Theme-invariant: --color-brand-primary lightens in
   // dark mode for accents/text, which would otherwise put white on pale green.
-  --color-brand-solid: #2D5A27;
-  --color-brand-solid-hover: #3A7033;
-  --color-brand-solid-dark: #245020;
-  // Success/upload semantics alias the brand green — one green language.
-  --color-brand-success: #2D5A27;
-  --color-brand-success-dark: #245020;
+  --color-brand-solid: #27744A;
+  --color-brand-solid-hover: #1F5F3C;
+  --color-brand-solid-dark: #1F5F3C;
+  // Success has its own identity: a green that stays distinct from brand.
+  --color-brand-success: #1B7A43;
+  --color-brand-success-dark: #166236;
   --color-accent: #A8762D;          // honey — today marker, highlights
-  --color-accent-strong: #9C6B26;   // honey, dark enough for white text
+  --color-accent-strong: #8A5F1E;   // honey, AA for text on light surfaces
   --color-error: #B3261E;
   // Filled destructive surfaces that always carry white ink. Theme-invariant:
   // --color-error lightens in dark mode for text/borders, which would put
   // white on pale pink. Mirrors the --color-brand-solid approach.
   --color-error-solid: #B3261E;
   --color-border: #E1E4E8;          // hairlines on gray
-  --color-link: #245020;            // brand-dark green links
+  --color-link: #1F5F3C;            // brand-dark green links
+
+  // Theme-invariant solids (dark inherits): flat brand/error fills + white ink.
+  --color-brand-solid: #27744A;
+  --color-on-brand-solid: #FFFFFF;
+  --color-error-solid: #B3261E;
+  // Field edges: WCAG 1.4.11 3:1 against white surfaces and the app ground
+  // (C-20261031-15: #C9CED4 was 1.58:1; this value computes 3.31:1 / 3.01:1).
+  --color-input-border: #878E99;
+  --color-input-border-invalid: #B3261E;
+  --color-focus: var(--color-brand-primary);
 
   // Role badges — Material container/on-container pairs: member (neutral),
   // admin (indigo), super (purple). Colour is redundant encoding; the role
@@ -112,17 +123,16 @@ html {
   // Cross-theme constants: identical in light and dark, tokenized so the
   // sweep grep stays clean.
   --color-on-brand: #ffffff;      // text/icons on saturated brand or accent fills
-  // Topnav toolbar keeps the legacy prod green (#2D5A27) in both themes,
-  // independent of the theme-varying --color-brand-primary.
-  --color-topnav-bg: #2D5A27;
   --color-media-backdrop: #000000; // slideshow / video letterbox surround
   --color-scrim: rgba(0, 0, 0, 0.65); // gradient scrim over photo captions
 
   // Shape
   --radius-card: 16px;
-  --radius-control: 999px;
-  --radius-input: 14px; // matches the toolbar radius — one rounded language
+  --radius-control: 999px; // pill buttons AND inputs — one control language
   --radius-sm: 8px; // small corners: skeleton bars, thumbnails, chips
+  --radius-avatar: 50%; // round avatars, icon circles
+  // Control standard: one field/button height app-wide.
+  --height-control: 44px;
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.07);
   --shadow-pop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.12);
   --shadow-frost: 0 8px 32px rgba(15, 23, 42, 0.07);
@@ -142,16 +152,19 @@ html[data-theme="dark"] {
   --color-control-strong-hover: #F2F4F7;
   --color-ink-2: #A8B0BA;
   --color-ink-3: #7D8590;
-  --color-brand-primary: #7FB77E;
-  --color-brand-primary-hover: #8FC290;
-  --color-brand-primary-dark: #6BA76B;
-  --color-brand-success: #7FB77E;
-  --color-brand-success-dark: #6BA76B;
+  --color-brand-primary: #8CCDA3;
+  --color-brand-primary-hover: #9BD8B2;
+  --color-brand-primary-dark: #6FAF88;
+  --color-brand-success: #7CC79B;
+  --color-brand-success-dark: #63B287;
   --color-accent: #C99B55;
-  --color-accent-strong: #D4A768;
+  --color-accent-strong: #D9AE6F;
   --color-error: #F2B8B5;
   --color-border: #333940;
-  --color-link: #9CC79B;
+  --color-link: #8CCDA3;
+  --color-input-border: #6B7683;
+  --color-input-border-invalid: #F2B8B5;
+  --color-focus: var(--color-brand-primary);
 
   --role-member-bg: #2E3438;
   --role-member-fg: #C5CDD3;
@@ -177,13 +190,21 @@ html[data-theme="dark"] {
 }
 
 // ── Material 3 theme (Angular Material 18+ token API) ─────────────────────────
-// Brand green primary, amber tertiary; M3 error palette covers `warn` states.
+// Brand emerald primary, amber tertiary; M3 error palette covers `warn` states.
 // Typography is set to the app's own faces so every M3 component inherits them.
+// Custom Evergreen Emerald M3 palette: the locked tone ramp mapped onto M3's
+// required tone keys (10=900 … 99=50); secondary/neutral/neutral-variant
+// sub-palettes stay Material's so neutral derivation is unchanged.
+$evergreen: map.merge(mat.$green-palette, (
+  10: #0E2F1E, 20: #143F28, 25: #1A4F32, 30: #1A4F32, 35: #1F5F3C,
+  40: #27744A, 50: #27744A, 60: #5BA381, 70: #5BA381, 80: #8CCDA3,
+  90: #B7DFC8, 95: #DCEFE3, 98: #EAF4EE, 99: #EAF4EE, 100: #FFFFFF,
+));
 $theme: mat.define-theme(
   (
     color: (
       theme-type: light,
-      primary: mat.$green-palette,
+      primary: $evergreen,
       tertiary: mat.$orange-palette,
     ),
     typography: (
@@ -198,7 +219,7 @@ $dark-theme: mat.define-theme(
   (
     color: (
       theme-type: dark,
-      primary: mat.$green-palette,
+      primary: $evergreen,
       tertiary: mat.$orange-palette,
     ),
     typography: (
@@ -212,12 +233,11 @@ $dark-theme: mat.define-theme(
 html {
   @include mat.all-component-themes($theme);
   // M3 drops the color="primary" palette variants for mat-toolbar, so the top
-  // nav rendered as plain surface. Restore brand green via toolbar tokens.
-  // The toolbar background token is theme-invariant (legacy prod green), so
-  // its text token is white in both blocks.
+  // nav rendered as plain surface. Restore brand green via toolbar tokens
+  // (the theme-invariant solid keeps white ink at 5.7:1 in both modes).
   @include mat.toolbar-overrides((
-    container-background-color: var(--color-topnav-bg),
-    container-text-color: var(--color-on-brand),
+    container-background-color: var(--color-brand-solid),
+    container-text-color: var(--color-on-brand-solid),
   ));
   // M3 derives its neutral "surface" tones from the primary palette, which
   // tints every overlay (select dropdowns, menus, datepicker, dialogs) with
@@ -226,15 +246,32 @@ html {
   @include mat.menu-overrides((container-color: var(--color-surface)));
   @include mat.datepicker-overrides((calendar-container-background-color: var(--color-surface)));
   @include mat.autocomplete-overrides((background-color: var(--color-surface)));
+  // C-20261031-14: pin M3-derived overlay neutrals to the custom ramp.
+  @include mat.tooltip-overrides((
+    container-color: var(--color-ink),
+    supporting-text-color: var(--color-surface),
+  ));
   @include mat.dialog-overrides((
     container-color: var(--color-surface),
     container-shape: var(--radius-card),
   ));
-  // M3 fields default to a 4px corner — square against the 14–16px radii of
-  // the toolbar and cards. Round inputs to the same language as the chrome.
+  // M3 fields default to a 4px corner. Outlined fields cannot draw a full
+  // pill (the notched-outline machinery inflates layout at shape >= ~50px,
+  // collapsing the infix to zero width), so inputs take the 16px card radius
+  // instead; buttons and raw inputs stay pill. WCAG 1.4.11 input-border
+  // contract applies (invalid gets the error edge).
   @include mat.form-field-overrides((
-    filled-container-shape: var(--radius-input),
-    outlined-container-shape: var(--radius-input),
+    filled-container-shape: var(--radius-card),
+    outlined-container-shape: var(--radius-card),
+    // C-20261031-14: filled fields (the majority) must sit on the custom
+    // neutral ramp, not M3's primary-tinted surface tones.
+    filled-container-color: var(--color-surface-muted),
+    outlined-outline-color: var(--color-input-border),
+    outlined-hover-outline-color: var(--color-input-border),
+    outlined-focus-outline-color: var(--color-focus),
+    outlined-error-outline-color: var(--color-input-border-invalid),
+    outlined-error-hover-outline-color: var(--color-input-border-invalid),
+    outlined-error-focus-outline-color: var(--color-input-border-invalid),
   ));
 }
 
@@ -242,20 +279,50 @@ html {
 // swaps every component's palette without duplicating typography/density.
 html[data-theme="dark"] {
   @include mat.all-component-colors($dark-theme);
-  // all-component-colors re-emits the toolbar tokens on this more specific
-  // selector, clobbering the html-level green override; re-apply it after.
+  // D-20261030-15: color-bearing overrides from the light html block MUST be
+  // re-emitted here or dark mode silently reverts them.
   @include mat.toolbar-overrides((
-    container-background-color: var(--color-topnav-bg),
-    container-text-color: var(--color-on-brand),
+    // C-20261031-13: the toolbar is the invariant solid brand block in both
+    // modes. Dark brand-primary is a light mint (#8CCDA3) that white ink
+    // cannot sit on (1.85:1); the solid holds white at 5.7:1 everywhere.
+    container-background-color: var(--color-brand-solid),
+    container-text-color: var(--color-on-brand-solid),
+  ));
+  @include mat.select-overrides((panel-background-color: var(--color-surface)));
+  @include mat.menu-overrides((container-color: var(--color-surface)));
+  @include mat.datepicker-overrides((calendar-container-background-color: var(--color-surface)));
+  @include mat.autocomplete-overrides((background-color: var(--color-surface)));
+  // C-20261031-14: pin M3-derived overlay neutrals to the custom ramp.
+  @include mat.tooltip-overrides((
+    container-color: var(--color-ink),
+    supporting-text-color: var(--color-surface),
+  ));
+  @include mat.dialog-overrides((
+    container-color: var(--color-surface),
+    container-shape: var(--radius-card),
+  ));
+  @include mat.form-field-overrides((
+    filled-container-shape: var(--radius-card),
+    outlined-container-shape: var(--radius-card),
+    // C-20261031-14: filled fields (the majority) must sit on the custom
+    // neutral ramp, not M3's primary-tinted surface tones.
+    filled-container-color: var(--color-surface-muted),
+    outlined-outline-color: var(--color-input-border),
+    outlined-hover-outline-color: var(--color-input-border),
+    outlined-focus-outline-color: var(--color-focus),
+    outlined-error-outline-color: var(--color-input-border-invalid),
+    outlined-error-hover-outline-color: var(--color-input-border-invalid),
+    outlined-error-focus-outline-color: var(--color-input-border-invalid),
   ));
   // Filled buttons keep the brand-green + white language in dark mode too,
   // instead of M3 swapping to its pale-green primary with dark ink. Stroked
-  // and text buttons are unaffected.
+  // and text buttons are unaffected. (master #49; on-brand-solid per the
+  // solid-ink architecture.)
   @include mat.button-overrides((
     filled-container-color: var(--color-brand-solid),
-    filled-label-text-color: var(--color-on-brand),
-    filled-state-layer-color: var(--color-on-brand),
-    filled-ripple-color: var(--color-on-brand),
+    filled-label-text-color: var(--color-on-brand-solid),
+    filled-state-layer-color: var(--color-on-brand-solid),
+    filled-ripple-color: var(--color-on-brand-solid),
   ));
 }
 
@@ -264,9 +331,9 @@ html[data-theme="dark"] {
    Declared on the element itself, so it beats the html-level dark override. */
 .btn-destructive {
   --mat-button-filled-container-color: var(--color-error-solid);
-  --mat-button-filled-label-text-color: var(--color-on-brand);
-  --mat-button-filled-state-layer-color: var(--color-on-brand);
-  --mat-button-filled-ripple-color: var(--color-on-brand);
+  --mat-button-filled-label-text-color: var(--color-on-brand-solid);
+  --mat-button-filled-state-layer-color: var(--color-on-brand-solid);
+  --mat-button-filled-ripple-color: var(--color-on-brand-solid);
 }
 
 .btn-destructive:focus-visible {
@@ -274,7 +341,7 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="dark"] .btn-destructive:focus-visible {
-  outline-color: var(--color-on-brand) !important;
+  outline-color: var(--color-on-brand-solid) !important;
 }
 
 // The app's top nav paints on its own layer (1100); CDK's overlay container
@@ -440,7 +507,7 @@ body {
    .mat-mdc-* controls and its focus indicator renders transparent with the
    unset opacity token, which would leave keyboard focus invisible. */
 :focus-visible {
-  outline: 2px solid var(--color-brand-primary) !important;
+  outline: 2px solid var(--color-focus) !important;
   outline-offset: 2px !important;
 }
 
