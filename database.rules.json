@@ -1,7 +1,7 @@
 {
   "rules": {
     "familyExplorer": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       "$familyId": {
         ".read": "data.child('published').val() === true || (auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true)"
@@ -213,8 +213,8 @@
       }
     },
     "userUploads": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".indexOn": ["status"],
       "$id": {
         ".write": false,
@@ -251,7 +251,7 @@
       }
     },
     "rateLimits": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       ".write": false
     },
     "outboundEmails": {

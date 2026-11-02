@@ -20,7 +20,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   user: User;
   version: string;
   isNavReady = false;
-  navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null);
+  latestFlags: Record<string, { enabled?: boolean } | undefined> | null = null;
+  navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null, null);
   sidenavOpen = false;
   pendingUploads = 0;
   openRecoveryRequests = 0;
@@ -51,7 +52,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.subscribeToUserObservable();
     this.setVersion();
     this.flagsSub = this.featureFlagsService.getAllFeatureFlags().subscribe(flags => {
-      this.navGroups = this.buildNavGroups(flags);
+      this.latestFlags = flags;
+      this.navGroups = this.buildNavGroups(flags, this.user);
       this.isNavReady = true;
     });
     this.sidenavSub = this.routingService.sidenavOpen$.subscribe(open => this.onSidenavChange(open));
@@ -135,16 +137,22 @@ export class AdminComponent implements OnInit, OnDestroy {
     return this.badgeLabel(key, this.badgeCount(key));
   }
 
-  private buildNavGroups(flags: Record<string, { enabled?: boolean } | undefined> | null) {
+  private buildNavGroups(
+    flags: Record<string, { enabled?: boolean } | undefined> | null,
+    user: User | null,
+  ) {
     return ADMIN_NAV_GROUPS.map(name => ({
       name,
-      items: visibleAdminNav(flags).filter(item => item.group === name),
+      items: visibleAdminNav(flags, user).filter(item => item.group === name),
     }));
   }
 
   private subscribeToUserObservable(): void {
     this.userSub = this.authService.userObservable.subscribe(
-      (user: User) => this.user = user
+      (user: User) => {
+        this.user = user;
+        this.navGroups = this.buildNavGroups(this.latestFlags, user);
+      }
     );
   }
 

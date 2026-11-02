@@ -8,10 +8,10 @@
       @if (userOnCard?.roles?.user) {
         <span class="account-role">User</span>
       }
-      @if (userOnCard?.roles?.admin) {
-        <span class="account-role">Admin</span>
+      @if (shouldDisplayContentAdminBadge()) {
+        <span class="account-role">Content Admin</span>
       }
-      @if (userOnCard?.roles?.super) {
+      @if (shouldDisplaySuperBadge()) {
         <span class="account-role">Super</span>
       }
     </div>

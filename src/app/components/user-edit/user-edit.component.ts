@@ -201,7 +201,7 @@ export class UserEditComponent implements OnInit, OnChanges {
       destructive = destructive || !member;
     }
     if (admin !== this.originalRoles.admin) {
-      messages.push(admin ? `Give ${name} admin access?` : `Remove admin access from ${name}?`);
+      messages.push(admin ? `Give ${name} content admin access?` : `Remove content admin access from ${name}?`);
       destructive = destructive || !admin;
     }
     if (superRole !== this.originalRoles.super) {

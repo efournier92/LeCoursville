@@ -98,8 +98,14 @@ export function isAllowedContinueUrl(raw: string): boolean {
   );
 }
 
+// isAdmin means content admin; system checks use isSuper.
 export async function isAdmin(uid: string): Promise<boolean> {
   const snap = await getDatabase().ref(`users/${uid}/roles/admin`).get();
+  return snap.val() === true;
+}
+
+export async function isSuper(uid: string): Promise<boolean> {
+  const snap = await getDatabase().ref(`users/${uid}/roles/super`).get();
   return snap.val() === true;
 }
 

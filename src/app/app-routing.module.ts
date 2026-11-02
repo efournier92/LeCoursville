@@ -16,7 +16,6 @@ import { PhotoAlbumsFeatureGuard } from './services/photo-albums-feature.guard';
 import { ExpressionsComponent } from './components/expressions/expressions.component';
 import { PeopleComponent } from './components/people/people.component';
 import { PublicUploadComponent } from './components/public-upload/public-upload.component';
-import { SuperAdminGuard } from './services/super-admin.guard';
 
 const routes: Routes =
   [
@@ -105,7 +104,7 @@ const routes: Routes =
     // ADMIN
     {
       path: 'admin',
-      canActivate: [AuthAdminGuardService, SuperAdminGuard],
+      canActivate: [AuthAdminGuardService],
       loadChildren: () => import('./components/admin/admin.module').then(m => m.AdminModule),
     },
     {

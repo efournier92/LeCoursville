@@ -143,7 +143,7 @@ describe('AdminUsersComponent', () => {
     expect(headers).toEqual(['Name', 'Email', 'Last Active', 'Registered', 'Roles', '']);
 
     const admin = { ...users[0], roles: { user: true, admin: true, super: true } };
-    expect(component.userRoles(admin)).toEqual(['Admin', 'Super', 'Member']);
+    expect(component.userRoles(admin)).toEqual(['Content Admin', 'Super', 'Member']);
   });
 
   it('renders the expected badge class for member, admin, super, and admin plus super', () => {
@@ -170,7 +170,7 @@ describe('AdminUsersComponent', () => {
       { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
     expect(labels('Admin Only')).toEqual([
-      { text: 'Admin', className: 'role-badge role-badge-admin' },
+      { text: 'Content Admin', className: 'role-badge role-badge-admin' },
       { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
     expect(labels('Super Only')).toEqual([
@@ -178,7 +178,7 @@ describe('AdminUsersComponent', () => {
       { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
     expect(labels('Admin And Super')).toEqual([
-      { text: 'Admin', className: 'role-badge role-badge-admin' },
+      { text: 'Content Admin', className: 'role-badge role-badge-admin' },
       { text: 'Super', className: 'role-badge role-badge-super' },
       { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
@@ -207,7 +207,7 @@ describe('AdminUsersComponent', () => {
       background: 'var(--role-member-bg)',
       color: 'var(--role-member-fg)',
     });
-    expect(badgeStyle('Admin Only', 'Admin')).toEqual({
+    expect(badgeStyle('Admin Only', 'Content Admin')).toEqual({
       background: 'var(--role-admin-bg)',
       color: 'var(--role-admin-fg)',
     });
@@ -404,7 +404,7 @@ describe('AdminUsersComponent', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0].textContent).toContain('Ada Lovelace');
     expect(rows[0].textContent).toContain('user2@example.com');
-    expect(rows[0].textContent).toContain('Admin');
+    expect(rows[0].textContent).toContain('Content Admin');
     expect(rows[0].textContent).toContain('Super');
     expect(fixture.nativeElement.querySelector('.role-history-limit').textContent)
       .toContain('Most recent 20 changes');
