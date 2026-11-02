@@ -82,6 +82,11 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Contributors reach /upload; admins curate at /admin/photo-albums instead.
+  get showUploadCta(): boolean {
+    return !!this.user && this.user.roles?.admin !== true;
+  }
+
   onRetry(): void {
     this.status = 'loading';
     this.subscriptions.forEach(s => s.unsubscribe());
