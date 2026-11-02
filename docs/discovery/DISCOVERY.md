@@ -5,6 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261101-03 | 2026-11-01 | [decision] | admin/security | Songs is a content-tier item, so a content admin gets 6 sidebar items with the photo-album flag on and 5 with it off; the spec's 5/4 counts predate songs landing on trunk | src/app/admin/admin-nav.ts:43
+- D-20261101-02 | 2026-11-01 | [trap] | admin/ui | `admin-nav` renders with `aria-busy` and a skeleton before `isNavReady`, so an `admin-nav-link-*` absence assertion passes while the nav is still loading; gate it on `toHaveAttribute('aria-busy', 'false')` | e2e/specs/admin-roles.spec.ts:133
+- D-20261101-01 | 2026-11-01 | [outcome] | admin/security | Admin Tier Split redteam converged: 8 findings, 4 rejected by spec text, 4 fixed; functions 303, unit 751, e2e build clean, gate 362 on three engines | docs/critique/2026-11-01_AdminTierSplit.md
+
 - D-20261031-22 | 2026-10-31 | [outcome] | songs/ui | Songs Library findings D-20261031-08..21 archived; gate, print, rules, and UX evidence linked | .gate-results/gate-summary.txt
 
 - D-20261031-07 | 2026-10-31 | [find] | admin/ui | Only the inner icon pill toggled the dark/light chip; make the outer chip `<button role="switch">` with the pill `pointer-events: none` | src/app/components/auth/auth.component.html:79
@@ -37,4 +41,3 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 - D-20261025-20 | 2026-10-25 | [trap] | rules/deploy | GoDaddy nameservers lag each other and resolvers cache stale empties, so verify TXT and MX at ns03 and ns04 before trusting dig | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-19 | 2026-10-25 | [decision] | rules/deploy | eric@lecoursville.com is on Zoho Mail Free: apex MX to Zoho, merged SPF, DKIM selector zoho, no IMAP, Resend sends app mail | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-18 | 2026-10-25 | [decision] | rules/deploy | Clan-to-family migration is additive first; `--delete-legacy` needs a same-run apply plus post-checks, and rules removal follows the data | scripts/migrations/clan-to-family.mjs:7
-- D-20261025-17 | 2026-10-25 | [decision] | admin/security | Family is canonical: one `families` node, `Person.familyId`, `?family=`, a one-release `?clan=` alias; `clans` and rules stay for cutover | src/app/services/family.service.ts:13
