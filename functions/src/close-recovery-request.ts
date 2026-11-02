@@ -4,7 +4,7 @@ import { REGION } from "./config";
 import {
   RECOVERY_LOCK_TTL_MS,
   compareAndSet,
-  isAdmin,
+  isSuper,
   rateLimit,
   writeAudit,
 } from "./helpers";
@@ -23,8 +23,8 @@ export const closeRecoveryRequest = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "Sign in required.");
     }
-    if (!(await isAdmin(uid))) {
-      throw new HttpsError("permission-denied", "Admin access required.");
+    if (!(await isSuper(uid))) {
+      throw new HttpsError("permission-denied", "Super admin access required.");
     }
 
     // minimalist: rate limit only, no breach audit/alert like the admin mint

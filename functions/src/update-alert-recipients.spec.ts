@@ -42,7 +42,7 @@ const twentyFive = Array.from(
 describe("updateAlertRecipients", () => {
   beforeEach(async () => {
     resetFakeState();
-    await seedRoles("admin-1", { admin: true });
+    await seedRoles("admin-1", { super: true });
   });
 
   it("rejects a caller with no auth", async () => {
@@ -59,11 +59,23 @@ describe("updateAlertRecipients", () => {
     ).rejects.toMatchObject({ code: "permission-denied" });
   });
 
-  it("denies a super without the admin role", async () => {
+  it("allows a super without the admin role", async () => {
     await seedRoles("super-1", { super: true });
 
     await expect(
       invoke(["admin@example.com"], { uid: "super-1", token: {} })
+    ).resolves.toEqual({ ok: true });
+
+    expect(fakeDb.read("config/adminAlertRecipients")).toEqual([
+      "admin@example.com",
+    ]);
+  });
+
+  it("denies a content admin caller", async () => {
+    await seedRoles("admin-2", { admin: true });
+
+    await expect(
+      invoke(["admin@example.com"], { uid: "admin-2", token: {} })
     ).rejects.toMatchObject({ code: "permission-denied" });
 
     expect(fakeDb.read("config/adminAlertRecipients")).toBe(null);
