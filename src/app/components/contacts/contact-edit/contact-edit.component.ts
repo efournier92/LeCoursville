@@ -1,8 +1,10 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Contact, Phone, Address, Email } from 'src/app/models/contact';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
-import { AppSettings } from 'src/environments/app-settings';
+import { FamilyService, FamiliesStatus } from 'src/app/services/family.service';
+import { Family } from 'src/app/models/family';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ArrayService } from 'src/app/services/array.service';
@@ -15,19 +17,30 @@ import { ConfirmDialogService } from 'src/app/services/confirm-dialog.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class ContactEditComponent implements OnInit {
+export class ContactEditComponent implements OnInit, OnDestroy {
   @Input() contact: Contact;
 
   user: User;
-  families: string[] = AppSettings.families;
+  families: Family[] = [];
+  familiesStatus: FamiliesStatus = 'loading';
+
+  private familiesSub: Subscription | null = null;
+  private familiesStatusSub: Subscription | null = null;
 
   // minimalism: read-only role projection, not a form field.
   get canDelete(): boolean {
     return this.user?.roles?.admin === true;
   }
 
+  get legacyFamily(): string | null {
+    const stored = this.contact?.family?.trim();
+    if (!stored) return null;
+    return this.families.some(family => this.compareFamily(family.name, stored)) ? null : stored;
+  }
+
   constructor(
     private authService: AuthService,
+    private familyService: FamilyService,
     private contactsService: ContactsService,
     private analyticsService: AnalyticsService,
     private arrayService: ArrayService,
@@ -38,7 +51,13 @@ export class ContactEditComponent implements OnInit {
 
   ngOnInit() {
     this.subscribeToUserObservable();
+    this.subscribeToFamilies();
     this.analyticsService.logEvent('component_load_contacts_edit', { });
+  }
+
+  ngOnDestroy(): void {
+    this.familiesSub?.unsubscribe();
+    this.familiesStatusSub?.unsubscribe();
   }
 
   // SUBSCRIPTIONS
@@ -49,7 +68,26 @@ export class ContactEditComponent implements OnInit {
     );
   }
 
+  private subscribeToFamilies(): void {
+    // The service BehaviorSubject replays its [] seed synchronously; that is
+    // still loading, not empty.
+    let familiesSeed = true;
+    this.familiesSub = this.familyService.families$.subscribe(families => {
+      const seedEmpty = familiesSeed && families.length === 0;
+      familiesSeed = false;
+      if (seedEmpty) return;
+      this.families = [...families].sort((a, b) => (a.sortOrder ?? '').localeCompare(b.sortOrder ?? '') || a.name.localeCompare(b.name));
+    });
+    this.familiesStatusSub = this.familyService.familiesStatus$.subscribe(status => {
+      this.familiesStatus = status;
+    });
+  }
+
   // PUBLIC METHODS
+
+  compareFamily(a: string, b: string): boolean {
+    return (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+  }
 
   updateContact(contact: Contact): void {
     contact.isEditable = false;

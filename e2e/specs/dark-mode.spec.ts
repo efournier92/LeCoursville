@@ -372,7 +372,7 @@ test('dark mode destructive confirm stays red with white ink', async ({ page }) 
 
 test('family explorer removal footer stays readable in both themes', async ({ page }) => {
   await login(page, 'user');
-  await page.goto('/family-explorer/ferland');
+  await page.goto('/family-explorer/archive-1');
   await expect(page.getByTestId('family-explorer-page')).toBeVisible();
   const link = page.locator('.explorer-footer .removal-link');
   await expectReadable(link);
@@ -381,7 +381,7 @@ test('family explorer removal footer stays readable in both themes', async ({ pa
   await page.goto('/media/explorer');
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.goto('/family-explorer/ferland');
+  await page.goto('/family-explorer/archive-1');
   await expect(page.getByTestId('family-explorer-page')).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expectReadable(link);
@@ -410,7 +410,7 @@ test('pending banner stays readable in both themes', async ({ page }) => {
 test('admin family explorer stays readable in both themes', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/admin/family-explorer');
-  const row = page.getByTestId('archive-row-ferland');
+  const row = page.getByTestId('archive-row-archive-1');
   await expect(row).toBeVisible();
   const cell = row.locator('td').first();
   await expectReadable(cell);

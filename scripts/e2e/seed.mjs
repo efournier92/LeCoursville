@@ -11,9 +11,11 @@
  */
 
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 // Resolve the Admin SDK from the functions package so no root dependency is added.
-const admin = require('../../functions/node_modules/firebase-admin');
+const require = createRequire(new URL('../../functions/package.json', import.meta.url));
+const admin = require('firebase-admin');
+const { getAuth } = require('firebase-admin/auth');
+const { getDatabase } = require('firebase-admin/database');
 
 const STORAGE_PORT = 9199;
 const BUCKET = 'lecoursville-dev.appspot.com';
@@ -44,14 +46,14 @@ const FEATURE_IDS = [
 
 async function ensureUser(email, name) {
   try {
-    const user = await admin.auth().createUser({ email, password: PASSWORD, displayName: name });
+    const user = await getAuth().createUser({ email, password: PASSWORD, displayName: name });
     return user.uid;
   } catch (err) {
     if (err.code === 'auth/email-already-exists') {
-      const user = await admin.auth().getUserByEmail(email);
+      const user = await getAuth().getUserByEmail(email);
       // A long-lived emulator keeps users across runs; reset the password so a
       // recovery test that changed it cannot leak into the next browser project.
-      await admin.auth().updateUser(user.uid, { password: PASSWORD });
+      await getAuth().updateUser(user.uid, { password: PASSWORD });
       return user.uid;
     }
     throw err;
@@ -76,7 +78,7 @@ async function idTokenFor(email) {
 
 // --- Fixtures --------------------------------------------------------------
 
-import { FERLAND_ARCHIVE, WOLF_ARCHIVE } from './seed-fixtures.mjs';
+import { EXAMPLE_ARCHIVE, WOLF_ARCHIVE } from './seed-fixtures.mjs';
 
 
 function pngBytes() {
@@ -196,7 +198,7 @@ async function main() {
   const out = [];
 
   // 1. Reset RTDB (Admin SDK bypasses rules; clears server-only nodes too).
-  await admin.database().ref().set(null);
+  await getDatabase().ref().set(null);
   out.push('RTDB reset');
 
   // 2. Auth users.
@@ -206,7 +208,7 @@ async function main() {
   }
   // Approval is mirrored into the auth token exactly as changeUserRole does it.
   for (const u of USERS) {
-    await admin.auth().setCustomUserClaims(localIds[u.email], {
+    await getAuth().setCustomUserClaims(localIds[u.email], {
       approved: u.roles?.user === true,
     });
   }
@@ -280,8 +282,8 @@ async function main() {
   people['person-c'].anniversaryDate = { year: year - 10, month: month1, day: clampDay(day + 1) };
 
   const families = {
-    'family-1': { id: 'family-1', name: 'Mignonne', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
-    'family-2': { id: 'family-2', name: 'Denis', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
+    'family-1': { id: 'family-1', name: 'Alder', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
+    'family-2': { id: 'family-2', name: 'Cedar', hexColor: '#2196F3', sortOrder: 'B', createdAt: now, updatedAt: now },
   };
 
   const photoBase = (albumId, n) =>
@@ -426,7 +428,7 @@ async function main() {
 
   // Synthetic family-explorer fixtures; names are invented, no real genealogy.
   const familyExplorer = {
-    ferland: FERLAND_ARCHIVE(now, adminUid),
+    'archive-1': EXAMPLE_ARCHIVE(now, adminUid),
     wolf: WOLF_ARCHIVE(adminUid),
   };
 
@@ -532,7 +534,7 @@ async function main() {
   };
 
   // JSON round-trip keeps Date values as the ISO strings the old REST PUT wrote.
-  await admin.database().ref().set(JSON.parse(JSON.stringify(tree)));
+  await getDatabase().ref().set(JSON.parse(JSON.stringify(tree)));
   out.push('seed tree PUT');
 
   // 4. Hosting fixtures (the hosting emulator serves dist/lecoursville/browser).
@@ -592,7 +594,7 @@ async function main() {
 
   // Close the Admin SDK's RTDB connection so this process can exit; otherwise
   // the open socket keeps the event loop alive and `emulators:exec` hangs.
-  await admin.app().delete();
+  await admin.getApp().delete();
 }
 
 // Only auto-run when invoked directly; specs import the fixture builders.

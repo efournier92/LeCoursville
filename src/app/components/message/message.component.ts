@@ -6,7 +6,7 @@ import { MessageService } from 'src/app/services/message.service';
 import { User } from 'src/app/models/user';
 import { Message } from 'src/app/models/message';
 import { AnalyticsService } from 'src/app/services/analytics.service';
-import { AppSettings } from 'src/environments/app-settings';
+import { AppSettings } from 'src/app/config/app-settings';
 import { ArrayService } from 'src/app/services/array.service';
 import { RoutingService } from 'src/app/services/routing.service';
 

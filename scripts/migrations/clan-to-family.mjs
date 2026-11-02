@@ -17,7 +17,9 @@ import { dirname, resolve } from 'path';
 
 const require = createRequire(import.meta.url);
 // Resolve the Admin SDK from the functions package, matching scripts/e2e/seed.mjs.
-const admin = require('../../functions/node_modules/firebase-admin');
+const functionsRequire = createRequire(new URL('../../functions/package.json', import.meta.url));
+const admin = functionsRequire('firebase-admin');
+const { getDatabase } = functionsRequire('firebase-admin/database');
 const { mergeFamilyNodes } = require('../../functions/lib/maintenance/clan-to-family.js');
 
 const TAG = '[clan-to-family]';
@@ -207,7 +209,7 @@ async function main() {
   admin.initializeApp({ projectId: opts.project, databaseURL });
 
   try {
-    const db = admin.database();
+    const db = getDatabase();
     const { clans, families, people } = await readNodes(db);
     const result = mergeFamilyNodes(clans, families, people);
     printReport(opts.project, mode, clans, families, people, result);
@@ -245,7 +247,7 @@ async function main() {
     console.log(`${TAG} done`);
   } finally {
     // Close the Admin SDK connection so this process can exit, as seed.mjs does.
-    await admin.app().delete();
+    await admin.getApp().delete();
   }
 }
 

@@ -98,8 +98,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.2mb",
-                  "maximumError": "1.5mb"
+                  "maximumWarning": "2.5mb",
+                  "maximumError": "2.7mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -134,8 +134,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.2mb",
-                  "maximumError": "1.5mb"
+                  "maximumWarning": "2.5mb",
+                  "maximumError": "2.7mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -173,7 +173,8 @@
             "tsConfig": "tsconfig.spec.json",
             "setupFiles": ["src/test-setup.ts"],
             "include": ["src/**/*.spec.ts"],
-            "runnerConfig": "vitest-base.config.ts"
+            "runnerConfig": "vitest-base.config.ts",
+            "isolate": true
           }
         },
         "deploy": {

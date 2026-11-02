@@ -18,16 +18,27 @@
         name="families"
         [(ngModel)]="contact.family"
         [value]="contact.family"
+        [compareWith]="compareFamily"
         >
-        @for (family of families; track family) {
+        @if (legacyFamily) {
+          <mat-option [value]="legacyFamily">{{ legacyFamily }}</mat-option>
+        }
+        @for (family of families; track family.id) {
           <mat-option
-            [value]="family"
+            [value]="family.name"
             >
-            {{ family }}
+            {{ family.name }}
           </mat-option>
         }
       </mat-select>
     </mat-form-field>
+    @if (familiesStatus === 'loading') {
+      <div class="mb-1">Loading families…</div>
+    } @else if (familiesStatus === 'error') {
+      <div class="mb-1">Could not load families.</div>
+    } @else if (!families.length) {
+      <div class="mb-1">No families configured yet.</div>
+    }
     <div class="mb-3"></div>
     <mat-card-subtitle class="mb-2">Addresses</mat-card-subtitle>
     @for (

@@ -6,12 +6,12 @@ import { test, expect } from '../helpers/fixture';
  */
 test.describe('family explorer', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/family-explorer/ferland');
+    await page.goto('/family-explorer/archive-1');
     await expect(page.getByTestId('family-chart')).toBeVisible();
   });
 
   test('renders the masthead, roots row, branch order, and numerals', async ({ page }) => {
-    await expect(page.locator('.topbar-title')).toContainText('Ferland Family');
+    await expect(page.locator('.topbar-title')).toContainText('Example Family');
     await expect(page.getByTestId('family-counts')).toContainText('9 People');
     await expect(page.getByTestId('family-counts')).toContainText('4 Generations');
 
@@ -67,7 +67,7 @@ test.describe('family explorer', () => {
 
     const topbar = page.locator('.explorer-topbar');
     await expect(topbar).toBeVisible();
-    await expect(topbar).toContainText('Ferland Family');
+    await expect(topbar).toContainText('Example Family');
     await expect(topbar.locator('img')).toHaveCount(0);
   });
 
@@ -164,7 +164,7 @@ test.describe('family explorer', () => {
 
   test('at 390x844 the panel opens as an overlay drawer with a backdrop and no overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/family-explorer/ferland');
+    await page.goto('/family-explorer/archive-1');
     await expect(page.getByTestId('family-chart')).toBeVisible();
     await page.getByTestId('family-root-fa-1').click();
 
@@ -191,7 +191,7 @@ test.describe('family explorer', () => {
     const href = await link.getAttribute('href');
     expect(href).not.toBeNull();
     expect(href!.startsWith('mailto:eric@lecoursville.com')).toBe(true);
-    expect(href).toContain('Ferland');
+    expect(href).toContain('Example');
   });
 
   test('shows the unavailable state for an unpublished family', async ({ page }) => {

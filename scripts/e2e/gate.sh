@@ -12,6 +12,9 @@ mkdir -p .gate-results
 echo "=== Theme standardization check ==="
 node scripts/check-theme-standardization.mjs
 
+echo "=== PII canary ==="
+node scripts/check-pii-canary.mjs
+
 echo "=== Building e2e bundle ==="
 npx ng build --configuration=e2e
 

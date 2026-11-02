@@ -138,14 +138,14 @@ describe('family-tree model', () => {
   });
 
   it('counts the founders row as generation 1 of the archive', () => {
-    const ferland = [
+    const archive1 = [
       person({ id: 'fa-1', given: 'Fred', sex: 'M', spouseIds: ['fa-2'], childIds: ['fa-3'] }),
       person({ id: 'fa-2', given: 'Flo', sex: 'F', spouseIds: ['fa-1'] }),
       person({ id: 'fa-3', given: 'Gail', fatherId: 'fa-1', motherId: 'fa-2', childIds: ['fa-4'] }),
       person({ id: 'fa-4', given: 'Hana', fatherId: 'fa-3', childIds: ['fa-5'] }),
       person({ id: 'fa-5', given: 'Ivo', fatherId: 'fa-4' }),
     ];
-    expect(archiveGenerationCount(ferland)).toBe(4);
+    expect(archiveGenerationCount(archive1)).toBe(4);
     expect(archiveGenerationCount([person({ id: 'solo', given: 'Sole' })])).toBe(1);
   });
 

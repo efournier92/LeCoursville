@@ -15,11 +15,8 @@ TestBed.configureTestingModule({
   imports: [TestSharedModule, AppModule],
 });
 
-// Vitest runs all spec files in one worker (isolate=false), so the global
-// TestBed survives across files and one file's configureTestingModule() leaks
-// into the next — this caused order-dependent failures (e.g. a component
-// "should create" test failing only when a minimal-config spec ran before it).
-// Reset after every test so each spec file starts from the same state.
+// Reset after every test so unexpected configureTestingModule() leaks between
+// files cannot cause order-dependent failures.
 afterEach(() => {
   TestBed.resetTestingModule();
 });

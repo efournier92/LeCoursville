@@ -27,8 +27,8 @@ test.describe('people', () => {
     await expect(page.getByText('Dave Davis').first()).toBeVisible();
     await expect(page.getByText('Edith Evans').first()).toBeVisible();
     await expect(page.getByText('Frank Foster').first()).toBeVisible();
-    await expect(page.getByText(/Mignonne's Family/)).toBeVisible();
-    await expect(page.getByText(/Denis's Family/)).toBeVisible();
+    await expect(page.getByText(/Alder's Family/)).toBeVisible();
+    await expect(page.getByText(/Cedar's Family/)).toBeVisible();
   });
 
   test('search narrows the list', async ({ page }) => {
@@ -47,26 +47,26 @@ test.describe('people', () => {
     await login(page, 'admin');
     await page.goto('/people');
     await page.locator('.family-filter-form-field mat-select').click({ force: true });
-    await page.getByRole('option', { name: 'Mignonne' }).click();
+    await page.getByRole('option', { name: 'Alder' }).click();
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
   test('?family= applies the family filter', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/people?family=Mignonne');
+    await page.goto('/people?family=Alder');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
   test('?clan= alias applies the filter and rewrites the URL to family', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/people?clan=Mignonne');
+    await page.goto('/people?clan=Alder');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
     await page.waitForFunction(() => {
       const params = new URLSearchParams(location.search);
-      return params.get('family') === 'Mignonne' && !params.has('clan');
+      return params.get('family') === 'Alder' && !params.has('clan');
     });
   });
 
@@ -75,7 +75,7 @@ test.describe('people', () => {
     await page.goto('/people');
     await page.getByText('Alice Anderson').first().click();
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
-    await expect(page.locator('app-person-detail-modal')).toContainText('Mignonne');
+    await expect(page.locator('app-person-detail-modal')).toContainText('Alder');
   });
 
   test('first-generation rows are keyboard-operable buttons that open the detail modal', async ({ page }) => {

@@ -54,32 +54,32 @@ describe('AdminFamilyExplorerComponent', () => {
   });
 
   it('renders a row per listed archive', () => {
-    listArchives.mockReturnValue(of({ ferland: { title: 'Ferland Family', published: true } }));
+    listArchives.mockReturnValue(of({ 'archive-1': { title: 'Example Family', published: true } }));
     create();
 
     expect(component.loading).toBe(false);
-    expect(component.rows).toEqual([{ id: 'ferland', title: 'Ferland Family', published: true, updatedAt: undefined }]);
+    expect(component.rows).toEqual([{ id: 'archive-1', title: 'Example Family', published: true, updatedAt: undefined }]);
   });
 
   it('re-ingesting an existing family keeps that row\u2019s current published state', async () => {
-    listArchives.mockReturnValue(of({ ferland: { title: 'Ferland Family', published: true } }));
+    listArchives.mockReturnValue(of({ 'archive-1': { title: 'Example Family', published: true } }));
     create();
 
-    component.familyId = 'ferland';
-    component.title = 'Ferland Family';
+    component.familyId = 'archive-1';
+    component.title = 'Example Family';
     const rawJson = '{"people":[{"id":"p1","name":"P"}]}';
     component.rawJson = rawJson;
     await component.onConfirm();
 
-    expect(ingest).toHaveBeenCalledWith('ferland', 'Ferland Family', true, rawJson);
+    expect(ingest).toHaveBeenCalledWith('archive-1', 'Example Family', true, rawJson);
   });
 
   it('prefills the published checkbox from a matching archive row when the family id changes', () => {
-    listArchives.mockReturnValue(of({ ferland: { title: 'Ferland Family', published: true } }));
+    listArchives.mockReturnValue(of({ 'archive-1': { title: 'Example Family', published: true } }));
     create();
     expect(component.published).toBe(false);
 
-    component.familyId = 'ferland';
+    component.familyId = 'archive-1';
     component.onFamilyIdInput();
 
     expect(component.published).toBe(true);

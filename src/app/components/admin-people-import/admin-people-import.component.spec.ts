@@ -9,7 +9,7 @@ import { Person } from 'src/app/models/person';
 import { AdminPeopleImportComponent } from './admin-people-import.component';
 
 const CSV_HEADERS = 'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family';
-const CSV_ROW = 'p-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne';
+const CSV_ROW = 'p-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Alder';
 const CSV_HEADERS_WITH_DIED = `${CSV_HEADERS},Died`;
 
 describe('AdminPeopleImportComponent', () => {
@@ -87,7 +87,7 @@ describe('AdminPeopleImportComponent', () => {
   it('renders the empty state when a file yields no parsed rows', () => {
     component.parseCSV([
       CSV_HEADERS,
-      ',Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne',
+      ',Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Alder',
     ].join('\n'));
     fixture.detectChanges();
 
@@ -110,7 +110,7 @@ describe('AdminPeopleImportComponent', () => {
 
     expect(familyService.saveFamily).toHaveBeenCalledTimes(1);
     expect(familyService.saveFamily).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
+      expect.objectContaining({ id: 'p-1', name: 'Alder' }),
     );
     expect(peopleService.importPeople).toHaveBeenCalledTimes(1);
   });
@@ -126,7 +126,7 @@ describe('AdminPeopleImportComponent', () => {
     await Promise.resolve();
 
     expect(familyService.saveFamily).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'p-1', name: 'Mignonne' }),
+      expect.objectContaining({ id: 'p-1', name: 'Alder' }),
     );
     expect(familyService.deleteFamily).toHaveBeenCalledWith('p-1');
     expect(component.importError).toBe('Import failed: boom');
@@ -160,7 +160,7 @@ describe('AdminPeopleImportComponent', () => {
     component.parseCSV([
       CSV_HEADERS,
       CSV_ROW,
-      ',Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne',
+      ',Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Alder',
     ].join('\n'));
     fixture.detectChanges();
 
@@ -212,7 +212,7 @@ describe('AdminPeopleImportComponent', () => {
   it('counts colliding IDs as updates and warns about the overwrite', () => {
     component.parseCSV([
       CSV_HEADERS,
-      'seed-person,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Mignonne',
+      'seed-person,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 Main,Alder',
     ].join('\n'));
     fixture.detectChanges();
 

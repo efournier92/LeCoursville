@@ -35,6 +35,26 @@ describe('CloudFunctionsService', () => {
     expect(functionsSdk.httpsCallable).toHaveBeenCalledWith(functions, 'deleteMedia');
   });
 
+  it('strips a trailing HTTP status from a callable error and keeps its code', async () => {
+    const error = Object.assign(new Error('done [409]'), { code: 'already-exists' });
+    callable.mockRejectedValue(error);
+
+    const caught = await service.deleteMedia({ batchId: 'batch-1' } as any).catch((e: any) => e);
+
+    expect(caught.message).toBe('done');
+    expect(caught.code).toBe('already-exists');
+  });
+
+  it('leaves a callable error without a status token untouched', async () => {
+    const error = Object.assign(new Error('done'), { code: 'already-exists' });
+    callable.mockRejectedValue(error);
+
+    const caught = await service.deleteMedia({ batchId: 'batch-1' } as any).catch((e: any) => e);
+
+    expect(caught).toBe(error);
+    expect(caught.message).toBe('done');
+  });
+
   it('createUserUpload returns the server id and path', async () => {
     const input = {
       uploader: { anonymousId: 'anon-1' },

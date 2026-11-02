@@ -52,14 +52,14 @@ test.describe('contacts', () => {
     await login(page, 'admin');
     await page.goto('/contacts');
     await page.locator('.family-filter-form-field mat-select').click({ force: true });
-    await page.getByRole('option', { name: 'Mignonne' }).click();
+    await page.getByRole('option', { name: 'Alder' }).click();
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
   test('?clan= alias applies the family filter', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/contacts?clan=Mignonne');
+    await page.goto('/contacts?clan=Alder');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
@@ -86,7 +86,7 @@ test.describe('contacts', () => {
     const aliceCard = page.locator('.contact-card', { hasText: 'Alice Anderson' }).first();
     await aliceCard.locator('.clickable-name').first().click();
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
-    await expect(page.locator('app-person-detail-modal')).toContainText('Mignonne');
+    await expect(page.locator('app-person-detail-modal')).toContainText('Alder');
   });
 });
 
@@ -124,6 +124,31 @@ test.describe('contacts read-only + admin fixup', () => {
       // the record either way).
       await page.goto('/admin/contacts/contact-3');
       await expect(page.getByPlaceholder('Name')).toHaveValue('Legacy Contact Three');
+    } finally {
+      if (seeded) {
+        await writeDb('contacts/contact-1', seeded);
+      }
+    }
+  });
+
+  test('admin contact editor reads family options from the database', async ({ page }) => {
+    const seeded = await readDb<Record<string, any>>('contacts/contact-1');
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/contacts/contact-1');
+
+      const familySelect = page.locator('app-contact-edit mat-select');
+      await expect(familySelect).toBeEnabled();
+      await familySelect.click({ force: true });
+
+      await expect(page.getByRole('option', { name: 'Alder' })).toBeVisible();
+      await expect(page.getByRole('option', { name: 'Cedar' })).toBeVisible();
+      await page.getByRole('option', { name: 'Alder' }).click();
+
+      await page.locator('mat-card-footer button').filter({ hasText: 'save' }).click();
+      await expect
+        .poll(async () => (await readDb<Record<string, any>>('contacts/contact-1'))?.family)
+        .toBe('Alder');
     } finally {
       if (seeded) {
         await writeDb('contacts/contact-1', seeded);

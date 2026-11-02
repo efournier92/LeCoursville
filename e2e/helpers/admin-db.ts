@@ -9,9 +9,13 @@
 
 // Playwright transpiles TS specs as CommonJS (root package.json has no
 // "type": "module"), so require resolves the functions-local Admin SDK by path.
-const admin = require('../../functions/node_modules/firebase-admin');
+const { createRequire } = require('module');
+const functionsRequire = createRequire(require.resolve('../../functions/package.json'));
+const admin = functionsRequire('firebase-admin');
+const { getAuth } = functionsRequire('firebase-admin/auth');
+const { getDatabase } = functionsRequire('firebase-admin/database');
 
-if (!admin.apps.length) {
+if (!admin.getApps().length) {
   admin.initializeApp({
     projectId: 'lecoursville-dev',
     databaseURL: 'https://lecoursville-dev-default-rtdb.firebaseio.com',
@@ -19,25 +23,24 @@ if (!admin.apps.length) {
 }
 
 export function readDb<T = any>(path: string): Promise<T | null> {
-  return admin
-    .database()
+  return getDatabase()
     .ref(path)
     .get()
     .then((snap: any) => (snap.val() as T) ?? null);
 }
 
 export function writeDb(path: string, value: unknown): Promise<void> {
-  return admin.database().ref(path).set(value ?? null);
+  return getDatabase().ref(path).set(value ?? null);
 }
 
 export function deleteDb(path: string): Promise<void> {
-  return admin.database().ref(path).remove();
+  return getDatabase().ref(path).remove();
 }
 
 /** Restores a seeded account's password after a reset test mutates it. */
 export async function setUserPassword(email: string, password: string): Promise<void> {
-  const user = await admin.auth().getUserByEmail(email);
-  await admin.auth().updateUser(user.uid, { password });
+  const user = await getAuth().getUserByEmail(email);
+  await getAuth().updateUser(user.uid, { password });
 }
 
 export interface OutboundEmailRecord {

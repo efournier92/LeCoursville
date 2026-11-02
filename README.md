@@ -25,7 +25,7 @@ Built as a platform for distributing information across large families, this app
 
 ## Development Philosophy
 
-I come from a very large family on my mother's side: the LeCours family. She had 13 siblings, who bought 42 first-cousins, who are now joined by dozens more from the next generations. Since I was young, my Mom and I would annually print a family calendar containing birthdays and anniversaries, along with a booklet containing contact info for each family member. These distributions were always, and continue to be, a test of my technical prowess. Hence, in 2018, I thought it was time to migrate that data to the web, so we could keep it updated in real time. Since these tools are meant for users of all ages, keeping them simple and easy-to-use was my primary goal. In an effort to keep the site styled consistently, I built it using [Angular Material](https://github.com/angular/material2) from the start. I designed it using a mobile-first approach, so all pages render nicely of devices of any size. I'd been wanting to experiment with using Firebase tools in lieu of a back-end, which I accomplished here using their [Auth](https://firebase.google.com/products/auth/), [Hosting](https://firebase.google.com/products/hosting/), and [Realtime Database](https://firebase.google.com/products/realtime-database/) modules. The result is a clean and simple interface, with production-grade security of the DB side. This site was, and continues to be, a joy to build and maintain.
+Built for large families that need one live source of truth, this application started as a way to replace the printed calendars and contact booklets that used to go out every year. The goal was simple: keep birthdays, anniversaries, and contact details current without reprinting anything. Since the tools are meant for users of all ages, keeping them simple and easy to use was the primary goal. In an effort to keep the site styled consistently, it was built with [Angular Material](https://github.com/angular/material2) from the start. It was designed using a mobile-first approach, so all pages render nicely on devices of any size. I'd been wanting to experiment with using Firebase tools in lieu of a back-end, which I accomplished here using their [Auth](https://firebase.google.com/products/auth/), [Hosting](https://firebase.google.com/products/hosting/), and [Realtime Database](https://firebase.google.com/products/realtime-database/) modules. The result is a clean and simple interface, with production-grade security of the DB side. This site was, and continues to be, a joy to build and maintain.
 
 ## Stack
 
@@ -135,12 +135,10 @@ This project is provided under the [`MIT`](https://opensource.org/licenses/MIT) 
 - Reply to a message
 - Like a message
 - Edit existing message [_Original Poster or Admin Only_]
-  ![Chat Screenshot](https://raw.githubusercontent.com/efournier92/LeCoursville/master/src/assets/img/screenshots/Screenshot_Chat.png)
 
 ### Photos
 
 - View and upload family photos
-  ![Chat Screenshot](https://raw.githubusercontent.com/efournier92/LeCoursville/master/src/assets/img/screenshots/Screenshot_Photos.png)
 
 # Lecoursville
 

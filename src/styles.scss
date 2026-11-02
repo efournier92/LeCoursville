@@ -848,24 +848,6 @@ app-calendar-cell {
   letter-spacing: 0.03em;
 }
 
-.ngx-audio-player {
-  .mat-cell {
-    cursor: pointer;
-  }
-  .mat-expansion-panel-header {
-    display: none;
-  }
-  table thead {
-    display: none;
-  }
-  .mat-paginator-page-size-label {
-    display: none;
-  }
-  .mat-paginator-page-size-value {
-    display: none;
-  }
-}
-
 // ── Datepicker / calendar pill dropdown ───────────────────────────────────────
 .mat-datepicker-popup .cdk-overlay-panel {
   left: 50% !important;

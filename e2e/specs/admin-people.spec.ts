@@ -27,12 +27,12 @@ test.describe('admin people surfaces', () => {
     const rows = page.locator('.families-table tbody tr');
     await expect(rows).toHaveCount(2, { timeout: 20000 });
 
-    await page.getByRole('button', { name: 'Delete Mignonne' }).click();
+    await page.getByRole('button', { name: 'Delete Alder' }).click();
     await expect(page.getByRole('heading', { name: 'Delete family?' })).toBeVisible();
-    await expect(page.getByText('Delete family Mignonne? This cannot be undone.')).toBeVisible();
+    await expect(page.getByText('Delete family Alder? This cannot be undone.')).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();
 
-    await expect(page.getByRole('button', { name: 'Delete Mignonne' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Delete Alder' })).toBeVisible();
     await expect(rows).toHaveCount(2);
     await expect(page.locator('app-no-results-message')).toHaveCount(0);
   });
@@ -64,8 +64,8 @@ test.describe('admin people surfaces', () => {
 
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
-      'people-e2e-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne',
-      'people-e2e-2,Yuri,Yuri,Zimmerman,1991-02-16,1,TRUE,124 E2E St,Mignonne',
+      'people-e2e-1,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Alder',
+      'people-e2e-2,Yuri,Yuri,Zimmerman,1991-02-16,1,TRUE,124 E2E St,Alder',
     ].join('\n');
 
     await page.getByTestId('import-file').setInputFiles({
@@ -139,8 +139,8 @@ test.describe('admin people surfaces', () => {
 
       const csv = [
         'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
-        `${collisionId},Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne`,
-        `${newId},Yuri,Yuri,Zimmerman,1991-02-16,1,TRUE,124 E2E St,Mignonne`,
+        `${collisionId},Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Alder`,
+        `${newId},Yuri,Yuri,Zimmerman,1991-02-16,1,TRUE,124 E2E St,Alder`,
       ].join('\n');
 
       await page.getByTestId('import-file').setInputFiles({
@@ -180,7 +180,7 @@ test.describe('admin people surfaces', () => {
     const chooser = await chooserPromise;
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Address_Street,Family',
-      'people-e2e-keyboard,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Mignonne',
+      'people-e2e-keyboard,Zoe,Zoe,Zimmerman,1990-01-15,1,TRUE,123 E2E St,Alder',
     ].join('\n');
     await chooser.setFiles({
       name: 'keyboard.csv',
