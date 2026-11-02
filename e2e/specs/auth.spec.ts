@@ -40,6 +40,21 @@ test.describe('auth', () => {
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   });
 
+  test('anonymous unknown URL still shows the sign-in page', async ({ page }) => {
+    await page.goto('/definitely-not-a-route');
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('auth-email')).toBeVisible();
+  });
+
+  test('signed-in unknown URL shows the not-found card with a route home', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/definitely-not-a-route');
+    await expect(page.getByTestId('not-found-card')).toBeVisible();
+    await expect(page).toHaveURL('/definitely-not-a-route');
+    await page.getByTestId('not-found-cta').click();
+    await expect(page).toHaveURL('/calendar');
+  });
+
   test('login success (admin) lands on the promoted route /calendar', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-email').fill(E2E_USERS.admin.email);

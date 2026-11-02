@@ -8,6 +8,20 @@
       />
       <div class="session-interstitial-bar" aria-hidden="true"></div>
     </div>
+  } @else if (isNotFound && user?.id) {
+    <div class="auth-card auth-card--notfound" data-testid="not-found-card">
+      <img
+        class="auth-logo"
+        src="./assets/img/logo/L.png"
+        alt="LeCoursville"
+      />
+      <h1 class="auth-title">Page not found</h1>
+      <p class="auth-subtitle">We couldn't find that page. It may have moved or never existed.</p>
+      <button mat-flat-button color="primary" class="auth-submit"
+        (click)="goToPromotedRoute()" data-testid="not-found-cta">
+        Go to {{ promotedRouteLabel }}
+      </button>
+    </div>
   } @else if (!user?.id) {
     <div class="auth-card auth-card--login">
       <img
