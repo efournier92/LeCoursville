@@ -59,8 +59,8 @@ export class UserEditComponent implements OnInit, OnChanges {
     return this.adminService.updateUser(user);
   }
 
-  isSuperUser(): boolean {
-    return this.userSignedIn?.roles?.super;
+  get isSuperUser(): boolean {
+    return this.userSignedIn?.roles?.super === true;
   }
 
   onSuperChange(user: User): void {

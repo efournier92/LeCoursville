@@ -1,0 +1,32 @@
+<div class="admin-contacts page-ground page-content">
+  @if (contactId) {
+    @if (contact; as c) {
+      <a class="admin-contacts-back" [routerLink]="['/admin', 'contacts']">
+        <mat-icon>arrow_back</mat-icon>
+        All contacts
+      </a>
+      <app-contact-edit [contact]="c"></app-contact-edit>
+    } @else {
+      <p class="admin-contacts-status">Loading contact…</p>
+    }
+  } @else {
+    <app-page-toolbar title="Contacts"></app-page-toolbar>
+    @if (status === 'loading') {
+      <p class="admin-contacts-status">Loading contacts…</p>
+    }
+    @if (status === 'ready') {
+      @if (contacts.length === 0) {
+        <p class="admin-contacts-status">No contacts found.</p>
+      }
+      <div class="admin-contacts-list surface-card">
+        @for (c of contacts; track c) {
+          <a class="admin-contacts-row" [routerLink]="['/admin', 'contacts', c.id]">
+            <span class="admin-contacts-name">{{ c.name }}</span>
+            <span class="admin-contacts-detail">{{ c.emails?.[0]?.address || '' }}</span>
+            <span class="admin-contacts-detail">{{ c.phones?.[0]?.number || '' }}</span>
+          </a>
+        }
+      </div>
+    }
+  }
+</div>

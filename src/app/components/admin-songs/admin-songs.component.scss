@@ -131,7 +131,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-app-bg));
   border: 1px solid color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
   color: var(--color-ink-2);

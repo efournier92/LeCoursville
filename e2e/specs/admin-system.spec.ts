@@ -569,7 +569,7 @@ test.describe('admin system surfaces', () => {
 
     await expect(pending.locator('.preview-btn mat-icon')).toHaveCSS('color', 'rgb(91, 100, 112)');
     await expect(pending.locator('.reject-btn mat-icon')).toHaveCSS('color', 'rgb(179, 38, 30)');
-    await expect(pending.locator('.approve-btn mat-icon')).toHaveCSS('color', 'rgb(45, 90, 39)');
+    await expect(pending.locator('.approve-btn mat-icon')).toHaveCSS('color', 'rgb(39, 116, 74)');
 
     const approve = pending.locator('.approve-btn');
     await expect(approve).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');

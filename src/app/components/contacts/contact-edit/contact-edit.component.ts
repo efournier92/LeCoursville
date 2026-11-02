@@ -21,6 +21,11 @@ export class ContactEditComponent implements OnInit {
   user: User;
   families: string[] = AppSettings.families;
 
+  // minimalism: read-only role projection, not a form field.
+  get canDelete(): boolean {
+    return this.user?.roles?.admin === true;
+  }
+
   constructor(
     private authService: AuthService,
     private contactsService: ContactsService,

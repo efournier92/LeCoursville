@@ -25,7 +25,7 @@
 }
 
 .upload-drop-zone.drag-over {
-  background: rgba(45, 90, 39, 0.10);
+  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
   border-color: var(--color-brand-primary);
 }
 
@@ -133,7 +133,7 @@
 
   .skeleton-line {
     height: 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     margin-bottom: 6px;
   }
 
@@ -206,7 +206,7 @@
 
   .mat-mdc-text-field-wrapper {
     background: var(--color-surface);
-    border-radius: var(--radius-input);
+    border-radius: var(--radius-control);
   }
 }
 
@@ -341,7 +341,7 @@
 
     ::ng-deep .mat-mdc-text-field-wrapper {
       background: var(--color-surface);
-      border-radius: var(--radius-input);
+      border-radius: var(--radius-control);
     }
   }
 

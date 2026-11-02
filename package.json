@@ -14,7 +14,8 @@
     "deploy:prod:nogate": "SKIP_GATE=1 bash scripts/deploy.sh prod",
     "deploy:dev:nogate": "SKIP_GATE=1 bash scripts/deploy.sh dev",
     "email-healthcheck": "bash scripts/email-healthcheck.sh",
-    "family:upload": "node scripts/family/upload-people.mjs"
+    "family:upload": "node scripts/family/upload-people.mjs",
+    "theme:check": "node scripts/check-theme-standardization.mjs"
   },
   "private": true,
   "dependencies": {

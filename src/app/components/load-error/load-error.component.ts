@@ -18,9 +18,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
       align-items: center;
       gap: 8px 16px;
       padding: 12px 16px;
-      border-left: 4px solid #b3261e;
-      border-radius: 4px;
-      background: rgba(179, 38, 30, 0.08);
+      border-left: 4px solid var(--color-error);
+      border-radius: var(--radius-sm);
+      background: color-mix(in srgb, var(--color-error) 8%, transparent);
     }
 
     .lv-load-error button {

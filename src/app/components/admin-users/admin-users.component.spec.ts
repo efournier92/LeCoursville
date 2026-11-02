@@ -224,6 +224,7 @@ describe('AdminUsersComponent', () => {
       match => match[1],
     );
     expect([...new Set(referenced)].sort()).toEqual([
+      '--radius-sm', // role badges: spec section 4 locks radius-sm (C-20261031-12)
       '--role-admin-bg',
       '--role-admin-fg',
       '--role-member-bg',

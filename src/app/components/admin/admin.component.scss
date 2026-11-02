@@ -78,7 +78,7 @@
         font-size: 13.5px;
         font-weight: 500;
         transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
-        border-radius: 10px;
+        border-radius: var(--radius-sm);
         border-left: 3px solid transparent;
 
         mat-icon {
@@ -111,7 +111,7 @@
       &.active a,
       a.active {
         color: var(--color-brand-primary-dark);
-        background: rgba(45, 90, 39, 0.08);
+        background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
         border-left-color: var(--color-brand-primary);
         font-weight: 600;
 
@@ -127,7 +127,7 @@
         transform: translateY(-50%);
         min-width: 20px;
         padding: 1px 6px;
-        border-radius: 999px;
+        border-radius: var(--radius-control);
         background: var(--color-brand-solid);
         color: var(--color-on-brand);
         font-size: 0.68rem;
@@ -174,7 +174,7 @@
 
   .skeleton-row {
     height: 38px;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     background: linear-gradient(90deg, var(--color-surface-muted) 25%, var(--color-border) 50%, var(--color-surface-muted) 75%);
     background-size: 200% 100%;
     animation: admin-nav-shimmer 1.4s ease-in-out infinite;

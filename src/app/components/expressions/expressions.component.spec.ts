@@ -67,6 +67,15 @@ describe('ExpressionsComponent', () => {
     expect(createButton()).not.toBeNull();
   });
 
+  it('renders the inline edit surface for an expression flagged editable', () => {
+    showExpressions();
+    component.allItems[0].isEditable = true;
+    component.displayedItems = component.allItems as unknown as Expression[];
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-expression-edit')).not.toBeNull();
+  });
+
   it('flips the sort icon when the direction reverses', () => {
     showExpressions();
     const icon = () =>

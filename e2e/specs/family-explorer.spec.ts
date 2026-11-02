@@ -35,6 +35,13 @@ test.describe('family explorer', () => {
     await expect(page.getByTestId('family-tint-dot')).toHaveCount(3);
   });
 
+  test('gives the topbar search field the 16px card radius', async ({ page }) => {
+    const radius = await page.getByTestId('family-search').evaluate(
+      (el) => getComputedStyle(el).borderRadius,
+    );
+    expect(radius).toBe('16px');
+  });
+
   test('renders nested tree guides, ticks, generation dividers, and one marriage chip', async ({ page }) => {
     // Two nested guide levels prove child > grandchild nesting.
     await expect(page.locator('[data-testid="family-guide"] [data-testid="family-guide"]')).not.toHaveCount(0);

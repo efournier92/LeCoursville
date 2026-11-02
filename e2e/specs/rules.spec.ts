@@ -37,6 +37,26 @@ function storageUrl(path: string): string {
   return `http://localhost:9199/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}?alt=media`;
 }
 
+function messageRecord(id: string, fields: Record<string, unknown>) {
+  return {
+    id,
+    title: 'Rules probe',
+    body: 'Rules probe body',
+    messageType: 'chat',
+    isReply: false,
+    replyLevel: 0,
+    dateSent: Date.now(),
+    isSticky: false,
+    isEditable: false,
+    isSaved: false,
+    isDeleted: false,
+    attachmentId: '',
+    attachmentType: '',
+    attachmentUrl: '',
+    ...fields,
+  };
+}
+
 test.describe('rules', () => {
   test('server-only nodes reject unauthenticated RTDB reads', async () => {
     for (const node of ['recoveryRequests', 'adminAlerts']) {
@@ -565,6 +585,126 @@ test.describe('rules', () => {
     } finally {
       await deleteDb(`songs/${key}`);
       await pending.dispose();
+    }
+  });
+
+  test('contacts reads require an authenticated user', async () => {
+    const userToken = await signIn('user');
+
+    expect((await get('contacts')).status).not.toBe(200);
+    const userRead = await get('contacts', userToken);
+    expect(userRead.status).toBe(200);
+    expect(await userRead.json()).toMatchObject({ 'contact-1': { id: 'contact-1' } });
+  });
+
+  test('a member cannot create an expression message', async () => {
+    const token = await signIn('user');
+    const uid = await uidForEmail(E2E_USERS.user.email);
+    const key = `rules-expression-denied-${Date.now()}`;
+
+    try {
+      expect(
+        (await put(
+          `messages/${key}`,
+          messageRecord(key, { authorId: uid, authorName: '', messageType: 'expression' }),
+          token,
+        )).status,
+      ).not.toBe(200);
+      expect(await readDb(`messages/${key}`)).toBeNull();
+    } finally {
+      await deleteDb(`messages/${key}`);
+    }
+  });
+
+  test('a member can still create a chat message as themselves', async () => {
+    const token = await signIn('user');
+    const uid = await uidForEmail(E2E_USERS.user.email);
+    const profileName = await readDb<string>(`users/${uid}/name`);
+    const key = `rules-chat-allowed-${Date.now()}`;
+
+    try {
+      expect(
+        (await put(
+          `messages/${key}`,
+          messageRecord(key, { authorId: uid, authorName: profileName }),
+          token,
+        )).ok,
+      ).toBe(true);
+      expect(await readDb<Record<string, any>>(`messages/${key}`)).toMatchObject({
+        authorId: uid,
+        authorName: profileName,
+        messageType: 'chat',
+      });
+    } finally {
+      await deleteDb(`messages/${key}`);
+    }
+  });
+
+  test('a member cannot re-type an existing chat message to expression', async () => {
+    const token = await signIn('user');
+    const uid = await uidForEmail(E2E_USERS.user.email);
+    const profileName = await readDb<string>(`users/${uid}/name`);
+    const key = `rules-retype-denied-${Date.now()}`;
+
+    try {
+      expect(
+        (await put(
+          `messages/${key}`,
+          messageRecord(key, { authorId: uid, authorName: profileName }),
+          token,
+        )).ok,
+      ).toBe(true);
+      expect(
+        (await patch(`messages/${key}/messageType`, 'expression', token)).status,
+      ).not.toBe(200);
+      expect((await readDb<Record<string, any>>(`messages/${key}`))?.messageType).toBe('chat');
+    } finally {
+      await deleteDb(`messages/${key}`);
+    }
+  });
+
+  test('an admin can create an expression message', async () => {
+    const token = await signIn('admin');
+    const uid = await uidForEmail(E2E_USERS.admin.email);
+    const key = `rules-expression-allowed-${Date.now()}`;
+
+    try {
+      expect(
+        (await put(
+          `messages/${key}`,
+          messageRecord(key, { authorId: uid, authorName: '', messageType: 'expression' }),
+          token,
+        )).ok,
+      ).toBe(true);
+      expect((await readDb<Record<string, any>>(`messages/${key}`))?.messageType).toBe('expression');
+    } finally {
+      await deleteDb(`messages/${key}`);
+    }
+  });
+
+  test('a plain admin can read contacts', async () => {
+    const staffToken = await signIn('staff');
+
+    const res = await get('contacts', staffToken);
+    expect(res.status).toBe(200);
+  });
+
+  test('a plain admin can create an expression message', async () => {
+    const token = await signIn('staff');
+    const uid = await uidForEmail(E2E_USERS.staff.email);
+    const key = `rules-expression-plain-admin-${Date.now()}`;
+
+    try {
+      expect(
+        (await put(
+          `messages/${key}`,
+          messageRecord(key, { authorId: uid, authorName: '', messageType: 'expression' }),
+          token,
+        )).ok,
+      ).toBe(true);
+      expect((await readDb<Record<string, any>>(`messages/${key}`))?.messageType).toBe('expression');
+    } finally {
+      await deleteDb(`messages/${key}`);
     }
   });
 });

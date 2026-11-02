@@ -27,7 +27,9 @@ describe('ContactViewComponent', () => {
       declarations: [ContactViewComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
-        { provide: AuthService, useValue: { userObservable: of({ roles: { admin: false } }) } },
+        // Even an admin sees no edit footer: contact editing lives behind
+        // /admin/contacts/:id (read-only user surface).
+        { provide: AuthService, useValue: { userObservable: of({ roles: { admin: true } }) } },
       ],
     })
       .compileComponents();
@@ -47,5 +49,10 @@ describe('ContactViewComponent', () => {
   it('renders the contact name', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent || '';
     expect(text).toContain('Jane Smith');
+  });
+
+  it('renders no edit footer regardless of roles', () => {
+    expect(fixture.nativeElement.querySelector('mat-card-footer')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('edit');
   });
 });

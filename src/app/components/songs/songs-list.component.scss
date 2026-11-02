@@ -160,7 +160,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   // A brand-tinted medallion, not a gray disc: surface-muted on the page
   // ground all but disappeared in both themes. The 8% wash plus the hairline
   // ring reads as a mark on the page without becoming a filled button.
