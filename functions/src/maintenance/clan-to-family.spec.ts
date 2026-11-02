@@ -9,8 +9,8 @@ function clan(id: string, name: string, hexColor: string, sortOrder: string) {
 describe("mergeFamilyNodes", () => {
   it("copies every clan, preserving ids, when the families node is empty", () => {
     const clans = {
-      "clan-1": clan("clan-1", "Mignonne", "#F44336", "A"),
-      "clan-2": clan("clan-2", "Denis", "#2196F3", "B"),
+      "clan-1": clan("clan-1", "Alder", "#F44336", "A"),
+      "clan-2": clan("clan-2", "Cedar", "#2196F3", "B"),
     };
 
     const result = mergeFamilyNodes(clans, {}, {});
@@ -26,8 +26,8 @@ describe("mergeFamilyNodes", () => {
   });
 
   it("keeps the clan record and reports a colour conflict when names overlap", () => {
-    const clans = { "clan-1": clan("clan-1", "Mignonne", "#F44336", "A") };
-    const families = { "family-1": clan("family-1", "Mignonne", "#2196F3", "M") };
+    const clans = { "clan-1": clan("clan-1", "Alder", "#F44336", "A") };
+    const families = { "family-1": clan("family-1", "Alder", "#2196F3", "M") };
 
     const result = mergeFamilyNodes(clans, families, {});
 
@@ -37,7 +37,7 @@ describe("mergeFamilyNodes", () => {
     expect(result.conflicts).toEqual([
       {
         kind: "color",
-        name: "Mignonne",
+        name: "Alder",
         clanId: "clan-1",
         familyId: "family-1",
         clanHexColor: "#F44336",
@@ -185,9 +185,9 @@ describe("mergeFamilyNodes", () => {
   });
 
   it("survives families-only records untouched", () => {
-    const clans = { "clan-1": clan("clan-1", "Mignonne", "#F44336", "A") };
+    const clans = { "clan-1": clan("clan-1", "Alder", "#F44336", "A") };
     const families = {
-      "family-1": clan("family-1", "Mignonne", "#F44336", "A"),
+      "family-1": clan("family-1", "Alder", "#F44336", "A"),
       "family-2": clan("family-2", "Nouveau", "#4CAF50", "C"),
     };
 
@@ -200,8 +200,8 @@ describe("mergeFamilyNodes", () => {
 
   it("gives every person a familyId mapped from their clanId", () => {
     const clans = {
-      "clan-1": clan("clan-1", "Mignonne", "#F44336", "A"),
-      "clan-2": clan("clan-2", "Denis", "#2196F3", "B"),
+      "clan-1": clan("clan-1", "Alder", "#F44336", "A"),
+      "clan-2": clan("clan-2", "Cedar", "#2196F3", "B"),
     };
     const people = {
       p1: { id: "p1", clanId: "clan-1" },
@@ -218,8 +218,8 @@ describe("mergeFamilyNodes", () => {
   });
 
   it("is idempotent on its own output", () => {
-    const clans = { "clan-1": clan("clan-1", "Mignonne", "#F44336", "A") };
-    const families = { "family-1": clan("family-1", "Mignonne", "#F44336", "A") };
+    const clans = { "clan-1": clan("clan-1", "Alder", "#F44336", "A") };
+    const families = { "family-1": clan("family-1", "Alder", "#F44336", "A") };
     const people = { p1: { id: "p1", clanId: "clan-1" } };
 
     const first = mergeFamilyNodes(clans, families, people);

@@ -80,7 +80,7 @@ describe('AdminFamiliesComponent', () => {
   });
 
   it('validates an edited family and updates it', async () => {
-    const family = makeFamily(1, 'Mignonne');
+    const family = makeFamily(1, 'Alder');
     settle([family]);
 
     component.onEdit(family);
@@ -89,30 +89,30 @@ describe('AdminFamiliesComponent', () => {
     expect(component.formError).toBe('Name is required');
     expect(familyService.updateFamily).not.toHaveBeenCalled();
 
-    component.formData.name = 'Mignonne Updated';
+    component.formData.name = 'Alder Updated';
     component.onSave();
     await Promise.resolve();
 
     expect(familyService.updateFamily).toHaveBeenCalledWith(
       family.id,
-      expect.objectContaining({ name: 'Mignonne Updated' }),
+      expect.objectContaining({ name: 'Alder Updated' }),
     );
   });
 
   it('keeps the family when the delete confirmation is cancelled', async () => {
-    const family = makeFamily(1, 'Mignonne');
+    const family = makeFamily(1, 'Alder');
     settle([family]);
 
     await component.onDelete(family);
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Delete family Mignonne? This cannot be undone.' }),
+      expect.objectContaining({ message: 'Delete family Alder? This cannot be undone.' }),
     );
     expect(familyService.deleteFamily).not.toHaveBeenCalled();
   });
 
   it('deletes the family when the confirmation is accepted', async () => {
-    const family = makeFamily(1, 'Mignonne');
+    const family = makeFamily(1, 'Alder');
     settle([family]);
     confirmDialog.confirm.mockResolvedValue(true);
 

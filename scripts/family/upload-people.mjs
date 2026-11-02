@@ -5,8 +5,8 @@
  * any `npm run e2e:gate` / `node scripts/e2e/seed.mjs` run — both reset RTDB.
  *
  * Usage:
- *   node scripts/family/upload-people.mjs --family ferland \
- *     --file /path/to/people.json [--title "The Ferland Family"]
+ *   node scripts/family/upload-people.mjs --family <family-id> \
+ *     --file /path/to/people.json [--title "Example Family"]
  *
  * --file accepts either {"people":[...]} or a bare array (same as the admin
  * ingest). Records are stored keyed by id, matching parseFamilyPeople().
@@ -18,9 +18,10 @@ import { createRequire } from 'module';
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
-const require = createRequire(import.meta.url);
 // Admin SDK resolved from the functions package, like scripts/e2e/seed.mjs.
-const admin = require('../../functions/node_modules/firebase-admin');
+const require = createRequire(new URL('../../functions/package.json', import.meta.url));
+const admin = require('firebase-admin');
+const { getDatabase } = require('firebase-admin/database');
 
 const EMULATOR_HOST = process.env.FIREBASE_DATABASE_EMULATOR_HOST || '127.0.0.1:9000';
 const PROJECT = 'lecoursville-dev';
@@ -39,7 +40,7 @@ async function main() {
       title: { type: 'string' },
     },
   });
-  if (!values.family) fail('--family <id> is required (e.g. --family ferland)');
+  if (!values.family) fail('--family <family-id> is required (e.g. --family <family-id>)');
   if (!/^[a-z0-9-]+$/.test(values.family)) fail('--family must be lowercase letters, numbers, and dashes only');
   if (!values.file) fail('--file <people.json> is required');
 
@@ -79,14 +80,14 @@ async function main() {
 
   process.env.FIREBASE_DATABASE_EMULATOR_HOST = EMULATOR_HOST;
   admin.initializeApp({ projectId: PROJECT, databaseURL: DB_URL });
-  const ref = admin.database().ref(`familyExplorer/${values.family}`);
+  const ref = getDatabase().ref(`familyExplorer/${values.family}`);
   const update = { people: byId, updatedAt: Date.now() };
   if (values.title) update.title = values.title;
   await ref.update(update);
 
   const after = (await ref.once('value')).val() || {};
   console.log(`[family:upload] OK ${values.family}: ${people.length} people, title "${after.title ?? '(unchanged)'}", published=${after.published}`);
-  await admin.app().delete();
+  await admin.getApp().delete();
 }
 
 main().catch((err) => fail(err.message));

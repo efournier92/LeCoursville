@@ -368,8 +368,8 @@ test.describe('admin content surfaces', () => {
     await page.goto('/admin/families');
     const adminRows = page.locator('.families-table tbody tr .family-name');
     await expect(adminRows).toHaveCount(2, { timeout: 20000 });
-    await expect(adminRows.filter({ hasText: 'Mignonne' })).toBeVisible();
-    await expect(adminRows.filter({ hasText: 'Denis' })).toBeVisible();
+    await expect(adminRows.filter({ hasText: 'Alder' })).toBeVisible();
+    await expect(adminRows.filter({ hasText: 'Cedar' })).toBeVisible();
     await expect(page.getByText('No families yet')).toHaveCount(0);
     const adminNames = (await adminRows.allTextContents()).map((name) => name.trim()).sort();
 

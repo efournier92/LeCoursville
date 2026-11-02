@@ -335,8 +335,8 @@ test.describe('admin', () => {
   test('families page lists the 2 seeded families', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/families');
-    await expect(page.getByText('Mignonne').first()).toBeVisible();
-    await expect(page.getByText('Denis').first()).toBeVisible();
+    await expect(page.getByText('Alder').first()).toBeVisible();
+    await expect(page.getByText('Cedar').first()).toBeVisible();
   });
 
   test('users loading state renders the skeleton inside the card, then resolves', async ({ page }) => {

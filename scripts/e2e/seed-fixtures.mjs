@@ -27,8 +27,8 @@ export const famPerson = (id, given, surname, extra = {}) => ({
   note: extra.note ?? null,
 });
 
-export const FERLAND_ARCHIVE = (now, adminUid) => ({
-  title: 'Ferland Family',
+export const EXAMPLE_ARCHIVE = (now, adminUid) => ({
+  title: 'Example Family',
   published: true,
   updatedAt: now,
   updatedBy: adminUid,

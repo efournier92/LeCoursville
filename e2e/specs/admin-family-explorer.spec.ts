@@ -2,7 +2,7 @@ import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import { uidForEmail } from '../helpers/rules';
-import { FERLAND_ARCHIVE, WOLF_ARCHIVE } from '../../scripts/e2e/seed-fixtures.mjs';
+import { EXAMPLE_ARCHIVE, WOLF_ARCHIVE } from '../../scripts/e2e/seed-fixtures.mjs';
 
 // Two-person blob satisfying parseFamilyPeople; ids are unique to this spec.
 const uploadJson = JSON.stringify([
@@ -19,7 +19,7 @@ test.describe('admin family explorer', () => {
   test('renders two surfaced cards with the shared 16px stack and Title Case copy', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/family-explorer');
-    await expect(page.getByTestId('archive-row-ferland')).toBeVisible();
+    await expect(page.getByTestId('archive-row-archive-1')).toBeVisible();
 
     const cards = page.locator('.admin-surface');
     await expect(cards).toHaveCount(2);
@@ -112,23 +112,27 @@ test.describe('admin family explorer', () => {
   test('re-uploading a published archive keeps it published', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/family-explorer');
-    await expect(page.getByTestId('archive-row-ferland')).toBeVisible();
+    await expect(page.getByTestId('archive-row-archive-1')).toBeVisible();
 
-    const ferland = FERLAND_ARCHIVE(Date.now(), 'seed-fixture');
-    await page.getByLabel('Family ID').fill('ferland');
-    await page.getByLabel('Title').fill('Ferland Family');
+    const archive1 = EXAMPLE_ARCHIVE(Date.now(), 'seed-fixture');
+    await page.getByLabel('Family ID').fill('archive-1');
+    await page.getByLabel('Title').fill('Example Family');
     await expect(page.getByRole('checkbox', { name: 'Published' })).toBeChecked();
     await page
       .getByTestId('archive-json-input')
-      .fill(JSON.stringify({ people: Object.values(ferland.people) }));
+      .fill(JSON.stringify({ people: Object.values(archive1.people) }));
     await expect(page.getByTestId('archive-preview-count')).toHaveText('9 people');
 
-    await page.getByTestId('archive-confirm').click();
-    await expect(page.getByTestId('archive-success')).toBeVisible();
+    try {
+      await page.getByTestId('archive-confirm').click();
+      await expect(page.getByTestId('archive-success')).toBeVisible();
 
-    const toggle = page.getByRole('switch', { name: 'Publish Ferland Family' });
-    await expect(toggle).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('archive-row-ferland')).toContainText('Ferland Family');
+      const toggle = page.getByRole('switch', { name: 'Publish Example Family' });
+      await expect(toggle).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByTestId('archive-row-archive-1')).toContainText('Example Family');
+    } finally {
+      await writeDb('familyExplorer/archive-1', EXAMPLE_ARCHIVE(Date.now(), 'seed-fixture'));
+    }
   });
 
   test('shows the empty state inside the Archives card when no archives exist', async ({ page }) => {
@@ -140,10 +144,10 @@ test.describe('admin family explorer', () => {
       await expect(archivesCard.getByTestId('archive-empty')).toBeVisible();
     } finally {
       // family-explorer.spec.ts runs after this file and needs both archives
-      // restored exactly as the seed wrote them (ferland full, wolf sans updatedAt).
+      // restored exactly as the seed wrote them (archive-1 full, wolf sans updatedAt).
       const adminUid = await uidForEmail('admin@e2e.local');
       await writeDb('familyExplorer', {
-        ferland: FERLAND_ARCHIVE(Date.now(), adminUid),
+        'archive-1': EXAMPLE_ARCHIVE(Date.now(), adminUid),
         wolf: WOLF_ARCHIVE(adminUid),
       });
     }

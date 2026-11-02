@@ -67,7 +67,7 @@ const ADMIN_ROUTES: AdminRoute[] = [
   {
     path: '/admin/family-explorer',
     title: 'Family Explorer',
-    ready: (page) => expect(page.getByTestId('archive-row-ferland')).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('archive-row-archive-1')).toBeVisible(),
   },
 ];
 

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarService } from 'src/app/services/calendar.service';
-import { AppSettings } from 'src/environments/app-settings';
+import { AppSettings } from 'src/app/config/app-settings';
 
 @Component({
     selector: 'app-calendar-cell',

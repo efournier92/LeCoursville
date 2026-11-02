@@ -6,6 +6,7 @@ import { AppModule } from '../../app.module';
 import { AdminContactsComponent } from './admin-contacts.component';
 import { ContactsService } from 'src/app/services/contacts.service';
 import { RtdbService } from 'src/app/services/rtdb.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { Contact } from 'src/app/models/contact';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
@@ -36,6 +37,16 @@ describe('AdminContactsComponent', () => {
         // (C-20261031-08), so feed the seed followed by the real emission.
         { provide: ContactsService, useValue: { userContacts: concat(of([]), of([contact, makeContact('contact-2', 'Legacy Contact Two')])) } },
         { provide: RtdbService, useValue: { object: () => ({ valueChanges: () => of(contact) }) } },
+        {
+          provide: FamilyService,
+          useValue: {
+            families$: of([
+              { id: 'family-1', name: 'Alder', sortOrder: 'A' },
+              { id: 'family-2', name: 'Cedar', sortOrder: 'B' },
+            ]),
+            familiesStatus$: of('ready'),
+          },
+        },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(AdminContactsComponent);

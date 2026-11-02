@@ -114,7 +114,7 @@ test.describe('edge cases', () => {
     const payload = '<img src=x onerror=window.__xss=3>';
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Family',
-      `xss-1,${payload},${payload},Probe,1990-01-15,1,TRUE,Mignonne`,
+      `xss-1,${payload},${payload},Probe,1990-01-15,1,TRUE,Alder`,
     ].join('\n');
     await page.locator('input[type="file"]').setInputFiles({
       name: 'xss.csv',

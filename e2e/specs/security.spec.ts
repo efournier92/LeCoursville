@@ -442,15 +442,15 @@ test.describe('security', () => {
   test('family explorer: anonymous read is limited to published families and anonymous writes fail', async () => {
     // A sibling admin spec can publish wolf; pin the fixture before probing.
     await writeDb('familyExplorer/wolf/published', false);
-    const published = await get('familyExplorer/ferland');
+    const published = await get('familyExplorer/archive-1');
     expect(published.status).toBe(200);
 
     const unpublished = await get('familyExplorer/wolf');
     expect([401, 403]).toContain(unpublished.status);
 
-    const write = await put('familyExplorer/ferland', { title: 'Anonymous overwrite' });
+    const write = await put('familyExplorer/archive-1', { title: 'Anonymous overwrite' });
     expect([401, 403]).toContain(write.status);
-    expect((await readDb<{ title?: string }>('familyExplorer/ferland'))?.title).toBe('Ferland Family');
+    expect((await readDb<{ title?: string }>('familyExplorer/archive-1'))?.title).toBe('Example Family');
 
     // Anonymous callers cannot LIST archives either.
     const anonList = await get('familyExplorer');
