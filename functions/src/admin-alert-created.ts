@@ -52,11 +52,11 @@ export const onAdminAlertCreated = onValueCreated(
         const usersSnap = await db.ref("users").get();
         const users = (usersSnap.val() ?? {}) as Record<
           string,
-          { email?: string; roles?: { admin?: boolean } }
+          { email?: string; roles?: { super?: boolean } }
         >;
         emails = normalizeRecipients(
           Object.values(users)
-            .filter((record) => record?.roles?.admin === true && !!record?.email)
+            .filter((record) => record?.roles?.super === true && !!record?.email)
             .map((record) => String(record.email))
         );
       }

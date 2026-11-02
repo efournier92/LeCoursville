@@ -36,13 +36,13 @@ test.describe('admin', () => {
     await expect(page.getByTestId('nav-admin-link')).toHaveCount(0);
   });
 
-  test('clicking the logo as a super admin lands on /admin/users', async ({ page }) => {
+  test('clicking the logo as a super admin lands on /admin/families', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
     const logo = page.locator('.toolbar-logo');
     await expect(logo).toHaveAttribute('aria-label', 'Admin');
     await logo.click();
-    await expect(page).toHaveURL(/\/admin\/users$/);
+    await expect(page).toHaveURL(/\/admin\/families$/);
   });
 
   test('clicking the logo as a staff admin lands on the promoted route', async ({ page }) => {
@@ -61,7 +61,7 @@ test.describe('admin', () => {
     await logo.focus();
     await expect(logo).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/admin\/users$/);
+    await expect(page).toHaveURL(/\/admin\/families$/);
   });
 
   test('staff admin does not see the Admin link in the navbar', async ({ page }) => {
@@ -90,10 +90,10 @@ test.describe('admin', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
-      await editor.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await editor.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
       const dialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
-      await expect(dialog).toContainText('Give Regular User admin access?');
+      await expect(dialog).toContainText('Give Regular User content admin access?');
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
 
@@ -200,32 +200,18 @@ test.describe('admin', () => {
     }
   });
 
-  test('admin nav badges show ! and an accessible label when a listener is denied', async ({ page }) => {
-    const users = (await readDb<Record<string, any>>('users')) ?? {};
-    const entry = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local');
-    expect(entry).toBeTruthy();
-    const [uid, adminUser] = entry!;
-    const roles = adminUser.roles;
-
-    await login(page, 'admin');
-    try {
-      // Super without admin keeps /admin reachable while userUploads reads are denied.
-      await writeDb(`users/${uid}/roles`, { user: true, admin: false, super: true });
-      await page.goto('/admin/users');
-
-      const badge = page.getByTestId('admin-nav-badge-uploads');
-      await expect(badge).toBeVisible({ timeout: 20000 });
-      await expect(badge.locator('[aria-hidden="true"]')).toHaveText('!');
-      await expect(badge).toContainText('Pending uploads count unavailable');
-    } finally {
-      await writeDb(`users/${uid}/roles`, roles);
-    }
+  test('admin nav hides the system badges from a content admin', async ({ page }) => {
+    await login(page, 'staff');
+    await page.goto('/admin/families');
+    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await expect(page.getByTestId('admin-nav-badge-uploads')).toHaveCount(0);
+    await expect(page.getByTestId('admin-nav-badge-recovery')).toHaveCount(0);
   });
 
-  test('admin index redirects a super admin to users', async ({ page }) => {
+  test('admin index redirects a super admin to families', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin');
-    await expect(page).toHaveURL(/\/admin\/users$/);
+    await expect(page).toHaveURL(/\/admin\/families$/);
   });
 
   test('desktop shell keeps one scroll container and shows the version', async ({ page }) => {

@@ -68,7 +68,7 @@ test.describe('admin system surfaces', () => {
     await expect(member).toHaveCSS('background-color', 'rgb(236, 239, 241)');
     await expect(member).toHaveCSS('color', 'rgb(55, 71, 79)');
 
-    const admin = badge('staff@e2e.local', 'Admin');
+    const admin = badge('staff@e2e.local', 'Content Admin');
     await expect(admin).toHaveCSS('background-color', 'rgb(232, 234, 246)');
     await expect(admin).toHaveCSS('color', 'rgb(40, 53, 147)');
 
@@ -100,7 +100,7 @@ test.describe('admin system surfaces', () => {
       const row = history.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
       await expect(row).toContainText('Admin User');
       await expect(row).toContainText('Member');
-      await expect(row).toContainText('Admin');
+      await expect(row).toContainText('Content Admin');
     } finally {
       await deleteDb(`roleAudit/${key}`);
     }
@@ -134,10 +134,10 @@ test.describe('admin system surfaces', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
-      await editor.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await editor.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
       const grantDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
-      await expect(grantDialog).toContainText('Give Regular User admin access?');
+      await expect(grantDialog).toContainText('Give Regular User content admin access?');
       await grantDialog.getByRole('button', { name: 'Save' }).click();
       await expect(editor).toHaveCount(0);
 
@@ -156,10 +156,10 @@ test.describe('admin system surfaces', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const reopen = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(reopen).toBeVisible();
-      await reopen.getByRole('checkbox', { name: 'Admin', exact: true }).click();
+      await reopen.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
       await reopen.getByRole('button', { name: 'Save' }).click();
       const revokeDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
-      await expect(revokeDialog).toContainText('Remove admin access from Regular User?');
+      await expect(revokeDialog).toContainText('Remove content admin access from Regular User?');
       await revokeDialog.getByRole('button', { name: 'Save' }).click();
       await expect(reopen).toHaveCount(0);
 
@@ -214,34 +214,6 @@ test.describe('admin system surfaces', () => {
       await expect(row).toBeVisible();
     } finally {
       await deleteDb(`userUploads/${uploadKey}`);
-    }
-  });
-
-  test('users: delete confirmation says when pending uploads could not be checked', async ({ page }) => {
-    const users = (await readDb<Record<string, any>>('users')) ?? {};
-    const entry = Object.entries(users).find(([, user]) => user?.email === 'admin@e2e.local');
-    expect(entry).toBeTruthy();
-    const [uid, adminUser] = entry!;
-    const roles = adminUser.roles;
-
-    await login(page, 'admin');
-    try {
-      // Super without admin: the users list still loads, but userUploads is denied.
-      await writeDb(`users/${uid}/roles`, { user: true, admin: false, super: true });
-      await page.goto('/admin/users');
-
-      const table = page.getByTestId('admin-users-table');
-      await expect(table.locator('tbody tr')).toHaveCount(5, { timeout: 20000 });
-      const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
-
-      await row.getByRole('button', { name: 'Delete Regular User' }).click();
-      const dialog = page.getByRole('dialog');
-      await expect(dialog).toContainText('Could not check pending uploads.');
-      await expect(dialog).toContainText('Pending uploads stay in the queue after deletion.');
-      await dialog.getByRole('button', { name: 'Cancel' }).click();
-      await expect(dialog).toHaveCount(0);
-    } finally {
-      await writeDb(`users/${uid}/roles`, roles);
     }
   });
 

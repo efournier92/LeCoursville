@@ -15,6 +15,7 @@ import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { MaterialModule } from 'src/app/modules/material.module';
 import { PhotoAlbumsFeatureGuard } from 'src/app/services/photo-albums-feature.guard';
+import { SuperAdminGuard } from 'src/app/services/super-admin.guard';
 import { AdminComponent } from './admin.component';
 import { AdminCalendarsComponent } from '../admin-calendars/admin-calendars.component';
 import { AdminFamiliesComponent } from '../admin-families/admin-families.component';
@@ -50,10 +51,12 @@ const routes: Routes = [
       {
         path: ADMIN_ROUTE.users,
         component: AdminUsersComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: ADMIN_ROUTE.features,
         component: AdminFeaturesComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: ADMIN_ROUTE.people,
@@ -87,22 +90,26 @@ const routes: Routes = [
       {
         path: ADMIN_ROUTE.familyExplorer,
         component: AdminFamilyExplorerComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: ADMIN_ROUTE.uploads,
         component: AdminUserUploadsComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: ADMIN_ROUTE.recovery,
         component: AdminRecoveryComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: ADMIN_ROUTE.analytics,
         component: AdminAnalyticsComponent,
+        canActivate: [SuperAdminGuard],
       },
       {
         path: '',
-        redirectTo: 'users',
+        redirectTo: ADMIN_ROUTE.families,
         pathMatch: 'full',
       },
     ],

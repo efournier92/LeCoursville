@@ -13,7 +13,9 @@ import {
   compareAndSet,
   escapeHtml,
   hashKey,
+  isAdmin,
   isAllowedContinueUrl,
+  isSuper,
   isValidEmail,
   rateLimit,
   sendEmail,
@@ -51,6 +53,42 @@ describe("escapeHtml", () => {
   it("returns an empty string for null and undefined", () => {
     expect(escapeHtml(null)).toBe("");
     expect(escapeHtml(undefined)).toBe("");
+  });
+});
+
+describe("isAdmin", () => {
+  beforeEach(() => {
+    resetFakeState();
+  });
+
+  it("is true for a content admin and a super", async () => {
+    await fakeDb
+      .ref("users/content/roles")
+      .set({ user: true, admin: true, super: false });
+    await fakeDb
+      .ref("users/super/roles")
+      .set({ user: true, admin: true, super: true });
+
+    expect(await isAdmin("content")).toBe(true);
+    expect(await isAdmin("super")).toBe(true);
+  });
+});
+
+describe("isSuper", () => {
+  beforeEach(() => {
+    resetFakeState();
+  });
+
+  it("is true only for a super", async () => {
+    await fakeDb
+      .ref("users/content/roles")
+      .set({ user: true, admin: true, super: false });
+    await fakeDb
+      .ref("users/super/roles")
+      .set({ user: true, admin: true, super: true });
+
+    expect(await isSuper("content")).toBe(false);
+    expect(await isSuper("super")).toBe(true);
   });
 });
 

@@ -24,8 +24,8 @@ function invoke(data: Record<string, unknown>, auth: unknown = adminAuth) {
   return closeRecoveryRequest.run({ data, auth, rawRequest: {} } as never);
 }
 
-async function seedAdmin(uid = "admin-1") {
-  await fakeDb.ref(`users/${uid}/roles/admin`).set(true);
+async function seedSuper(uid = "admin-1") {
+  await fakeDb.ref(`users/${uid}/roles/super`).set(true);
 }
 
 async function seedRequest(id: string, value: Record<string, unknown>) {
@@ -55,8 +55,16 @@ describe("closeRecoveryRequest", () => {
     });
   });
 
+  it("rejects a content admin caller", async () => {
+    await fakeDb.ref("users/admin-1/roles/admin").set(true);
+
+    await expect(invoke({ requestId: "req-1" })).rejects.toMatchObject({
+      code: "permission-denied",
+    });
+  });
+
   it("closes an open request and audits the close", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {});
 
     await expect(invoke({ requestId: "req-1", reason: "done" })).resolves.toEqual({
@@ -73,7 +81,7 @@ describe("closeRecoveryRequest", () => {
   });
 
   it("rejects an already-handled request without auditing", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", { status: "resolved" });
 
     await expect(invoke({ requestId: "req-1" })).rejects.toMatchObject({
@@ -83,7 +91,7 @@ describe("closeRecoveryRequest", () => {
   });
 
   it("closes a stale pending request left by an abandoned mint", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       status: "pending",
       resolvedBy: "admin-2",
@@ -96,7 +104,7 @@ describe("closeRecoveryRequest", () => {
   });
 
   it("refuses a fresh pending lock so a live mint is not interrupted", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {
       status: "pending",
       resolvedBy: "admin-2",
@@ -109,7 +117,7 @@ describe("closeRecoveryRequest", () => {
   });
 
   it("throws resource-exhausted when the actor close cap is reached", async () => {
-    await seedAdmin();
+    await seedSuper();
     await fakeDb
       .ref("rateLimits/closeRecoveryRequests/admin-1")
       .set({ windowStart: Date.now(), count: 60 });
@@ -120,7 +128,7 @@ describe("closeRecoveryRequest", () => {
   });
 
   it("reopens the request when the close audit write fails", async () => {
-    await seedAdmin();
+    await seedSuper();
     await seedRequest("req-1", {});
     vi.mocked(writeAudit).mockRejectedValueOnce(new Error("audit down"));
 

@@ -5,6 +5,11 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261101-12 | 2026-11-01 | [outcome] | admin/security | Merged theme+input-standardization onto #51 keeping both: role-based expression gating, chat admin edit guard, and superOnly nav restored; branch keeps its contacts/expressions content routes, so a content admin sees 7 sidebar items (8 with photo albums) and a super 13/14 | src/app/admin/admin-nav.ts:38
+- D-20261101-11 | 2026-11-01 | [decision] | admin/security | Songs is a content-tier item, so a content admin gets 6 sidebar items with the photo-album flag on and 5 with it off; the spec's 5/4 counts predate songs landing on trunk | src/app/admin/admin-nav.ts:43
+- D-20261101-10 | 2026-11-01 | [trap] | admin/ui | `admin-nav` renders with `aria-busy` and a skeleton before `isNavReady`, so an `admin-nav-link-*` absence assertion passes while the nav is still loading; gate it on `toHaveAttribute('aria-busy', 'false')` | e2e/specs/admin-roles.spec.ts:133
+- D-20261101-09 | 2026-11-01 | [outcome] | admin/security | Admin Tier Split redteam converged: 8 findings, 4 rejected by spec text, 4 fixed; functions 303, unit 751, e2e build clean, gate 362 on three engines | docs/critique/2026-11-01_AdminTierSplit.md
+
 - D-20261101-08 | 2026-11-01 | [outcome] | admin/security | Redteam round 2 closed the medium set: `/contacts` read admin-or-super, expression-create and `messageType` writes admin-only at message and reply level, role reads moved to TS getters, text-entry radius unified at 16px. gate 367 e2e x3, unit 752, functions 298, rules 22 | docs/critique/2026-10-31_ThemeInputStandardization.md
 - D-20261101-07 | 2026-11-01 | [trap] | build/perf | Playwright browser binaries can vanish from the cache between runs. a webkit stage then fails all 367 with "Executable doesn't exist" and looks like a product regression. Run `npx playwright install webkit firefox` before trusting a red browser stage | playwright.config.ts:25
 - D-20261101-06 | 2026-11-01 | [outcome] | admin/ui | theme+input-standardization shipped on its branch: emerald + control standard + read-only user face, master #49/#50 merged in, gate 366x3 green, theme:check clean; 5 HUMAN findings open in the ledger | docs/handoffs/2026-11-01_ThemeInputStandardization.md
@@ -45,4 +50,3 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 - D-20261025-20 | 2026-10-25 | [trap] | rules/deploy | GoDaddy nameservers lag each other and resolvers cache stale empties, so verify TXT and MX at ns03 and ns04 before trusting dig | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-19 | 2026-10-25 | [decision] | rules/deploy | eric@lecoursville.com is on Zoho Mail Free: apex MX to Zoho, merged SPF, DKIM selector zoho, no IMAP, Resend sends app mail | docs/2026-10-25_LeCoursville_Email_Configuration.md
 - D-20261025-18 | 2026-10-25 | [decision] | rules/deploy | Clan-to-family migration is additive first; `--delete-legacy` needs a same-run apply plus post-checks, and rules removal follows the data | scripts/migrations/clan-to-family.mjs:7
-- D-20261025-17 | 2026-10-25 | [decision] | admin/security | Family is canonical: one `families` node, `Person.familyId`, `?family=`, a one-release `?clan=` alias; `clans` and rules stay for cutover | src/app/services/family.service.ts:13

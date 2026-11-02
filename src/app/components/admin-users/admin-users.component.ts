@@ -141,7 +141,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   userRoles(user: User): string[] {
     const roles = user?.roles || { user: false, admin: false, super: false };
     return [
-      roles.admin ? 'Admin' : '',
+      roles.admin ? 'Content Admin' : '',
       roles.super ? 'Super' : '',
       roles.user ? 'Member' : '',
     ].filter(Boolean);
@@ -163,9 +163,13 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
 
   roleSummary(roles: { admin: boolean; super: boolean } | undefined): string {
     return [
-      roles?.admin ? 'Admin' : '',
+      roles?.admin ? 'Content Admin' : '',
       roles?.super ? 'Super' : '',
     ].filter(Boolean).join(', ') || 'Member';
+  }
+
+  roleClass(role: string): string {
+    return role === 'Content Admin' ? 'admin' : role.toLowerCase();
   }
 
   isActiveSort(key: string): boolean {

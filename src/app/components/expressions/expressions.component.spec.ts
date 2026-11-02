@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { vi } from 'vitest';
-import { Router } from '@angular/router';
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
@@ -56,33 +55,25 @@ describe('ExpressionsComponent', () => {
     expect(cards()).toBe(1);
   });
 
-  it('shows Create only on the admin route, never for members', () => {
-    const router = TestBed.inject(Router);
-    const url = vi.spyOn(router, 'url', 'get').mockReturnValue('/expressions');
+  it('shows Create only to admins', () => {
     showExpressions();
     const createButton = () =>
       fixture.nativeElement.querySelector('.create-expression-button');
 
-    // Member route: no Create control regardless of role.
-    component.user = { roles: { admin: true } } as any;
-    fixture.detectChanges();
     expect(createButton()).toBeNull();
 
-    // Admin route (/admin/expressions): Create appears.
-    url.mockReturnValue('/admin/expressions');
+    component.user = { roles: { admin: true } } as any;
     fixture.detectChanges();
     expect(createButton()).not.toBeNull();
   });
 
-  it('renders items via expression-view with no inline edit surface for members', () => {
+  it('renders the inline edit surface for an expression flagged editable', () => {
     showExpressions();
     component.allItems[0].isEditable = true;
     component.displayedItems = component.allItems as unknown as Expression[];
     fixture.detectChanges();
 
-    // The inline app-expression-edit branch renders for admins only via the
-    // admin route; on the member route the item falls through to view mode.
-    expect(fixture.nativeElement.querySelector('app-expression-edit')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-expression-edit')).not.toBeNull();
   });
 
   it('flips the sort icon when the direction reverses', () => {

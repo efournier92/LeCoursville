@@ -260,20 +260,32 @@ test.describe('security', () => {
     await expect(page).toHaveURL(/\/calendar/);
   });
 
-  test('non-super admin cannot reach any admin route by URL', async ({ page }) => {
+  test('content admin reaches every content admin route by URL', async ({ page }) => {
     await login(page, 'staff');
     const routes = [
-      '/admin',
-      '/admin/users',
-      '/admin/features',
-      '/admin/recovery',
       '/admin/families',
       '/admin/people',
       '/admin/calendars',
       '/admin/media',
       '/admin/photo-albums',
-      '/admin/uploads',
+      '/admin/songs',
+    ];
+    for (const route of routes) {
+      await page.goto(route);
+      await expect(page).toHaveURL(/\/admin/);
+      await expect(page.getByTestId('admin-nav')).toBeVisible();
+    }
+  });
+
+  test('content admin is redirected from every system admin route by URL', async ({ page }) => {
+    await login(page, 'staff');
+    const routes = [
+      '/admin/users',
+      '/admin/features',
+      '/admin/recovery',
+      '/admin/analytics',
       '/admin/family-explorer',
+      '/admin/uploads',
     ];
     for (const route of routes) {
       await page.goto(route);

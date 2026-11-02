@@ -95,7 +95,7 @@ describe('UserEditComponent', () => {
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Give Ada Lovelace admin access?',
+        message: 'Give Ada Lovelace content admin access?',
         destructive: false,
       }),
     );
@@ -210,7 +210,7 @@ describe('UserEditComponent', () => {
     expect(confirmDialog.confirm).toHaveBeenCalledWith(
       expect.objectContaining({
         message:
-          "Revoke Ada Lovelace's membership? Remove admin access from Ada Lovelace?",
+          "Revoke Ada Lovelace's membership? Remove content admin access from Ada Lovelace?",
       }),
     );
     expect(adminService.changeUserRole).toHaveBeenCalledWith('user-1', {
@@ -289,7 +289,7 @@ describe('UserEditComponent', () => {
 
     expect(confirmDialog.confirm).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Remove admin access from Ada Lovelace? Remove super access from Ada Lovelace?',
+        message: 'Remove content admin access from Ada Lovelace? Remove super access from Ada Lovelace?',
         destructive: true,
       }),
     );

@@ -1,7 +1,7 @@
 import { getDatabase } from "firebase-admin/database";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { REGION } from "./config";
-import { isAdmin, isValidEmail, writeAudit } from "./helpers";
+import { isSuper, isValidEmail, writeAudit } from "./helpers";
 
 // Bound the stored list so a single call cannot grow the node without limit.
 const MAX_ALERT_RECIPIENTS = 25;
@@ -13,8 +13,8 @@ export const updateAlertRecipients = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "Sign in required.");
     }
-    if (!(await isAdmin(uid))) {
-      throw new HttpsError("permission-denied", "Admin access required.");
+    if (!(await isSuper(uid))) {
+      throw new HttpsError("permission-denied", "Super admin access required.");
     }
 
     const raw = request.data?.emails;

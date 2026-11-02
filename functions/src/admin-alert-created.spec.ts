@@ -119,4 +119,25 @@ describe("onAdminAlertCreated", () => {
     expect(fakeDb.read("adminAlerts/a1")).toMatchObject({ emailStatus: "sent" });
     expect(sendEmail).not.toHaveBeenCalled();
   });
+
+  it("recipient fallback selects supers, not content admins", async () => {
+    await fakeDb.ref("config/adminAlertRecipients").set(null);
+    await fakeDb
+      .ref("users/content")
+      .set({ email: "content@example.com", roles: { admin: true } });
+    await fakeDb
+      .ref("users/super")
+      .set({ email: "super@example.com", roles: { super: true } });
+    await seedAlert("a1");
+
+    await onAdminAlertCreated.run(eventFor("a1"));
+
+    const raw = (fakeDb.store["outboundEmails"] ?? {}) as Record<
+      string,
+      Record<string, unknown>
+    >;
+    const mails = Object.values(raw);
+    expect(mails).toHaveLength(1);
+    expect(mails[0]).toMatchObject({ to: "super@example.com" });
+  });
 });

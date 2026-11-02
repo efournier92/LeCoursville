@@ -113,7 +113,7 @@
                 <td data-label="Registered">{{ rowUser.dateRegistered | date:'yyyy-MM-dd' }}</td>
                 <td data-label="Roles">
                   @for (role of rolesFor(rowUser); track role) {
-                    <span class="role-badge" [class]="'role-badge role-badge-' + role.toLowerCase()">{{ role }}</span>
+                    <span class="role-badge" [class]="'role-badge role-badge-' + roleClass(role)">{{ role }}</span>
                   } @empty {
                     <span class="admin-muted">—</span>
                   }

@@ -22,8 +22,8 @@ export class SuperAdminGuard {
       timeout(5000),
       map((user: any) => user?.roles?.super === true
         ? true
-        // Redirect to the promoted route — the same place root sends a member —
-        // so a plain admin never sees the admin shell.
+        // Send a content admin to the promoted route, the same place root
+        // sends a member, instead of rendering an empty system shell.
         : this.router.parseUrl(this.routingService.getPromotedRoute())),
       catchError(() => of(this.router.parseUrl('/'))),
     );

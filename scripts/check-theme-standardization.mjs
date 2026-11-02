@@ -56,7 +56,9 @@ for (const f of scss.filter(p => !p.includes('photos-legacy'))) {
 //    admin* components (the admin portal), photos-legacy (decision 3, out of
 //    scope this run), user-view (informational role badges). user-edit and
 //    contact-edit now compute their role flags in TypeScript, not templates.
-const templateExceptions = /\/(admin[^/]*|photos-legacy|user-view)\//;
+//    chat-view, expressions, and expression-view keep #51's role-gated edit
+//    controls on the shared member surface; route gating cannot replace them.
+const templateExceptions = /\/(admin[^/]*|photos-legacy|user-view|chat-view|expressions|expression-view)\//;
 for (const f of html.filter(p => p.startsWith('src/app/components/') && !templateExceptions.test(p))) {
   const lines = readFileSync(f, 'utf8').split('\n');
   lines.forEach((line, i) => {

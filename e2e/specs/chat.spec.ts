@@ -68,12 +68,16 @@ test.describe('chat', () => {
     await expect(page.getByText('E2E sent body via UI')).toBeVisible();
   });
 
-  test('admin gate removed: admin sees no Edit control on a foreign message', async ({ page }) => {
+  test('edit message: admin edits a seeded message', async ({ page }) => {
     await openChatAs(page, 'admin');
     await page.goto('/chat');
-    const card = page.locator('.message-card-container', { hasText: 'From the user' }).first();
-    await expect(card).toBeVisible();
-    await expect(card.locator('.message-button', { hasText: 'Edit' })).toHaveCount(0);
+    const card = page.locator('.message-card-container', { hasText: 'Second seed' }).first();
+    // The Edit label sits outside the click handler; the icon is the tappable target.
+    await card.locator('.message-button', { hasText: 'Edit' }).locator('mat-icon').click();
+    await page.getByTestId('chat-message-input').fill('Second seed — edited by e2e');
+    await page.getByTestId('chat-send').click();
+    await page.getByRole('button', { name: 'Yes' }).click();
+    await expect(page.getByText('Second seed — edited by e2e')).toBeVisible();
   });
 
   test('delete message: destructive confirm is red with a warning icon', async ({ page }) => {

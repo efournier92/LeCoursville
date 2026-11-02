@@ -85,11 +85,11 @@ test.describe('expressions', () => {
     await expect(page.locator('app-expression-edit')).toHaveCount(0);
   });
 
-  test('admin on the member route also sees the read-only library', async ({ page }) => {
+  test('admin on the member route sees the create and edit controls', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/expressions');
-    await expect(page.getByRole('button', { name: 'Create Expression' })).toHaveCount(0);
-    await expect(page.locator('.expression-actions')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
+    await expect(page.locator('.expression-actions').first()).toBeVisible();
   });
 
   test('admin route shows the Create control and edit actions', async ({ page }) => {

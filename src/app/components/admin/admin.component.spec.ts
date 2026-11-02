@@ -8,11 +8,13 @@ import { AdminComponent } from './admin.component';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { RoutingService } from '../../services/routing.service';
 import { AdminBadgeService } from '../../services/admin-badge.service';
+import { AuthService } from '../../services/auth.service';
 
 describe('AdminComponent', () => {
   let component: AdminComponent;
   let fixture: ComponentFixture<AdminComponent>;
   let flags$: Subject<Record<string, any>>;
+  let user$: Subject<Record<string, any>>;
   let pendingUploads$: Subject<number>;
   let openRecovery$: Subject<number>;
   let viewportListener: ((event: MediaQueryListEvent) => void) | undefined;
@@ -30,6 +32,7 @@ describe('AdminComponent', () => {
       removeListener: vi.fn(),
     }) as unknown as typeof window.matchMedia;
     flags$ = new Subject();
+    user$ = new Subject();
     pendingUploads$ = new Subject();
     openRecovery$ = new Subject();
     await TestBed.configureTestingModule({
@@ -39,6 +42,10 @@ describe('AdminComponent', () => {
         {
           provide: FeatureFlagsService,
           useValue: { getAllFeatureFlags: () => flags$, getPromotedRoute: () => of(null) },
+        },
+        {
+          provide: AuthService,
+          useValue: { userObservable: user$.asObservable() },
         },
         {
           provide: AdminBadgeService,
@@ -56,6 +63,9 @@ describe('AdminComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
+    user$.next({ id: 'u1', roles: { user: true, admin: true, super: true } });
+    fixture.detectChanges();
   });
 
   afterEach(() => {
@@ -79,6 +89,28 @@ describe('AdminComponent', () => {
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
     expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(13);
+  });
+
+  it('renders only content items for a content admin', () => {
+    user$.next({ id: 'u1', roles: { user: true, admin: true, super: false } });
+    fixture.detectChanges();
+    flags$.next({});
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(7);
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
+  });
+
+  it('rebuilds the nav from the latest flags when the user emits later', () => {
+    flags$.next({ enablePhotoAlbums: { enabled: true } });
+    fixture.detectChanges();
+    user$.next({ id: 'u1', roles: { user: true, admin: true, super: false } });
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(8);
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
   });
 
   it('renders no badges at zero', () => {
