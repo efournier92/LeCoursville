@@ -568,3 +568,117 @@ test.describe('rules', () => {
     }
   });
 });
+
+test.describe('admin tier split', () => {
+  test('content admin is denied familyExplorer, userUploads, and rateLimits reads', async () => {
+    const staffToken = await signIn('staff');
+    const adminToken = await signIn('admin');
+
+    for (const node of ['familyExplorer', 'userUploads', 'rateLimits']) {
+      expect((await get(node, staffToken)).status).not.toBe(200);
+      expect((await get(node, adminToken)).status).toBe(200);
+    }
+  });
+
+  test('content admin is denied userUploads writes', async () => {
+    const staffToken = await signIn('staff');
+    const adminToken = await signIn('admin');
+    const key = `rules-staff-upload-${Date.now()}`;
+    const record = { id: key, status: 'pending' };
+
+    try {
+      expect((await put(`userUploads/${key}`, record, staffToken)).status).not.toBe(200);
+      expect((await put(`userUploads/${key}`, record, adminToken)).status).toBe(200);
+    } finally {
+      await deleteDb(`userUploads/${key}`);
+    }
+  });
+
+  test('content admin keeps every content write node', async () => {
+    const token = await signIn('staff');
+    const key = `rules-staff-content-${Date.now()}`;
+    const nodes = [
+      'contacts',
+      'calendars',
+      'calendarEvents',
+      'photos',
+      'videos',
+      'media',
+      'clans',
+      'families',
+      'people',
+      'addresses',
+      'photoAlbums',
+    ];
+
+    try {
+      for (const node of nodes) {
+        expect((await put(`${node}/${key}`, { id: key, probe: true }, token)).status).toBe(200);
+      }
+    } finally {
+      for (const node of nodes) {
+        await deleteDb(`${node}/${key}`);
+      }
+    }
+  });
+
+  test('content admin keeps chat moderation', async () => {
+    const token = await signIn('staff');
+    const staffUid = await uidForEmail(E2E_USERS.staff.email);
+    const staffName = await readDb<string>(`users/${staffUid}/name`);
+    const seeded = (await readDb<Record<string, any>>('messages/msg-3'))!;
+    const key = `rules-staff-message-${Date.now()}`;
+    const probe = {
+      id: key,
+      title: 'Staff probe',
+      body: 'Staff probe body',
+      messageType: 'chat',
+      authorId: staffUid,
+      authorName: staffName,
+      isReply: false,
+      replyLevel: 0,
+      dateSent: Date.now(),
+      isEditable: false,
+      isSaved: false,
+      isDeleted: false,
+      isSticky: false,
+      attachmentId: '',
+      attachmentType: '',
+      attachmentUrl: '',
+    };
+
+    try {
+      expect((await patch(`messages/msg-3`, { body: 'moderated by staff' }, token)).status).toBe(200);
+      expect((await patch(`messages/msg-3`, { authorName: seeded.authorName }, token)).status).toBe(200);
+      expect((await patch(`messages/msg-3`, { isSticky: seeded.isSticky }, token)).status).toBe(200);
+
+      expect((await put(`messages/${key}`, probe, token)).status).toBe(200);
+      expect((await del(`messages/${key}`, token)).status).toBe(200);
+    } finally {
+      await writeDb('messages/msg-3', seeded);
+      await deleteDb(`messages/${key}`);
+    }
+  });
+
+  test('content admin keeps self-only likes', async () => {
+    const token = await signIn('staff');
+    const staffUid = await uidForEmail(E2E_USERS.staff.email);
+    const otherUid = await uidForEmail(E2E_USERS.other.email);
+    const staffName = await readDb<string>(`users/${staffUid}/name`);
+    const otherName = await readDb<string>(`users/${otherUid}/name`);
+
+    try {
+      // minimalist: rules pin userName to the caller, so this other-keyed like is denied by name, not by its key.
+      expect(
+        (await put(`messages/msg-3/likes/${staffUid}`, { userId: staffUid, userName: staffName }, token))
+          .status,
+      ).toBe(200);
+      expect(
+        (await put(`messages/msg-3/likes/${otherUid}`, { userId: otherUid, userName: otherName }, token))
+          .status,
+      ).not.toBe(200);
+    } finally {
+      await deleteDb(`messages/msg-3/likes/${staffUid}`);
+    }
+  });
+});
