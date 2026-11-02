@@ -5,9 +5,11 @@
 - Status: approved by the owner in session, implementing
 - Gate: `npm run e2e:gate`
 
+> Historical note (2026-11-02): family and personal identifiers in this document are redacted to neutral placeholders.
+
 ## Goal
 
-Turn the Family Archives feature into the Family Explorer: a standalone, shareable family tree for the Ferland family, plus an admin page that looks and behaves like the rest of admin, and naming corrected everywhere. One batch, one branch.
+Turn the Family Archives feature into the Family Explorer: a standalone, shareable family tree for an example family, plus an admin page that looks and behaves like the rest of admin, and naming corrected everywhere. One batch, one branch.
 
 ## Decisions
 
@@ -33,10 +35,10 @@ Turn the Family Archives feature into the Family Explorer: a standalone, shareab
 
 - Route: `src/app/app-routing.module.ts:77` becomes `family-explorer/:familyId`, lazy module `./components/family-explorer/family-explorer.module` exporting `FamilyExplorerModule`; drop `AuthGuardService` and `FeatureFlagGuard` from this route (DC-20261028-02), keep `resolve`-free availability inside the component.
 - Admin route `admin/family-archives` becomes `admin/family-explorer`; component directory `src/app/components/admin-family-explorer/`.
-- Feature flag id `families` becomes `familyExplorer` in `src/app/config/feature-config.ts:22`, the navbar link table, and the seed. Nav label "Family Explorer", route `/family-explorer/ferland`.
+- Feature flag id `families` becomes `familyExplorer` in `src/app/config/feature-config.ts:22`, the navbar link table, and the seed. Nav label "Family Explorer", route `/family-explorer/archive-1`.
 - RTDB path `familyArchive` becomes `familyExplorer` in `database.rules.json`, the service, seed, and admin component.
 - Service file to `src/app/services/family-explorer.service.ts` with `FamilyExplorerService`, `FamilyExplorer`, `FamilyExplorerListItem`, `parseFamilyPeople` unchanged in behaviour.
-- Rename `docs/specs/2026-10-28_FerlandFamilyArchive.md` to `docs/specs/2026-10-28_FamilyExplorer.md` and update the glossary terms inside.
+- Rename the historical archive spec document to `docs/specs/2026-10-28_FamilyExplorer.md` and update the glossary terms inside.
 - Done-check: `grep -ri "familyarchive\|family-archive\|families/:familyId" src e2e scripts database.rules.json docs/specs` returns only intentional historical references in `docs/critique/` and `docs/handoffs/`.
 
 ### W2 Chrome-free standalone experience (F-20261028-06)
@@ -52,7 +54,7 @@ Turn the Family Archives feature into the Family Explorer: a standalone, shareab
   - Keep `.write` at the parent for `roles/super`.
   - Listing: admin needs the parent collection, so add `familyExplorer/.read` for `roles/admin` (or `roles/super`) only; document why a parent grant is safe here (it only widens authenticated admin reads).
 - `published` toggling writes `familyExplorer/$familyId/published` through the rules above.
-- Done-check: e2e signed out reads published `ferland`; signed out read of unpublished `wolf` fails; signed out write fails.
+- Done-check: e2e signed out reads published `archive-1`; signed out read of unpublished `wolf` fails; signed out write fails.
 
 ### W4 Admin page rebuild (F-20261028-01, F-20261028-04, DC-20261028-05)
 

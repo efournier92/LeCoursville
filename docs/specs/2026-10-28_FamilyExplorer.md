@@ -1,9 +1,11 @@
-# Family Explorer (Ferland First)
+# Family Explorer (First Archive)
+
+> Historical note (2026-11-02): family and personal identifiers in this document are redacted to neutral placeholders. The production data key and display title migrate separately. See `docs/specs/2026-11-02_FamilyArchiveKeyMigration.md`.
 
 ## Context & Motivation
 
 A second family's genealogy exists as a self-contained interactive poster
-(`build--poster--interactive.html` in the private `TanteMariette_FamilyTreeMaker_FerlandFamily`
+(`build--poster--interactive.html` in the private family-tree project
 output tree, outside this repo: 487 lines, 1.2 MB, 348-person JSON blob, vanilla-JS IIFE,
 base64-embedded photos). We want that content, minus photos, exposed as a page on the
 LeCoursville domain, styled like the rest of the site, with the personal data kept out of
@@ -16,10 +18,10 @@ Decisions already made with the user:
 - Access: any signed-in user (AuthGuardService), plus a feature flag so the area can be
   disabled without a deploy.
 - Page is ported into Angular (no iframe, no off-brand poster CSS).
-- Navbar link points directly at `/family-explorer/ferland`.
+- Navbar link points directly at `/family-explorer/archive-1`.
 - Initial and subsequent data loads happen through an admin upload UI (paste/upload JSON),
   not a script and not manual CLI.
-- Routing is generic: `family-explorer/:familyId`, with `ferland` as the first family. The admin
+- Routing is generic: `family-explorer/:familyId`, with `archive-1` as the first family. The admin
   UI can dynamically introduce further families; no code change per family.
 - Gating: one feature flag `familyExplorer` for the whole area, plus a per-family `published`
   field on each explorer node.
@@ -28,9 +30,9 @@ Decisions already made with the user:
 ## Glossary
 
 - **Family Explorer**: one RTDB subtree at `familyExplorer/{familyId}` holding an ingested,
-  photo-free person set. First explorer: `familyExplorer/ferland`. _Avoid_: family tree,
+  photo-free person set. First explorer: `familyExplorer/archive-1`. _Avoid_: family tree,
   poster data.
-- **familyId**: the URL slug naming an explorer (`family-explorer/ferland`); lowercase
+- **familyId**: the URL slug naming an explorer (`family-explorer/archive-1`); lowercase
   `[a-z0-9-]+`, chosen at upload time. _Avoid_: family name, route param.
 - **Ingest**: the admin-side transform from the poster JSON blob into the RTDB explorer
   shape (drops photos, keeps vital fields). _Avoid_: import, upload (upload is the UI act).
@@ -66,11 +68,11 @@ Decisions already made with the user:
 
 ## Goals
 
-1. Signed-in users can open `family-explorer/ferland` and browse the Ferland genealogy:
+1. Signed-in users can open `family-explorer/archive-1` and browse the archive genealogy:
    chart of branches, person detail panel, live name search, keyboard navigation.
 2. The same route/component serves any future explorer at `family-explorer/{familyId}` with zero
    code change; a new family is added purely via admin upload.
-3. Zero Ferland personal data in git: no names, dates, places, or notes in any
+3. Zero real personal data in git: no names, dates, places, or notes in any
    committed file (source, seed, or spec fixtures use synthetic data only).
 4. The page looks native to LeCoursville (tokens, fonts, surface cards, M3 theme),
    not like the poster.
@@ -86,7 +88,7 @@ Decisions already made with the user:
 - Editing individual person records in the admin UI; upload replaces the whole explorer.
 - Genealogy research features beyond what the poster already does (search, pin, panel).
 - Making the explorer UI advertise a public family catalog; nav goes straight to
-  `/family-explorer/ferland` per user decision. A future `/family-explorer` landing is a non-goal.
+  `/family-explorer/archive-1` per user decision. A future `/family-explorer` landing is a non-goal.
 ## Prerequisites
 
 - The poster JSON (person array extracted from
@@ -111,7 +113,7 @@ Decisions already made with the user:
 
 ```
 familyExplorer/{familyId}: {
-  title: string,              // display title, e.g. "Ferland Family"
+  title: string,              // display title, e.g. "Example Family"
   published: boolean,         // per-family visibility switch
   updatedAt: number,          // server ts set at upload
   updatedBy: string,          // admin uid
@@ -217,8 +219,8 @@ route changes. The route parameter name is `familyId`.
 ### Navbar
 
 Add a nav entry in the navbar links table filtered by the flags map
-(`src/app/components/navbar-links/navbar-links.component.ts:49`), label "Ferland Family",
-linking directly to `/family-explorer/ferland`, visible only when `familyExplorer.enabled === true`.
+(`src/app/components/navbar-links/navbar-links.component.ts:49`), label "Example Family",
+linking directly to `/family-explorer/archive-1`, visible only when `familyExplorer.enabled === true`.
 Later families get their own entry the same way (one line each), which is the accepted
 cost of the direct-link decision.
 
@@ -247,8 +249,8 @@ cost of the direct-link decision.
 2. Deploy via `scripts/deploy.sh` gate as usual.
 3. Super-admin sets `familyExplorer` flag true in `/admin/features`.
 4. Super-admin uploads the extracted poster JSON at `/admin/family-explorer` with
-   familyId `ferland`, title "Ferland Family", published on.
-5. Page live at `/family-explorer/ferland`. Future families: admin upload only, then a one-line
+   familyId `archive-1`, title "Example Family", published on.
+5. Page live at `/family-explorer/archive-1`. Future families: admin upload only, then a one-line
    navbar entry if desired.
 
 ## Test Plan
@@ -257,15 +259,15 @@ Single seam: `e2e/specs/family-explorer.spec.ts` (import `test` from
 `e2e/helpers/fixture.ts`, deterministic waits, restore flags).
 
 Seed additions (`scripts/e2e/seed.mjs` tree): synthetic explorers,
-`familyExplorer/ferland` (6-8 fake persons across 2 branches with parent/spouse/child
+`familyExplorer/archive-1` (6-8 fake persons across 2 branches with parent/spouse/child
 links and one note, `published: true`) and `familyExplorer/wolf` (2 fake persons,
 `published: false`) to prove the publish switch and multi-family routing; flag
 `familyExplorer: {enabled: true}`.
 
 Cases:
 
-1. Unauthenticated visit to `/family-explorer/ferland` does not show family content (auth gate).
-2. Signed-in non-admin with flag on: `/family-explorer/ferland` renders branches and person
+1. Unauthenticated visit to `/family-explorer/archive-1` does not show family content (auth gate).
+2. Signed-in non-admin with flag on: `/family-explorer/archive-1` renders branches and person
    units count matches seed.
 3. Search input filters units live; clearing restores (poster `applySearch` behavior).
 4. Clicking a unit opens the panel with name, dates, note; clicking a relative link in
@@ -281,7 +283,7 @@ Cases:
    writes and `/family-explorer/test` shows the new data.
 10. Upload validation: malformed JSON, duplicate-id JSON, bad slug ("Test!"), and empty
     title each show inline errors and leave existing data unchanged.
-11. Replace flow: uploading again to `ferland` replaces data (person count updates).
+11. Replace flow: uploading again to `archive-1` replaces data (person count updates).
 12. No console errors on any of the above (fixture collector).
 
 ## Summary Of Changes
@@ -294,21 +296,20 @@ Cases:
 - [ ] `src/app/admin/`: new `familyExplorer` route/page: list with publish toggles +
       create-or-replace upload form with preview and validation.
 - [ ] `src/app/admin/admin-nav.ts`: nav entry, group `'Content'`.
-- [ ] Navbar links entry "Ferland Family" -> `/family-explorer/ferland`, flag-filtered on
+- [ ] Navbar links entry "Example Family" -> `/family-explorer/archive-1`, flag-filtered on
       `familyExplorer`.
 - [ ] `database.rules.json`: `familyExplorer` read (user) / write (super) rules.
-- [ ] `scripts/e2e/seed.mjs`: synthetic `familyExplorer/ferland` (published) and
+- [ ] `scripts/e2e/seed.mjs`: synthetic `familyExplorer/archive-1` (published) and
       `familyExplorer/wolf` (unpublished) + `familyExplorer` flag.
 - [ ] `e2e/specs/family-explorer.spec.ts`: cases 1-12.
-- [ ] No real Ferland data anywhere in the diff.
+- [ ] No real family data anywhere in the diff.
 
 ## Verification Steps
 
 1. `npm run e2e:gate` green.
-2. `git grep -iE "ferland|TanteMariette" -- src e2e scripts` returns only synthetic
-   identifiers, no real person names.
+2. `npm run pii:check` is clean for `src e2e scripts`.
 3. Manual: emulator up, flag on, upload synthetic JSON in admin, browse
-   `/family-explorer/ferland`.
+   `/family-explorer/archive-1`.
 
 ## Open Questions
 

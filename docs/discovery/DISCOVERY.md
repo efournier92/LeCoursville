@@ -5,6 +5,17 @@ Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy,
 
 ## Entries
 
+- D-20261102-10 | 2026-11-02 | [outcome] | security | PII ship redteam converged: 16 findings settled, contact legacy values preserved, canary hardened, gate unit 769, functions 303, e2e 389 on three browsers | docs/critique/2026-11-02_PiiShipRedteam.md
+- D-20261102-09 | 2026-11-02 | [decision] | security | Live archive key and title stay admin-created production data; the repo carries `archive-1` and `Example Family` only | scripts/e2e/seed-fixtures.mjs
+- D-20261102-08 | 2026-11-02 | [trap] | security | A canary ledger that spells a hashed token turns the gate red; describe forbidden tokens instead of quoting them | scripts/check-pii-canary.mjs
+- D-20261102-07 | 2026-11-02 | [trap] | security | A PII canary stores only SHA-256 hashes, normalizes punctuation, scans docs and root config, and describes tokens rather than spelling them | scripts/check-pii-canary.mjs
+- D-20261102-06 | 2026-11-02 | [trap] | security | The real 13-name family list lived in an untracked `src/environments/app-settings.ts`, so a tracked-tree canary never sees it; move non-secret settings to tracked code | src/app/config/app-settings.ts
+- D-20261102-05 | 2026-11-02 | [find] | security | Core PII nodes require an approved user, but messages/photos/photoAlbums accept any authenticated token, media is public, published familyExplorer is public, and prod storage serves photos publicly; all recorded, storage kept public by owner decision | database.rules.json:22
+- D-20261102-04 | 2026-11-02 | [outcome] | security | Code-side PII eradication shipped green: 389 e2e per browser, unit 766, functions 303, canary clean; docs redaction, archive-key migration, and history residual remain | docs/critique/2026-11-02_PiiSanitization.md
+- D-20261102-03 | 2026-11-02 | [decision] | security | Docs redaction is the eventual goal but runs only after the owner reviews the instance inventory; git history rewrite declined and the residual is documented | /tmp/pii-inventory-2026-11-02.md
+- D-20261102-02 | 2026-11-02 | [decision] | security | The real family-explorer archive key migrates to a neutral key at the next deploy; the slug stays until then, with a runbook and parity criteria | docs/specs/2026-11-02_FamilyArchiveKeyMigration.md
+- D-20261102-01 | 2026-11-02 | [decision] | security | Only the owner identity is exempt from PII eradication; every other real-person reference must go, and real family data is relegated to the auth-gated database | docs/specs/2026-11-02_PiiSanitization.md
+
 - D-20261101-12 | 2026-11-01 | [outcome] | admin/security | Merged theme+input-standardization onto #51 keeping both: role-based expression gating, chat admin edit guard, and superOnly nav restored; branch keeps its contacts/expressions content routes, so a content admin sees 7 sidebar items (8 with photo albums) and a super 13/14 | src/app/admin/admin-nav.ts:38
 - D-20261101-11 | 2026-11-01 | [decision] | admin/security | Songs is a content-tier item, so a content admin gets 6 sidebar items with the photo-album flag on and 5 with it off; the spec's 5/4 counts predate songs landing on trunk | src/app/admin/admin-nav.ts:43
 - D-20261101-10 | 2026-11-01 | [trap] | admin/ui | `admin-nav` renders with `aria-busy` and a skeleton before `isNavReady`, so an `admin-nav-link-*` absence assertion passes while the nav is still loading; gate it on `toHaveAttribute('aria-busy', 'false')` | e2e/specs/admin-roles.spec.ts:133

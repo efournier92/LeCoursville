@@ -7,6 +7,8 @@
 - Batch branch: `fine-tuning-2026-10-25`, cut from `master` at `6f3f9266`
 - Status: review closed 2026-10-25, spec approved, implementation pending
 
+> Redaction note (2026-11-02): family and personal identifiers in this document are replaced with neutral placeholders.
+
 ## Review Surface
 
 Feature-flagged routes resolve through `FeatureFlagGuard`; a disabled flag redirects to `/feature-disabled`. Admin resolves through `AuthAdminGuardService` plus `SuperAdminGuard`.
@@ -167,7 +169,7 @@ Format: `ID | date | area | severity | impact | status | finding | location or r
 ### Notes On F-20261025-19
 
 - Census, code only, excluding generated output: `clan` appears 304 times across 25 files under `src/` and 15 times in e2e/functions/scripts; `family` appears 317 times across 46 files and 64 times in tests and scripts. Docs split hard: 291 clan hits across 27 files (186 in `design_specs/clans-ads.md` alone) against 153 family hits across 31 files.
-- Recommendation: Family wins, and the code moves to it. Reasons: every rendered string already says Family, so the UI already made the choice; the audience is relatives reading a family-history site, where clan reads as anthropology or something Scottish; the two records in real and seeded data are named like family lines (Mignonne, Denis), which read naturally under "By Family" and oddly under "By Clan"; and consolidating on the already-existing `families` node deletes the duplicate rather than preserving it.
+- Recommendation: Family wins, and the code moves to it. Reasons: every rendered string already says Family, so the UI already made the choice; the audience is relatives reading a family-history site, where clan reads as anthropology or something Scottish; the two records in real and seeded data are named like family lines (Alder, Cedar), which read naturally under "By Family" and oddly under "By Clan"; and consolidating on the already-existing `families` node deletes the duplicate rather than preserving it.
 - Word-level risk to state plainly: "family" is overloaded, because the whole site is one family and this entity is a group inside it. "By Family" already ships and reads fine, so the ambiguity is theoretical. If sub-grouping is ever needed inside these groups, "Branch" is the escape hatch, not "Clan".
 - `lineage` is a third term and is not this concept: it is the ancestry path string on Person (`src/app/models/person.ts:40`) plus ancestry/descendant trees. Leave it alone; do not fold it into the migration.
 - Internal identifiers to rename: `Clan` model, `clanId` foreign key on Person (`src/app/models/person.ts:30`), `ClanService` and its path, `clans$`, `getClanForPerson`, `clansByIdMap`, `clansByNameMap`, `clanColorHex`, `selectedClan`, `onClanChange`, `FamilyGroup.clan`, plus CSS classes and the `clan` field on `CardContact`. Query params and the route helper `NavigateToAdminClans` (`src/app/services/routing.service.ts:145`) follow the same rule.

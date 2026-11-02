@@ -335,7 +335,7 @@ interface PersonDate {
 2. **Search filters by name/nickname/clan** — typing filters correctly
 3. **Family dropdown filters** — selecting filters by clan
 4. **Clear family filter** — X button resets filter
-5. **URL param family filter** — `/people?family=Diane` filters correctly
+5. **URL param family filter** — `/people?family=Clan-9` filters correctly
 6. **Sort by generation** — oldest first (generationNumber ascending)
 7. **Click name opens modal** — navigation to /people/:id works
 8. **Hides inactive** — people with isActive: false not shown

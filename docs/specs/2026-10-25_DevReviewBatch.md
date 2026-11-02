@@ -6,6 +6,8 @@
 - Reviewed build: deployed dev channel `https://lecoursville-dev.web.app/`, byte-identical to `master` at `6f3f9266`
 - Merge target: `master`. Deploy target: `lecoursville-dev` through `npm run deploy:dev`. Owner re-tests in dev after the deploy.
 
+> Redaction note (2026-11-02): family and personal identifiers in this document are replaced with neutral placeholders.
+
 ## Context And Motivation
 
 The owner reviewed the dev build end to end and produced twenty findings plus one data decision. Individually most are small visual or interaction defects. Together they describe three deeper problems that this batch fixes at the root rather than per page:
@@ -536,7 +538,7 @@ Seams: Vitest for pure logic, Playwright across Chromium, WebKit, and Firefox fo
   - Hovering a tree row leaves the row background unchanged and underlines the name.
   - Person modal for a seeded deceased person shows no Contact heading.
   - Person modal for a seeded deceased person with a death date shows the `Died` row.
-  - Family filter still filters; `?family=Mignonne` applies the filter and `?clan=Mignonne` still applies it through the alias.
+  - Family filter still filters; `?family=Alder` applies the filter and `?clan=Alder` still applies it through the alias.
 - `e2e/specs/media.spec.ts`
   - Media card thumbnail computes `border-radius: 0px`.
   - Video thumbnail preview computes a 1:1 aspect ratio and 0 radius.

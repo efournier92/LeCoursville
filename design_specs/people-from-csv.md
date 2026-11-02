@@ -675,15 +675,15 @@ export function createFakeAngularFireDatabase(overrides: {
 
 ```csv
 Name_Full,Name_First_Formal,Name_First_Preferred,Name_Maiden,Name_Last,Name_Suffix,Clan,Birthday,Spouse,Anniversary,Email,Phone_Home,Phone_Cell,Address_Full,Address_Street,Address_City,Address_State,Address_Zip,Living?,Direct_Descendent?,Generation_Number,ID,Lineage_Full,Lineage_Short,Color_Hue,Color Hex
-Jonathan Smith,Jonathan,Jon,,Smith,,Diane,1992-02-13,,,jsmith@test.com,,802-734-5555,123 Fake Street,123 Fake Street,Philadelphia,PA,19106,TRUE,TRUE,2,I-4,Anselme-Violette > Diane-Emile > Jon,,Indigo,#303F9F
-Diane Smith,Diane,,,Smith,,,1970-05-22,Jonathan Smith,1995-06-15,dsmith@test.com,215-555-1234,,456 Oak Avenue,456 Oak Avenue,Arlington,VA,22201,TRUE,TRUE,1,I-3,Anselme-Violette > Diane-Emile,,Teal,#009688
-Marie Dubois,Marie,Marie,,DuBois,,DuBois,1965-09-10,Jean-Pierre Dubois,1990-07-20,mdubois@test.com,,555-123-4567,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,1,I-1,Anselme-Violette > Marie,,Blue,#2196F3
-Jean-Pierre Dubois,Jean-Pierre,JP,,DuBois,,DuBois,1963-03-15,Marie Dubois,1990-07-20,jpdubois@test.com,514-555-9876,,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,1,I-2,Anselme-Violette > Jean-Pierre,,Blue,#2196F3
-Catherine Dubois,Catherine,Cat,,DuBois,,DuBois,1995-12-01,,,cdubois@test.com,,555-111-2222,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,2,I-5,Anselme-Violette > Marie > Catherine,,Blue,#2196F3
-Robert Chen,Robert,,,Chen,,,1940-01-30,,,rchen@test.com,,650-555-0001,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,FALSE,0,I-6,Robert,,Red,#F44336
-Alice Chen,Alice,Allie,Chen,Chen,,Chen,1975-08-25,David Chen,2000-09-10,achen@test.com,,650-555-0002,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,1,I-7,Robert > Alice,,Green,#4CAF50
-David Chen,David,,,Chen,,,1973-11-12,Alice Chen,2000-09-10,dchen@test.com,650-555-0003,,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,1,I-8,Robert > David,,Green,#4CAF50
-Emily Chen,Emily,,,Chen,,,2005-04-18,,,echen@test.com,,650-555-0004,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,2,I-9,Robert > Alice > Emily,,Green,#4CAF50
+Jonathan Smith,Jonathan,Jon,,Smith,,Clan 9,1992-02-13,,,jsmith@test.com,,802-734-5555,123 Fake Street,123 Fake Street,Philadelphia,PA,19106,TRUE,TRUE,2,I-4,Ancestor-Line > Parent-Line > Jon,,Indigo,#303F9F
+Dana Smith,Dana,,,Smith,,,1970-05-22,Jonathan Smith,1995-06-15,dsmith@test.com,215-555-1234,,456 Oak Avenue,456 Oak Avenue,Arlington,VA,22201,TRUE,TRUE,1,I-3,Ancestor-Line > Parent-Line,,Teal,#009688
+Marie Dubois,Marie,Marie,,DuBois,,DuBois,1965-09-10,Jean-Pierre Dubois,1990-07-20,mdubois@test.com,,555-123-4567,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,1,I-1,Ancestor-Line > Marie,,Blue,#2196F3
+Jean-Pierre Dubois,Jean-Pierre,JP,,DuBois,,DuBois,1963-03-15,Marie Dubois,1990-07-20,jpdubois@test.com,514-555-9876,,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,1,I-2,Ancestor-Line > Jean-Pierre,,Blue,#2196F3
+Catherine Dubois,Catherine,Cat,,DuBois,,DuBois,1995-12-01,,,cdubois@test.com,,555-111-2222,789 Rue Principale,789 Rue Principale,Montreal,QC,H3C 2A8,TRUE,TRUE,2,I-5,Ancestor-Line > Marie > Catherine,,Blue,#2196F3
+Mason Chen,Mason,,,Chen,,,1940-01-30,,,rchen@test.com,,650-555-0001,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,FALSE,0,I-6,Mason,,Red,#F44336
+Alice Chen,Alice,Allie,Chen,Chen,,Chen,1975-08-25,David Chen,2000-09-10,achen@test.com,,650-555-0002,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,1,I-7,Mason > Alice,,Green,#4CAF50
+David Chen,David,,,Chen,,,1973-11-12,Alice Chen,2000-09-10,dchen@test.com,650-555-0003,,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,1,I-8,Mason > David,,Green,#4CAF50
+Emily Chen,Emily,,,Chen,,,2005-04-18,,,echen@test.com,,650-555-0004,100 Tech Drive,100 Tech Drive,Palo Alto,CA,94301,TRUE,TRUE,2,I-9,Mason > Alice > Emily,,Green,#4CAF50
 Thomas Wright,Thomas,,,Wright,,,1988-06-30,,,twright@test.com,,303-555-5555,999 Mountain View,999 Mountain View,Denver,CO,80202,TRUE,TRUE,2,I-10,Wright,,Orange,#FF9800
 Sarah Miller,Sarah,,,Miller,,,1990-02-28,,,smiller@test.com,,720-555-6666,777 Colorado Blvd,777 Colorado Blvd,Denver,CO,80202,TRUE,TRUE,2,I-11,Miller,,Purple,#9C27B0
 ```
@@ -698,7 +698,7 @@ Sarah Miller,Sarah,,,Miller,,,1990-02-28,,,smiller@test.com,,720-555-6666,777 Co
 
 2. **getPeople(): Error path:** Make `valueChanges()` return `throwError(() => new Error('Firebase error'))`. Call `service.getPeople()`. Subscribe. Expect Observable throws error with message 'Firebase error'.
 
-3. **getPerson(id):** Push `{ id: 'I-3', name: { full: 'Diane Smith', ... } }` into `peopleBehaviorSubject`. Call `service.getPerson('I-3')`. Expect Observable emits non-null Person with id 'I-3'.
+3. **getPerson(id):** Push `{ id: 'I-3', name: { full: 'Dana Smith', ... } }` into `peopleBehaviorSubject`. Call `service.getPerson('I-3')`. Expect Observable emits non-null Person with id 'I-3'.
 
 4. **getPerson(id): Not found:** Push empty array into `peopleBehaviorSubject`. Call `service.getPerson('non-existent')`. Expect Observable emits null.
 
@@ -727,10 +727,10 @@ Sarah Miller,Sarah,,,Miller,,,1990-02-28,,,smiller@test.com,,720-555-6666,777 Co
 
 1. **parseCSV: Basic parse with new column headers:** Call `component.parseCSV(v1CsvString)` with the new CSV format. Expect `component.parsedPeople` has 11 entries. Each person object has `name.full`, `name.firstFormal`, `name.preferred`, `address.street`, `address.city`, `address.state`, `address.zip`, `isLiving` correctly set.
 
-2. **parseCSV: Name type structure:** After parse, verify I-3 (Diane Smith) has:
-   - `name.full === 'Diane Smith'`
-   - `name.firstFormal === 'Diane'`
-   - `name.preferred === null` (no preferred name in CSV for Diane)
+2. **parseCSV: Name type structure:** After parse, verify I-3 (Dana Smith) has:
+   - `name.full === 'Dana Smith'`
+   - `name.firstFormal === 'Dana'`
+   - `name.preferred === null` (no preferred name in CSV for Dana)
    - `name.last === 'Smith'`
    - `nickname === null` (preferred not set)
 
@@ -764,7 +764,7 @@ Sarah Miller,Sarah,,,Miller,,,1990-02-28,,,smiller@test.com,,720-555-6666,777 Co
 
 13. **parseCSV: Phone array with labels:** Verify I-4 has `phones === [{ label: 'Home', number: '802-734-5555' }]`. Verify I-3 has `phones === [{ label: 'Home', number: '215-555-1234' }]`. Verify I-7 has `phones === [{ label: 'Cell', number: '650-555-0002' }]`.
 
-14. **parseCSV: Lineage stored as raw string:** Verify I-4.lineage === 'Anselme-Violette > Diane-Emile > Jon'. Verify I-6.lineage === 'Robert'. Verify I-9.lineage === 'Robert > Alice > Emily'.
+14. **parseCSV: Lineage stored as raw string:** Verify I-4.lineage === 'Ancestor-Line > Parent-Line > Jon'. Verify I-6.lineage === 'Mason'. Verify I-9.lineage === 'Mason > Alice > Emily'.
 
 15. **parseCSV: Generation number as integer:** Verify I-4.generationNumber === 2 (number, not string). Verify I-6.generationNumber === 0.
 

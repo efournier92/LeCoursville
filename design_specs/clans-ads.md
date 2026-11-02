@@ -326,22 +326,24 @@ Changes:
 
 The following 14 clans should be entered manually via the admin tool OR auto-created during CSV import if not present:
 
+The labels below are neutral placeholders for the 14 initial clan records.
+
 | Name | Color_Hue | Color_Hex |
 |------|-----------|-----------|
-| Mignonne | Red | #F44336 |
-| Denis | Green | #4CAF50 |
-| Robert | Blue | #2196F3 |
-| Lawrence | Orange | #FB8C00 |
-| Roger | Cyan | #26C6DA |
-| Leo | Amber | #FFC107 |
-| Annette | Deep Purple | #7E57C2 |
-| Jacquie | Pink | #EC407A |
-| Diane | Indigo | #303F9F |
-| Paulette | Deep Orange | #FF7043 |
-| Richard | Black | #000000 |
-| Dan | Brown | #795548 |
-| Michael | Blue Grey | #78909C |
-| Uncle Joe | Teal | #009688 |
+| Clan 1 | Red | #F44336 |
+| Clan 2 | Green | #4CAF50 |
+| Clan 3 | Blue | #2196F3 |
+| Clan 4 | Orange | #FB8C00 |
+| Clan 5 | Cyan | #26C6DA |
+| Clan 6 | Amber | #FFC107 |
+| Clan 7 | Deep Purple | #7E57C2 |
+| Clan 8 | Pink | #EC407A |
+| Clan 9 | Indigo | #303F9F |
+| Clan 10 | Deep Orange | #FF7043 |
+| Clan 11 | Black | #000000 |
+| Clan 12 | Brown | #795548 |
+| Clan 13 | Blue Grey | #78909C |
+| Clan 14 | Teal | #009688 |
 
 ---
 
