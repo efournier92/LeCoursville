@@ -29,11 +29,19 @@ export class UserViewComponent {
   }
 
   isAdminUser(): boolean {
-    return this.userOnCard?.roles?.admin;
+    return this.userOnCard?.roles?.admin === true || this.userOnCard?.roles?.super === true;
   }
 
   isSuperUser(): boolean {
-    return this.userOnCard?.roles?.super;
+    return this.userOnCard?.roles?.super === true;
+  }
+
+  shouldDisplayContentAdminBadge(): boolean {
+    return this.isAdminUser();
+  }
+
+  shouldDisplaySuperBadge(): boolean {
+    return this.isSuperUser();
   }
 
   shouldDisplayUserId(): boolean {

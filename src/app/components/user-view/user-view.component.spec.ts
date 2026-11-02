@@ -82,21 +82,32 @@ describe('UserViewComponent', () => {
       expect(text).toContain('2024');
     });
 
-    it('renders role chips for admin users', () => {
+    it('renders the Content Admin and Super chips for a super record', () => {
       component.userOnCard = makeUser({ roles: { user: true, admin: true, super: true } });
       fixture.detectChanges();
 
       const text = (fixture.nativeElement as HTMLElement).textContent;
-      expect(text).toContain('Admin');
+      expect(text).toContain('Content Admin');
       expect(text).toContain('Super');
       expect(text).toContain('User');
     });
 
-    it('does not render roles for non-admin users', () => {
-      component.userOnCard = makeUser();
+    it('renders the Content Admin chip only for a content admin record', () => {
+      component.userOnCard = makeUser({ roles: { user: true, admin: true, super: false } });
       fixture.detectChanges();
 
-      expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Admin');
+      const text = (fixture.nativeElement as HTMLElement).textContent;
+      expect(text).toContain('Content Admin');
+      expect(text).not.toContain('Super');
+    });
+
+    it('renders no role chips for a member record', () => {
+      component.userOnCard = makeUser({ roles: { user: true, admin: false, super: false } });
+      fixture.detectChanges();
+
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.querySelector('.account-roles')).toBeNull();
+      expect(host.textContent).not.toContain('Content Admin');
     });
   });
 });

@@ -17,21 +17,40 @@ describe('admin-nav', () => {
     expect(unique).toEqual(ADMIN_NAV_GROUPS);
   });
 
-  it('hides photo albums when no flags are loaded', () => {
+  it('hides photo albums and super-only items when no flags are loaded', () => {
     const keys = visibleAdminNav(undefined).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
-    expect(keys.length).toBe(11);
+    expect(keys).not.toContain('users');
+    expect(keys.length).toBe(5);
   });
 
-  it('hides photo albums when the flag is disabled', () => {
-    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: false } }).map(item => item.key);
+  it('hides photo albums and super-only items when the flag is disabled', () => {
+    const member = { roles: { super: false } };
+    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: false } }, member).map(item => item.key);
+    expect(keys).not.toContain('photoAlbums');
+    expect(keys).not.toContain('users');
+    expect(keys.length).toBe(5);
+  });
+
+  it('shows photo albums and hides super-only items when the flag is enabled', () => {
+    const member = { roles: { super: false } };
+    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: true } }, member).map(item => item.key);
+    expect(keys).toContain('photoAlbums');
+    expect(keys).not.toContain('users');
+    expect(keys.length).toBe(6);
+  });
+
+  it('shows all items to a super when the flag is enabled', () => {
+    const keys = visibleAdminNav(
+      { enablePhotoAlbums: { enabled: true } },
+      { roles: { super: true } },
+    ).map(item => item.key);
+    expect(keys.length).toBe(12);
+  });
+
+  it('shows the flag-free items to a super when no flags are loaded', () => {
+    const keys = visibleAdminNav(undefined, { roles: { super: true } }).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
     expect(keys.length).toBe(11);
-  });
-
-  it('shows photo albums when the flag is enabled and keeps the other eleven', () => {
-    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: true } }).map(item => item.key);
-    expect(keys).toContain('photoAlbums');
-    expect(keys.length).toBe(12);
   });
 });
