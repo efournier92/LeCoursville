@@ -18,6 +18,7 @@ import { filter, take } from "rxjs/operators";
 export class AuthComponent implements OnInit {
   user: User;
   isEditMode: boolean;
+  showPassword = false;
   email = "";
   password = "";
   loading = false;
@@ -77,6 +78,10 @@ export class AuthComponent implements OnInit {
 
   // PUBLIC METHODS
 
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   async onSignIn(): Promise<void> {
     if (!this.email.trim() || !this.password) {
       this.error = "Enter your email and password.";
@@ -130,7 +135,7 @@ export class AuthComponent implements OnInit {
         "If an account exists for that email, we sent a reset link. It can take a few minutes — check your spam or junk folder.";
       this.analyticsService.logEvent("auth_reset_sent", {});
     } catch (e: any) {
-      this.error = this.mapAuthError(e?.code || "");
+      this.error = this.mapResetError(e?.code || "");
       this.analyticsService.logEvent("auth_reset_failed", {
         reason: e?.code || "unknown",
       });
@@ -199,6 +204,20 @@ export class AuthComponent implements OnInit {
         return "Google sign-in is not available right now.";
       default:
         return "Sign-in failed. Try again.";
+    }
+  }
+
+  private mapResetError(code: string): string {
+    switch (code) {
+      case "auth/user-not-found":
+      case "auth/invalid-email":
+        return "No account found for that email.";
+      case "auth/too-many-requests":
+        return "Too many attempts — try again in a minute.";
+      case "auth/network-request-failed":
+        return "Network error — check your connection.";
+      default:
+        return "Couldn't send the reset email. Try again.";
     }
   }
 }

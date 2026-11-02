@@ -28,8 +28,10 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
   sortType: 'recent' | 'yearTaken' = 'recent';
   status: 'loading' | 'error' | 'ready' = 'loading';
   skeletonIterations = [1, 2, 3, 4, 5, 6];
+  photoDimensions: { [id: string]: { width: number; height: number } } = {};
 
   private openedFromQuery = false;
+  private lightboxOpened = false;
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -59,6 +61,9 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
         if (this.status === 'loading') {
           this.status = 'ready';
         }
+        // Children are only in the DOM after this change detection pass, so
+        // (re)build the lightbox once the gallery markup exists.
+        setTimeout(() => this.syncGallery(), 0);
         const targetId = this.route.snapshot.queryParamMap.get('photo');
         if (targetId && !this.openedFromQuery) {
           this.openedFromQuery = true;
@@ -83,7 +88,30 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   ngAfterViewInit(): void {
-    if (this.albumId) {
+    this.syncGallery();
+  }
+
+  // PhotoSwipe crops a slide when it is told a square size; feed it the real
+  // pixel dimensions measured from the image instead of a fixed 1600x1600.
+  onPhotoImageLoad(photo: Photo, event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (!img.naturalWidth || !img.naturalHeight) {
+      return;
+    }
+    this.photoDimensions[photo.id] = {
+      width: img.naturalWidth,
+      height: img.naturalHeight,
+    };
+    if (
+      !this.lightboxOpened &&
+      Object.keys(this.photoDimensions).length === this.photos.length
+    ) {
+      this.syncGallery();
+    }
+  }
+
+  private syncGallery(): void {
+    if (this.photos.length) {
       this.photoswipeService.initForGallery('#gallery-' + this.albumId);
     }
   }
@@ -121,6 +149,7 @@ export class PhotoAlbumDetailComponent implements OnInit, OnDestroy, AfterViewIn
   openPhotoSwipe(photoId: string): void {
     const idx = this.photos.findIndex(p => p.id === photoId);
     if (idx >= 0) {
+      this.lightboxOpened = true;
       this.photoswipeService.openAtIndex(idx);
       this.analyticsService.logEvent('photo_view', {
         albumId: this.albumId,

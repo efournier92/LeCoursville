@@ -34,7 +34,7 @@
             </button>
             <mat-menu #menu="matMenu">
               <button mat-menu-item (click)="sortPhotosBy(sortRandomly, 'random')">Random</button>
-              <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken, 'taken')">Date Taken</button>
+              <button mat-menu-item (click)="sortPhotosBy(sortByYearTaken, 'taken')">Year Taken</button>
               <button mat-menu-item (click)="sortPhotosBy(sortByDateAdded, 'added')">Recently Added</button>
             </mat-menu>
           </div>
@@ -242,7 +242,15 @@
       ></app-no-results-message>
     }
 
-    @if (!(loadedPhotos.length === 0 && searchTerm && !showSpinner)) {
+    @if (loadedPhotos.length === 0 && !searchTerm && !showSpinner) {
+      <app-no-results-message
+        title="No photos yet"
+        hint="Photos added to LeCoursville will appear here."
+        [isCentered]="true"
+      ></app-no-results-message>
+    }
+
+    @if (hasMorePhotos() && !showSpinner) {
       <div class="d-flex justify-content-center m-5">
         <button
           mat-flat-button

@@ -64,6 +64,22 @@ test.describe('contacts', () => {
     await expect(page.getByText('Ben Brown')).toHaveCount(0);
   });
 
+  test('a spouse appears only in the merged household card', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts');
+    const carolCard = page.locator('.contact-card', { hasText: 'Carol Clark' }).first();
+    await expect(carolCard).toBeVisible();
+    await expect(carolCard).toContainText('Dave Davis');
+    // Dave has his own contact info, but must not render a second card.
+    await expect(page.locator('.contact-card', { hasText: 'Dave Davis' })).toHaveCount(1);
+  });
+
+  test('deep link /contacts/:id opens that person modal', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts/person-a');
+    await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
+  });
+
   test('contact detail: clicking a name opens the person modal', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts');

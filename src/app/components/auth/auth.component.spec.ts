@@ -29,6 +29,30 @@ describe('AuthComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('toggles password visibility', () => {
+    expect(component.showPassword).toBe(false);
+    component.togglePasswordVisibility();
+    expect(component.showPassword).toBe(true);
+    component.togglePasswordVisibility();
+    expect(component.showPassword).toBe(false);
+  });
+
+  describe('mapResetError', () => {
+    const map = (code: string) => (component as any).mapResetError(code);
+
+    it('maps an unknown account without leaking sign-in details', () => {
+      expect(map('auth/user-not-found')).toBe('No account found for that email.');
+    });
+
+    it('maps a malformed email', () => {
+      expect(map('auth/invalid-email')).toBe('No account found for that email.');
+    });
+
+    it('falls back to a generic reset failure', () => {
+      expect(map('auth/internal-error')).toBe("Couldn't send the reset email. Try again.");
+    });
+  });
+
   describe('mapAuthError', () => {
     const map = (code: string) => (component as any).mapAuthError(code);
 

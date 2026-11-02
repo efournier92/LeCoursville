@@ -138,7 +138,8 @@
   }
 }
 
-// Primary action (album detail)
+// Primary action (album detail slideshow, album-list upload CTA)
+.gallery-primary-btn,
 .gallery-slideshow-btn {
   display: inline-flex;
   align-items: center;
@@ -153,6 +154,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+  text-decoration: none;
   cursor: pointer;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand-primary) 30%, transparent);
   transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;

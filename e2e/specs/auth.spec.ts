@@ -78,6 +78,17 @@ test.describe('auth', () => {
     await expect(page.getByTestId('auth-error')).toContainText('Incorrect email or password.');
   });
 
+  test('password toggle reveals and re-hides the password', async ({ page }) => {
+    await page.goto('/');
+    const password = page.getByTestId('auth-password');
+    await password.fill('secret-one');
+    await expect(password).toHaveAttribute('type', 'password');
+    await page.getByTestId('auth-password-toggle').click();
+    await expect(password).toHaveAttribute('type', 'text');
+    await page.getByTestId('auth-password-toggle').click();
+    await expect(password).toHaveAttribute('type', 'password');
+  });
+
   test('missing fields shows the validation error', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-submit').click();

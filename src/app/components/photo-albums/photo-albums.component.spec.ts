@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { PhotoAlbumsComponent } from './photo-albums.component';
 import { PhotoAlbumsService } from 'src/app/services/photo-albums.service';
 import { PhotosService } from 'src/app/services/photos.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { Router } from '@angular/router';
 import { PhotoAlbum } from 'src/app/models/photo-album';
@@ -35,6 +36,7 @@ describe('PhotoAlbumsComponent', () => {
           },
         },
         { provide: PhotosService, useValue: { nonMessagePhotos$: photos$.asObservable() } },
+        { provide: AuthService, useValue: { userObservable: new Subject() } },
         { provide: AnalyticsService, useValue: { logEvent: () => {} } },
         { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
       ],

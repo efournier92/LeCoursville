@@ -77,11 +77,11 @@
     @for (photo of photos; track photo; let i = $index) {
       <a
         [href]="photo.url"
-        [attr.data-pswp-width]="1600"
-        [attr.data-pswp-height]="1600"
-        [attr.data-cropped]="true"
+        [attr.data-pswp-width]="photoDimensions[photo.id]?.width"
+        [attr.data-pswp-height]="photoDimensions[photo.id]?.height"
         target="_blank" rel="noopener">
-        <img [src]="photo.url" [alt]="photo.info || ''" />
+        <img [src]="photo.url" [alt]="photo.info || ''"
+          (load)="onPhotoImageLoad(photo, $event)" />
       </a>
     }
   </div>

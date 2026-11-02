@@ -41,6 +41,14 @@
   }
 }
 
+// A single full-bleed 1:1 tile fills most of a phone screen; cap the height so
+// more than one album is visible without scrolling.
+@media (max-width: 600px) {
+  .album-tile {
+    aspect-ratio: 16 / 10;
+  }
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -76,16 +84,26 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  background: var(--color-surface-muted);
 
   mat-icon {
-    font-size: 56px;
-    width: 56px;
-    height: 56px;
-    color: var(--color-brand-primary);
-    opacity: 0.7;
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-ink-3);
   }
+}
+
+.album-tile-initial {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-ink-2);
+  text-transform: uppercase;
 }
 
 .album-tile-scrim {

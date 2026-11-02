@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { readDb, writeDb } from '../helpers/admin-db';
 
 test.describe('calendar', () => {
   test('top bar does not overflow horizontally at 900px and 768px', async ({ page }) => {
@@ -179,6 +180,52 @@ test.describe('calendar', () => {
     });
     expect(padding.top).toBeGreaterThanOrEqual(24);
     expect(padding.left).toBeGreaterThanOrEqual(24);
+  });
+
+  test('passed-away filter uses plain language, not the old jargon', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    await expect(page.getByRole('checkbox', { name: 'Show relatives who have passed' })).toBeVisible();
+    await expect(page.getByText('Include Not Living')).toHaveCount(0);
+  });
+
+  test('Print is a labelled control with a print icon', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const print = page.getByRole('button', { name: 'Print', exact: true });
+    await expect(print).toBeEnabled();
+    await expect(print.locator('mat-icon')).toHaveText('print');
+  });
+
+  test('Print dialog summarises the active filters', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await expect(page.locator('.calendar-printer-summary')).toContainText(
+      'Including birthdays, anniversaries.',
+    );
+    await page.keyboard.press('Escape');
+  });
+
+  test('empty state keeps the month grid visible behind the hint', async ({ page }) => {
+    const people = await readDb('people');
+    try {
+      await writeDb('people', null);
+      await login(page, 'admin');
+      await page.goto('/calendar');
+      await expect(page.locator('app-calendar-view')).toBeVisible();
+      await expect(page.getByText("We couldn't find any events.")).toBeVisible();
+    } finally {
+      await writeDb('people', people);
+    }
+  });
+
+  test('mobile month grid advertises that it pans horizontally', async ({ page }) => {
+    await login(page, 'admin');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/calendar');
+    await expect(page.locator('.calendar-pan-hint')).toBeVisible();
+    await expect(page.locator('.calendar-pan-hint')).toContainText('Swipe to see the full month');
   });
 
   test('clicking an event opens the person modal', async ({ page }) => {

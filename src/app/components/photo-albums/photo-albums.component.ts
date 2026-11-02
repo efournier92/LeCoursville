@@ -5,6 +5,8 @@ import { Photo } from 'src/app/models/photo';
 import { PhotoAlbum } from 'src/app/models/photo-album';
 import { PhotoAlbumsService } from 'src/app/services/photo-albums.service';
 import { PhotosService } from 'src/app/services/photos.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { User } from 'src/app/models/user';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
 /**
@@ -27,12 +29,14 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
   // null (not loaded) and emits real snapshots (possibly empty) after.
   status: 'loading' | 'error' | 'ready' = 'loading';
   skeletonIterations = [1, 2, 3, 4, 5, 6];
+  user: User | null = null;
 
   private subscriptions: Subscription[] = [];
 
   constructor(
     private photoAlbumsService: PhotoAlbumsService,
     private photosService: PhotosService,
+    private authService: AuthService,
     private router: Router,
     private analyticsService: AnalyticsService,
   ) {}
@@ -70,6 +74,17 @@ export class PhotoAlbumsComponent implements OnInit, OnDestroy {
         // state is owned by albums$.
       }),
     );
+
+    this.subscriptions.push(
+      this.authService.userObservable.subscribe((user: User) => {
+        this.user = user;
+      }),
+    );
+  }
+
+  // Contributors reach /upload; admins curate at /admin/photo-albums instead.
+  get showUploadCta(): boolean {
+    return !!this.user && this.user.roles?.admin !== true;
   }
 
   onRetry(): void {

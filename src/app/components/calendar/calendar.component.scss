@@ -23,6 +23,11 @@
   flex-wrap: wrap;
 }
 
+.calendar-toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
 .calendar-checkbox {
   font-size: 0.9rem;
   font-weight: 500;
@@ -37,7 +42,11 @@
   --mat-checkbox-selected-checkmark-color: var(--color-on-brand);
 }
 
+// mat-flat-button supplies shape/states; pin the fill and label to the
+// brand tokens so the label never falls back to on-surface.
 .calendar-print-button {
+  --mdc-filled-button-container-color: var(--color-brand-solid);
+  --mdc-filled-button-label-text-color: var(--color-on-brand);
   border-radius: var(--radius-control);
   background: var(--color-brand-solid);
   color: var(--color-on-brand);
@@ -52,6 +61,13 @@
   letter-spacing: 0.01em;
   transition: all 0.15s ease;
   border: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+  }
 }
 
 .calendar-print-button:hover {
@@ -350,9 +366,22 @@
   }
 }
 
+.calendar-view-wrap {
+  position: relative;
+}
+
 .calendar-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 48px 16px;
+  padding: 24px;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  pointer-events: none;
 }
 
 .calendar-empty-title {

@@ -3,8 +3,10 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { vi } from 'vitest';
+import { of } from 'rxjs';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
+import { PhotosService } from 'src/app/services/photos.service';
 import { PhotosLegacyComponent } from './photos-legacy.component';
 
 describe('PhotosLegacyComponent', () => {
@@ -68,7 +70,7 @@ describe('PhotosLegacyComponent', () => {
     ).map(item => item.textContent.trim());
 
     expect(labels).toContain('Random');
-    expect(labels).toContain('Date Taken');
+    expect(labels).toContain('Year Taken');
     expect(labels).toContain('Recently Added');
   });
 
@@ -88,6 +90,11 @@ describe('PhotosLegacyComponent', () => {
 
   it('loads ten more photos from the Load More button', () => {
     const loadMorePhotos = vi.spyOn(component, 'loadMorePhotos');
+    // hasMorePhotos() gates the control, so give the list a remaining page.
+    component.showSpinner = false;
+    component.loadablePhotos = [{ id: 'a' }, { id: 'b' }] as any;
+    component.loadedPhotos = [];
+    fixture.detectChanges();
     const button = Array.from(
       fixture.nativeElement.querySelectorAll('.photos-component-container button') as NodeListOf<HTMLButtonElement>,
     ).find(candidate => candidate.textContent?.includes('Load More'));
@@ -96,5 +103,29 @@ describe('PhotosLegacyComponent', () => {
     button.click();
 
     expect(loadMorePhotos).toHaveBeenCalledWith(10);
+  });
+});
+
+describe('PhotosLegacyComponent empty state', () => {
+  it('resolves the skeleton, shows the empty state, and hides Load More', async () => {
+    TestBed.configureTestingModule({
+      imports: [AppModule, TestSharedModule, MatMenuModule, FormsModule],
+      declarations: [PhotosLegacyComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    });
+    TestBed.overrideProvider(PhotosService, {
+      useValue: { getAllPhotos: () => of([]), getYears: () => [] },
+    });
+    await TestBed.compileComponents();
+    const fixture = TestBed.createComponent(PhotosLegacyComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.photos-skeleton-grid')).toBeNull();
+    // Child content is not rendered under NO_ERRORS_SCHEMA, so assert the
+    // empty-state element rather than its projected text.
+    expect(el.querySelector('app-no-results-message')).not.toBeNull();
+    expect(el.textContent).not.toContain('Load More');
   });
 });

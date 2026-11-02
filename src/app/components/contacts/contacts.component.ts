@@ -46,7 +46,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
       // The ?clan= alias is scheduled for deletion in the next release; remove this fallback then.
       const family = queryParams.get('family');
       this.selectedFamily = family || queryParams.get('clan') || '';
-      this.selectedPersonId = queryParams.get('selected') || null;
+      this.selectedPersonId = queryParams.get('selected') || this.route.snapshot.paramMap.get('id') || null;
       if (!family && queryParams.get('clan')) {
         this.router.navigate([], {
           relativeTo: this.route,
@@ -59,6 +59,13 @@ export class ContactsComponent implements OnInit, OnDestroy {
       this.contactsFromPeopleService.contacts$.subscribe(cards => {
         this.applyFilters(cards);
       }, () => (this.status = 'error')).add(() => {});
+    }, () => (this.status = 'error'));
+
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.selectedPersonId = id;
+      }
     }, () => (this.status = 'error'));
 
     this.analyticsService.logEvent("component_load_contacts", {});
@@ -114,18 +121,16 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   openPersonDetail(personId: string): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
+    this.selectedPersonId = personId;
+    this.router.navigate(['/contacts'], {
       queryParams: { selected: personId },
       queryParamsHandling: 'merge'
     });
-    this.selectedPersonId = personId;
   }
 
   closeModal(): void {
     this.selectedPersonId = null;
-    this.router.navigate([], {
-      relativeTo: this.route,
+    this.router.navigate(['/contacts'], {
       queryParams: { selected: null },
       queryParamsHandling: 'merge'
     });
@@ -186,7 +191,21 @@ export class ContactsComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.contacts = filtered;
+    this.contacts = this.dedupeSpouseCards(filtered);
+  }
+
+  // A coupled person renders twice otherwise: in the spouse's merged household
+  // card and again in their own card.
+  private dedupeSpouseCards(cards: ContactCard[]): ContactCard[] {
+    const shown = new Set<string>();
+    const result: ContactCard[] = [];
+    for (const card of cards) {
+      if (shown.has(card.person.id)) continue;
+      result.push(card);
+      shown.add(card.person.id);
+      if (card.spouse) shown.add(card.spouse.id);
+    }
+    return result;
   }
 
   private updateQueryParams(): void {
