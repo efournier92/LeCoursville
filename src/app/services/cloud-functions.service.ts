@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { httpsCallable } from "firebase/functions";
+import { httpsCallable, type HttpsCallableResult } from "firebase/functions";
 import { FirebaseService } from "src/app/services/firebase.service";
 import { UploaderInfo } from "src/app/models/user-upload";
 import type {
@@ -32,6 +32,22 @@ export interface AnalyticsSummary {
   topEvents: AnalyticsTableRow[];
 }
 
+const HTTP_STATUS_SUFFIX = / \[\d{3}\]$/;
+
+/** Firebase 13 appends " [NNN]" to callable messages; show only the server-authored text. */
+export function normalizeCallableError(error: unknown): unknown {
+  if (!(error instanceof Error) || !HTTP_STATUS_SUFFIX.test(error.message)) {
+    return error;
+  }
+  const normalized = new Error(error.message.replace(HTTP_STATUS_SUFFIX, ""));
+  normalized.name = error.name;
+  const code = (error as Error & { code?: string }).code;
+  if (code !== undefined) {
+    (normalized as Error & { code?: string }).code = code;
+  }
+  return normalized;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -44,8 +60,22 @@ export class CloudFunctionsService {
     return window.location.origin + "/auth/action";
   }
 
+  private invoke<TInput, TOutput = unknown>(
+    name: string,
+    input: TInput,
+  ): Promise<HttpsCallableResult<TOutput>> {
+    const callable = httpsCallable<TInput, TOutput>(this.firebase.functions, name);
+    return callable(input).catch(error => {
+      throw normalizeCallableError(error);
+    });
+  }
+
+  private call<TInput, TOutput>(name: string, input: TInput): Promise<TOutput> {
+    return this.invoke<TInput, TOutput>(name, input).then(result => result.data);
+  }
+
   requestPasswordReset(email: string): Promise<unknown> {
-    return httpsCallable(this.firebase.functions, "requestPasswordReset")({
+    return this.invoke("requestPasswordReset", {
       email,
       continueUrl: this.appActionUrl(),
     });
@@ -57,7 +87,7 @@ export class CloudFunctionsService {
     alternateContact?: string;
     message?: string;
   }): Promise<unknown> {
-    return httpsCallable(this.firebase.functions, "submitRecoveryRequest")(input);
+    return this.invoke("submitRecoveryRequest", input);
   }
 
   createUserUpload(input: {
@@ -68,11 +98,7 @@ export class CloudFunctionsService {
     fileSize?: number;
     batchId?: string;
   }): Promise<CreatedUserUpload> {
-    const callable = httpsCallable<typeof input, CreatedUserUpload>(
-      this.firebase.functions,
-      "createUserUpload",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("createUserUpload", input);
   }
 
   adminGenerateResetLink(input: {
@@ -81,65 +107,41 @@ export class CloudFunctionsService {
     reason: string;
     emailAlternateContact?: boolean;
   }): Promise<unknown> {
-    return httpsCallable(this.firebase.functions, "adminGenerateResetLink")({
+    return this.invoke("adminGenerateResetLink", {
       ...input,
       continueUrl: this.appActionUrl(),
     });
   }
 
   adminAnalyticsSummary(): Promise<AnalyticsSummary> {
-    const callable = httpsCallable<Record<string, never>, AnalyticsSummary>(
-      this.firebase.functions,
-      "adminAnalyticsSummary",
-    );
-    return callable({}).then(result => result.data);
+    return this.call<Record<string, never>, AnalyticsSummary>("adminAnalyticsSummary", {});
   }
 
   updateAlertRecipients(emails: string[]): Promise<unknown> {
-    return httpsCallable(this.firebase.functions, "updateAlertRecipients")({ emails });
+    return this.invoke("updateAlertRecipients", { emails });
   }
 
   closeRecoveryRequest(input: { requestId: string; reason?: string }): Promise<unknown> {
-    return httpsCallable(this.firebase.functions, "closeRecoveryRequest")(input);
+    return this.invoke("closeRecoveryRequest", input);
   }
 
   createMediaUpload(input: CreateMediaUploadRequest): Promise<CreateMediaUploadResponse> {
-    const callable = httpsCallable<CreateMediaUploadRequest, CreateMediaUploadResponse>(
-      this.firebase.functions,
-      "createMediaUpload",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("createMediaUpload", input);
   }
 
   resumeMediaUpload(input: ResumeMediaUploadRequest): Promise<ResumeMediaUploadResponse> {
-    const callable = httpsCallable<ResumeMediaUploadRequest, ResumeMediaUploadResponse>(
-      this.firebase.functions,
-      "resumeMediaUpload",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("resumeMediaUpload", input);
   }
 
   finalizeMediaUpload(input: FinalizeMediaUploadRequest): Promise<FinalizeMediaUploadResponse> {
-    const callable = httpsCallable<FinalizeMediaUploadRequest, FinalizeMediaUploadResponse>(
-      this.firebase.functions,
-      "finalizeMediaUpload",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("finalizeMediaUpload", input);
   }
 
   updateMediaMetadata(input: UpdateMediaMetadataRequest): Promise<UpdateMediaMetadataResponse> {
-    const callable = httpsCallable<UpdateMediaMetadataRequest, UpdateMediaMetadataResponse>(
-      this.firebase.functions,
-      "updateMediaMetadata",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("updateMediaMetadata", input);
   }
 
   deleteMedia(input: DeleteMediaRequest): Promise<DeleteMediaResponse> {
-    const callable = httpsCallable<DeleteMediaRequest, DeleteMediaResponse>(
-      this.firebase.functions,
-      "deleteMedia",
-    );
-    return callable(input).then(result => result.data);
+    return this.call("deleteMedia", input);
   }
 }

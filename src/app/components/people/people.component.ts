@@ -5,7 +5,6 @@ import { Person } from 'src/app/models/person';
 import { Family } from 'src/app/models/family';
 import { PeopleService } from 'src/app/services/people.service';
 import { FamilyService } from 'src/app/services/family.service';
-import { AppSettings } from 'src/environments/app-settings';
 import { PersonNode } from 'src/app/components/shared/person-tree/person-tree.component';
 
 interface FamilyGroup {

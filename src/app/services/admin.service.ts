@@ -2,6 +2,7 @@ import { Injectable, OnDestroy, Optional } from '@angular/core';
 import { httpsCallable } from 'firebase/functions';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthRoles, User } from 'src/app/models/user';
+import { normalizeCallableError } from 'src/app/services/cloud-functions.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FirebaseService } from './firebase.service';
 import { RtdbService } from './rtdb.service';
@@ -85,7 +86,12 @@ export class AdminService implements OnDestroy {
       this.firebase.functions,
       'changeUserRole',
     );
-    return callable({ uid, roles }).then(() => undefined);
+    return callable({ uid, roles }).then(
+      () => undefined,
+      error => {
+        throw normalizeCallableError(error);
+      },
+    );
   }
 
   /** @deprecated roleAudit denies client writes; use changeUserRole. */

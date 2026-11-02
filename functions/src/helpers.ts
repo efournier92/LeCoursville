@@ -293,7 +293,7 @@ export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
     html: args.html,
     replyTo: REPLY_TO,
   });
-  // Resend v4 reports rejections in-band (HTTP 2xx with `error` set), so an
+  // Resend v6 reports rejections in-band (HTTP 2xx with `error` set), so an
   // unchecked result would record 4xx/5xx sends as delivered.
   if (result.error) {
     throw new Error(

@@ -3,7 +3,6 @@ import { Subscription } from 'rxjs';
 import { skip } from 'rxjs/operators';
 import { JsonService } from 'src/app/services/json.service';
 import { JsonValidationResponse } from 'src/app/models/json-validation-response';
-import { _ } from 'core-js';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 
 @Component({
