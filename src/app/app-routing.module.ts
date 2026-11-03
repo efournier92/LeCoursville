@@ -123,6 +123,7 @@ const routes: Routes =
     {
       path: '**',
       component: AuthComponent,
+      data: { notFound: true },
     },
   ];
 

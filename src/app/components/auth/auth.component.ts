@@ -1,5 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
+import { environment } from "src/environments/environment";
 import { AuthService } from "src/app/services/auth.service";
 import { User } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
@@ -25,6 +27,7 @@ export class AuthComponent implements OnInit {
   sendingReset = false;
   error = "";
   info = "";
+  isNotFound = false;
   // True while a cached session is being restored: the page holds a neutral
   // interstitial so a returning user at "/" never flashes the login form
   // (or the account card) before the promoted-route redirect lands.
@@ -35,20 +38,30 @@ export class AuthComponent implements OnInit {
     private routingService: RoutingService,
     private analyticsService: AnalyticsService,
     private themeService: ThemeService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private route: ActivatedRoute
   ) {}
 
   // LIFECYCLE HOOKS
 
   ngOnInit(): void {
-    // Remove any extraneous URL information
-    this.routingService.NavigateToSignIn();
+    this.isNotFound = !!this.route.snapshot.data['notFound'];
+    const cachedUser = this.authService.getCachedUser();
+    // A signed-in user on an unknown URL stays put so the not-found card can
+    // render; everyone else is normalised back to the sign-in route.
+    if (!(this.isNotFound && cachedUser?.id)) {
+      this.routingService.NavigateToSignIn();
+    }
     this.isEditMode = false;
-    this.awaitingSession = !!this.authService.getCachedUser()?.id;
+    this.awaitingSession = !!cachedUser?.id;
     this.authService.authResolved$.subscribe((resolved: boolean) => {
       // Firebase says there is no session: show the real login form.
       if (resolved && this.authService.isSignedOut()) {
         this.awaitingSession = false;
+        // A stale cached session must not leave the login form on an unknown URL.
+        if (this.isNotFound) {
+          this.routingService.NavigateToSignIn();
+        }
       }
     });
     this.subscribeToUserObservable();
@@ -165,6 +178,15 @@ export class AuthComponent implements OnInit {
 
   get alwaysDark(): boolean {
     return this.user?.prefs?.theme === 'dark';
+  }
+
+  get promotedRouteLabel(): string {
+    const segment = (environment.promotedRoute || '').split('/').filter(Boolean).pop();
+    return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'home';
+  }
+
+  goToPromotedRoute(): void {
+    this.routingService.NavigateToPromotedRoute();
   }
 
   onAlwaysDarkChange(checked: boolean): void {
