@@ -158,13 +158,14 @@ export class AuthService {
     return user?.name;
   }
 
-  updateUser(user: User): void {
+  updateUser(user: User): Promise<void> {
     if (!user) {
-      return;
+      return Promise.resolve();
     }
     this.userSource.next(user);
-    this.rtdb.object<User>(`users/${user.id}`).update(user);
+    const persisted = this.rtdb.object<User>(`users/${user.id}`).update(user);
     this.setUserInLocalStorage(user);
+    return persisted;
   }
 
   setUser(authData: any, existingUser: User): void {

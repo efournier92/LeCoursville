@@ -93,6 +93,35 @@ describe('PeopleService', () => {
     expect(result).toEqual({ created: 0, updated: 1, inactive: 0, conflicts: [] });
   });
 
+  it('surfaces a valueChanges error and clears it on a later success', () => {
+    // A manual source lets the same handlers see a recovery emit, which a terminated stream cannot.
+    let observer: any;
+    const source = {
+      subscribe: (handlers: any) => {
+        observer = handlers;
+        return { unsubscribe: () => {} };
+      },
+    };
+    rtdbSpy = jasmine.createSpyObj('RtdbService', ['object', 'list', 'createPushId']);
+    rtdbSpy.list.and.returnValue({ valueChanges: () => source as any });
+    TestBed.configureTestingModule({
+      providers: [
+        PeopleService,
+        { provide: RtdbService, useValue: rtdbSpy },
+      ],
+    });
+    service = TestBed.inject(PeopleService);
+
+    const errors: (string | null)[] = [];
+    service.loadError$.subscribe(error => errors.push(error));
+
+    observer.error(new Error('boom'));
+    expect(errors[errors.length - 1]).toBe('boom');
+
+    observer.next([]);
+    expect(errors[errors.length - 1]).toBeNull();
+  });
+
   it('getAncestors terminates on a cycle', () => {
     const a = makePerson('a', { parentIds: ['b'] });
     const b = makePerson('b', { parentIds: ['a'] });

@@ -1,16 +1,28 @@
-import { Component, Output, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { HttpClient } from '@angular/common/http';
 import { CalendarView } from 'angular-calendar';
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Observable, Subscription } from 'rxjs';
+import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CalendarService, Months } from 'src/app/services/calendar.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PersonDetailModalComponent } from 'src/app/components/person-detail-modal/person-detail-modal.component';
+
+// Single source for the flags-ready -> legacyCalendarPdf chain used by both the
+// component and the print route guard.
+export function legacyCalendarPdfEnabled(featureFlagsService: FeatureFlagsService): Observable<boolean> {
+  return featureFlagsService.flagsReady().pipe(
+    filter(ready => ready),
+    take(1),
+    switchMap(() => featureFlagsService.getAllFeatureFlags().pipe(take(1))),
+    map(flags => flags?.['legacyCalendarPdf']?.enabled === true),
+  );
+}
 
 @Component({
     selector: 'app-calendar',
@@ -19,11 +31,9 @@ import { PersonDetailModalComponent } from 'src/app/components/person-detail-mod
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class CalendarComponent implements OnInit {
-  @Output() refreshView = new EventEmitter();
+export class CalendarComponent implements OnInit, OnDestroy {
   @ViewChild('monthPill') monthPill?: ElementRef<HTMLButtonElement>;
 
-  refresh: Subject<any> = new Subject();
   user: User;
   status: 'loading' | 'error' | 'ready' | 'empty' = 'loading';
   view = CalendarView.Month;
@@ -37,25 +47,35 @@ export class CalendarComponent implements OnInit {
   showBirthdays = true;
   showAnniversaries = true;
   showNotLiving = false;
+  showHolidays = true;
   selectedPersonId: string | null = null;
   datePickerOpen = false;
   pickerDate: Date;
   pickerYear: number;
+  legacyCalendarPdf = false;
+  printFlagsReady = false;
+  prefsError = false;
 
   private userSub: Subscription | null = null;
   private eventsSub: Subscription | null = null;
+  private loadedSub: Subscription | null = null;
+  private errorSub: Subscription | null = null;
+  private querySub: Subscription | null = null;
+  private flagsSub: Subscription | null = null;
+  private destroy$ = new Subject<void>();
   private userArrived = false;
   private eventsArrived = false;
+  private eventsLoaded = false;
+  private calendarPrefsApplied = false;
 
   constructor(
     public authService: AuthService,
-    public dialog: MatDialog,
     public printerPrompt: MatDialog,
-    public http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
     private calendarService: CalendarService,
     private analyticsService: AnalyticsService,
+    private featureFlagsService: FeatureFlagsService,
   ) { }
 
   // LIFECYCLE
@@ -69,11 +89,18 @@ export class CalendarComponent implements OnInit {
 
     this.subscribeToQueryParams();
 
+    this.subscribeToPrintFlag();
+
     this.pickerDate = new Date(this.selectedYear, this.months.indexOf(this.viewMonth), 1);
     this.pickerYear = this.selectedYear;
 
     this.analyticsService.logEvent('component_load_calendar',
       { viewDate: this?.viewDate.toString() });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // SUBSCRIPTIONS
@@ -86,11 +113,12 @@ export class CalendarComponent implements OnInit {
 
   private subscribeToUserObservable(): void {
     this.userSub?.unsubscribe();
-    this.userSub = this.authService.userObservable.subscribe(
+    this.userSub = this.authService.userObservable.pipe(takeUntil(this.destroy$)).subscribe(
       (user: User) => {
-        this.user = user;
-        if (user?.name) {
+        if (user) {
+          this.user = user;
           this.userArrived = true;
+          this.applyCalendarPrefs(user);
           this.updateStatus();
         }
       },
@@ -98,20 +126,28 @@ export class CalendarComponent implements OnInit {
     );
   }
 
-  // The service seeds its BehaviorSubject with [], so a synchronous replay of
-  // an empty list is still the seed, not data.
-  // minimalist: a warm route into a genuinely empty dataset waits for the next
-  // fresh emit; expose a loaded$ on the service if that ever matters.
+  // The service seeds its BehaviorSubject with [], so an empty replay is the
+  // seed until eventsLoaded$ confirms the people load finished.
   private subscribeToCalendarEventsObservable(): void {
     this.eventsSub?.unsubscribe();
+    this.loadedSub?.unsubscribe();
+    this.errorSub?.unsubscribe();
+    if (this.calendarService.loadError$) {
+      this.errorSub = this.calendarService.loadError$.pipe(takeUntil(this.destroy$)).subscribe(
+        (error: string | null) => {
+          if (error) this.status = 'error';
+        },
+      );
+    }
     this.eventsArrived = false;
+    this.eventsLoaded = false;
     let isSeed = true;
-    this.eventsSub = this.calendarService.calendarEventsObservable.subscribe(
+    this.eventsSub = this.calendarService.calendarEventsObservable.pipe(takeUntil(this.destroy$)).subscribe(
       (events: RecurringEvent[]) => {
-        const seedEmpty = isSeed && events.length === 0;
+        const seedEmpty = isSeed && events.length === 0 && !this.eventsLoaded;
         isSeed = false;
         this.allEvents = events;
-        this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+        this.events = this.calendarService.updateEvents(events, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
         if (!seedEmpty) {
           this.eventsArrived = true;
           this.updateStatus();
@@ -119,16 +155,35 @@ export class CalendarComponent implements OnInit {
       },
       () => (this.status = 'error'),
     );
+    this.loadedSub = this.calendarService.eventsLoaded$.pipe(takeUntil(this.destroy$)).subscribe(
+      (loaded: boolean) => {
+        if (!loaded) return;
+        this.eventsLoaded = true;
+        this.eventsArrived = true;
+        this.updateStatus();
+      },
+    );
   }
 
   private updateStatus(): void {
     if (this.userArrived && this.eventsArrived) {
-      this.status = this.allEvents.length > 0 ? 'ready' : 'empty';
+      // Derive from what is actually on screen, including holiday events.
+      this.status = this.events.length > 0 ? 'ready' : 'empty';
     }
   }
 
+  private subscribeToPrintFlag(): void {
+    this.flagsSub?.unsubscribe();
+    this.flagsSub = legacyCalendarPdfEnabled(this.featureFlagsService).pipe(
+      takeUntil(this.destroy$),
+    ).subscribe(enabled => {
+      this.legacyCalendarPdf = enabled;
+      this.printFlagsReady = true;
+    });
+  }
+
   private subscribeToQueryParams(): void {
-    this.route.queryParamMap.subscribe(queryParams => {
+    this.querySub = this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe(queryParams => {
       const selected = queryParams.get('selected');
       this.selectedPersonId = selected || null;
 
@@ -141,15 +196,25 @@ export class CalendarComponent implements OnInit {
           this.viewMonth = this.months[monthIndex];
         }
       }
-      if (yearParam && /^\d{4}$/.test(yearParam)) {
-        this.selectedYear = parseInt(yearParam);
+      const year = this.parseYearParam(yearParam);
+      if (year !== null) {
+        this.selectedYear = year;
+        this.pickerYear = year;
       }
 
       if (monthParam || yearParam) {
         this.viewDate = new Date(this.selectedYear, this.months.indexOf(this.viewMonth), 1);
-        this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+        this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
+        this.updateStatus();
       }
     }, () => (this.status = 'error'));
+  }
+
+  private parseYearParam(yearParam: string | null): number | null {
+    if (!yearParam || !/^\d{4}$/.test(yearParam)) return null;
+    const year = parseInt(yearParam, 10);
+    // Date maps 0-99 to 1900-1999, so reject those as nonsensical view years.
+    return year >= 100 ? year : null;
   }
 
   // PUBLIC METHODS
@@ -181,7 +246,8 @@ export class CalendarComponent implements OnInit {
     this.viewDate = new Date(this.pickerYear, monthIndex, 1);
     this.selectedYear = this.pickerYear;
     this.datePickerOpen = false;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+    this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
+    this.updateStatus();
     this.updateQueryParams();
   }
 
@@ -197,25 +263,37 @@ export class CalendarComponent implements OnInit {
   }
 
   toggleBirthdays(event: any): void {
-    const showBirthdays = event.checked;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, showBirthdays, this.showAnniversaries, this.showNotLiving);
+    this.showBirthdays = event.checked;
+    this.rederiveEvents();
+    void this.persistCalendarPrefs(() => { this.showBirthdays = !event.checked; });
     this.analyticsService.logEvent('calendar_toggle_birthdays', {
       isTrue: event?.checked, userId: this.user?.id,
     });
   }
 
   toggleAnniversaries(event: any): void {
-    const showAnniversaries = event.checked;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, showAnniversaries, this.showNotLiving);
+    this.showAnniversaries = event.checked;
+    this.rederiveEvents();
+    void this.persistCalendarPrefs(() => { this.showAnniversaries = !event.checked; });
     this.analyticsService.logEvent('calendar_toggle_anniversaries', {
       isTrue: event?.checked, userId: this.user?.id,
     });
   }
 
   toggleNotLiving(event: any): void {
-    const showNotLiving = event.checked;
-    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, showNotLiving);
+    this.showNotLiving = event.checked;
+    this.rederiveEvents();
+    void this.persistCalendarPrefs(() => { this.showNotLiving = !event.checked; });
     this.analyticsService.logEvent('calendar_toggle_notLiving', {
+      isTrue: event?.checked, userId: this.user?.id,
+    });
+  }
+
+  toggleHolidays(event: any): void {
+    this.showHolidays = event.checked;
+    this.rederiveEvents();
+    void this.persistCalendarPrefs(() => { this.showHolidays = !event.checked; });
+    this.analyticsService.logEvent('calendar_toggle_holidays', {
       isTrue: event?.checked, userId: this.user?.id,
     });
   }
@@ -225,7 +303,9 @@ export class CalendarComponent implements OnInit {
     const selectedYear = date.getFullYear();
     if (selectedYear !== this.selectedYear) {
       this.selectedYear = selectedYear;
-      this.events = this.calendarService.updateEvents(this.allEvents, selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving);
+      this.pickerYear = selectedYear;
+      this.events = this.calendarService.updateEvents(this.allEvents, selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
+      this.updateStatus();
     }
     this.updateQueryParams();
     this.analyticsService.logEvent('calendar_change_selected_year', {
@@ -236,20 +316,32 @@ export class CalendarComponent implements OnInit {
   }
 
   printPdf(): void {
-    const included: string[] = [];
-    if (this.showBirthdays) included.push('birthdays');
-    if (this.showAnniversaries) included.push('anniversaries');
-    if (this.showNotLiving) included.push('relatives who have passed');
-    const filtersSummary = included.length
-      ? `Including ${included.join(', ')}.`
-      : 'No event types selected.';
-    this.printerPrompt.open(CalendarPrinterComponent, {
-      data: { events: this.allEvents, filtersSummary },
-    });
-    this.analyticsService.logEvent('calendar_open_print_dialog', {
-      date: this.viewDate.toString(),
-      isTrue: `Birthdays: ${this.showBirthdays}; Anniversaries: ${this.showAnniversaries}`,
-      userId: this.user?.id,
+    if (!this.printFlagsReady) return;
+
+    if (this.legacyCalendarPdf) {
+      const included: string[] = [];
+      if (this.showBirthdays) included.push('birthdays');
+      if (this.showAnniversaries) included.push('anniversaries');
+      if (this.showNotLiving) included.push('relatives who have passed');
+      const filtersSummary = included.length
+        ? `Including ${included.join(', ')}.`
+        : 'No event types selected.';
+      this.printerPrompt.open(CalendarPrinterComponent, {
+        data: { events: this.allEvents, filtersSummary },
+      });
+      this.analyticsService.logEvent('calendar_print_legacy_open', {
+        date: this.viewDate.toString(),
+        isTrue: `Birthdays: ${this.showBirthdays}; Anniversaries: ${this.showAnniversaries}`,
+        userId: this.user?.id,
+      });
+      return;
+    }
+
+    this.router.navigate(['/calendar/print'], {
+      queryParams: {
+        year: this.selectedYear,
+        month: this.months.indexOf(this.viewMonth) + 1,
+      },
     });
   }
 
@@ -263,6 +355,48 @@ export class CalendarComponent implements OnInit {
   }
 
   // HELPERS
+
+  private applyCalendarPrefs(user: User): void {
+    if (this.calendarPrefsApplied) return;
+    this.calendarPrefsApplied = true;
+
+    const prefs = user.prefs?.calendar ?? {};
+    this.showBirthdays = prefs.showBirthdays ?? true;
+    this.showAnniversaries = prefs.showAnniversaries ?? true;
+    this.showNotLiving = prefs.showNotLiving ?? false;
+    this.showHolidays = prefs.showHolidays ?? true;
+    this.rederiveEvents();
+  }
+
+  private rederiveEvents(): void {
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
+    this.updateStatus();
+  }
+
+  private async persistCalendarPrefs(rollback: () => void): Promise<void> {
+    this.prefsError = false;
+    const current = this.authService.user;
+    try {
+      // Merge into the latest stored calendar prefs so concurrent changes are not clobbered.
+      await this.authService.updateUser({
+        ...current,
+        prefs: {
+          ...current?.prefs,
+          calendar: {
+            ...current?.prefs?.calendar,
+            showBirthdays: this.showBirthdays,
+            showAnniversaries: this.showAnniversaries,
+            showNotLiving: this.showNotLiving,
+            showHolidays: this.showHolidays,
+          },
+        },
+      });
+    } catch {
+      rollback();
+      this.rederiveEvents();
+      this.prefsError = true;
+    }
+  }
 
   private initializeDates(): void {
     this.years = this.calendarService.getViewYears();

@@ -20,13 +20,17 @@
             <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
             <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
             <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Show relatives who have passed</mat-checkbox>
+            <mat-checkbox class="calendar-checkbox" color="primary" data-testid="calendar-toggle-holidays" [(ngModel)]="showHolidays" (change)="toggleHolidays($event)">Holidays</mat-checkbox>
           </div>
           <div class="calendar-toolbar-actions">
-            <button mat-flat-button color="primary" (click)="printPdf()" class="calendar-print-button">
+            <button mat-flat-button color="primary" (click)="printPdf()" class="calendar-print-button" [disabled]="!printFlagsReady">
               <mat-icon aria-hidden="true">print</mat-icon>Print
             </button>
           </div>
         </div>
+        @if (prefsError) {
+          <p class="calendar-prefs-error" role="alert">We couldn't save your calendar preferences. Please try again.</p>
+        }
       </div>
     </app-page-toolbar>
     <div class="calendar-nav-row">

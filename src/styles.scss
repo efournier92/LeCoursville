@@ -21,6 +21,16 @@
 // Material Icons font is local). Inter variable covers wght; it bundles
 // into the app at build time.
 @import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/inter/wght-italic.css";
+
+// Calendar print masthead face, committed as woff2 so the sheet never waits on a CDN.
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/figtree-500.woff2") format("woff2");
+}
 
 // Self-hosted Material Icons font (ligature icon set). The Google Fonts
 // <link> was removed: runtime fetches to fonts.gstatic.com were flaky
@@ -599,6 +609,14 @@ select:-webkit-autofill:focus {
   box-shadow: var(--shadow-card);
 }
 
+// Calendar paper is always black ink on white, whatever the screen theme.
+// Declared globally so the screen preview sheet and print share one ground.
+.calendar-print-root,
+.calendar-print-page {
+  --calendar-paper: #fff;
+  --calendar-ink: #000;
+}
+
 /* Printed pages are content sheets: the app toolbar is screen chrome only. */
 @media print {
   // Every route prints inside a sane page box. The song sheet opts into the
@@ -611,6 +629,18 @@ select:-webkit-autofill:focus {
 
   @page song {
     margin: 14mm 0;
+  }
+
+  // The generated calendar owns its whole sheet: fixed landscape letter, no
+  // page-box margin, so the 11in by 8.5in shell is the only geometry.
+  @page calendar {
+    size: letter landscape;
+    margin: 0;
+  }
+
+  .calendar-print-page,
+  .calendar-print-page * {
+    color: #000 !important;
   }
 
   // Beats Bootstrap's .d-inline-flex utility, which is also !important.

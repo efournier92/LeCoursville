@@ -4,7 +4,7 @@ Branch context: builds on the existing member calendar at `/calendar`. Makes the
 
 ## Context And Motivation
 
-The family has a legacy desktop program that emits one landscape letter PDF per month, titled `May 2018 Birthdays and Anniversaries`. The reference sample is a Sunday-first 7-column grid, bold day numbers in the top-left of each cell, and entries rendered as `Name - age` for birthdays and `A and B Surname - years` for anniversaries, inside a framed serif title band.
+The family has a legacy desktop program that emits one landscape letter PDF per month, titled `May 2018 Birthdays and Anniversaries`. The reference sample is a Sunday-first 7-column grid, bold day numbers in the top-left of each cell, and entries rendered as `Name - age` for birthdays and `A & B Surname - years` for anniversaries, inside a framed serif title band.
 
 The mother is attached to that layout. The goal is to keep the structure and modernize the craft, not redesign it.
 
@@ -43,6 +43,14 @@ One printable line on a day cell: either a birthday or an anniversary, with an o
 **Lifespan Suffix**
 
 The parenthesized birth and death years that replace the age suffix for a deceased person, for example `(1935-2015)`. _Avoid_: marker, dagger, ghost.
+
+**Entry Token**
+
+The right-aligned value at the end of a Calendar Entry, either the age, the anniversary years, or the lifespan without parentheses.
+It renders as plain bold numerals at weight 700, right aligned, tabular, and nowrap, with no brackets, no fill, and no border.
+When the label wraps, the token aligns to the last line of the label.
+Entry lists use a wider vertical gap on 4- and 5-week pages and tighten in dense cells so names breathe where the cell has room.
+_Avoid_: suffix, chip, badge.
 
 **Calendar Page**
 
@@ -177,6 +185,13 @@ A person is deceased when `isLiving === false` OR `deathDate != null`. A missing
 
 ### Entry Text
 
+Rendered form: a Calendar Entry visually splits into a left name or couple label and a right-aligned token.
+The token is the age, the anniversary years, or the unparenthesized lifespan, set in plain bold tabular numerals at weight 700, with no brackets, no fill, and no border.
+When the label wraps to multiple lines, the token aligns to the label's last line rather than its first.
+A long lifespan token widens the token naturally instead of wrapping the name.
+The existing plain-text form, `Name - age`, `A & B Surname - years`, or `Name (1935-2015)`, remains the accessible and fallback string, so ordering, assertions, and screen readers keep the original grammar.
+When a shared-surname anniversary label wraps, the two first names stay on the same line when they fit and the surname drops to the next line, so the natural break falls before the surname rather than after the ampersand. An emergency wrap breaks inside an overlong name rather than clipping.
+
 Living birthday: `Name - age`, where `Name` is `firstPreferred || firstGiven` plus `last`, trimmed. A missing last name renders the first name only. A missing first name renders the last name only.
 
 Deceased birthday with `showLifespan` true: replace the entire age suffix with a lifespan suffix.
@@ -189,32 +204,35 @@ Deceased birthday with `showLifespan` true: replace the entire age suffix with a
 
 Deceased birthday with `showLifespan` false: render like the living form, `Name - age`, with no lifespan.
 
-Anniversary: `A and B Surname - years` when both spouses share a last name and both are known. Otherwise `A Last and B Last - years`. When `spouseId` does not resolve, render the primary person's name only, with the years suffix.
+Anniversary: `A & B Surname - years` when both spouses share a last name and both are known. Otherwise `A Last & B Last - years`. When `spouseId` does not resolve, render the primary person's name only, with the years suffix.
 
-Deceased spouse inside an anniversary, when `includeDeceased` is true: place the lifespan immediately after that spouse's name, never after the couple and never on the surname. Examples: `Mignonne (1949-2018) and Vincent LeBlanc - 63`, or `Mignonne and Vincent (1951-2022) LeBlanc - 63`.
+Deceased spouse inside an anniversary, when `includeDeceased` is true: place the lifespan immediately after that spouse's name, never after the couple and never on the surname. Examples: `Alice (1949-2018) & Theo Rivera - 63`, or `Alice & Theo (1951-2022) Rivera - 63`.
 
 ### Ordering, Bucketing, and Pages
 
 - Bucket entries by `month` then `day` of the target year.
 - Within one day: birthdays before anniversaries, then alphabetical by the rendered entry text, case-insensitive.
-- Every Calendar Page is a Sunday-first grid of exactly 6 rows by 7 columns. Lead and trail cells outside the month are empty, not neighboring-month days. A 5-week month still renders 6 rows so page heights are constant.
+- Every Calendar Page is a Sunday-first grid of 7 columns and 4 to 6 rows, matching the weeks the month actually spans. Trailing weeks with no days are not rendered. The rendered rows stretch to fill the fixed sheet, so page height is constant while cell height varies by month. Leading and trailing cells inside the final week are empty, not neighboring-month days.
 - Months with zero entries still render a page with an empty grid.
 - Full-year output is 12 pages in calendar order. Single-month output is exactly one page.
 
 ### Overflow Rule
 
-A day cell fits at most 4 entry lines at the base size. The renderer may step the entry font down through 7.5pt, 7pt, 6.5pt and fit up to 8 lines. Beyond that, render the first fitting entries followed by a `+N more` line. The page model returns, per day, the entries that fit and a `moreCount`. The control panel surfaces a warning naming every day with `moreCount > 0` so data loss is never silent.
+A day cell fits at most 8 printed lines total. The entry scale follows the week count (4-week 8pt, 5-week 7.6pt, 6-week 7.2pt) and steps down through the md and sm variants when a cell is dense, never below 6pt. Beyond 8 lines, the truncated day renders at most 7 entries plus one `+N more` line, so the notice always prints inside the cell. A day with 8 or fewer entries renders them all with no more line. The page model returns, per day, the entries that fit and a `moreCount`. The control panel surfaces a warning naming every day with `moreCount > 0` so data loss is never silent.
+When a day runs out of room the page model still renders at most 7 entries plus one `+N more` line, 8 printed lines in all, and the excess is never silently dropped because the control panel warns with the count.
 
 ### Pure Function Contract
 
 ```
 buildCalendarPages(people: Person[], options: CalendarPrintOptions): CalendarPage[]
+birthdayParts(person: Person, spouse: Person | null, options): { label, token, text } | null
+anniversaryParts(person: Person, spouse: Person | null, options): { label, token, text } | null
 formatBirthdayEntry(person: Person, spouse: Person | null, options): string | null
 formatAnniversaryEntry(person: Person, spouse: Person | null, options): string | null
 isDeceased(person: Person): boolean
 ```
 
-`CalendarPage` carries `{ year, month, monthName, title, weeks: CalendarDay[][], entriesById }` with `CalendarDay = { day: number | null, entries: string[], moreCount: number }`. No function in this module may construct a `Date`. Bucketing uses the numeric `PersonDate` fields directly.
+`CalendarPage` carries `{ year, month, monthName, title, weeks: CalendarDay[][], entriesById }` with `CalendarDay = { day: number | null, entries: CalendarPrintEntry[], moreCount: number }` and `CalendarPrintEntry = { text, kind, label, token }`. The formatters are thin wrappers returning the parts builder text. No function in this module may construct a `Date`. Bucketing uses the numeric `PersonDate` fields directly.
 
 ## Frontend Requirements
 
@@ -243,18 +261,23 @@ Each Calendar Page is a fixed `11in by 8.5in` landscape sheet, `box-sizing: bord
 
 Inside, in order:
 
-1. Outer frame: a single 1px solid rule inset from the page edge. Drop the legacy double rule and the corner ticks.
-2. Title band: a bordered box centered at the top, full inner width, containing the title `LeCoursville Family - <Month> <Year>`.
-3. Weekday header row: `Sunday` through `Saturday`, italic or small caps, centered over each column.
-4. The 6 by 7 grid. Each cell has a day number in the top-left, bold, and the entry list below it with a hanging indent and a 6px shared left inset from the cell rule. The inset exists so day numbers and entries do not fuse with the rule when photocopied.
-5. No printed page footer, no page numbers, no legend. The legend lives in the on-screen configuration panel only.
+1. Masthead: the month name on the left with the year baseline-aligned beside it, the family mark right-aligned, followed by a single 2pt rule that spans the inner width. There is no double rule and no bordered title box.
+2. Weekday header row: `Sunday` through `Saturday`, small caps, with the first and last labels italicized as a weekend distinction without color.
+3. The 7-column grid of 4 to 6 rows. Each cell has a day number in the top-left and the entry list below it with a hanging indent and a 6px shared left inset from the cell rule. The inset exists so day numbers and entries do not fuse with the rule when photocopied. The entry list is top-anchored, so the first entry sits below the day number in every cell and single-entry cells are never centered. The gap below the day number is set per page at 0.16in on 4-week pages, 0.10in on 5-week pages, and 0.05in on 6-week pages, so every first entry on a page shares one offset. It is larger on tall 4-week rows and tight on 6-week rows. The row gap scales with the printed-line count within a per-page cap, while dense cells collapse to the minimum gap.
+4. Each entry row is a two-column grid: the label holds the hanging indent, and the token sits right-aligned as plain bold numerals with no brackets, no fill, and no border. When the label wraps, the token aligns to the last line.
+5. Running foot: `LECOURSVILLE.COM` right-aligned at 7pt, with no rule and no family mark. The family mark lives in the masthead. No page numbers and no legend. The legend lives in the on-screen configuration panel only.
 
 ### Typography
 
-- Title: serif stack `Georgia, 'Times New Roman', serif`, bold, 26pt equivalent.
-- Weekday headers and day numbers: the app sans (Inter), day numbers bold.
-- Entries: Inter at 7.5pt base, line-height 1.25, `font-variant-numeric: tabular-nums` so ages align. All text pure black on white. No gray text anywhere in print.
-- Grid rules: 1px solid black at the page edge and 0.5pt hairlines internally, which survive a home laser printer and a photocopy.
+- Masthead: month name at 34pt, weight 500, tight leading and tracking. The year sits baseline-aligned beside it, small, letterspaced, and tabular. The family mark is 12pt, weight 500, uppercase, letterspaced, and nowrap on the right baseline.
+- Weekday headers and day numbers: the app sans (Figtree or the body stack), day numbers weight 500.
+- Day numbers step up slightly on 4- and 5-week pages so the larger cells keep their hierarchy.
+- Entries: the body stack, line-height 1.3, `font-variant-numeric: tabular-nums` so tokens align. The entry scale adapts to the row count: 4-week pages 8pt, 5-week pages 7.6pt, 6-week pages 7.2pt, stepping down through the md and sm variants when a cell is dense.
+- Entry tokens: weight 700, tabular numerals, nowrap and right aligned, with no brackets, no padding, no fill, no border, and no background. A token aligns to the label's last line when the label wraps, so a long name does not lift the number to its first line. A wide lifespan token widens the token rather than wrapping the name.
+- Entry spacing: the entry list is top-anchored, so the first entry sits below the day number in every cell and single-entry cells are never centered. The gap below the day number is set per page at 0.16in on 4-week pages, 0.10in on 5-week pages, and 0.05in on 6-week pages, so every first entry on a page shares one offset. It is larger on tall 4-week rows and tight on 6-week rows. The row gap scales with the printed-line count within a per-page cap: 4-week pages 0.08in min / 20px cap, 5-week pages 0.05in / 14px, 6-week pages 2px / 10px, dense md 2px / 6px, dense sm 1px / 3px. Two-line lists take the cap, three lines 60 percent, four lines 40 percent, and five or more the minimum.
+- Rules hierarchy: one masthead rule at 2pt. Grid and cell rules at 0.75pt. No printed rule is below 0.75pt.
+- Print contract: pure black on white only, no fills, no gray text, no shadows, no gradients, and no reverse text, so the page survives Background graphics off, a cheap laser printer, and a photocopy.
+- No Calendar Cell may overflow horizontally, so a long name never clips against the cell rule.
 
 ### Control Panel And Preview
 
@@ -314,7 +337,7 @@ Add a named page and shell rules inside the existing `@media print` block (`src/
 | Risk | Mitigation |
 |---|---|
 | Browser print variance across Chromium, WebKit, Firefox (margins, scale, page size) | Fixed-size page shells, `@page calendar` with zero margin, `overflow: hidden`, no reliance on flowing document pagination. Manual Safari and Firefox print-preview smoke before sign-off. |
-| A cell overflows and pushes an extra blank page | Fixed 6-row grid, fixed sheet height, clamp with the overflow rule, and assert `scrollHeight <= clientHeight` in print media in e2e. |
+| A cell overflows and pushes an extra blank page | Dynamic 4-6 row grid with rows stretched to the fixed sheet height, clamp with the overflow rule, and assert `scrollHeight <= clientHeight` in print media in e2e. |
 | Late font load reflows the grid during print | Await `document.fonts.ready` before `window.print()`. |
 | Dark theme prints white-on-white or with a dark page band | Reuse and extend the existing dark print token override at `src/styles.scss:641-668`. |
 | Background graphics disabled by the user | Frame, rules, and text are borders and glyphs only, never background fills. |
@@ -347,29 +370,30 @@ Single deployable change. There is no migration and no backfill.
 
 ### Unit: `src/app/components/calendar-print/calendar-print.model.spec.ts`
 
-1. A living person with a known birth year renders `Name - age` and the age equals `options.year - birthday.year`.
-2. A person with `birthday.year === 0` renders the name with no suffix.
+1. A living person with a known birth year renders `Name - age`, splitting into label `Name` and token `age`, with the age equal to `options.year - birthday.year`.
+2. A person with `birthday.year === 0` renders the name with no suffix and an empty token.
 3. A `-S` virtual spouse record is excluded from birthdays.
 4. A `-S` record's anniversary date is never emitted as a second anniversary.
 5. `isDeceased` returns true when `isLiving === false`, true when `deathDate` is non-null with a valid year, false when both are absent, and false when `deathDate.year === 0` but `isLiving` is true.
 6. Deceased people are excluded when `includeDeceased` is false, for birthdays and anniversaries.
 7. An anniversary is excluded when either spouse is deceased and `includeDeceased` is false, and included when true.
-8. Lifespan suffix, both years: `Name (1935-2015)`.
+8. Lifespan suffix, both years: `Name (1935-2015)`, with label `Name` and token `1935-2015`.
 9. Lifespan suffix, unknown birth year: `Name (d. 2015)`.
 10. Lifespan suffix, unknown death year: `Name (b. 1940)`.
 11. Lifespan suffix, both unknown: `Name`.
-12. `showLifespan` false renders the deceased entry as `Name - age`.
+12. `showLifespan` false renders the deceased entry as `Name - age`, with the age as the token.
 13. Age and lifespan never stack.
-14. Anniversary, shared surname: `A and B Surname - years`.
-15. Anniversary, different surnames: `A Last and B Last - years`.
+14. Anniversary, shared surname: `A & B Surname - years`, with the label free of the numeric suffix and the years as the token.
+15. Anniversary, different surnames: `A Last & B Last - years`.
 16. Anniversary, unresolved `spouseId`: primary name plus years suffix.
 17. Anniversary where one spouse is deceased and lifespan is on: the lifespan sits after that spouse's name, not after the couple.
 18. `02-29` birthday renders on February 28 in a non-leap target year.
-19. Day buckets are Sunday-first and every month page has exactly 6 rows of 7 cells.
+19. Day buckets are Sunday-first, 7 cells per row, and the row count equals the weeks the month actually spans with no trailing all-empty week.
 20. Leading and trailing cells outside the month are empty.
 21. Within a day, birthdays precede anniversaries, then alphabetical order.
 22. A month with no entries still yields one page with an empty grid.
 23. Single-month options yield exactly 1 page, full-year options yield 12.
+24. The parts builders return `{ label, token, text }` while the exported formatters return the unchanged plain text, and a holiday carries its name as label with an empty token.
 
 ### E2E: `e2e/specs/calendar-print.spec.ts`
 
@@ -381,18 +405,21 @@ Import `test` from `../helpers/fixture`. Use `login(page)` from `../helpers/auth
 4. Switching scope to `Single month` and choosing May renders exactly one page with title `LeCoursville Family - May <year>`.
 5. Year stepper changes the rendered year, and an out-of-range value disables Print and shows validation without navigation.
 6. Deceased are absent by default: the seeded `person-e` name does not appear.
-7. With `Include relatives who have passed` on, `person-e` appears with the lifespan suffix `(1935-2015)`, and `person-f` appears with `(b. 1940)`.
-8. Turning `Show lifespans for deceased` off renders `person-e` as `Edith Evans - <age>` with no parenthesis.
+7. With `Include relatives who have passed` on, `person-e` appears rendered as `Edith Evans 1935-2015`, and `person-f` appears as `Frank Foster b. 1940`.
+8. Turning `Show lifespans for deceased` off renders `person-e` as `Edith Evans <age>` with no parenthesis.
 9. `Include birthdays` off removes birthday entries, and `Include anniversaries` off removes the `person-c` and `person-d` couple line.
-10. Print media emulation: each page reports `scrollHeight <= clientHeight` and a computed width of 11in and height of 8.5in.
+10. Print media emulation: each page reports `scrollHeight <= clientHeight` and a computed width of 11in and height of 8.5in, and every `.calendar-print-cell` on all twelve pages reports `scrollHeight <= clientHeight + 1`.
 11. Chromium only: `page.pdf({ preferCSSPageSize: true })` yields a Pages count of 12 for a full year, using the same regex as `e2e/specs/songs.spec.ts:750-756`.
-12. A seeded dense day renders at most 8 entry lines plus a `+N more` line and the panel shows the overflow warning.
+12. A seeded dense day renders 7 entries plus a `+4 more` line, the `+N more` bounding box stays within its cell, and the panel shows the `4 entries did not fit on July 4` overflow warning.
 13. Disabling the `calendar` flag and navigating to `/calendar/print` lands on `/feature-disabled`.
 14. `legacyCalendarPdf` OFF: the calendar page Print button lands on `/calendar/print` and no `calendar-legacy-picker` appears. The admin sidebar does not list `Calendars`, while `/admin/calendars` still loads by direct URL.
 15. `legacyCalendarPdf` ON: the calendar page Print button opens `calendar-legacy-picker` and does not navigate to `/calendar/print`. Direct navigation to `/calendar/print` redirects to `/calendar`.
 16. `legacyCalendarPdf` ON: the admin sidebar lists `Calendars` again.
 17. Restore `legacyCalendarPdf` to OFF in `afterEach` via `writeDb` (`features/legacyCalendarPdf/enabled`, false), per the flag-restore rule in `docs/discovery/DISCOVERY.md` D-20261030-10.
 18. The console-error collector stays clean across the flow.
+19. The first few `.calendar-print-entry-token` elements render as plain bold numerals: transparent background, black computed text, a bare numeric value, weight 700, and `::before` and `::after` `content` computed as `none`. No token has a top, right, bottom, or left border, and each entry row computes `align-items: end`.
+20. Entry tokens keep a shared right edge inside one cell, and a lifespan token stays inside its cell without clipping the entry or the `+N more` line. The entry list computes `justify-content: flex-start`, a single-entry February cell keeps its first entry within 20px below the day number, and on the November page a 2-line container computes a row gap larger than a 1-line container. A 4-week February page computes a row gap above 5px while a dense `.calendar-print-entries-sm` container stays at 2px or less.
+21. In dark theme, print media still renders a white Calendar Page background and black calendar ink.
 
 ### Seed Additions (`scripts/e2e/seed.mjs`)
 

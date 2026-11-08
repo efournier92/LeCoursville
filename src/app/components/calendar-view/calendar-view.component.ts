@@ -1,5 +1,7 @@
-import { Component, OnInit, Input, Output, EventEmitter, Inject, AfterViewInit, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, Inject, AfterViewInit, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { CalendarView } from 'angular-calendar';
 import { AuthService } from 'src/app/services/auth.service';
@@ -14,7 +16,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class CalendarViewComponent implements OnInit, AfterViewInit {
+export class CalendarViewComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() viewDate: Date;
   @Input() selectedYear: number;
   @Input() events: RecurringEvent[];
@@ -28,6 +30,9 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   activeDay: Date = new Date();
   expandedDays: { [key: string]: boolean } = {};
   maxEventsPerCell = 4;
+
+  private destroy$ = new Subject<void>();
+  private userSub: Subscription | null = null;
 
   constructor(
     public dialog: MatDialog,
@@ -48,10 +53,15 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // SUBSCRIPTIONS
 
   private subscribeToUserObservable(): void {
-    this.authService.userObservable.subscribe(
+    this.userSub = this.authService.userObservable.pipe(takeUntil(this.destroy$)).subscribe(
       (user: User) => this.user = user
     );
   }
