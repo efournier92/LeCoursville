@@ -5,6 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261108-01 | 2026-11-08 | [trap] | build/perf | Pinned `@angular-devkit/architect` must match `@angular-devkit/build-angular`; bumping one alone leaves a duplicate `0.2202.x` | package.json:49
+
 - D-20261107-05 | 2026-11-07 | [trap] | calendar/print | Seed dates must be absolute; current-month dates made print e2e pass only in November 2026 | scripts/e2e/seed.mjs
 - D-20261107-04 | 2026-11-07 | [outcome] | calendar/print | Calendar redteam converged: 60 findings, 2 rejected, unit 857, e2e gate 419 on three browsers | docs/critique/2026-11-07_CalendarCore.md
 - D-20261107-03 | 2026-11-07 | [decision] | calendar/print | Print keeps unique `-S` spouse birthdays but never `-S` anniversaries, the primary line names the couple | src/app/components/calendar-print/calendar-print.model.ts
