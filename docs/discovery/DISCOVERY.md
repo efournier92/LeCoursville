@@ -1,9 +1,15 @@
 # Discovery
 
 One line per finding, decision, assumption, trap, question, or outcome. Newest first. Evidence required.
-Scope tokens: admin/security, admin/ui, build/perf, media/routing, rules/deploy, songs/ui
+Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routing, rules/deploy, songs/ui
 
 ## Entries
+
+- D-20261107-05 | 2026-11-07 | [trap] | calendar/print | Seed dates must be absolute; current-month dates made print e2e pass only in November 2026 | scripts/e2e/seed.mjs
+- D-20261107-04 | 2026-11-07 | [outcome] | calendar/print | Calendar redteam converged: 60 findings, 2 rejected, unit 857, e2e gate 419 on three browsers | docs/critique/2026-11-07_CalendarCore.md
+- D-20261107-03 | 2026-11-07 | [decision] | calendar/print | Print keeps unique `-S` spouse birthdays but never `-S` anniversaries, the primary line names the couple | src/app/components/calendar-print/calendar-print.model.ts
+- D-20261107-02 | 2026-11-07 | [trap] | calendar/print | `BehaviorSubject` `[]` seed hung a warm empty calendar on loading; `peopleLoaded$` separates seed replay from real empty | src/app/services/calendar.service.ts
+- D-20261107-01 | 2026-11-07 | [decision] | calendar/print | `legacyCalendarPdf` defaults off, so the Calendars admin nav hides until enabled; flag-on nav and toggle are e2e-proven | e2e/specs/admin.spec.ts
 
 - D-20261102-10 | 2026-11-02 | [outcome] | security | PII ship redteam converged: 16 findings settled, contact legacy values preserved, canary hardened, gate unit 769, functions 303, e2e 389 on three browsers | docs/critique/2026-11-02_PiiShipRedteam.md
 - D-20261102-09 | 2026-11-02 | [decision] | security | Live archive key and title stay admin-created production data; the repo carries `archive-1` and `Example Family` only | scripts/e2e/seed-fixtures.mjs

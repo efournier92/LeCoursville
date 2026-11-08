@@ -1,0 +1,154 @@
+@if (status === 'error') {
+<div class="calendar-print-root page-ground page-content" [attr.aria-busy]="status === 'loading'">
+    <app-load-error message="We couldn't load the people for the calendar." (retry)="retry()"></app-load-error>
+  </div>
+} @else {
+<div class="calendar-print-root page-ground page-content">
+  <app-page-toolbar title="Print Calendar">
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      class="calendar-print-run"
+      data-testid="calendar-print-print-button"
+      [disabled]="printDisabled"
+      (click)="print()">
+      <mat-icon aria-hidden="true">print</mat-icon>Print
+    </button>
+  </app-page-toolbar>
+
+  <section class="calendar-print-controls" aria-label="Calendar print options">
+    <button
+      type="button"
+      class="calendar-print-customize"
+      data-testid="calendar-print-customize"
+      aria-controls="calendar-print-options"
+      [attr.aria-expanded]="customizeOpen"
+      (click)="customizeOpen = !customizeOpen">
+      Customize
+    </button>
+
+    @if (customizeOpen) {
+      <div id="calendar-print-options" class="calendar-print-options">
+        <div class="calendar-print-year-row">
+          <label for="calendar-print-year">Year</label>
+          <button type="button" class="calendar-print-step" aria-label="Previous year" (click)="stepYear(-1)">-</button>
+          <input
+            id="calendar-print-year"
+            data-testid="calendar-print-year"
+            type="number"
+            min="1900"
+            max="2100"
+            [(ngModel)]="options.year"
+            (ngModelChange)="onOptionsChange()"
+            [attr.aria-invalid]="yearError ? 'true' : 'false'"
+            [attr.aria-describedby]="yearError ? 'calendar-print-year-error' : null">
+          <button type="button" class="calendar-print-step" aria-label="Next year" (click)="stepYear(1)">+</button>
+          @if (yearError) {
+            <p id="calendar-print-year-error" class="calendar-print-error">{{ yearError }}</p>
+          }
+        </div>
+
+        <fieldset class="calendar-print-scope">
+          <legend>Scope</legend>
+          <label>
+            <input type="radio" name="calendar-print-scope" value="year" data-testid="calendar-print-scope-year" [(ngModel)]="scope" (ngModelChange)="applyScope()">
+            Full year
+          </label>
+          <label>
+            <input type="radio" name="calendar-print-scope" value="month" data-testid="calendar-print-scope-month" [(ngModel)]="scope" (ngModelChange)="applyScope()">
+            Single month
+          </label>
+          @if (scope === 'month') {
+            <label for="calendar-print-month">Month</label>
+            <select id="calendar-print-month" data-testid="calendar-print-month" [ngModel]="selectedMonth" (ngModelChange)="onMonthChange($event)">
+              @for (month of months; track month; let i = $index) {
+                <option [value]="i + 1">{{ month }}</option>
+              }
+            </select>
+          }
+        </fieldset>
+
+        <div class="calendar-print-toggles">
+          <mat-checkbox data-testid="calendar-print-toggle-birthdays" [(ngModel)]="options.includeBirthdays" (change)="onOptionsChange()">Birthdays</mat-checkbox>
+          <mat-checkbox data-testid="calendar-print-toggle-anniversaries" [(ngModel)]="options.includeAnniversaries" (change)="onOptionsChange()">Anniversaries</mat-checkbox>
+          <mat-checkbox data-testid="calendar-print-toggle-holidays" [(ngModel)]="options.includeHolidays" (change)="onOptionsChange()">Holidays</mat-checkbox>
+          <mat-checkbox data-testid="calendar-print-toggle-deceased" [(ngModel)]="options.includeDeceased" (change)="onDeceasedChange()">Include relatives who have passed</mat-checkbox>
+          <mat-checkbox data-testid="calendar-print-toggle-lifespan" [(ngModel)]="options.showLifespan" [disabled]="!options.includeDeceased" (change)="onOptionsChange()">Show lifespans for deceased</mat-checkbox>
+        </div>
+      </div>
+    }
+
+    <p class="calendar-print-status" data-testid="calendar-print-status" aria-live="polite">{{ statusText }}</p>
+
+    @if (overflowWarnings.length > 0) {
+      <div class="calendar-print-overflow" data-testid="calendar-print-overflow-warning" aria-live="polite">
+        @for (warning of overflowWarnings; track warning.monthName + warning.day) {
+          <p>{{ warning.count }} entries did not fit on {{ warning.monthName }} {{ warning.day }}</p>
+        }
+      </div>
+    }
+  </section>
+
+  @if (status === 'loading') {
+    <div class="calendar-print-skeleton" aria-hidden="true">
+      <div class="calendar-print-skeleton-page"></div>
+    </div>
+  } @else if (!yearValid) {
+    <p class="calendar-print-invalid" role="status">Enter a valid year to preview the calendar.</p>
+  } @else {
+  <div class="calendar-print-sheet-viewport" [style.--calendar-page-count]="pages.length + ''">
+    <div class="calendar-print-sheet-stack">
+    @for (page of pages; track page.month) {
+      <section class="calendar-print-page" data-testid="calendar-print-page" [attr.data-weeks]="page.weeks.length">
+        <div class="calendar-print-frame">
+          <header class="calendar-print-title" data-testid="calendar-print-title">
+            <span class="calendar-print-masthead">
+              <span class="calendar-print-month-name" data-testid="calendar-print-month-name">{{ page.monthName }}</span>
+              <span class="calendar-print-year-label" data-testid="calendar-print-year-label">{{ page.year }}</span>
+            </span>
+            <span class="calendar-print-brand" data-testid="calendar-print-brand">LeCours Family</span>
+          </header>
+          <div class="calendar-print-weekdays">
+            @for (weekday of weekdays; track weekday) {
+              <span>{{ weekday }}</span>
+            }
+          </div>
+          <div class="calendar-print-grid">
+            @for (week of page.weeks; track $index) {
+              @for (cell of week; track $index) {
+                <div class="calendar-print-cell">
+                  @if (cell.day !== null) {
+                    <span class="calendar-print-day">{{ cell.day }}</span>
+                    <div
+                      class="calendar-print-entries"
+                      [attr.data-lines]="cell.entries.length + (cell.moreCount > 0 ? 1 : 0)"
+                      [class.calendar-print-entries-md]="cell.entries.length > 4 && cell.entries.length <= 6"
+                      [class.calendar-print-entries-sm]="cell.entries.length > 6 || hasLongLabel(cell)">
+                      @for (entry of cell.entries; track $index) {
+                        <div
+                          class="calendar-print-entry"
+                          [class.calendar-print-entry--holiday]="entry.kind === 'holiday'"
+                          [class.calendar-print-entry--anniversary]="entry.kind === 'anniversary'"
+                          data-testid="calendar-print-entry"><span class="calendar-print-entry-label" aria-hidden="true">{{ entry.label }}</span>@if (entry.token) {<span class="calendar-print-entry-token" aria-hidden="true">{{ entry.token }}</span>}<span class="visually-hidden">{{ entry.text }}</span></div>
+                      }
+                      @if (cell.moreCount > 0) {
+                        <div class="calendar-print-more">+{{ cell.moreCount }} more</div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+          <footer class="calendar-print-footer">
+            <span class="calendar-print-folio-text">LECOURSVILLE.COM</span>
+          </footer>
+        </div>
+      </section>
+    }
+    </div>
+  </div>
+  }
+</div>
+}

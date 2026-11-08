@@ -28,41 +28,51 @@ describe('admin-nav', () => {
     expect(expressions?.superOnly).toBeUndefined();
   });
 
-  it('hides photo albums and super-only items when no flags are loaded', () => {
+  it('hides photo albums, calendars, and super-only items when no flags are loaded', () => {
     const keys = visibleAdminNav(undefined).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
+    expect(keys).not.toContain('calendars');
     expect(keys).not.toContain('users');
     expect(keys).not.toContain('familyExplorer');
-    expect(keys.length).toBe(7);
+    expect(keys.length).toBe(6);
   });
 
-  it('hides photo albums and super-only items when the flag is disabled', () => {
+  it('hides photo albums and calendars when their flags are disabled', () => {
     const member = { roles: { super: false } };
-    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: false } }, member).map(item => item.key);
+    const keys = visibleAdminNav({
+      enablePhotoAlbums: { enabled: false },
+      legacyCalendarPdf: { enabled: false },
+    }, member).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
+    expect(keys).not.toContain('calendars');
     expect(keys).not.toContain('users');
-    expect(keys.length).toBe(7);
+    expect(keys.length).toBe(6);
   });
 
-  it('shows photo albums and hides super-only items when the flag is enabled', () => {
+  it('shows photo albums and calendars when their flags are enabled', () => {
     const member = { roles: { super: false } };
-    const keys = visibleAdminNav({ enablePhotoAlbums: { enabled: true } }, member).map(item => item.key);
+    const keys = visibleAdminNav({
+      enablePhotoAlbums: { enabled: true },
+      legacyCalendarPdf: { enabled: true },
+    }, member).map(item => item.key);
     expect(keys).toContain('photoAlbums');
+    expect(keys).toContain('calendars');
     expect(keys).not.toContain('users');
     expect(keys.length).toBe(8);
   });
 
-  it('shows all items to a super when the flag is enabled', () => {
+  it('shows all items to a super when both content flags are enabled', () => {
     const keys = visibleAdminNav(
-      { enablePhotoAlbums: { enabled: true } },
+      { enablePhotoAlbums: { enabled: true }, legacyCalendarPdf: { enabled: true } },
       { roles: { super: true } },
     ).map(item => item.key);
     expect(keys.length).toBe(14);
   });
 
-  it('shows the flag-free items to a super when no flags are loaded', () => {
+  it('shows only the flag-free items to a super when no flags are loaded', () => {
     const keys = visibleAdminNav(undefined, { roles: { super: true } }).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
-    expect(keys.length).toBe(13);
+    expect(keys).not.toContain('calendars');
+    expect(keys.length).toBe(12);
   });
 });

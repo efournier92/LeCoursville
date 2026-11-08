@@ -1,4 +1,4 @@
-<div class="calendar-printer-container">
+<div class="calendar-printer-container" data-testid="calendar-legacy-picker">
   <div class="calendar-printer-header">
     <h3 class="calendar-printer-title" mat-dialog-title>Print Calendar</h3>
   </div>
@@ -12,14 +12,22 @@
       </div>
     }
 
-    @if (!loading && availableYears.length === 0) {
+    @if (loadError) {
+      <div class="calendar-printer-empty" data-testid="calendar-printer-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>We couldn't load the calendar list.</span>
+        <button mat-flat-button class="calendar-printer-action-btn" (click)="retryLoad()">Retry</button>
+      </div>
+    }
+
+    @if (!loading && !loadError && availableYears.length === 0) {
       <div class="calendar-printer-empty">
         <mat-icon>info_outline</mat-icon>
         <span>We couldn't find any calendars.</span>
       </div>
     }
 
-    @if (!loading && availableYears.length > 0) {
+    @if (!loading && !loadError && availableYears.length > 0) {
       <div>
         <div class="calendar-printer-years">
           @for (year of availableYears; track year) {

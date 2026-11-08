@@ -18,7 +18,7 @@ test.describe('people', () => {
     }
   });
 
-  test('list renders the 6 seeded people grouped by family', async ({ page }) => {
+  test('list renders the seeded people grouped by family', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');
     await expect(page.getByText('Alice Anderson').first()).toBeVisible();
@@ -27,6 +27,13 @@ test.describe('people', () => {
     await expect(page.getByText('Dave Davis').first()).toBeVisible();
     await expect(page.getByText('Edith Evans').first()).toBeVisible();
     await expect(page.getByText('Frank Foster').first()).toBeVisible();
+    // Rows added for the print and unknown-year cases must render too.
+    await expect(page.getByText('Greta Gonzalez').first()).toBeVisible();
+    await expect(page.getByText('Grace Grant').first()).toBeVisible();
+    await expect(page.getByText('Henry Grant').first()).toBeVisible();
+    await expect(page.getByText('Alexandria Montgomery').first()).toBeVisible();
+    await expect(page.getByText('Maximiliana Wolfeschlegelsteinhausenbergerdorff').first()).toBeVisible();
+    await expect(page.getByText('Dense1 Dawson').first()).toBeVisible();
     await expect(page.getByText(/Alder's Family/)).toBeVisible();
     await expect(page.getByText(/Cedar's Family/)).toBeVisible();
   });

@@ -1,0 +1,472 @@
+.calendar-print-root {
+  --calendar-paper-width: 11in;
+  --calendar-paper-height: 8.5in;
+  --calendar-print-scale: 0.6;
+}
+
+.calendar-print-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 24px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.calendar-print-customize {
+  align-self: flex-start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.calendar-print-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.calendar-print-year-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-print-year-row label,
+.calendar-print-scope legend {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.calendar-print-year-row input {
+  width: 7em;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.calendar-print-step {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.calendar-print-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-error);
+}
+
+.calendar-print-scope {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.calendar-print-scope legend {
+  padding: 0;
+}
+
+.calendar-print-scope label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-ink);
+}
+
+.calendar-print-toggles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.calendar-print-status {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-print-overflow {
+  color: var(--color-error);
+}
+
+.calendar-print-overflow p {
+  margin: 4px 0;
+}
+
+/* The transformed stack keeps its untransformed box, so reserve only the scaled height. */
+.calendar-print-sheet-viewport {
+  height: max(
+    0px,
+    calc(
+      (var(--calendar-page-count, 0) * var(--calendar-paper-height) + (var(--calendar-page-count, 0) - 1) * 24px)
+      * var(--calendar-print-scale)
+    )
+  );
+  overflow: hidden;
+}
+
+.calendar-print-skeleton {
+  display: flex;
+  justify-content: center;
+}
+
+.calendar-print-skeleton-page {
+  width: calc(var(--calendar-paper-width) * var(--calendar-print-scale));
+  height: calc(var(--calendar-paper-height) * var(--calendar-print-scale));
+  border-radius: var(--radius-card);
+  background: var(--color-surface-muted);
+}
+
+.calendar-print-invalid {
+  color: var(--color-ink-2);
+}
+
+.calendar-print-sheet-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transform: scale(var(--calendar-print-scale));
+  transform-origin: top center;
+}
+
+/* Narrow screens: shrink the fixed 11in sheet so its full width stays reachable. */
+@media (max-width: 680px) {
+  .calendar-print-root {
+    --calendar-print-scale: 0.32;
+  }
+}
+
+.calendar-print-page {
+  --calendar-entry-gap: 2px;
+  --calendar-entry-gap-max: 10px;
+  --calendar-entry-size: 7.2pt;
+  --calendar-entry-md: 6.8pt;
+  --calendar-entry-sm: 6pt;
+  box-sizing: border-box;
+  width: var(--calendar-paper-width);
+  height: var(--calendar-paper-height);
+  overflow: hidden;
+  break-after: page;
+  background: var(--calendar-paper);
+  color: var(--calendar-ink);
+  padding: 0.32in;
+}
+
+.calendar-print-page[data-weeks="5"] {
+  --calendar-entry-gap: 0.05in;
+  --calendar-entry-gap-max: 14px;
+  --calendar-entry-size: 7.6pt;
+  --calendar-entry-md: 7.1pt;
+  --calendar-entry-sm: 6.2pt;
+}
+
+.calendar-print-page[data-weeks="4"] {
+  --calendar-entry-gap: 0.08in;
+  --calendar-entry-gap-max: 20px;
+  --calendar-entry-size: 8pt;
+  --calendar-entry-md: 7.4pt;
+  --calendar-entry-sm: 6.4pt;
+}
+
+.calendar-print-frame {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--calendar-paper);
+  color: var(--calendar-ink);
+}
+
+.calendar-print-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.3in;
+  padding-bottom: 0.11in;
+  border-bottom: 2pt solid var(--calendar-ink);
+  line-height: 1;
+}
+
+.calendar-print-masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.12in;
+}
+
+.calendar-print-month-name {
+  font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  font-size: 34pt;
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+}
+
+.calendar-print-year-label {
+  font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11pt;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.calendar-print-brand {
+  font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12pt;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: -0.28em;
+}
+
+/* The weekday row stays open: the grid's side rules begin at the first grid line. */
+.calendar-print-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0.11in 0 0.07in;
+  font-family: var(--font-body);
+  font-size: 8pt;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.calendar-print-weekdays span {
+  padding-left: calc(0.09in + 0.75pt);
+}
+
+.calendar-print-page[data-weeks="5"] .calendar-print-weekdays span {
+  padding-left: calc(0.095in + 0.75pt);
+}
+
+.calendar-print-page[data-weeks="4"] .calendar-print-weekdays span {
+  padding-left: calc(0.1in + 0.75pt);
+}
+
+.calendar-print-weekdays span:first-child,
+.calendar-print-weekdays span:last-child {
+  font-style: italic;
+}
+
+.calendar-print-grid {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
+  border: 0.75pt solid var(--calendar-ink);
+  border-bottom: 0;
+}
+
+.calendar-print-cell {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05in;
+  min-height: 0;
+  /* The model caps printed lines; letting the kept lines paint avoids clipping six-entry days. */
+  overflow: visible;
+  padding: 0.075in 0.09in;
+  border-right: 0.75pt solid var(--calendar-ink);
+  border-bottom: 0.75pt solid var(--calendar-ink);
+}
+
+.calendar-print-page[data-weeks="5"] .calendar-print-cell {
+  gap: 0.10in;
+  padding: 0.09in 0.095in;
+}
+
+.calendar-print-page[data-weeks="4"] .calendar-print-cell {
+  gap: 0.16in;
+  padding: 0.11in 0.1in;
+}
+
+.calendar-print-cell:nth-child(7n) {
+  border-right: 0;
+}
+
+.calendar-print-day {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11pt;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-print-page[data-weeks="5"] .calendar-print-day {
+  font-size: 11.5pt;
+}
+
+.calendar-print-page[data-weeks="4"] .calendar-print-day {
+  font-size: 12.5pt;
+}
+
+.calendar-print-entries {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--calendar-entry-gap, 2px);
+  min-height: 0;
+  font-family: var(--font-body);
+  font-size: var(--calendar-entry-size);
+}
+
+.calendar-print-entries[data-lines="2"] {
+  gap: var(--calendar-entry-gap-max, 2px);
+}
+
+.calendar-print-entries[data-lines="3"] {
+  gap: calc(var(--calendar-entry-gap-max, 2px) * 0.6);
+}
+
+.calendar-print-entries[data-lines="4"] {
+  gap: calc(var(--calendar-entry-gap-max, 2px) * 0.4);
+}
+
+.calendar-print-entries-md {
+  --calendar-entry-gap: 2px;
+  --calendar-entry-gap-max: 6px;
+  font-size: var(--calendar-entry-md);
+}
+
+/* minimalist: the scale varies with row count so eight entries plus the more line stay inside short 5 and 6 week cells. */
+.calendar-print-entries-sm {
+  --calendar-entry-gap: 1px;
+  --calendar-entry-gap-max: 3px;
+  font-size: var(--calendar-entry-sm);
+}
+
+.calendar-print-entries-sm .calendar-print-entry,
+.calendar-print-entries-sm .calendar-print-more {
+  line-height: 1;
+}
+
+.calendar-print-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.05in;
+  /* Both columns share font-size and line-height 1.3, so bottom-aligning the boxes lands the token baseline on the label's last line. */
+  align-items: end;
+  font-size: inherit;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-print-entry-label {
+  padding-left: 8px;
+  text-indent: -8px;
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.calendar-print-more {
+  padding-left: 8px;
+  text-indent: -8px;
+  font-size: inherit;
+  font-weight: 500;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-print-entry-token {
+  justify-self: end;
+  padding: 0;
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-print-entry--holiday {
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.calendar-print-entry--anniversary {
+  font-weight: 400;
+}
+
+.calendar-print-footer {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  justify-content: flex-end;
+  height: 0.4in;
+  padding-top: 0.08in;
+  white-space: nowrap;
+  color: var(--calendar-ink);
+}
+
+.calendar-print-folio-text {
+  font-family: var(--font-body);
+  font-size: 7pt;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  margin-right: -0.16em;
+}
+
+@media print {
+  .calendar-print-root {
+    page: calendar;
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: var(--calendar-paper);
+  }
+
+  .calendar-print-root app-page-toolbar,
+  .calendar-print-controls {
+    display: none !important;
+  }
+
+  .calendar-print-sheet-viewport {
+    height: auto;
+    overflow: visible;
+  }
+
+  .calendar-print-sheet-stack {
+    display: block;
+    transform: none;
+  }
+
+  .calendar-print-page {
+    margin: 0;
+  }
+
+  .calendar-print-page:last-child {
+    break-after: auto;
+  }
+}

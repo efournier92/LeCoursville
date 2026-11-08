@@ -18,6 +18,8 @@
   border-left-color: var(--cal-birth-accent);
 }.border-anniv {
   border-left-color: var(--cal-anniv-accent);
+}.border-holiday {
+  border-left-color: var(--color-ink-2);
 }.birthday-color {
   color: var(--cal-birth-accent);
 }.anniversary-color {
@@ -50,7 +52,8 @@
   font-size: 1em;
   transition: color 0.15s ease;
   display: block;
-  padding: 1px 4px;
+  padding: 1px 4px 1px 12px;
+  text-indent: -8px;
   border-radius: var(--radius-sm);
   text-align: left;
   line-height: 1.1;
@@ -80,4 +83,14 @@
   flex-shrink: 0;
 }.event-not-living {
   opacity: 0.55;
+}.event-title-holiday {
+  display: block;
+  color: var(--cal-tag-ink);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1em;
+  padding: 1px 4px 1px 12px;
+  text-indent: -8px;
+  text-align: left;
+  line-height: 1.1;
 }

@@ -39,7 +39,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { key: 'families', path: '/admin/' + ADMIN_ROUTE.families, label: 'Families', icon: 'groups', group: 'People' },
   { key: 'people', path: '/admin/' + ADMIN_ROUTE.people, label: 'People', icon: 'person_add', group: 'People' },
   { key: 'contacts', path: '/admin/' + ADMIN_ROUTE.contacts, label: 'Contacts', icon: 'contact_mail', group: 'People' },
-  { key: 'calendars', path: '/admin/' + ADMIN_ROUTE.calendars, label: 'Calendars', icon: 'calendar_month', group: 'People' },
+  { key: 'calendars', path: '/admin/' + ADMIN_ROUTE.calendars, label: 'Calendars', icon: 'calendar_month', group: 'People', featureFlag: 'legacyCalendarPdf' },
   { key: 'familyExplorer', path: '/admin/' + ADMIN_ROUTE.familyExplorer, label: 'Family Explorer', icon: 'account_tree', group: 'Content', superOnly: true },
   { key: 'expressions', path: '/admin/' + ADMIN_ROUTE.expressions, label: 'Expressions', icon: 'format_quote', group: 'Content' },
   { key: 'media', path: '/admin/' + ADMIN_ROUTE.media, label: 'Media', icon: 'perm_media', group: 'Content' },

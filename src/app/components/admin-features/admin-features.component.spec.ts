@@ -5,9 +5,16 @@ import { AppModule } from '../../app.module';
 import { AdminFeaturesComponent } from './admin-features.component';
 import { FeatureFlagAuditRecord, FeatureFlagsService } from 'src/app/services/feature-flags.service';
 import { AuthService } from 'src/app/services/auth.service';
-import { FEATURES } from 'src/app/config/feature-config';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+
+// The explicit flag ids the page must render: a dropped FEATURES entry or a
+// duplicate both fail here instead of cancelling out in a length compare.
+const EXPECTED_FEATURE_IDS = [
+  'people', 'contacts', 'calendar', 'legacyCalendarPdf', 'songs', 'music',
+  'videos', 'photos', 'enablePhotoAlbums', 'expressions', 'chat',
+];
+const EXPECTED_FEATURE_COUNT = EXPECTED_FEATURE_IDS.length;
 
 describe('AdminFeaturesComponent', () => {
   let component: AdminFeaturesComponent;
@@ -57,11 +64,15 @@ describe('AdminFeaturesComponent', () => {
     expect(mockFeatureFlagsService.getAllFeatureFlags).toHaveBeenCalled();
   });
 
-  it('renders one feature row per entry in FEATURES', () => {
+  it('renders exactly the expected feature rows', () => {
     fixture.detectChanges();
     const items = fixture.nativeElement.querySelectorAll('.feature-row');
-    expect(items.length).toBe(FEATURES.length);
-    expect(items.length).toBeGreaterThan(0);
+    expect(items.length).toBe(EXPECTED_FEATURE_COUNT);
+
+    const ids = Array.from(
+      fixture.nativeElement.querySelectorAll('[data-testid^="feature-toggle-"]') as NodeListOf<HTMLElement>,
+    ).map(el => el.getAttribute('data-testid')!.replace('feature-toggle-', ''));
+    expect(ids.sort()).toEqual([...EXPECTED_FEATURE_IDS].sort());
   });
 
   it('gives every feature toggle an accessible name', () => {
@@ -69,7 +80,7 @@ describe('AdminFeaturesComponent', () => {
       fixture.nativeElement.querySelectorAll('mat-slide-toggle') as NodeListOf<HTMLElement>,
     );
 
-    expect(toggles.length).toBe(FEATURES.length);
+    expect(toggles.length).toBe(EXPECTED_FEATURE_COUNT);
     // The visible label sits inside the toggle, so it is the control's
     // accessible name (Material renders it as the mdc-label content).
     toggles.forEach(toggle => expect(toggle.textContent?.trim()).toBeTruthy());
@@ -80,6 +91,34 @@ describe('AdminFeaturesComponent', () => {
       fixture.nativeElement.querySelectorAll('.feature-group-label') as NodeListOf<HTMLElement>,
     ).map((el) => el.textContent?.trim());
     expect(labels).toEqual(['People', 'Content', 'System']);
+  });
+
+  it('renders legacyCalendarPdf under the Content group', () => {
+    const groups = Array.from(
+      fixture.nativeElement.querySelectorAll('.feature-group') as NodeListOf<HTMLElement>,
+    );
+    const content = groups.find(
+      group => group.querySelector('.feature-group-label')?.textContent?.trim() === 'Content',
+    );
+    expect(content).toBeTruthy();
+    expect(content!.querySelector('[data-testid="feature-toggle-legacyCalendarPdf"]')).not.toBeNull();
+    for (const group of groups) {
+      if (group !== content) {
+        expect(group.querySelector('[data-testid="feature-toggle-legacyCalendarPdf"]')).toBeNull();
+      }
+    }
+  });
+
+  it('renders and writes the legacy calendar PDF toggle by its stable id', async () => {
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="feature-toggle-legacyCalendarPdf"]',
+    ) as HTMLElement;
+    expect(toggle.textContent).toContain('Legacy Calendar PDF');
+    const switchButton = toggle.querySelector('button[role="switch"]') as HTMLButtonElement;
+    expect(switchButton.getAttribute('aria-checked')).toBe('false');
+
+    await component.onToggle('legacyCalendarPdf', true);
+    expect(mockFeatureFlagsService.setFeatureFlag).toHaveBeenCalledWith('legacyCalendarPdf', true);
   });
 
   it('shows a loading skeleton until the flags arrive', () => {
@@ -100,7 +139,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="features-loading"]')).toBeFalsy();
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(EXPECTED_FEATURE_COUNT);
   });
 
   it('shows a retryable error and recovers after retrying', () => {
@@ -123,7 +162,7 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(component.loadError).toBe('');
-    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(10);
+    expect(fixture.nativeElement.querySelectorAll('.feature-row').length).toBe(EXPECTED_FEATURE_COUNT);
   });
 
   it('isEnabled() returns true when Firebase flag is null (default ON)', () => {

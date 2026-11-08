@@ -62,6 +62,14 @@ describe('AuthService', () => {
     expect(JSON.parse(localStorage.getItem('user')!)).toEqual(user);
   });
 
+  it('updateUser rejects when the RTDB write fails', async () => {
+    const user = { id: 'u2', name: 'Grace' };
+    const updateSpy = rtdbSpy.object('users/u2').update as unknown as jasmine.Spy;
+    updateSpy.and.returnValue(Promise.reject(new Error('write failed')));
+
+    await expect(service.updateUser(user as any)).rejects.toThrow('write failed');
+  });
+
   it('getUserNameById returns the name from the user record', () => {
     expect(service.getUserNameById('u1')).toBe('Ada');
     expect(rtdbSpy.object).toHaveBeenCalledWith('users/u1');

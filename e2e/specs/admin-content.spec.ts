@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { setFeatureFlag } from '../helpers/flags';
 import { deleteDb, readDb, writeDb } from '../helpers/admin-db';
 
 const STORAGE_ORIGIN = 'http://127.0.0.1:9199';
@@ -389,7 +390,7 @@ test.describe('admin content surfaces', () => {
     await expect(page.getByTestId('feature-toggle-people')).toBeVisible();
 
     const rows = page.locator('.feature-row');
-    await expect(rows).toHaveCount(10);
+    await expect(rows).toHaveCount(11);
 
     const tiles = await page.locator('.feature-row .feature-icon').evaluateAll((elements) =>
       elements.map((el) => {
@@ -402,7 +403,7 @@ test.describe('admin content surfaces', () => {
         };
       }),
     );
-    expect(tiles).toHaveLength(10);
+    expect(tiles).toHaveLength(11);
     for (const tile of tiles) {
       expect(tile.width).toBe(32);
       expect(tile.height).toBe(32);
@@ -451,6 +452,29 @@ test.describe('admin content surfaces', () => {
       expect(state.handleRight).toBeLessThanOrEqual(state.trackRight - 1);
     }
     expect(on.handleLeft).toBeGreaterThan(off.handleLeft);
+  });
+
+  test('features: the legacy calendar PDF toggle is labelled and persists its flag', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    const toggle = page.getByTestId('feature-toggle-legacyCalendarPdf');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toContainText('Legacy Calendar PDF');
+    const switchButton = toggle.locator('button[role="switch"]');
+    await expect(switchButton).toHaveAttribute('aria-checked', 'false');
+
+    try {
+      await switchButton.click();
+      await expect(switchButton).toHaveAttribute('aria-checked', 'true');
+      await expect
+        .poll(async () => (await readDb<{ enabled?: boolean }>('features/legacyCalendarPdf'))?.enabled)
+        .toBe(true);
+
+      await page.goto('/admin');
+      await expect(page.getByTestId('admin-nav-link-calendars')).toBeVisible();
+    } finally {
+      await setFeatureFlag(page, 'legacyCalendarPdf', false);
+    }
   });
 
   test('390x844: the uploads table becomes cards and the album grid is one column without overflow', async ({ page }) => {

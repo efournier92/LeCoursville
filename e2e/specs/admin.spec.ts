@@ -114,7 +114,6 @@ test.describe('admin', () => {
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
       { name: 'Contacts', path: '/admin/contacts' },
-      { name: 'Calendars', path: '/admin/calendars' },
       { name: 'Family Explorer', path: '/admin/family-explorer' },
       { name: 'Media', path: '/admin/media' },
       { name: 'Expressions', path: '/admin/expressions' },
@@ -127,6 +126,7 @@ test.describe('admin', () => {
     ];
     const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
     await expect(navItems).toHaveCount(links.length);
+    await expect(nav.getByRole('link', { name: 'Calendars', exact: true })).toHaveCount(0);
     for (const { name, path } of links) {
       const link = nav.getByRole('link', { name, exact: true });
       await expect(link).toBeVisible();
@@ -317,8 +317,8 @@ test.describe('admin', () => {
       const nav = page.getByTestId('admin-nav');
       const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
       await expect(nav.getByRole('link', { name: 'Photo Albums', exact: true })).toHaveCount(0);
-      await expect(navItems).toHaveCount(13);
-      for (const name of ['Users', 'Families', 'People', 'Contacts', 'Calendars', 'Family Explorer', 'Media', 'Songs', 'Expressions', 'Uploads', 'Recovery', 'Analytics', 'Features']) {
+      await expect(navItems).toHaveCount(12);
+      for (const name of ['Users', 'Families', 'People', 'Contacts', 'Family Explorer', 'Media', 'Songs', 'Expressions', 'Uploads', 'Recovery', 'Analytics', 'Features']) {
         await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
       }
     } finally {
@@ -330,6 +330,21 @@ test.describe('admin', () => {
         .getByTestId('admin-nav')
         .getByRole('link', { name: 'Photo Albums', exact: true }),
     ).toBeVisible();
+  });
+
+  test('calendars nav item appears when the legacy PDF flag is on and navigates', async ({ page }) => {
+    await login(page, 'admin');
+    try {
+      await setFeatureFlag(page, 'legacyCalendarPdf', true);
+      await page.goto('/admin');
+      const link = page.getByTestId('admin-nav-link-calendars');
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', '/admin/calendars');
+      await link.click();
+      await expect(page).toHaveURL(/\/admin\/calendars$/);
+    } finally {
+      await setFeatureFlag(page, 'legacyCalendarPdf', false);
+    }
   });
 
   test('families page lists the 2 seeded families', async ({ page }) => {

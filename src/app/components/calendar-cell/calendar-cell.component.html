@@ -5,18 +5,25 @@
     'event-living': event.isLiving,
     'event-not-living': !event.isLiving,
     'event-birth': event.type === 'birth',
-    'event-anniv': event.type === 'anniversary'
+    'event-anniv': event.type === 'anniversary',
+    'event-holiday': event.type === 'holiday'
   }"
     >
-    <div class="calendar-cell-event-container" [ngClass]="event.type === 'birth' ? 'border-birth' : 'border-anniv'">
-      <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
-        <div class="calendar-years-since">
-          {{ getYearsSinceString(event) }}
+    <div class="calendar-cell-event-container" [ngClass]="event.type === 'birth' ? 'border-birth' : event.type === 'holiday' ? 'border-holiday' : 'border-anniv'">
+      @if (event.type !== 'holiday') {
+        <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
+          <div class="calendar-years-since">
+            {{ getYearsSinceString(event) }}
+          </div>
         </div>
-      </div>
+      }
       <div class="calendar-event-title-container" [ngClass]="{'is-anniversary': getSpouseName()}">
         <span class="anniv-first-line">
-          <span class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</span>
+          @if (event.type === 'holiday') {
+            <span class="event-title-holiday">{{ getPrimaryName() }}</span>
+          } @else {
+            <span class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</span>
+          }
           @if (getSpouseName()) {
             <span class="event-ampersand-inline">&amp;</span>
           }

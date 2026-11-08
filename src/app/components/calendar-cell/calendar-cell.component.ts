@@ -27,7 +27,9 @@ export class CalendarCellComponent implements OnInit {
   // PUBLIC METHODS
 
   getYearsSinceString(event: RecurringEvent): string {
-    const eventYear = event.date.getUTCFullYear();
+    const eventYear = event.date.getFullYear();
+    // Suppress the token when viewing a year before the event exists.
+    if (this.selectedYear < eventYear) return '';
     return this.calendarService.getYearsSince(eventYear, this.selectedYear).toString();
   }
 
@@ -36,6 +38,7 @@ export class CalendarCellComponent implements OnInit {
   }
 
   onEventTitleClick(): void {
+    if (this.event.type === 'holiday') return;
     if (this.event.personId) {
       this.personClick.emit(this.event.personId);
     }

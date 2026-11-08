@@ -19,14 +19,20 @@ export class PeopleService {
   people$: Observable<Person[]> = this.peopleSource.asObservable();
   private loadedSource: BehaviorSubject<boolean> = new BehaviorSubject(false);
   peopleLoaded$: Observable<boolean> = this.loadedSource.asObservable();
+  private loadErrorSource: BehaviorSubject<string | null> = new BehaviorSubject(null);
+  loadError$: Observable<string | null> = this.loadErrorSource.asObservable();
 
   constructor(private rtdb: RtdbService) {
-    this.getPeople().valueChanges().subscribe(
-      (people: Person[]) => {
+    this.getPeople().valueChanges().subscribe({
+      next: (people: Person[]) => {
         this.peopleSource.next(people);
         this.loadedSource.next(true);
+        this.loadErrorSource.next(null);
+      },
+      error: (error: unknown) => {
+        this.loadErrorSource.next(error instanceof Error ? error.message : 'Failed to load people');
       }
-    );
+    });
   }
 
   getPeople() {

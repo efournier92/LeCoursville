@@ -656,8 +656,8 @@ test.describe('songs', () => {
         return [`${name}:${margin}`, { name, margin }];
       }),
     ).values()];
-    // A 14mm default page box for every other route, plus the named song page
-    // whose vertical margins repeat on every printed page.
+    // A 14mm default page box plus the named song page whose vertical margins
+    // repeat on every printed page.
     expect(pageBlocks).toEqual(
       expect.arrayContaining([
         { name: '', margin: '14mm' },
@@ -665,10 +665,40 @@ test.describe('songs', () => {
       ]),
     );
     expect(cssText).toMatch(/\.song-sheet[^{]*\{[^}]*page:\s*song/);
-    // The default page owns all four gutters on other routes; on songs the
-    // named page owns the vertical pair and the sheet the horizontal pair, so
-    // no element stacks a second vertical gutter.
-    expect(pageBlocks.filter(block => block.margin === '0')).toEqual([]);
+    // Prove the page boxes the songs route can actually reach, rather than
+    // exempting page names: any element matching a rule that sets `page` must
+    // resolve to a page box with a vertical gutter, or a song could print
+    // marginless.
+    const reachablePages = await page.evaluate(() => {
+      const names = new Set<string>(['']);
+      const walk = (list: CSSRuleList): void => {
+        for (const rule of Array.from(list) as CSSRule[]) {
+          const styleRule = rule as CSSStyleRule;
+          if (styleRule.selectorText) {
+            const name = styleRule.style.getPropertyValue('page').trim();
+            if (name && document.querySelector(styleRule.selectorText)) {
+              names.add(name);
+            }
+          } else if ((rule as CSSMediaRule).cssRules) {
+            walk((rule as CSSMediaRule).cssRules);
+          }
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          walk(sheet.cssRules);
+        } catch {
+          // Cross-origin sheets cannot be read; every app sheet is same-origin.
+        }
+      }
+      return [...names];
+    });
+    expect(reachablePages).toContain('song');
+    for (const name of reachablePages) {
+      const block = pageBlocks.find(page => page.name === name);
+      expect(block, `@page ${name || '(default)'} is reachable from songs`).toBeTruthy();
+      expect(Number.parseFloat(block!.margin!.split(/\s+/)[0])).toBeGreaterThan(0);
+    }
     expect(cssText).toMatch(
       /\.song-sheet[^{]*\{[^}]*padding:\s*0\s+14mm\s*!important/,
     );

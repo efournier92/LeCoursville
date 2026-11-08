@@ -30,6 +30,12 @@ describe('CalendarViewComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('tears down the user subscription on destroy', () => {
+    component.ngOnDestroy();
+
+    expect((component as any).userSub.closed).toBe(true);
+  });
+
   it('getHiddenEventCount returns 0 for a day with few events', () => {
     const day = {
       date: new Date(2024, 6, 1),

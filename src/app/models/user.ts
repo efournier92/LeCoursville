@@ -6,8 +6,16 @@ export interface AuthRoles {
 
 export type Theme = 'light' | 'dark';
 
+export interface CalendarPrefs {
+  showBirthdays?: boolean;
+  showAnniversaries?: boolean;
+  showNotLiving?: boolean;
+  showHolidays?: boolean;
+}
+
 export interface UserPrefs {
   theme?: Theme;
+  calendar?: CalendarPrefs;
 }
 
 /** Membership is server-owned; pending users simply lack roles.user. */
