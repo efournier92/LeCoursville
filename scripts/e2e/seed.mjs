@@ -40,9 +40,11 @@ const USERS = [
 ];
 
 const FEATURE_IDS = [
-  'people', 'contacts', 'calendar', 'songs', 'music', 'videos',
+  'people', 'contacts', 'calendar', 'legacyCalendarPdf', 'songs', 'music', 'videos',
   'photos', 'enablePhotoAlbums', 'expressions', 'chat',
 ];
+// Existing features seed ON; the calendar kill switch seeds OFF.
+const FEATURES_OFF_BY_DEFAULT = new Set(['chat', 'legacyCalendarPdf']);
 
 async function ensureUser(email, name) {
   try {
@@ -216,22 +218,15 @@ async function main() {
 
   // 3. Seed tree.
   const now = Date.now();
-  const today = new Date();
-  const year = today.getFullYear();
-  const month1 = today.getMonth() + 1; // 1-indexed (PersonDate convention)
-  const day = today.getDate();
-  const clampDay = (d) => Math.min(d, 28);
+  // Non-calendar fixtures still stamp the current year. Calendar dates below are
+  // absolute so calendar and print expectations hold in any month or year.
+  const year = new Date().getFullYear();
 
   const adminUid = localIds['admin@e2e.local'];
   const userUid = localIds['user@e2e.local'];
   const otherUid = localIds['other@e2e.local'];
   const staffUid = localIds['staff@e2e.local'];
   const sparseUid = localIds['sparse@e2e.local'];
-
-  // Person D: 3 months before today (must NOT appear in the current month view).
-  const dMonth = month1 - 3;
-  const dYear = dMonth < 1 ? year - 1 : year;
-  const dMonth1 = dMonth < 1 ? dMonth + 12 : dMonth;
 
   const person = (id, first, last, birthday, extra = {}) => ({
     id,
@@ -262,10 +257,10 @@ async function main() {
   });
 
   const people = {
-    'person-a': person('person-a', 'Alice', 'Anderson', { year: year - 30, month: month1, day: clampDay(day) }),
-    'person-b': person('person-b', 'Ben', 'Brown', { year: year - 25, month: month1, day: clampDay(day + 2) }, { familyId: 'family-2' }),
-    'person-c': person('person-c', 'Carol', 'Clark', { year: year - 20, month: month1, day: clampDay(day + 1) }, { spouseId: 'person-d' }),
-    'person-d': person('person-d', 'Dave', 'Davis', { year: dYear - 28, month: dMonth1, day: clampDay(day) }, { familyId: 'family-2' }),
+    'person-a': person('person-a', 'Alice', 'Anderson', { year: 1996, month: 3, day: 10 }),
+    'person-b': person('person-b', 'Ben', 'Brown', { year: 2001, month: 4, day: 12 }, { familyId: 'family-2' }),
+    'person-c': person('person-c', 'Carol', 'Clark', { year: 2006, month: 6, day: 5 }, { spouseId: 'person-d' }),
+    'person-d': person('person-d', 'Dave', 'Davis', { year: 1998, month: 9, day: 9 }, { familyId: 'family-2' }),
     'person-e': person('person-e', 'Edith', 'Evans', { year: 1935, month: 1, day: 10 }, {
       generationNumber: 2,
       parentIds: ['person-a'],
@@ -277,9 +272,32 @@ async function main() {
       parentIds: ['person-a'],
       isLiving: false,
     }),
+    // Unknown birth year: listed in People, intentionally skipped by the
+    // calendar and print event builders.
+    'person-g': person('person-g', 'Greta', 'Gonzalez', { year: 0, month: 3, day: 3 }),
+    // Same-surname couple with an absolute anniversary date, for the shared
+    // surname branch of the anniversary line.
+    'person-i': person('person-i', 'Grace', 'Grant', { year: 1993, month: 5, day: 1 }, { spouseId: 'person-j' }),
+    'person-j': person('person-j', 'Henry', 'Grant', { year: 1991, month: 5, day: 2 }),
+    // Long-name couples prove anniversary wrapping never clips.
+    'person-k': person('person-k', 'Alexandria', 'Montgomery', { year: 1992, month: 3, day: 15 }, { spouseId: 'person-l' }),
+    'person-l': person('person-l', 'Bartholomew', 'Wolfeschlegelsteinhausenbergerdorff', { year: 1990, month: 3, day: 16 }),
+    'person-m': person('person-m', 'Maximiliana', 'Wolfeschlegelsteinhausenbergerdorff', { year: 1986, month: 3, day: 18 }),
+    'person-n': person('person-n', 'Clementine', 'Featherstonehaugh', { year: 1988, month: 3, day: 20 }, { spouseId: 'person-o' }),
+    'person-o': person('person-o', 'Thaddeus', 'Featherstonehaugh', { year: 1987, month: 3, day: 21 }),
   };
-  // Carol's anniversary (this month, +1 day).
-  people['person-c'].anniversaryDate = { year: year - 10, month: month1, day: clampDay(day + 1) };
+  people['person-c'].anniversaryDate = { year: 2016, month: 11, day: 14 };
+  people['person-i'].anniversaryDate = { year: 2014, month: 5, day: 1 };
+  people['person-k'].anniversaryDate = { year: 2009, month: 3, day: 15 };
+  people['person-n'].anniversaryDate = { year: 2007, month: 3, day: 20 };
+
+  // Ten birthdays on one absolute date plus Independence Day make eleven July 4
+  // entries. The model's eight-line cap keeps seven (the holiday and six
+  // birthdays) and reports `+4 more`.
+  for (let i = 1; i <= 10; i++) {
+    const id = `person-h${i}`;
+    people[id] = person(id, `Dense${i}`, 'Dawson', { year: 1990 + i, month: 7, day: 4 }, { familyId: 'family-2' });
+  }
 
   const families = {
     'family-1': { id: 'family-1', name: 'Alder', hexColor: '#F44336', sortOrder: 'A', createdAt: now, updatedAt: now },
@@ -467,7 +485,7 @@ async function main() {
       [staffUid]: { id: staffUid, name: 'Staff Admin', email: 'staff@e2e.local', roles: { user: true, admin: true, super: false }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
       [sparseUid]: { id: sparseUid, name: 'Sparse User', email: 'sparse@e2e.local', roles: { user: true }, dateRegistered: new Date(now - 60 * 86400000), dateLastActive: new Date(now) },
     },
-    features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: id !== 'chat', updatedAt: now }])),
+    features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: !FEATURES_OFF_BY_DEFAULT.has(id), updatedAt: now }])),
     promotedRoute: { route: '/calendar', updatedAt: now },
     config: {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.

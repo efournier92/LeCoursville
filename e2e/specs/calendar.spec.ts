@@ -3,7 +3,25 @@ import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
 import { readDb, writeDb } from '../helpers/admin-db';
 
+let prefsUid: string | null = null;
+let savedCalendarPrefs: unknown = null;
+
+async function adminUid(): Promise<string | null> {
+  const users = await readDb<Record<string, { email?: string }>>('users');
+  return Object.entries(users ?? {}).find(([, user]) => user?.email === 'admin@e2e.local')?.[0] ?? null;
+}
+
 test.describe('calendar', () => {
+  test.afterEach(async () => {
+    // Restore user prefs first: a failing feature-flag write must not skip it.
+    if (prefsUid) {
+      await writeDb(`users/${prefsUid}/prefs/calendar`, savedCalendarPrefs);
+      prefsUid = null;
+      savedCalendarPrefs = null;
+    }
+    await writeDb('features/legacyCalendarPdf/enabled', false);
+  });
+
   test('top bar does not overflow horizontally at 900px and 768px', async ({ page }) => {
     await login(page, 'admin');
     const original = page.viewportSize()!;
@@ -45,52 +63,56 @@ test.describe('calendar', () => {
     }
   });
 
-  test('current month shows the seeded birthdays and anniversary', async ({ page }) => {
+  test('pinned month shows the seeded birthday and anniversary', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
-    // Alice birthday is today; Ben birthday is +2 days; Carol & Dave anniversary is +1 day.
-    // (Anniversary titles render as split spans: primary + '&' + spouse.)
-    await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()).toBeVisible();
-    await expect(page.locator('.event-birth', { hasText: 'Ben Brown' }).first()).toBeVisible();
+    await page.goto('/calendar?year=2026&month=11');
+    // Carol & Dave anniversary is seeded on November 14. (Anniversary titles
+    // render as split spans: primary + '&' + spouse.)
     await expect(page.locator('.event-anniv', { hasText: 'Dave Davis' }).first()).toBeVisible();
+    await expect(page.locator('.calendar-month-label')).toHaveText('November');
+    await expect(page.locator('.calendar-year-label')).toHaveText('2026');
   });
 
-  test('a birthday three months ago is NOT shown in the current month', async ({ page }) => {
+  test('a birthday in another month is NOT shown in the pinned month', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
-    // Dave's own BIRTHDAY event must not appear (he does appear as Carol's
-    // anniversary spouse, which is a separate .event-anniv node).
-    await expect(page.locator('.event-birth', { hasText: 'Dave Davis' })).toHaveCount(0);
+    await page.goto('/calendar?year=2026&month=11');
+    // Alice's birthday is seeded in March.
+    await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' })).toHaveCount(0);
   });
 
-  test('view switch changes the month without console errors', async ({ page }) => {
+  test('view switch changes the month, year, and rendered events', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
     const monthLabel = page.locator('.calendar-month-label');
-    const before = (await monthLabel.textContent())?.trim() ?? '';
-    const next = new Date();
-    next.setDate(1);
-    next.setMonth(next.getMonth() + 1);
-    const expectedNext = next.toLocaleString('en-US', { month: 'long' });
+    await expect(monthLabel).toHaveText('March');
+    await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()).toBeVisible();
+
     await page.locator('.calendar-nav-btn').last().click();
-    await expect(monthLabel).toHaveText(expectedNext);
-    // Previous restores the month the test started on.
+    await expect(monthLabel).toHaveText('April');
+    await expect(page.locator('.event-birth', { hasText: 'Ben Brown' }).first()).toBeVisible();
+    await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' })).toHaveCount(0);
+
+    // Previous restores the month and its events.
     await page.locator('.calendar-nav-btn').first().click();
-    await expect(monthLabel).toHaveText(before);
+    await expect(monthLabel).toHaveText('March');
+    await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()).toBeVisible();
   });
 
-  test('printer view opens and shows the seeded year', async ({ page }) => {
+  test('print opens the generated calendar route', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
     await page.getByRole('button', { name: 'Print' }).click();
-    await expect(page.locator('.calendar-printer-title')).toContainText('Print Calendar');
-    const year = new Date().getFullYear().toString();
-    await expect(page.getByRole('button', { name: year, exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/calendar\/print/);
+    await expect(page.getByTestId('calendar-print-page')).toHaveCount(12);
+    const firstPage = page.getByTestId('calendar-print-page').first();
+    await expect(firstPage.getByTestId('calendar-print-month-name')).toHaveText('January');
+    await expect(firstPage.getByTestId('calendar-print-year-label')).toHaveText('2026');
+    await expect(firstPage.getByTestId('calendar-print-brand')).toHaveText(/^LeCours Family$/i);
   });
 
   test('birth tags use the blue accent and anniversary tags the red accent', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
 
     const birth = page.locator('.event-birth .calendar-cell-event-container').first();
     const anniv = page.locator('.event-anniv .calendar-cell-event-container').first();
@@ -102,7 +124,7 @@ test.describe('calendar', () => {
 
   test('event tags are inset 4px from the day cell edge', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
 
     const tag = page.locator('.event-birth .calendar-cell-event-container').first();
     await expect(tag).toBeVisible();
@@ -114,9 +136,9 @@ test.describe('calendar', () => {
     expect(inset).toBe(4);
   });
 
-  test('month picker opens on the pill and closes on outside click or Escape', async ({ page }) => {
+  test('month picker selection changes the month and events, and closes on outside click or Escape', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
 
     const pill = page.locator('.calendar-month-year-pill');
     const panel = page.locator('.calendar-datepicker-panel');
@@ -126,6 +148,16 @@ test.describe('calendar', () => {
     await expect(panel).toBeVisible();
     await expect(pill).toHaveAttribute('aria-expanded', 'true');
 
+    // Select November: the header, year, and rendered anniversary must all change.
+    await panel.locator('.calendar-datepicker-cell').nth(10).click();
+    await expect(panel).toHaveCount(0);
+    await expect(pill).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.calendar-month-label')).toHaveText('November');
+    await expect(page.locator('.calendar-year-label')).toHaveText('2026');
+    await expect(page.locator('.event-anniv', { hasText: 'Dave Davis' }).first()).toBeVisible();
+
+    await pill.click();
+    await expect(panel).toBeVisible();
     await page.locator('.calendar-nav-row').click({ position: { x: 4, y: 4 } });
     await expect(panel).toHaveCount(0);
     await expect(pill).toHaveAttribute('aria-expanded', 'false');
@@ -161,11 +193,13 @@ test.describe('calendar', () => {
     expect(mobileMargins.top).toBe(mobileMargins.bottom);
   });
 
-  test('print dialog uses the shared scale and the primary action treatment', async ({ page }) => {
+  test('legacy picker uses the shared scale and the primary action treatment', async ({ page }) => {
+    await writeDb('features/legacyCalendarPdf/enabled', true);
     await login(page, 'admin');
     await page.goto('/calendar');
     await page.getByRole('button', { name: 'Print' }).click();
 
+    await expect(page.getByTestId('calendar-legacy-picker')).toBeVisible();
     await expect(page.locator('.calendar-printer-title')).toBeVisible();
     const year = new Date().getFullYear().toString();
     await expect(page.getByRole('button', { name: year, exact: true })).toBeVisible();
@@ -197,24 +231,84 @@ test.describe('calendar', () => {
     await expect(print.locator('mat-icon')).toHaveText('print');
   });
 
-  test('Print dialog summarises the active filters', async ({ page }) => {
+  test('legacy picker summarises the active filters as they change', async ({ page }) => {
+    prefsUid = await adminUid();
+    savedCalendarPrefs = prefsUid
+      ? await readDb(`users/${prefsUid}/prefs/calendar`)
+      : null;
+    await writeDb('features/legacyCalendarPdf/enabled', true);
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
+
+    await page.getByRole('checkbox', { name: 'Birthdays' }).uncheck();
     await page.getByRole('button', { name: 'Print', exact: true }).click();
     await expect(page.locator('.calendar-printer-summary')).toContainText(
-      'Including birthdays, anniversaries.',
+      'Including anniversaries.',
     );
     await page.keyboard.press('Escape');
+    await expect(page.locator('.calendar-printer-container')).toHaveCount(0);
+
+    await page.getByRole('checkbox', { name: 'Anniversaries' }).uncheck();
+    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await expect(page.locator('.calendar-printer-summary')).toContainText(
+      'No event types selected.',
+    );
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.calendar-printer-container')).toHaveCount(0);
   });
 
-  test('empty state keeps the month grid visible behind the hint', async ({ page }) => {
+  test('birthday, anniversary, and notLiving toggles each change rendered events', async ({ page }) => {
+    prefsUid = await adminUid();
+    savedCalendarPrefs = prefsUid
+      ? await readDb(`users/${prefsUid}/prefs/calendar`)
+      : null;
+    await login(page, 'admin');
+
+    await page.goto('/calendar?year=2026&month=3');
+    const alice = page.locator('.event-birth', { hasText: 'Alice Anderson' });
+    await expect(alice.first()).toBeVisible();
+    await page.getByRole('checkbox', { name: 'Birthdays' }).uncheck();
+    await expect(alice).toHaveCount(0);
+    await page.getByRole('checkbox', { name: 'Birthdays' }).check();
+    await expect(alice.first()).toBeVisible();
+
+    await page.goto('/calendar?year=2026&month=11');
+    const anniversary = page.locator('.event-anniv', { hasText: 'Dave Davis' });
+    await expect(anniversary.first()).toBeVisible();
+    await page.getByRole('checkbox', { name: 'Anniversaries' }).uncheck();
+    await expect(anniversary).toHaveCount(0);
+    await page.getByRole('checkbox', { name: 'Anniversaries' }).check();
+    await expect(anniversary.first()).toBeVisible();
+
+    await page.goto('/calendar?year=2026&month=1');
+    const edith = page.locator('.event-birth', { hasText: 'Edith Evans' });
+    const notLiving = page.getByRole('checkbox', { name: 'Show relatives who have passed' });
+    if (await notLiving.isChecked()) await notLiving.uncheck();
+    await expect(edith).toHaveCount(0);
+    await notLiving.check();
+    await expect(edith.first()).toBeVisible();
+    await notLiving.uncheck();
+    await expect(edith).toHaveCount(0);
+  });
+
+  test('warm route with an empty dataset shows the hint, not a stale skeleton', async ({ page }) => {
+    prefsUid = await adminUid();
+    savedCalendarPrefs = prefsUid
+      ? await readDb(`users/${prefsUid}/prefs/calendar`)
+      : null;
     const people = await readDb('people');
     try {
-      await writeDb('people', null);
       await login(page, 'admin');
-      await page.goto('/calendar');
-      await expect(page.locator('app-calendar-view')).toBeVisible();
+      await page.goto('/calendar?year=2026&month=3');
+      await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()).toBeVisible();
+
+      // Holidays are events too; turn them off so an empty people list is truly empty.
+      await page.getByRole('checkbox', { name: 'Holidays' }).uncheck();
+      await writeDb('people', null);
+
       await expect(page.getByText("We couldn't find any events.")).toBeVisible();
+      await expect(page.locator('.calendar-skeleton')).toHaveCount(0);
+      await expect(page.locator('app-calendar-view')).toBeVisible();
     } finally {
       await writeDb('people', people);
     }
@@ -228,9 +322,40 @@ test.describe('calendar', () => {
     await expect(page.locator('.calendar-pan-hint')).toContainText('Swipe to see the full month');
   });
 
+  test('holidays show on the calendar and the filter persists across reloads', async ({ page }) => {
+    prefsUid = await adminUid();
+    savedCalendarPrefs = prefsUid
+      ? await readDb(`users/${prefsUid}/prefs/calendar`)
+      : null;
+
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=12');
+
+    const christmas = page.locator('.event-holiday', { hasText: 'Christmas Day' });
+    await expect(christmas.first()).toBeVisible();
+    await expect(page.getByTestId('calendar-toggle-holidays')).toBeVisible();
+
+    const holidayCheckbox = page.getByRole('checkbox', { name: 'Holidays' });
+    await holidayCheckbox.uncheck();
+    await expect(christmas).toHaveCount(0);
+    await expect.poll(async () => {
+      if (!prefsUid) return true;
+      const prefs = await readDb<{ showHolidays?: boolean }>(`users/${prefsUid}/prefs/calendar`);
+      return prefs?.showHolidays;
+    }).toBe(false);
+
+    await page.reload();
+    await expect(page.locator('.calendar-month-label')).toHaveText('December');
+    await expect(page.getByRole('checkbox', { name: 'Holidays' })).not.toBeChecked();
+    await expect(page.locator('.event-holiday', { hasText: 'Christmas Day' })).toHaveCount(0);
+
+    await page.getByRole('checkbox', { name: 'Holidays' }).check();
+    await expect(page.locator('.event-holiday', { hasText: 'Christmas Day' }).first()).toBeVisible();
+  });
+
   test('clicking an event opens the person modal', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/calendar');
+    await page.goto('/calendar?year=2026&month=3');
     const birthEvent = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first();
     await birthEvent.locator('.event-title-link').click();
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
