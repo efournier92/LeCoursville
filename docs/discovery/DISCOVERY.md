@@ -5,6 +5,8 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261108-02 | 2026-11-08 | [decision] | build/perf | Accepted 18 `npm audit` findings: 4 high `@grpc/grpc-js` (Node-only, not in browser bundle), 14 moderate in `firebase-tools` CLI; `--force` needs major downgrade | package-lock.json
+
 - D-20261108-01 | 2026-11-08 | [trap] | build/perf | Pinned `@angular-devkit/architect` must match `@angular-devkit/build-angular`; bumping one alone leaves a duplicate `0.2202.x` | package.json:49
 
 - D-20261107-05 | 2026-11-07 | [trap] | calendar/print | Seed dates must be absolute; current-month dates made print e2e pass only in November 2026 | scripts/e2e/seed.mjs
