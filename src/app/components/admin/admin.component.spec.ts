@@ -88,7 +88,7 @@ describe('AdminComponent', () => {
     expect(nav.getAttribute('aria-busy')).toBe('false');
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(13);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(12);
   });
 
   it('renders only content items for a content admin', () => {
@@ -98,7 +98,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
 
     const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(7);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(6);
     expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
   });
 
@@ -109,7 +109,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
 
     const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(8);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(7);
     expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
   });
 

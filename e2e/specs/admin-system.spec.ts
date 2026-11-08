@@ -269,8 +269,8 @@ test.describe('admin system surfaces', () => {
     await expect(page).toHaveURL(/[?&]sort=name/);
     await expect(page.getByTestId('admin-users-sort')).toContainText('Sort: Name');
 
-    await page.getByTestId('admin-nav-link-calendars').click();
-    await expect(page).toHaveURL(/\/admin\/calendars$/);
+    await page.getByTestId('admin-nav-link-songs').click();
+    await expect(page).toHaveURL(/\/admin\/songs$/);
     await page.goBack();
 
     await expect(page).toHaveURL(/\/admin\/users\?/);
