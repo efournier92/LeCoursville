@@ -118,6 +118,7 @@ test.describe('admin', () => {
       { name: 'Analytics', path: '/admin/analytics' },
       { name: 'Users', path: '/admin/users' },
       { name: 'Recovery', path: '/admin/recovery' },
+      { name: 'Data Requests', path: '/admin/data-requests' },
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
       { name: 'Uploads', path: '/admin/uploads' },
@@ -357,7 +358,7 @@ test.describe('admin', () => {
       await page.goto('/admin');
       const nav = page.getByTestId('admin-nav');
       await expect(nav.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
-      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(11);
+      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(12);
       await page.goto('/admin/media');
       await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
     } finally {

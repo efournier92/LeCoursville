@@ -514,6 +514,28 @@ async function main() {
         createdAt: now - 30 * 86400000,
       },
     },
+    // Data-rights queue fixtures: one open removal and one resolved update,
+    // plus an audit entry so the admin surface has a non-PII record to render.
+    dataRequests: {
+      'data-request-removal': {
+        id: 'data-request-removal',
+        kind: 'removal',
+        dataClass: 'people',
+        contact: 'data-removal@e2e.local',
+        description: 'Please remove my public listing.',
+        status: 'open',
+        createdAt: now - 3 * 86400000,
+      },
+      'data-request-update': {
+        id: 'data-request-update',
+        kind: 'update',
+        dataClass: 'photos',
+        contact: 'data-update@e2e.local',
+        description: 'Please correct the caption on my photo.',
+        status: 'resolved',
+        createdAt: now - 10 * 86400000,
+      },
+    },
     config: {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.
       adminAlertRecipients: ['admin@e2e.local'],

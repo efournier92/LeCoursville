@@ -470,6 +470,7 @@ test.describe('admin sidebar navigation', () => {
       'admin-nav-link-analytics',
       'admin-nav-link-users',
       'admin-nav-link-recovery',
+      'admin-nav-link-dataRequests',
     ]);
     expect(await ids('people')).toEqual([
       'admin-nav-link-families',
@@ -484,12 +485,16 @@ test.describe('admin sidebar navigation', () => {
     ]);
   });
 
-  test('a content admin sees People first; the empty System group is skipped', async ({ page }) => {
+  test('a content admin sees only the admin-tier System item', async ({ page }) => {
     await login(page, 'staff');
     await page.goto('/admin/families');
     const nav = page.getByTestId('admin-nav');
     await expect(nav).toHaveAttribute('aria-busy', 'false');
-    expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['People', 'Content']);
+    expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['System', 'People', 'Content']);
+    expect(
+      await nav.locator('[data-testid="admin-nav-group-system"] [data-testid^="admin-nav-link-"]')
+        .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid'))),
+    ).toEqual(['admin-nav-link-dataRequests']);
   });
 
   test('super admin sidebar drops retired Contacts and keeps Expressions (Content)', async ({ page }) => {

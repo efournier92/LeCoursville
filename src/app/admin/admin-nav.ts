@@ -14,6 +14,7 @@ export const ADMIN_ROUTE = {
   songs: 'songs',
   uploads: 'uploads',
   recovery: 'recovery',
+  dataRequests: 'data-requests',
   analytics: 'analytics',
   features: 'features',
 } as const;
@@ -39,6 +40,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { key: 'analytics', path: '/admin/' + ADMIN_ROUTE.analytics, label: 'Analytics', icon: 'insights', group: 'System', superOnly: true },
   { key: 'users', path: '/admin/' + ADMIN_ROUTE.users, label: 'Users', icon: 'manage_accounts', group: 'System', superOnly: true },
   { key: 'recovery', path: '/admin/' + ADMIN_ROUTE.recovery, label: 'Recovery', icon: 'lock_reset', group: 'System', superOnly: true },
+  { key: 'dataRequests', path: '/admin/' + ADMIN_ROUTE.dataRequests, label: 'Data Requests', icon: 'privacy_tip', group: 'System' },
   { key: 'families', path: '/admin/' + ADMIN_ROUTE.families, label: 'Families', icon: 'groups', group: 'People' },
   { key: 'people', path: '/admin/' + ADMIN_ROUTE.people, label: 'People', icon: 'person_add', group: 'People' },
   { key: 'calendars', path: '/admin/' + ADMIN_ROUTE.calendars, label: 'Calendars', icon: 'calendar_month', group: 'People', featureFlag: 'legacyCalendarPdf' },

@@ -1,0 +1,104 @@
+<div class="admin-page">
+  <app-page-toolbar title="Data Requests"></app-page-toolbar>
+
+  <p class="admin-intro">
+    Requests from visitors who asked us to remove, update, or discuss information about them.
+    Verify identity before acting, and export a record before any granted removal.
+  </p>
+
+  <mat-card class="admin-surface">
+    <mat-card-header>
+      <mat-card-title class="admin-card-title">Request Queue</mat-card-title>
+      <mat-card-subtitle>Newest first</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content data-testid="admin-data-requests-list">
+      @if (isLoading) {
+        <div class="admin-skeleton-rows" data-testid="admin-data-requests-loading" aria-hidden="true">
+          @for (row of [1, 2, 3]; track row) {
+            <span></span>
+          }
+        </div>
+      } @else if (loadError) {
+        <app-load-error [message]="loadError" (retry)="ngOnInit()" />
+      } @else if (requests.length === 0) {
+        <app-no-results-message
+          title="No data requests"
+          hint="Requests submitted from the site footer will appear here."
+          [isCentered]="true" />
+      } @else {
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Request</th>
+              <th>Status</th>
+              <th>Received</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (request of requests; track request.id) {
+              <tr class="data-request-row">
+                <td data-label="Requester">
+                  <div>{{ request.contact }}</div>
+                  @if (request.requesterUid) {
+                    <div class="request-meta">Signed-in requester</div>
+                  }
+                </td>
+                <td data-label="Request">
+                  <div class="request-kind">{{ request.kind }} / {{ request.dataClass }}</div>
+                  @if (request.description) {
+                    <div class="request-description">{{ request.description }}</div>
+                  }
+                </td>
+                <td data-label="Status">
+                  <span data-testid="admin-data-request-status">{{ request.status }}</span>
+                </td>
+                <td data-label="Received">{{ request.createdAt | date: 'yyyy-MM-dd HH:mm' }}</td>
+                <td data-label="" class="request-row-actions">
+                  @if (request.status === 'open') {
+                    <button
+                      mat-button
+                      type="button"
+                      data-testid="admin-data-request-resolve"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Resolve request from ' + request.contact"
+                      (click)="resolve(request)">
+                      Resolve
+                    </button>
+                  }
+                  @if (request.status !== 'closed') {
+                    <button
+                      mat-button
+                      type="button"
+                      data-testid="admin-data-request-close"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Close request from ' + request.contact"
+                      (click)="close(request)">
+                      Close
+                    </button>
+                  }
+                  @if (canGrant(request)) {
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      type="button"
+                      data-testid="admin-data-request-grant"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Grant removal for ' + request.contact"
+                      (click)="grant(request)">
+                      Grant removal
+                    </button>
+                  }
+                  @if (actionError[request.id]) {
+                    <div class="row-error" role="alert">{{ actionError[request.id] }}</div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -23,6 +23,7 @@ import { ChatViewComponent } from "src/app/components/chat-view/chat-view.compon
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { ConfirmDialogComponent } from "src/app/components/confirm-dialog/confirm-dialog.component";
 import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
+import { SiteFooterComponent } from "src/app/components/site-footer/site-footer.component";
 import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
 import { ContactsComponent } from "src/app/components/contacts/contacts.component";
 import { FileInputComponent } from "src/app/components/file-input/file-input.component";
@@ -75,6 +76,7 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         PeopleComponent,
         AuthActionComponent,
         RecoveryRequestComponent,
+        SiteFooterComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     bootstrap: [AppComponent],

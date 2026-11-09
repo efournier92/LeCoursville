@@ -92,6 +92,7 @@ const rules = JSON.parse(readFileSync('database.rules.json', 'utf8')).rules;
         rule.includes('roles/admin') || rule.includes('roles/super') ||
         (p.startsWith('/messages') && rule.includes('authorId')) ||
         (p.startsWith('/users') && rule.includes('auth.uid')) ||
+        (p.startsWith('/dataRequests/') && rule.includes('!data.exists()')) ||
         rule === 'false';
       if (!ok) fail(`rules audit: member-writable .write at ${p}: ${rule.slice(0, 80)}`);
     } else if (value && typeof value === 'object') {

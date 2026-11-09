@@ -17,6 +17,7 @@ import { PhotoAlbumsFeatureGuard } from 'src/app/services/photo-albums-feature.g
 import { SuperAdminGuard } from 'src/app/services/super-admin.guard';
 import { AdminComponent } from './admin.component';
 import { AdminCalendarsComponent } from '../admin-calendars/admin-calendars.component';
+import { AdminDataRequestsComponent } from '../admin-data-requests/admin-data-requests.component';
 import { AdminFamiliesComponent } from '../admin-families/admin-families.component';
 import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-family-explorer.component';
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
@@ -97,6 +98,10 @@ const routes: Routes = [
         canActivate: [SuperAdminGuard],
       },
       {
+        path: ADMIN_ROUTE.dataRequests,
+        component: AdminDataRequestsComponent,
+      },
+      {
         path: ADMIN_ROUTE.analytics,
         component: AdminAnalyticsComponent,
         canActivate: [SuperAdminGuard],
@@ -124,6 +129,7 @@ const routes: Routes = [
     AdminSongsComponent,
     SongDraftDialogComponent,
     AdminAnalyticsComponent,
+    AdminDataRequestsComponent,
   ],
   imports: [
     CommonModule,

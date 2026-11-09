@@ -166,4 +166,8 @@ export class AppComponent implements OnInit {
   shouldShowSidenavToggle(): boolean {
     return this.isSuperAdmin() && this.routingService.isOnAdminRoute();
   }
+
+  isAdminRoute(): boolean {
+    return this.routingService.isOnAdminRoute();
+  }
 }

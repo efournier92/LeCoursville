@@ -901,4 +901,92 @@ test.describe('admin tier split', () => {
       await deleteDb(`messages/msg-3/likes/${staffUid}`);
     }
   });
+
+  test('dataRequests: public create only, admin read and status, super grant and audit', async () => {
+    const key = `rules-data-request-${Date.now()}`;
+    const record = {
+      id: key,
+      kind: 'removal',
+      dataClass: 'people',
+      contact: 'rules-requester@e2e.local',
+      description: 'Rules probe request.',
+      status: 'open',
+      createdAt: Date.now(),
+    };
+
+    try {
+      expect((await put(`dataRequests/${key}`, record)).status).toBe(200);
+      // Public create does not grant a public read, even for the same record.
+      expect((await get(`dataRequests/${key}`)).status).not.toBe(200);
+      expect((await get('dataRequests')).status).not.toBe(200);
+
+      // A client cannot create a pre-closed request or write audit fields.
+      expect(
+        (await put(`dataRequests/${key}-closed`, { ...record, id: `${key}-closed`, status: 'closed' })).status,
+      ).not.toBe(200);
+      expect(
+        (await put(`dataRequests/${key}-granted`, {
+          ...record,
+          id: `${key}-granted`,
+          grantedBy: 'forged',
+        })).status,
+      ).not.toBe(200);
+
+      const userToken = await signIn('user');
+      const staffToken = await signIn('staff');
+      const superToken = await signIn('admin');
+      const staffUid = await uidForEmail(E2E_USERS.staff.email);
+      const superUid = await uidForEmail(E2E_USERS.admin.email);
+
+      expect((await get('dataRequests', userToken)).status).not.toBe(200);
+      expect((await get('dataRequests', staffToken)).status).toBe(200);
+
+      // Any admin can resolve or close; only a super can record a grant.
+      expect(
+        (await patch(`dataRequests/${key}`, {
+          status: 'resolved',
+          updatedAt: Date.now(),
+          updatedBy: staffUid,
+        }, staffToken)).status,
+      ).toBe(200);
+      expect(
+        (await patch(`dataRequests/${key}`, {
+          grantedAt: Date.now(),
+          grantedBy: staffUid,
+        }, staffToken)).status,
+      ).not.toBe(200);
+      expect(
+        (await patch(`dataRequests/${key}`, {
+          status: 'resolved',
+          grantedAt: Date.now(),
+          grantedBy: superUid,
+          updatedAt: Date.now(),
+          updatedBy: superUid,
+        }, superToken)).status,
+      ).toBe(200);
+
+      const auditKey = `rules-data-audit-${Date.now()}`;
+      const audit = {
+        requestId: key,
+        action: 'removal_granted',
+        actorUid: superUid,
+        createdAt: Date.now(),
+      };
+      expect((await put(`dataRequestAudit/${auditKey}`, audit, staffToken)).status).not.toBe(200);
+      expect((await put(`dataRequestAudit/${auditKey}`, audit, superToken)).status).toBe(200);
+      expect((await get('dataRequestAudit', userToken)).status).not.toBe(200);
+      expect((await get('dataRequestAudit', staffToken)).status).toBe(200);
+      expect((await get('dataRequestAudit', superToken)).status).toBe(200);
+    } finally {
+      await deleteDb(`dataRequests/${key}`);
+      await deleteDb(`dataRequests/${key}-closed`);
+      await deleteDb(`dataRequests/${key}-granted`);
+      const audits = await readDb<Record<string, unknown>>('dataRequestAudit');
+      for (const auditKey of Object.keys(audits || {})) {
+        if (auditKey.startsWith('rules-data-audit-')) {
+          await deleteDb(`dataRequestAudit/${auditKey}`);
+        }
+      }
+    }
+  });
 });

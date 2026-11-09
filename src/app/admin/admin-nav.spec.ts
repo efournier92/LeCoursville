@@ -1,10 +1,10 @@
 import { ADMIN_NAV, ADMIN_NAV_GROUPS, visibleAdminNav } from './admin-nav';
 
 describe('admin-nav', () => {
-  it('has twelve unique route keys', () => {
+  it('has thirteen unique route keys', () => {
     const keys = ADMIN_NAV.map(item => item.key);
-    expect(keys.length).toBe(12);
-    expect(new Set(keys).size).toBe(12);
+    expect(keys.length).toBe(13);
+    expect(new Set(keys).size).toBe(13);
   });
 
   it('every path starts with /admin/', () => {
@@ -31,7 +31,7 @@ describe('admin-nav', () => {
     expect(keys).not.toContain('calendars');
     expect(keys).not.toContain('users');
     expect(keys).not.toContain('familyExplorer');
-    expect(keys.length).toBe(5);
+    expect(keys.length).toBe(6);
   });
 
   it('hides photo albums and calendars when their flags are disabled', () => {
@@ -43,7 +43,7 @@ describe('admin-nav', () => {
     expect(keys).not.toContain('photoAlbums');
     expect(keys).not.toContain('calendars');
     expect(keys).not.toContain('users');
-    expect(keys.length).toBe(5);
+    expect(keys.length).toBe(6);
   });
 
   it('shows calendars when its flag is enabled and never photo albums', () => {
@@ -55,7 +55,7 @@ describe('admin-nav', () => {
     expect(keys).not.toContain('photoAlbums');
     expect(keys).toContain('calendars');
     expect(keys).not.toContain('users');
-    expect(keys.length).toBe(6);
+    expect(keys.length).toBe(7);
   });
 
   it('shows all items to a super when both content flags are enabled', () => {
@@ -63,13 +63,13 @@ describe('admin-nav', () => {
       { enablePhotoAlbums: { enabled: true }, legacyCalendarPdf: { enabled: true } },
       { roles: { super: true } },
     ).map(item => item.key);
-    expect(keys.length).toBe(12);
+    expect(keys.length).toBe(13);
   });
 
   it('shows only the flag-free items to a super when no flags are loaded', () => {
     const keys = visibleAdminNav(undefined, { roles: { super: true } }).map(item => item.key);
     expect(keys).not.toContain('photoAlbums');
     expect(keys).not.toContain('calendars');
-    expect(keys.length).toBe(11);
+    expect(keys.length).toBe(12);
   });
 });

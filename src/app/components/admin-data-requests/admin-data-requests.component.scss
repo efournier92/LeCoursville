@@ -1,0 +1,23 @@
+.request-meta,
+.request-description {
+  color: var(--color-ink-2);
+  font-size: 0.8125rem;
+}
+
+.request-kind {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.request-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+
+  .row-error {
+    flex-basis: 100%;
+    color: var(--color-error);
+    font-size: 0.8125rem;
+  }
+}

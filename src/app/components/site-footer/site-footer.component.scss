@@ -1,0 +1,144 @@
+.site-footer {
+  margin-top: 40px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.footer-inner {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px 32px;
+  align-items: start;
+}
+
+.footer-copy {
+  max-width: 60ch;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-ink-2);
+
+  p {
+    margin: 0 0 8px;
+  }
+}
+
+.footer-title {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.footer-draft {
+  font-size: 0.75rem;
+  color: var(--color-ink-3);
+}
+
+.footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-action {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-link);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-muted);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+.request-panel {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 560px;
+  }
+}
+
+.request-field {
+  width: 100%;
+}
+
+.request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.request-error {
+  margin: 0 0 8px;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.request-success {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  max-width: 560px;
+  color: var(--color-ink);
+
+  p {
+    margin: 0;
+  }
+
+  mat-icon {
+    color: var(--color-brand-primary);
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    padding: 20px 16px 28px;
+  }
+
+  .footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footer-action {
+    width: 100%;
+  }
+
+  .request-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media print {
+  .site-footer {
+    display: none;
+  }
+}
