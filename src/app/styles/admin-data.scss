@@ -110,7 +110,6 @@
 .admin-filter-search {
   display: flex;
   align-items: center;
-  order: 1;
   flex: 1 1 auto;
   max-width: 420px;
   min-width: 0;
@@ -160,7 +159,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  order: 2;
   margin-left: auto;
   flex: 0 0 auto;
   height: 36px;
@@ -175,6 +173,8 @@
 
   @media (max-width: 600px) {
     flex: 1 1 100%;
+    flex-wrap: wrap;
+    height: auto;
     justify-content: flex-start;
     margin-left: 0;
   }

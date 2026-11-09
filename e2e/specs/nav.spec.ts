@@ -170,7 +170,7 @@ test.describe('navigation', () => {
       ['Photos', '/photos'],
       ['Expressions', '/expressions'],
       ['Upload', '/upload'],
-      ['Account', '/'],
+      ['Account', '/account'],
     ];
     for (const [label, href] of links) {
       await expect(nav.getByRole('link', { name: label })).toHaveAttribute('href', href);
@@ -183,42 +183,48 @@ test.describe('navigation', () => {
     // Calendar is the admin promoted route, so a fresh tab's auth boot cannot
     // race the assertion by bouncing a deep link to the promoted route.
     const calendar = nav.getByRole('link', { name: 'Calendar' });
+    // Pin the signed-in landing route before capturing it as the "unchanged"
+    // baseline; login's own redirect can still be in flight on a cold start.
+    await expect(page).toHaveURL(/\/calendar$/);
     const before = page.url();
-    if (browserName === 'webkit') {
-      // Playwright's WebKit does not open a tab for a synthesized middle click.
-      // Assert the native anchor contract that makes the browser do it.
-      await expect(calendar).toHaveAttribute('href', '/calendar');
-      await expect(calendar).not.toHaveAttribute('target', '_blank');
-      return;
+    // A real href with no target override is what lets a browser open a page;
+    // assert that contract on every engine before exercising the gesture.
+    await expect(calendar).toHaveAttribute('href', '/calendar');
+    await expect(calendar).not.toHaveAttribute('target', '_blank');
+
+    const openedPromise = context.waitForEvent('page', { timeout: 2000 }).catch(() => null);
+    await calendar.click({ button: 'middle' });
+    const opened = await openedPromise;
+    if (browserName === 'chromium') {
+      expect(opened).not.toBeNull();
     }
-    const [opened] = await Promise.all([
-      context.waitForEvent('page'),
-      calendar.click({ button: 'middle' }),
-    ]);
-    await opened.waitForLoadState('domcontentloaded');
-    await expect(opened).toHaveURL(/\/calendar$/);
-    // The original page never navigates for a middle click.
-    await expect(page).toHaveURL(before);
-    await opened.close();
+    if (opened) {
+      await opened.waitForLoadState('domcontentloaded');
+      await expect(opened).toHaveURL(/\/calendar$/);
+      await opened.close();
+      // The original page never navigates when a page opens.
+      await expect(page).toHaveURL(before);
+    }
+    // Playwright's WebKit and Firefox do not open a page for a synthesized
+    // middle click; they follow the href in place. The href/target contract
+    // asserted above is the new-tab guarantee for a real browser on those
+    // engines.
   });
 
-  test('modifier click opens a new tab and leaves the current page unchanged', async ({ page, context, browserName }) => {
+  test('modifier click opens a new tab and leaves the current page unchanged', async ({ page, context }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');
+    const calendar = nav.getByRole('link', { name: 'Calendar' });
+    await expect(page).toHaveURL(/\/calendar$/);
     const before = page.url();
-    // macOS Chromium/WebKit use Cmd for a new tab; Firefox and other platforms use Ctrl.
+    await expect(calendar).toHaveAttribute('href', '/calendar');
+    await expect(calendar).not.toHaveAttribute('target', '_blank');
+    // macOS Chromium/Firefox/WebKit use Cmd for a new tab; Firefox on other
+    // platforms uses Ctrl.
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
-    if (browserName === 'firefox') {
-      // Playwright's Firefox does not open a tab for a synthesized modifier click.
-      // Assert the native anchor contract that makes a real browser do it.
-      const calendar = nav.getByRole('link', { name: 'Calendar' });
-      await expect(calendar).toHaveAttribute('href', '/calendar');
-      await expect(calendar).not.toHaveAttribute('target', '_blank');
-      return;
-    }
     const [opened] = await Promise.all([
       context.waitForEvent('page'),
-      nav.getByRole('link', { name: 'Calendar' }).click({ modifiers: [modifier] }),
+      calendar.click({ modifiers: [modifier] }),
     ]);
     await opened.waitForLoadState('domcontentloaded');
     await expect(opened).toHaveURL(/\/calendar$/);
@@ -232,16 +238,49 @@ test.describe('navigation', () => {
     await nav.getByRole('link', { name: 'People' }).click();
     await expect(page).toHaveURL(/\/people/);
     await expect(nav.getByRole('link', { name: 'People' })).toHaveClass(/active/);
+    await expect(nav.getByRole('link', { name: 'People' })).toHaveAttribute('aria-current', 'page');
   });
 
-  test('mobile menu items are anchors with real hrefs', async ({ page }) => {
+  test('mobile menu items are anchors with real hrefs, navigate, and mark active', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    const openMenu = page.getByRole('button', { name: 'Open navigation menu' });
+    await openMenu.click();
+    const menu = page.locator('.mat-mdc-menu-panel');
+    await expect(menu).toBeVisible();
+    const links: [string, string][] = [
+      ['People', '/people'],
+      ['Contacts', '/contacts'],
+      ['Calendar', '/calendar'],
+      ['Songs', '/songs'],
+      ['Audio', '/media/audio'],
+      ['Videos', '/media/video'],
+      ['Photos', '/photos'],
+      ['Expressions', '/expressions'],
+      ['Upload', '/upload'],
+      ['Account', '/account'],
+    ];
+    for (const [label, href] of links) {
+      await expect(menu.getByRole('menuitem', { name: label })).toHaveAttribute('href', href);
+    }
+
+    await menu.getByRole('menuitem', { name: 'People' }).click();
+    await expect(page).toHaveURL(/\/people$/);
+    await openMenu.click();
+    await expect(page.locator('.mat-mdc-menu-panel')).toBeVisible();
+    const active = page.locator('.mat-mdc-menu-panel').getByRole('menuitem', { name: 'People' });
+    await expect(active).toHaveClass(/active/);
+    await expect(active).toHaveAttribute('aria-current', 'page');
+  });
+
+  test('mobile menu items activate on Space', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, 'user');
     await page.getByRole('button', { name: 'Open navigation menu' }).click();
-    const menu = page.locator('.mat-mdc-menu-panel');
-    await expect(menu).toBeVisible();
-    const people = menu.getByRole('menuitem', { name: 'People' });
-    await expect(people).toHaveAttribute('href', '/people');
+    const calendar = page.locator('.mat-mdc-menu-panel').getByRole('menuitem', { name: 'Calendar' });
+    await calendar.focus();
+    await page.keyboard.press('Space');
+    await expect(page).toHaveURL(/\/calendar$/);
   });
 });
 
@@ -250,8 +289,7 @@ test.describe('mobile page toolbars', () => {
     { path: '/admin/people', title: 'People' },
     { path: '/people', title: 'People' },
     { path: '/calendar', title: 'Calendar' },
-    // The photo albums toolbar has no title, only projected filter controls.
-    { path: '/photos' },
+    { path: '/photos', title: 'Photos' },
   ];
 
   for (const route of routes) {
@@ -259,21 +297,23 @@ test.describe('mobile page toolbars', () => {
       await page.setViewportSize({ width: 390, height: 844 });
       await login(page, 'admin');
       await page.goto(route.path);
+      expect(new URL(page.url()).pathname).toBe(route.path);
       const toolbar = page.locator('.page-toolbar');
       await expect(toolbar).toBeVisible();
       if (route.title) {
-        await expect(toolbar.locator('.page-toolbar-title')).toHaveText(route.title);
+        const title = toolbar.locator('.page-toolbar-title');
+        await expect(title).toHaveText(route.title);
+        await expect(title).toHaveCSS('text-align', 'left');
       }
       await expect(toolbar).toHaveCSS('flex-direction', 'column');
       await expect(toolbar).toHaveCSS('align-items', 'stretch');
       await expect(toolbar).toHaveCSS('row-gap', '8px');
 
       const content = toolbar.locator('.page-toolbar-content');
-      if (await content.count()) {
-        await expect(content).toHaveCSS('justify-content', 'flex-start');
-        await expect(content).toHaveCSS('margin-left', '0px');
-        await expect(content).toHaveCSS('align-items', 'center');
-      }
+      await expect(content).toBeVisible();
+      await expect(content).toHaveCSS('justify-content', 'flex-start');
+      await expect(content).toHaveCSS('margin-left', '0px');
+      await expect(content).toHaveCSS('align-items', 'center');
 
       const box = (await toolbar.boundingBox())!;
       const inset = await toolbar.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft));
@@ -284,6 +324,25 @@ test.describe('mobile page toolbars', () => {
         const childBox = (await child.boundingBox())!;
         expect(Math.abs(childBox.x - left)).toBeLessThanOrEqual(1);
       }
+
+      // The title cluster sits above the tools cluster, not beside it.
+      const leftBox = (await toolbar.locator('.page-toolbar-left').boundingBox())!;
+      const contentBox = (await content.boundingBox())!;
+      expect(leftBox.y + leftBox.height).toBeLessThanOrEqual(contentBox.y + 1);
+
+      // Every projected control stays within the cluster and the first starts
+      // at its left edge; wrapped rows keep their left anchor.
+      const children = content.locator(':scope > *');
+      const childCount = await children.count();
+      expect(childCount).toBeGreaterThan(0);
+      const firstChildBox = (await children.first().boundingBox())!;
+      expect(Math.abs(firstChildBox.x - contentBox.x)).toBeLessThanOrEqual(1);
+      for (let i = 0; i < childCount; i++) {
+        const childBox = (await children.nth(i).boundingBox())!;
+        expect(childBox.x).toBeGreaterThanOrEqual(contentBox.x - 1);
+        expect(childBox.width).toBeLessThanOrEqual(contentBox.width + 1);
+      }
+
       if (route.title) {
         const titleBox = (await toolbar.locator('.page-toolbar-title').boundingBox())!;
         expect(Math.abs(titleBox.x - left)).toBeLessThanOrEqual(1);
@@ -305,6 +364,16 @@ test.describe('mobile page toolbars', () => {
     await expect(actions).toHaveCSS('margin-left', '0px');
     await expect(actions).toHaveCSS('flex-basis', '100%');
 
+    // DOM and Tab order match the stacked reading order: search before actions.
+    const slotOrder = await bar.evaluate(el => Array.from(el.children).map(child => child.className));
+    expect(slotOrder[0]).toContain('admin-filter-search');
+    expect(slotOrder[1]).toContain('admin-filter-actions');
+    const searchFirst = await bar.evaluate(el => {
+      const focusable = el.querySelectorAll<HTMLElement>('input, button, a[href]');
+      return focusable[0]?.closest('.admin-filter-search') !== null;
+    });
+    expect(searchFirst).toBe(true);
+
     const box = (await bar.boundingBox())!;
     const inset = await bar.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft));
     const actionsBox = (await actions.boundingBox())!;
@@ -315,6 +384,71 @@ test.describe('mobile page toolbars', () => {
     expect(firstBox.width).toBeLessThan(actionsBox.width);
     // The first control sits one border-width in from the row's content edge.
     expect(Math.abs(firstBox.x - (box.x + inset))).toBeLessThanOrEqual(3);
+  });
+
+  test('photo album filter actions wrap without clipping at phone widths', async ({ page }) => {
+    await login(page, 'admin');
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/admin/photo-albums');
+      await expect(page.getByText('E2E Album One')).toBeVisible();
+      const bar = page.locator('.admin-filter-bar');
+      const actions = bar.locator('.admin-filter-actions');
+      await expect(actions).toHaveCSS('flex-wrap', 'wrap');
+
+      const barBox = (await bar.boundingBox())!;
+      const insetRight = await bar.evaluate(el => parseFloat(getComputedStyle(el).paddingRight));
+      const contentRight = barBox.x + barBox.width - insetRight;
+      const controls = actions.locator(':scope > *');
+      const count = await controls.count();
+      expect(count).toBeGreaterThanOrEqual(3);
+      for (let i = 0; i < count; i++) {
+        const controlBox = (await controls.nth(i).boundingBox())!;
+        expect(controlBox.x + controlBox.width).toBeLessThanOrEqual(contentRight + 1);
+      }
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('mobile menu anchors and photos toolbar controls meet the 44px hit area', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.getByRole('button', { name: 'Open navigation menu' }).click();
+    const menu = page.locator('.mat-mdc-menu-panel');
+    await expect(menu).toBeVisible();
+    const items = menu.getByRole('menuitem');
+    const itemCount = await items.count();
+    expect(itemCount).toBeGreaterThan(0);
+    // The menu scales in; wait for the real height before measuring it.
+    await expect.poll(async () => (await items.first().boundingBox())?.height ?? 0)
+      .toBeGreaterThanOrEqual(44);
+    for (let i = 0; i < itemCount; i++) {
+      const box = (await items.nth(i).boundingBox())!;
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    const firstItem = items.first();
+    await firstItem.focus();
+    await expect(firstItem).toBeFocused();
+    expect(await firstItem.evaluate(el => el.matches(':focus'))).toBe(true);
+    await page.keyboard.press('Escape');
+
+    await page.goto('/photos');
+    await expect(page.locator('.page-toolbar')).toBeVisible();
+    const controls = page.locator(
+      '.page-toolbar .gallery-search-clear, .page-toolbar .gallery-segmented-btn, .page-toolbar .gallery-primary-btn',
+    );
+    const controlCount = await controls.count();
+    expect(controlCount).toBeGreaterThan(0);
+    for (let i = 0; i < controlCount; i++) {
+      const box = (await controls.nth(i).boundingBox())!;
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    const segment = page.locator('.page-toolbar .gallery-segmented-btn').first();
+    await segment.focus();
+    await expect(segment).toBeFocused();
+    expect(await segment.evaluate(el => el.matches(':focus'))).toBe(true);
   });
 });
 

@@ -83,9 +83,11 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
   const box = await toolbar.boundingBox();
   expect(box).not.toBeNull();
   // Below 600px the bar stacks its title above one action row (UI-019), so it
-  // grows instead of clipping; the minimum still holds.
+  // grows instead of clipping; desktop and the phone stack are asserted apart.
+  const stacked = expectedHeight < 64;
+  await expect(toolbar).toHaveCSS('flex-direction', stacked ? 'column' : 'row');
   expect(box!.height).toBeGreaterThanOrEqual(expectedHeight - 1);
-  expect(box!.height).toBeLessThanOrEqual(expectedHeight + 64);
+  expect(box!.height).toBeLessThanOrEqual(stacked ? expectedHeight + 64 : expectedHeight + 8);
 
   const surface = await toolbar.evaluate((el) => {
     const styles = getComputedStyle(el);

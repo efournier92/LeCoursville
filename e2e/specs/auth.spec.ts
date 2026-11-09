@@ -169,9 +169,9 @@ test.describe('auth', () => {
   test('sign out returns to the sign-in page and re-protects routes', async ({ page }) => {
     await login(page, 'admin');
     await expect(page).toHaveURL(/\/calendar/);
-    // The Sign out button lives on the Account page (route '/').
+    // The Sign out button lives on the Account page (route '/account').
     await page.getByRole('link', { name: 'Account' }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/account');
     await logout(page);
     await expect(page).toHaveURL('/');
     // Protected route redirects again.
@@ -225,7 +225,7 @@ test.describe('auth', () => {
   test('signed-in email/password user sees their profile on the account page', async ({ page }) => {
     await login(page, 'user');
     await page.getByRole('link', { name: 'Account' }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/account');
     await expect(page.locator('.account-name')).toHaveText('Regular User');
     await expect(page.locator('.account-email')).toHaveText(E2E_USERS.user.email);
     await expect(page.getByRole('button', { name: 'Edit profile' })).toBeVisible();

@@ -260,7 +260,7 @@ test('account "Always use dark mode" persists to RTDB and a fresh session', asyn
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   // The pref write emits a user update; it must not trigger the promoted-route
   // bounce and yank us off Account.
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL('/account');
   // Simulate a new session: drop the per-tab override, then reload. The
   // account preference alone must restore dark mode.
   await page.evaluate(() => sessionStorage.clear());
@@ -272,13 +272,13 @@ test('account "Always use dark mode" persists to RTDB and a fresh session', asyn
 test('account theme toggle keeps you on the account page', async ({ page }) => {
   await login(page, 'user');
   await page.getByRole('link', { name: 'Account' }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL('/account');
   const pref = page.getByTestId('account-always-dark');
   await pref.click();
   await expect(pref).toHaveAttribute('aria-checked', 'true');
   // Regression: the profile write used to emit a user update that re-ran the
   // promoted-route bounce, sending the user to /calendar mid-toggle.
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL('/account');
   await expect(pref).toBeVisible();
 });
 

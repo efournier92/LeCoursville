@@ -72,4 +72,8 @@ a.active .active-indicator {
     padding-left: 12px;
     padding-right: 12px;
   }
+
+  a[mat-menu-item] {
+    min-height: 44px;
+  }
 }
