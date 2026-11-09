@@ -148,6 +148,20 @@ describe('CalendarService', () => {
       expect(events.find(e => e.personId === 'person-2')?.familyColor).toBe('');
     }));
 
+    it('resolves the family color and name on anniversary events through the anchor person', inject([CalendarService], (service: CalendarService) => {
+      mockFamiliesSubject.next([
+        { id: 'family-1', name: 'Alder', hexColor: '#F44336', sortOrder: 'A', createdAt: 0, updatedAt: 0 }
+      ]);
+      mockPeopleSubject.next([
+        createPerson({ id: 'person-1', familyId: 'family-1', spouseId: 'spouse-1', anniversaryDate: { year: 2015, month: 7, day: 4 } }),
+        createPerson({ id: 'spouse-1', familyId: 'family-1', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }, spouseId: 'person-1' })
+      ]);
+
+      const event = service['calendarEventsSource'].getValue().find(e => e.type === 'anniversary');
+      expect(event?.familyColor).toBe('#F44336');
+      expect(event?.familyName).toBe('Alder');
+    }));
+
     it('propagates a people load error to its error subscriber', inject([CalendarService], (service: CalendarService) => {
       let error: string | null = null;
       service.loadError$.subscribe(value => error = value);

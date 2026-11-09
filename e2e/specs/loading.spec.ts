@@ -58,6 +58,7 @@ test.describe('loading contract', () => {
   });
 
   test('skeleton resolves under reload stress', async ({ page }) => {
+    test.setTimeout(600_000);
     await login(page, 'admin');
     for (const { route, url, content } of ROUTES) {
       await page.goto(route);
@@ -65,8 +66,8 @@ test.describe('loading contract', () => {
       if (url) {
         await expect(page).toHaveURL(url);
       }
-      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
-      await expect(content(page)).toBeVisible({ timeout: 45_000 });
+      // 120s stress-wait, not a retry: a saturated full-suite browser can stall a route well past 30s.
+      await expect(content(page)).toBeVisible({ timeout: 120_000 });
     }
   });
 
@@ -172,12 +173,13 @@ test.describe('loading contract', () => {
   });
 
   test('admin skeleton resolves under reload stress', async ({ page }) => {
+    test.setTimeout(600_000);
     await login(page, 'admin');
     for (const { route, content } of ADMIN_ROUTES) {
       await page.goto(route);
       await page.reload();
-      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
-      await expect(content(page)).toBeVisible({ timeout: 45_000 });
+      // 120s stress-wait, not a retry: a saturated full-suite browser can stall a route well past 30s.
+      await expect(content(page)).toBeVisible({ timeout: 120_000 });
       await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
     }
   });

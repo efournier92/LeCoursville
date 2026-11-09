@@ -55,6 +55,7 @@ export class CalendarService {
   private deriveEventsFromPeople(people: Person[], families: Family[]): void {
     const events: RecurringEvent[] = [];
     const familyColors = new Map(families.map(family => [family.id, family.hexColor]));
+    const familyNames = new Map(families.map(family => [family.id, family.name]));
 
     for (const person of people) {
       // Birthdays include virtual spouses, except when duplicating a primary's birthday.
@@ -74,6 +75,7 @@ export class CalendarService {
           event.start = new Date(event.date);
           event.isLiving = person.isLiving;
           event.familyColor = familyColors.get(person.familyId ?? '') ?? '';
+          event.familyName = familyNames.get(person.familyId ?? '') ?? '';
           events.push(event);
         }
       }
@@ -105,6 +107,7 @@ export class CalendarService {
       event.start = new Date(event.date);
       event.isLiving = anchor.isLiving;
       event.familyColor = familyColors.get(anchor.familyId ?? '') ?? '';
+      event.familyName = familyNames.get(anchor.familyId ?? '') ?? '';
       events.push(event);
 
       seenAnniversaries.add(person.id);
@@ -182,6 +185,7 @@ export class CalendarService {
       eventClone.personId2 = event.personId2;
       eventClone.isLiving = event.isLiving;
       eventClone.familyColor = event.familyColor;
+      eventClone.familyName = event.familyName;
       const month = event.date.getMonth();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       // Clamp Feb 29 to Feb 28 in non-leap view years so month, render, and sort agree.

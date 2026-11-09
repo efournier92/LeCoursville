@@ -111,7 +111,11 @@ test.describe('admin roles', () => {
     await login(page, 'staff');
     for (const route of CONTENT_ROUTES) {
       await page.goto(route.path);
-      await expect(page).toHaveURL(new RegExp(`${route.path}$`));
+      // Legacy photo-albums links redirect to the matching Media tab.
+      const expected = route.path === '/admin/photo-albums'
+        ? /\/admin\/media\?section=photo-albums$/
+        : new RegExp(`${route.path}$`);
+      await expect(page).toHaveURL(expected);
       await route.ready(page);
     }
   });

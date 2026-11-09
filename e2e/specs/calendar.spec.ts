@@ -130,6 +130,19 @@ test.describe('calendar', () => {
       .locator('.calendar-cell-event-container');
     await expect(cedar).toBeVisible();
     await expect(cedar).toHaveCSS('border-left-color', 'rgb(33, 150, 243)');
+
+    // Anniversaries resolve the family color through their anchor person too.
+    await page.goto('/calendar?year=2026&month=11');
+    const anniversary = page.locator('.event-anniv', { hasText: 'Dave Davis' }).first()
+      .locator('.calendar-cell-event-container');
+    await expect(anniversary).toBeVisible();
+    await expect(anniversary).toHaveCSS('border-left-color', 'rgb(244, 67, 54)');
+
+    // Family identity is not colour-only: the tag carries the family name.
+    await page.goto('/calendar?year=2026&month=3');
+    const alderTag = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first();
+    await expect(alderTag.locator('.calendar-cell-event-container')).toHaveAttribute('title', 'Family: Alder');
+    await expect(alderTag.locator('.calendar-cell-event-container')).toContainText('Alder');
   });
 
   test('today marker uses a brand circle and a brand cell wash', async ({ page }) => {
@@ -165,6 +178,23 @@ test.describe('calendar', () => {
       .locator('.event-title-holiday');
     await expect(holiday).toBeVisible();
     await expect(holiday).toHaveCSS('text-indent', '0px');
+  });
+
+  test('anniversary ampersand row keeps both names on one left edge', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+
+    const anniversary = page.locator('.event-anniv', { hasText: 'Alexandria' }).first();
+    const primary = anniversary.locator('.event-title-link').first();
+    const spouse = anniversary.locator('.event-title-spouse-link').first();
+    await expect(primary).toBeVisible();
+    await expect(spouse).toBeVisible();
+    await expect(primary).toHaveCSS('text-indent', '0px');
+    await expect(spouse).toHaveCSS('text-indent', '0px');
+
+    const lefts = await Promise.all([primary, spouse].map((locator) =>
+      locator.evaluate((el) => Math.round(el.getBoundingClientRect().left))));
+    expect(Math.abs(lefts[0] - lefts[1]), `name offsets ${lefts.join(',')}`).toBeLessThanOrEqual(1);
   });
 
   test('event tags are inset 4px from the day cell edge', async ({ page }) => {
@@ -390,6 +420,66 @@ test.describe('calendar', () => {
       // Weekday names shorten to one letter at phone width.
       await expect(page.locator('.cal-header-short').first()).toBeVisible();
       await expect(page.locator('.cal-header-full').first()).toBeHidden();
+
+      // The short glyph is aria-hidden, so every columnheader keeps the full
+      // weekday as its accessible name.
+      await expect(headers.first()).toHaveAccessibleName('Sunday');
+      await expect(headers.last()).toHaveAccessibleName('Saturday');
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
+  test('mobile tags keep the name readable and meet the touch-target floor', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    await page.setViewportSize({ width: 390, height: 844 });
+    try {
+      await page.goto('/calendar?year=2026&month=3');
+      const tag = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+        .locator('.calendar-cell-event-container');
+      const name = tag.locator('.event-title-link');
+      await expect(name).toBeVisible();
+      const nameBox = await name.boundingBox();
+      expect(nameBox).not.toBeNull();
+      // The years-since token must not collapse the name container.
+      expect(nameBox!.width).toBeGreaterThan(20);
+      const tagBox = await tag.boundingBox();
+      expect(tagBox!.height).toBeGreaterThanOrEqual(44);
+
+      // Dense July day: the +N more control is a real 44px-tall button.
+      await page.goto('/calendar?year=2026&month=7');
+      const more = page.locator('.cal-events-overflow').first();
+      await expect(more).toBeVisible();
+      const moreBox = await more.boundingBox();
+      expect(moreBox!.height).toBeGreaterThanOrEqual(44);
+      const eventButtonBox = await page.locator('.event-title-link').first().boundingBox();
+      expect(eventButtonBox!.height).toBeGreaterThanOrEqual(44);
+
+      // Every day cell keeps UI-018's 64px minimum height.
+      const cellBox = await page.locator('.cal-days .cal-day-cell').first().boundingBox();
+      expect(cellBox!.height).toBeGreaterThanOrEqual(64);
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
+  test('very narrow phone keeps 44px columns and scrolls horizontally', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    await page.setViewportSize({ width: 320, height: 700 });
+    try {
+      await page.goto('/calendar?year=2026&month=3');
+      const headers = page.locator('.cal-header .cal-cell');
+      await expect(headers).toHaveCount(7);
+      const widths = await headers.evaluateAll((els) =>
+        els.map((el) => el.getBoundingClientRect().width));
+      for (const width of widths) expect(width).toBeGreaterThanOrEqual(44);
+
+      // Seven 44px columns no longer fit, so the grid pans instead of shrinking.
+      const overflow = await page.locator('.calendar-scroll-container').evaluate(
+        (el) => el.scrollWidth - el.clientWidth);
+      expect(overflow).toBeGreaterThan(0);
     } finally {
       await page.setViewportSize(original);
     }
@@ -431,6 +521,21 @@ test.describe('calendar', () => {
     await page.goto('/calendar?year=2026&month=3');
     const birthEvent = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first();
     await birthEvent.locator('.event-title-link').click();
+    await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
+  });
+
+  test('overflow and person controls are keyboard operable', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=7');
+
+    const more = page.getByRole('button', { name: /\+\d+ more/ }).first();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await more.press('Space');
+    await expect(page.getByRole('button', { name: 'Show less' }).first()).toHaveAttribute('aria-expanded', 'true');
+
+    await page.goto('/calendar?year=2026&month=3');
+    const person = page.getByRole('button', { name: 'Alice Anderson' }).first();
+    await person.press('Space');
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
   });
 });

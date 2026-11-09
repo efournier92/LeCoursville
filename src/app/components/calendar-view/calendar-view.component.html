@@ -6,7 +6,12 @@
     >
     <div class="cal-cell-row cal-header" role="row">
       @for (day of days; track day.date.toISOString()) {
-        <div class="cal-cell" role="columnheader" [class.cal-weekend]="day.isWeekend">
+        <div
+          class="cal-cell"
+          role="columnheader"
+          [class.cal-weekend]="day.isWeekend"
+          [attr.aria-label]="day.date | calendarDate : 'monthViewColumnHeader' : locale"
+        >
           <span class="cal-header-full">{{ day.date | calendarDate : 'monthViewColumnHeader' : locale }}</span>
           <span class="cal-header-short" aria-hidden="true">{{ day.date | calendarDate : 'monthViewColumnHeader' : locale | slice : 0 : 1 }}</span>
         </div>
@@ -20,11 +25,18 @@
     >
     <div class="cal-cell-content">
       <div class="cal-cell-top">
-        <span class="cal-day-number">{{
+        <span
+          class="cal-day-number"
+          [attr.aria-current]="day.isToday ? 'date' : null"
+        >{{
           day.date | calendarDate : 'monthViewDayNumber' : locale
         }}</span>
       </div>
-      <div class="cal-events-container" [class.expanded]="expandedDays[day.date.toISOString()]">
+      <div
+        class="cal-events-container"
+        [id]="'events-' + day.date.getTime()"
+        [class.expanded]="expandedDays[day.date.toISOString()]"
+      >
         @for (event of day.events; track event; let i = $index) {
           <small
             class="mb-1"
@@ -40,20 +52,26 @@
           </small>
         }
         @if (getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]) {
-          <div
+          <button
+            type="button"
             class="cal-events-overflow"
+            aria-expanded="false"
+            [attr.aria-controls]="'events-' + day.date.getTime()"
             (click)="toggleDayExpanded(day)"
             >
             +{{ getHiddenEventCount(day) }} more
-          </div>
+          </button>
         }
         @if (expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0) {
-          <div
+          <button
+            type="button"
             class="cal-events-collapse"
+            aria-expanded="true"
+            [attr.aria-controls]="'events-' + day.date.getTime()"
             (click)="toggleDayExpanded(day)"
             >
             Show less
-          </div>
+          </button>
         }
       </div>
     </div>

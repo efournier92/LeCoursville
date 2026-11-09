@@ -18,8 +18,15 @@
 
 .cal-events-overflow,
 .cal-events-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   font-size: 0.75em;
+  font-family: inherit;
   color: var(--color-brand-primary);
+  background: transparent;
+  border: 0;
   cursor: pointer;
   padding: 2px 4px;
   text-align: center;
@@ -28,6 +35,13 @@
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+  }
+}
+
+@media (max-width: 768px) {
+  .cal-events-overflow,
+  .cal-events-collapse {
+    min-height: 44px;
   }
 }
 
@@ -119,7 +133,9 @@
 @media (max-width: 768px) {
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 0;
+    // Seven 44px columns plus the grid borders: below this the shared scroll
+    // container pans rather than squeezing a target under 44px.
+    min-width: 310px;
     width: 100%;
   }
 
@@ -135,7 +151,7 @@
 
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 0;
+    min-width: 310px;
     width: 100%;
   }
 

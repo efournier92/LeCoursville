@@ -540,19 +540,51 @@ test('filled brand buttons match the toolbar in both themes', async ({ page }) =
   await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
 });
 
-test('calendar family tag bars adapt in dark', async ({ page }) => {
+test('calendar family tag bars clear 3:1 against the tag fill in dark', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/calendar?year=2026&month=3');
   const bar = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
     .locator('.calendar-cell-event-container');
   await expect(bar).toBeVisible();
-  const lightBar = await bar.evaluate((el) => getComputedStyle(el).borderLeftColor);
   await expect(bar).toHaveCSS('border-left-width', '4px');
 
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  const darkBar = await bar.evaluate((el) => getComputedStyle(el).borderLeftColor);
-  expect(darkBar).not.toBe(lightBar);
+  const ratio = await bar.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { bar: style.borderLeftColor, surface: style.backgroundColor };
+  });
+  expect(contrast(ratio.bar, ratio.surface)).toBeGreaterThanOrEqual(3);
+});
+
+test('tag bars raise a low-contrast family colour to 3:1 in both themes', async ({ page }) => {
+  const family = await readDb<{ hexColor: string }>('families/family-1');
+  try {
+    // A raw yellow admin value is 1.04:1 on the light tag fill.
+    await writeDb('families/family-1/hexColor', '#FFFF00');
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+    const bar = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+      .locator('.calendar-cell-event-container');
+    await expect(bar).toBeVisible();
+
+    const light = await bar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { bar: style.borderLeftColor, surface: style.backgroundColor };
+    });
+    expect(light.bar).not.toBe('rgb(255, 255, 0)');
+    expect(contrast(light.bar, light.surface)).toBeGreaterThanOrEqual(3);
+
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const dark = await bar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { bar: style.borderLeftColor, surface: style.backgroundColor };
+    });
+    expect(contrast(dark.bar, dark.surface)).toBeGreaterThanOrEqual(3);
+  } finally {
+    await writeDb('families/family-1/hexColor', family?.hexColor ?? '#F44336');
+  }
 });
 
 test('dark today marker uses a lighter-on-dark circle and a visible wash', async ({ page }) => {
@@ -566,6 +598,9 @@ test('dark today marker uses a lighter-on-dark circle and a visible wash', async
   // Dark brand primary #8CCDA3 fill with the dark ground as ink.
   await expect(today.locator('.cal-day-number')).toHaveCSS('background-color', 'rgb(140, 205, 163)');
   await expect(today.locator('.cal-day-number')).toHaveCSS('color', 'rgb(17, 20, 24)');
-  const wash = await today.evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(wash).not.toBe('rgba(0, 0, 0, 0)');
+  // The 18% brand-over-transparent wash survives both serialization forms.
+  await expect(today).toHaveCSS(
+    'background-color',
+    /^(rgba\(140, 205, 163, 0\.18\)|color\(srgb 0\.549\d* 0\.8039\d* 0\.639\d* \/ 0\.18\))$/,
+  );
 });

@@ -402,6 +402,24 @@ test.describe('calendar print', () => {
     }
   });
 
+  test('22b. print entry labels drop the on-screen hanging indent', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto(PRINT_URL);
+    await page.getByTestId('calendar-print-customize').click();
+    await page.getByTestId('calendar-print-scope-month').check();
+    await page.getByTestId('calendar-print-month').selectOption('3');
+    await expect(page.getByTestId('calendar-print-status')).toHaveText('1 page');
+    await page.emulateMedia({ media: 'print' });
+
+    const march = page.getByTestId('calendar-print-page');
+    const indent = await march.locator('.calendar-print-entry-label').first().evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { paddingLeft: style.paddingLeft, textIndent: style.textIndent };
+    });
+    expect(indent.paddingLeft).toBe('0px');
+    expect(indent.textIndent).toBe('0px');
+  });
+
   test('22a. unknown birth years are skipped and a shared-surname couple prints once', async ({ page }) => {
     await login(page, 'admin');
     await page.goto(PRINT_URL);

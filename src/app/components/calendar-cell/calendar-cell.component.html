@@ -12,8 +12,13 @@
     <div
       class="calendar-cell-event-container"
       [class.border-holiday]="event.type === 'holiday'"
-      [style.--event-accent]="event.familyColor || 'var(--color-brand-primary)'"
+      [attr.title]="event.familyName ? 'Family: ' + event.familyName : null"
+      [style.--event-accent-light]="lightAccent || null"
+      [style.--event-accent-dark]="darkAccent || null"
     >
+      @if (event.familyName) {
+        <span class="visually-hidden">Family {{ event.familyName }}.</span>
+      }
       @if (event.type !== 'holiday') {
         <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
           <div class="calendar-years-since">
@@ -26,14 +31,14 @@
           @if (event.type === 'holiday') {
             <span class="event-title-holiday">{{ getPrimaryName() }}</span>
           } @else {
-            <span class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</span>
+            <button type="button" class="event-title-link" (click)="onEventTitleClick()">{{ getPrimaryName() }}</button>
           }
           @if (getSpouseName()) {
             <span class="event-ampersand-inline">&amp;</span>
           }
         </span>
         @if (getSpouseName()) {
-          <span class="event-title-spouse-link" (click)="onSpouseTitleClick()">{{ getSpouseName() }}</span>
+          <button type="button" class="event-title-spouse-link" (click)="onSpouseTitleClick()">{{ getSpouseName() }}</button>
         }
       </div>
     </div>

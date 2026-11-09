@@ -127,7 +127,9 @@ html {
   // Calendar event tags — birth blue, anniversary red, shared neutral fill.
   --cal-birth-accent: #2b6cb0;
   --cal-anniv-accent: #c53030;
-  --cal-tag-bg: #fafbfc;
+  --cal-tag-bg-light: #fafbfc;
+  --cal-tag-bg-dark: #22272D;
+  --cal-tag-bg: var(--cal-tag-bg-light);
   --cal-tag-ink: var(--color-ink);
 
   // Cross-theme constants: identical in light and dark, tokenized so the
@@ -214,7 +216,7 @@ html[data-theme="dark"] {
 
   --cal-birth-accent: #7FAEDC;
   --cal-anniv-accent: #E58585;
-  --cal-tag-bg: #22272D;
+  --cal-tag-bg: var(--cal-tag-bg-dark);
 
   --color-on-brand: #ffffff;
   --color-media-backdrop: #000000;
@@ -829,10 +831,12 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
 
 @media (max-width: 768px) {
   // Fluid seven columns: the header and body share one width by construction.
+  // Below 7 x 44px the columns stop shrinking and the shared scroll container
+  // pans instead of dropping a column or clipping a target.
   .cal-month-view .cal-header .cal-cell,
   .cal-month-view .cal-day-cell {
     flex: 1 1 0;
-    min-width: 0;
+    min-width: 44px;
     width: calc(100% / 7);
   }
 
