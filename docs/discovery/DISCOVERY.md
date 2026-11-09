@@ -5,6 +5,26 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261109-10 | 2026-11-09 | [decision] | admin/security | Open email signup requires messages read to be approved-user-only (`roles/user === true`). pending accounts no longer read chat | database.rules.json:23
+
+- D-20261109-09 | 2026-11-09 | [trap] | admin/security | An RTDB ancestor `.write` overrides child `.write`, and child `.validate` sees `newData.val()` at that path. put field restrictions in `.validate` | database.rules.json:205
+
+- D-20261109-08 | 2026-11-09 | [trap] | admin/ui | `mat-slide-toggle` sets `name` on its inner button, so `[name=...]` selectors miss the host. query `role=switch` instead | e2e/specs/media.spec.ts:1526
+
+- D-20261109-07 | 2026-11-09 | [trap] | build/perf | Firebase Auth emulator accepts 6-character passwords (HTTP 200), so a client-only 8-character minimum is not server-enforced | src/app/components/auth/auth.component.ts:128
+
+- D-20261109-06 | 2026-11-09 | [trap] | build/perf | `src/environments/*` is gitignored, so env contract additions stay local and out of commits unless mirrored into tracked config | .gitignore:54
+
+- D-20261109-05 | 2026-11-09 | [trap] | rules/deploy | `npm version` exits 1 when the version is unchanged. guard for equality, and commit the bump before the release tag so the tag points at the matching version | scripts/deploy.sh:109
+
+- D-20261109-04 | 2026-11-09 | [trap] | admin/ui | Playwright WebKit and Firefox do not open a page for a synthesized middle click, while Firefox modifier-click does. assert the anchor contract per engine | e2e/specs/nav.spec.ts:187
+
+- D-20261109-03 | 2026-11-09 | [decision] | admin/ui | `/account` is deep-link safe while `/` triggers the one-shot promoted-route bounce, so new-tab targets point at `/account` | src/app/config/feature-config.ts:28
+
+- D-20261109-02 | 2026-11-09 | [trap] | build/perf | The dev seed downloader must return the asset Buffer. passing a cache path to `file.save` writes nothing | scripts/dev-seed/downloader.mjs:91
+
+- D-20261109-01 | 2026-11-09 | [outcome] | admin/ui | UI review batch WS1 to WS8 implemented and redteamed: 160 findings, 157 addressed, 2 rejected, 1 escalated (captions). gate 507 per browser, unit 921 | docs/critique/2026-11-08_UiReviewRedteam.md
+
 - D-20261108-02 | 2026-11-08 | [decision] | build/perf | Accepted 18 `npm audit` findings: 4 high `@grpc/grpc-js` (Node-only, not in browser bundle), 14 moderate in `firebase-tools` CLI; `--force` needs major downgrade | package-lock.json
 
 - D-20261108-01 | 2026-11-08 | [trap] | build/perf | Pinned `@angular-devkit/architect` must match `@angular-devkit/build-angular`; bumping one alone leaves a duplicate `0.2202.x` | package.json:49
