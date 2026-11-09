@@ -55,12 +55,12 @@ test.describe('data rights footer', () => {
     await page.goto('/');
     const footer = page.getByTestId('site-footer');
     await expect(footer).toBeVisible();
-    await expect(footer).toContainText('You can ask us to correct information about you or ask us to remove it.');
+    await expect(footer).toContainText('Our family keeps this site, and we want it to be right for all who visit.');
     await expect(footer.getByTestId('data-request-open-update')).toHaveText('Update');
     await expect(footer.getByTestId('data-request-open-removal')).toHaveText('Remove');
     await expect(footer.getByTestId('data-request-open-contact')).toHaveText('Contact');
     await expect(footer.getByTestId('data-request-response')).toHaveText(
-      'We review requests and reply using the contact details you provide.',
+      'We review each request and reply to the email or phone you give us.',
     );
     await expect(footer).toContainText('final wording is pending legal review');
 
@@ -85,18 +85,18 @@ test.describe('data rights footer', () => {
     const cases = [
       {
         kind: 'update',
-        heading: 'Update Your Information',
-        body: 'Tell us what is wrong or out of date, and the best way to reach you. We will record your request for review.',
+        heading: 'Something wrong or out of date?',
+        body: 'Tell us what to fix or bring up to date, and the best way to reach you. We will review your request and reply.',
       },
       {
         kind: 'removal',
-        heading: 'Remove Your Information',
-        body: 'Ask us to stop sharing information about you. We record the request and review it before any information is removed.',
+        heading: 'Something we should stop sharing about you?',
+        body: 'Ask us to stop sharing information about you. We will review your request before acting on it, and we reply either way.',
       },
       {
         kind: 'contact',
-        heading: 'Contact Us',
-        body: 'For anything else, send us a note about your information.',
+        heading: 'Something else on your mind?',
+        body: 'Send us a note about your information, with details and the way to reach you. We will review it and reply.',
       },
     ] as const;
     for (const item of cases) {
