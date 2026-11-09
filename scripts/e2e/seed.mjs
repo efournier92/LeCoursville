@@ -613,13 +613,14 @@ async function main() {
   fs.writeFileSync(path.join(fixtureDir, 'fixture.wav'), wavBytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture.pdf'), pdfBytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture.mp4'), fixtureMp4Bytes());
+  fs.writeFileSync(path.join(fixtureDir, 'admin-upload.mp4'), fixtureMp4Bytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture-2.mp4'), Buffer.from(FIXTURE_2_MP4_B64, 'base64'));
   fs.writeFileSync(path.join(fixtureDir, '01-fixture.mp3'), id3CoverMp3Bytes());
   fs.writeFileSync(path.join(fixtureDir, '02-fixture.mp3'), id3CoverMp3Bytes());
   fs.writeFileSync(path.join(fixtureDir, 'fixture-noart.mp3'), silentMp3Frames());
   fs.writeFileSync(path.join(fixtureDir, 'fixture.zip'), zipBytes());
   out.push(
-    'hosting fixtures: fixture.png, fixture.wav, fixture.pdf, fixture.mp4, fixture-2.mp4, '
+    'hosting fixtures: fixture.png, fixture.wav, fixture.pdf, fixture.mp4, admin-upload.mp4, fixture-2.mp4, '
       + '01-fixture.mp3, 02-fixture.mp3, fixture-noart.mp3, fixture.zip',
   );
 

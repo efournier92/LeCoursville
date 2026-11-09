@@ -57,6 +57,9 @@ src/environments/*
 tags
 
 
+# dev seed downloaded asset cache (UI-008)
+/scripts/dev-seed/.cache/
+
 # firebase emulator debug logs
 firebase-debug.log
 database-debug.log

@@ -15,6 +15,7 @@
     "deploy:dev:nogate": "SKIP_GATE=1 bash scripts/deploy.sh dev",
     "email-healthcheck": "bash scripts/email-healthcheck.sh",
     "family:upload": "node scripts/family/upload-people.mjs",
+    "seed:dev": "node scripts/dev-seed/index.mjs",
     "migrate:drop-contacts": "node scripts/migrations/drop-legacy-contacts.mjs",
     "theme:check": "node scripts/check-theme-standardization.mjs",
     "pii:check": "node scripts/check-pii-canary.mjs"
