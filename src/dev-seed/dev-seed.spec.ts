@@ -313,6 +313,24 @@ describe('dev seed confirm gate and modes', () => {
     await expect(main(['--project', DEV_PROJECT, '--confirm'], deps)).rejects.toThrow(/credential project/);
     expect(updates).toEqual([]);
   });
+
+  it('seeds every expression with its manifest attribution as the author and its year', async () => {
+    const manifest = buildManifest();
+    const { deps, updates } = makeDeps();
+    await main(['--project', DEV_PROJECT, '--confirm'], deps);
+    const messages = updates.find(([node]) => node === 'messages')?.[1] ?? {};
+    const seeded = Object.values(messages) as any[];
+
+    expect(seeded.length).toBe(20);
+    for (const record of seeded) {
+      const source = manifest.expressions.find((expression: any) => expression.id === record.id);
+      expect(source).toBeDefined();
+      expect(record.authorName).toBe(source.attribution);
+      expect(record.attribution).toBe(source.attribution);
+      expect(record.yearWritten).toBe(source.yearWritten);
+      expect(record.messageType).toBe('expression');
+    }
+  });
 });
 
 describe('dev seed per-asset ledger', () => {

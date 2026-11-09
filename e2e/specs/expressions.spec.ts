@@ -19,6 +19,22 @@ test.describe('expressions', () => {
     await expect(page.getByText('Make it so')).toBeVisible();
   });
 
+  test('expression with author matching attribution shows each once', async ({ page }) => {
+    const seeded = await readDb<Record<string, any>>('messages/expr-1');
+    try {
+      await writeDb('messages/expr-1', { ...seeded, authorName: 'E2E Family' });
+      await login(page, 'admin');
+      await page.goto('/expressions');
+      const card = page.locator('.expression-card-wrapper', { hasText: 'Live long and prosper' }).first();
+      await expect(card.locator('.expression-attribution')).toHaveText('- E2E Family');
+      await expect(card.locator('.expression-author')).toContainText('- 2000');
+    } finally {
+      if (seeded) {
+        await writeDb('messages/expr-1', seeded);
+      }
+    }
+  });
+
   test('create expression: admin creates one via the edit card', async ({ page }) => {
     try {
       await login(page, 'admin');

@@ -200,7 +200,7 @@ async function buildTree(manifest, assets, bucket, now, runId) {
       attachmentId: '',
       attachmentType: '',
       attachmentUrl: '',
-      authorName: OWNER_NAME,
+      authorName: expression.attribution,
       authorId: OWNER_ID,
       attribution: expression.attribution,
       yearWritten: expression.yearWritten,

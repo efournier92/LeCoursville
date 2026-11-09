@@ -7,7 +7,13 @@
       </div>
       <div class="expression-body" [innerHTML]="message.body"></div>
       <div class="expression-meta">
-        <span class="expression-author">- {{ message.authorName }}, {{ message.yearWritten }}</span>
+        <span class="expression-author">
+          -
+          @if (message.authorName && message.authorName !== message.attribution) {
+            {{ message.authorName }},
+          }
+          {{ message.yearWritten }}
+        </span>
         @if (getAttachmentType(message) === 'photo') {
           <img
             [src]="message.attachmentUrl"

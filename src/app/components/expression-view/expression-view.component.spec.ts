@@ -38,4 +38,23 @@ describe('ExpressionViewComponent', () => {
   it('getLikes returns 0 for a message with no likes', () => {
     expect(component.getLikes()).toBe(0);
   });
+
+  it('shows an attribution author once and the year once', () => {
+    Object.assign(component.message, { attribution: 'Patrick Henry', authorName: 'Patrick Henry', yearWritten: '1775' });
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect((text.match(/Patrick Henry/g) ?? []).length).toBe(1);
+    expect((text.match(/1775/g) ?? []).length).toBe(1);
+  });
+
+  it('keeps a distinct author and attribution visible', () => {
+    Object.assign(component.message, { attribution: 'E2E Family', authorName: 'Admin User', yearWritten: '2000' });
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('E2E Family');
+    expect(text).toContain('Admin User');
+    expect(text).toContain('2000');
+  });
 });
