@@ -134,3 +134,20 @@
 - C-20261108-108 | 2026-11-08 | testing | medium | high | addressed | Stack tests assert flex-direction and x edges but not vertical order, text alignment, or child width, and DOM order is corrected only by CSS order | `e2e/specs/nav.spec.ts:267`
 - C-20261108-109 | 2026-11-08 | testing | medium | high | addressed | The title-bar height ceiling was raised for every viewport and no test asserts the toolbar remains a row at desktop | `e2e/specs/admin-consistency.spec.ts:85`
 - C-20261108-110 | 2026-11-08 | testing | medium | high | addressed | No mobile test measures a 44px hit area or focus state on the restacked controls or menu anchors | `e2e/specs/nav.spec.ts:312`
+
+### WS3 Legacy Contact Retirement
+
+- C-20261108-111 | 2026-11-08 | security | high | high | addressed | The migration refusal checks the checked-in rules, not the target project's deployed rules, and this commit already strips the block, so the guard can never fire while a drifted prod could still grant writes | `scripts/migrations/drop-legacy-contacts.mjs:70`
+- C-20261108-112 | 2026-11-08 | data-integrity | medium | high | addressed | The rules change ships without a dated `database-rules/<date>/{before,after}.json` snapshot, skipping the repo's review control for a dropped node | `database-rules/README.md:18`
+- C-20261108-113 | 2026-11-08 | data-integrity | medium | high | addressed | The runbook has no prod dry run and goes from the dev delete straight to a destructive prod command | `docs/runbooks/2026-11-08_LegacyContactRetirementRunbook.md:19`
+- C-20261108-114 | 2026-11-08 | data-integrity | medium | medium | addressed | The dry run reports only count and bytes and never checks the premise that People is the sole source of truth, so contact-only fixups are destroyed without a diff or export | `scripts/migrations/drop-legacy-contacts.mjs:61`
+- C-20261108-115 | 2026-11-08 | security | medium | high | addressed | No environment guard exists: any `--project` is accepted and `--confirm` is the only barrier under ambient ADC | `scripts/migrations/drop-legacy-contacts.mjs:28`
+- C-20261108-116 | 2026-11-08 | data-integrity | medium | high | addressed | Deletion success is not enforced: the script exits 0 even when records remain after the delete | `scripts/migrations/drop-legacy-contacts.mjs:107`
+- C-20261108-117 | 2026-11-08 | security | low | high | addressed | The `--rules <path>` flag lets the operator point the only pre-flight safety check at an arbitrary file | `scripts/migrations/drop-legacy-contacts.mjs:10`
+- C-20261108-118 | 2026-11-08 | security | low | medium | addressed | `contactsWriteRule` inspects only the top-level `.write`, so a nested `$id/.write` grant passes the guard | `scripts/migrations/drop-legacy-contacts.mjs:55`
+- C-20261108-119 | 2026-11-08 | testing | high | high | addressed | The dry-run test asserts only the parsed boolean and never runs `main()`, so removing the confirm guard or retargeting the delete stays green | `src/migrations/drop-legacy-contacts.spec.ts:14`
+- C-20261108-120 | 2026-11-08 | testing | high | high | addressed | No test asserts transformed stored state: nothing proves `--confirm` removes only `contacts/` or that a second run is a zero-exit no-op | `docs/testing/TEST_POLICY.md:106`
+- C-20261108-121 | 2026-11-08 | testing | medium | high | addressed | The refusal interlock is tested only through the pure predicate, never through `main()` against a rules file with a contacts write | `src/migrations/drop-legacy-contacts.spec.ts:30`
+- C-20261108-122 | 2026-11-08 | testing | medium | high | addressed | No reproducible red proof for the rules-boundary change, and the commit says no revert run was made | `git show -s --format=%B 01111d75`
+- C-20261108-123 | 2026-11-08 | testing | low | medium | addressed | The rules write probe asserts only `status !== 200`, so a 500 counts as a denial | `e2e/specs/rules.spec.ts:682`
+- C-20261108-124 | 2026-11-08 | testing | low | high | addressed | Three legacy admin-fixup e2e tests and a member guard were deleted with no named replacement or reason | `docs/testing/TEST_POLICY.md:71`
