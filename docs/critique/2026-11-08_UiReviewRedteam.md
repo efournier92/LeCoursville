@@ -119,3 +119,18 @@
 - C-20261108-96 | 2026-11-08 | product | medium | high | addressed | The spec names Share and Download on video, but Download only shows for `.zip`, so a managed video page only ever shows Share | `src/app/components/media-explorer/media-explorer.component.ts:176`
 - C-20261108-97 | 2026-11-08 | testing | low | high | addressed | The red proofs name no focused command and point "HEAD" at the fix commit rather than the parent | `git log -1 --format=%B 14ca72c3`
 - C-20261108-98 | 2026-11-08 | product | low | high | addressed | Diagnostic copy explains only `MEDIA_ERR_SRC_NOT_SUPPORTED`, while network and decode failures collapse to the same generic sentence | `src/app/components/media-explorer/media-explorer.component.ts:137`
+
+### WS7 Responsive And Navigation
+
+- C-20261108-99 | 2026-11-08 | correctness | medium | high | addressed | The Account nav item opens `href="/"` in a new tab, which the promoted-route bounce redirects, so UI-004's new-tab guarantee fails for that link while `/account` is deep-link safe | `src/app/components/navbar-links/navbar-links.component.html:39`
+- C-20261108-100 | 2026-11-08 | correctness | low | high | addressed | Mobile menu anchors expose `role=menuitem` but no longer activate on Space, a keyboard regression from the old buttons | `src/app/components/navbar-links/navbar-links.component.html:39`
+- C-20261108-101 | 2026-11-08 | accessibility | medium | high | addressed | The mobile filter bar renders search above actions via CSS order while DOM and Tab order put actions first, so focus order contradicts reading order | `src/app/styles/admin-data.scss:113`
+- C-20261108-102 | 2026-11-08 | accessibility | medium | high | addressed | Active nav links announce current state only through a class and an `aria-hidden` bar, with no `aria-current="page"` | `src/app/components/navbar-links/navbar-links.component.html:20`
+- C-20261108-103 | 2026-11-08 | mobile | medium | medium | addressed | On the photo-albums Media section the three filter actions stay in a non-wrapping row and the rightmost control clips at 320 and 390px | `src/app/styles/admin-data.scss:158`
+- C-20261108-104 | 2026-11-08 | accessibility | low | high | addressed | The 44px touch-target rule covers only icon buttons, leaving Photos toolbar controls at 26 to 32px at phone width | `src/app/components/shared/page-toolbar/page-toolbar.component.scss:137`
+- C-20261108-105 | 2026-11-08 | testing | high | high | addressed | New-tab tests silently return before the behavior on WebKit middle-click and Firefox modifier-click, and the Firefox premise is false, so a regression ships green | `e2e/specs/nav.spec.ts:187`
+- C-20261108-106 | 2026-11-08 | testing | medium | high | addressed | The `/photos` stack test checks only the outer content box and never pins the route or title, so an all-left layout is not proven | `e2e/specs/nav.spec.ts:253`
+- C-20261108-107 | 2026-11-08 | testing | medium | high | addressed | The mobile menu test asserts only one href and never clicks a menuitem or checks the active class | `e2e/specs/nav.spec.ts:237`
+- C-20261108-108 | 2026-11-08 | testing | medium | high | addressed | Stack tests assert flex-direction and x edges but not vertical order, text alignment, or child width, and DOM order is corrected only by CSS order | `e2e/specs/nav.spec.ts:267`
+- C-20261108-109 | 2026-11-08 | testing | medium | high | addressed | The title-bar height ceiling was raised for every viewport and no test asserts the toolbar remains a row at desktop | `e2e/specs/admin-consistency.spec.ts:85`
+- C-20261108-110 | 2026-11-08 | testing | medium | high | addressed | No mobile test measures a 44px hit area or focus state on the restacked controls or menu anchors | `e2e/specs/nav.spec.ts:312`
