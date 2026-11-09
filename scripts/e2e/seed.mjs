@@ -525,6 +525,10 @@ async function main() {
         description: 'Please remove my public listing.',
         status: 'open',
         createdAt: now - 3 * 86400000,
+        throttleKey: 'seed-removal',
+        verifiedAt: now - 2 * 86400000,
+        verifiedBy: 'seed-admin',
+        verificationMethod: 'admin_review',
       },
       'data-request-update': {
         id: 'data-request-update',
@@ -534,6 +538,7 @@ async function main() {
         description: 'Please correct the caption on my photo.',
         status: 'resolved',
         createdAt: now - 10 * 86400000,
+        throttleKey: 'seed-update',
       },
     },
     config: {

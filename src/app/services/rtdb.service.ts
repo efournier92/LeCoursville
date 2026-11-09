@@ -7,6 +7,7 @@ import {
   update,
   remove,
   push,
+  get,
   query as dbQuery,
   orderByChild,
   equalTo,
@@ -144,6 +145,17 @@ export class RtdbService {
   async push(path: string, value: unknown): Promise<string> {
     const childRef = push(ref(this.firebase.db, path), value);
     return childRef.key as string;
+  }
+
+  /** Atomic multi-path update, the only way to couple a decision with its audit row. */
+  async updateRoot(updates: Record<string, unknown>): Promise<void> {
+    await update(ref(this.firebase.db), updates);
+  }
+
+  async get<T>(path: string): Promise<T | null> {
+    const snapshot = await get(ref(this.firebase.db, path));
+    const value = snapshot.val();
+    return value === null || value === undefined ? null : (value as T);
   }
 
   // Query constraint factories re-exported for callers that build list queries.

@@ -5,10 +5,15 @@ import {
   DataRequestAuditEntry,
   DataRequestInput,
   DataRequestStatus,
+  DataRequestVerificationMethod,
+  REDACTED_CONTACT,
   buildDataRequest,
   validateDataRequest,
 } from 'src/app/models/data-request';
 import { RtdbService } from './rtdb.service';
+
+const THROTTLE_LIMIT = 10;
+const THROTTLE_WINDOW_MS = 60 * 60 * 1000;
 
 @Injectable({ providedIn: 'root' })
 export class DataRequestsService {
@@ -28,7 +33,9 @@ export class DataRequestsService {
       throw new Error(Object.values(errors)[0]);
     }
     const id = this.rtdb.createPushId();
-    const record = buildDataRequest(id, input, Date.now(), requesterUid);
+    const throttleKey = await this.throttleKey(input.contact.trim(), requesterUid);
+    await this.bumpThrottle(throttleKey);
+    const record = { ...buildDataRequest(id, input, Date.now(), requesterUid), throttleKey };
     await this.rtdb.object<DataRequest>(`dataRequests/${id}`).set(record);
     return id;
   }
@@ -41,21 +48,92 @@ export class DataRequestsService {
     });
   }
 
-  /** Granting is a decision record; the pre-delete export and hard delete stay manual. */
-  async grantRemoval(requestId: string, actorUid: string): Promise<void> {
+  /** Records the admin identity check that a removal grant requires. */
+  async recordVerification(
+    requestId: string,
+    actorUid: string,
+    method: DataRequestVerificationMethod = 'admin_review',
+  ): Promise<void> {
     const now = Date.now();
     await this.rtdb.object<DataRequest>(`dataRequests/${requestId}`).update({
-      status: 'resolved',
-      grantedAt: now,
-      grantedBy: actorUid,
+      verifiedAt: now,
+      verifiedBy: actorUid,
+      verificationMethod: method,
       updatedAt: now,
       updatedBy: actorUid,
     });
-    await this.rtdb.push('dataRequestAudit', {
-      requestId,
-      action: 'removal_granted',
-      actorUid,
-      createdAt: now,
+  }
+
+  /** A mistaken resolve or close can be reversed; grant and verification are cleared. */
+  async reopen(requestId: string, actorUid: string): Promise<void> {
+    const now = Date.now();
+    await this.rtdb.object<DataRequest>(`dataRequests/${requestId}`).update({
+      status: 'open',
+      grantedAt: null,
+      grantedBy: null,
+      verifiedAt: null,
+      verifiedBy: null,
+      verificationMethod: null,
+      redactedAt: null,
+      redactedBy: null,
+      updatedAt: now,
+      updatedBy: actorUid,
     });
+  }
+
+  /** Erases request PII after the request is no longer actionable and leaves the audit id intact. */
+  async redact(requestId: string, actorUid: string): Promise<void> {
+    const now = Date.now();
+    await this.rtdb.object<DataRequest>(`dataRequests/${requestId}`).update({
+      contact: REDACTED_CONTACT,
+      description: '',
+      redactedAt: now,
+      redactedBy: actorUid,
+      updatedAt: now,
+      updatedBy: actorUid,
+    });
+  }
+
+  /** Grant and audit are one atomic multi-path update so a failed audit cannot leave a silent grant. */
+  async grantRemoval(request: DataRequest, actorUid: string): Promise<void> {
+    const now = Date.now();
+    const auditKey = this.rtdb.createPushId();
+    await this.rtdb.updateRoot({
+      [`dataRequests/${request.id}/status`]: 'resolved',
+      [`dataRequests/${request.id}/grantedAt`]: now,
+      [`dataRequests/${request.id}/grantedBy`]: actorUid,
+      [`dataRequests/${request.id}/updatedAt`]: now,
+      [`dataRequests/${request.id}/updatedBy`]: actorUid,
+      [`dataRequestAudit/${auditKey}`]: {
+        requestId: request.id,
+        action: 'removal_granted',
+        dataClass: request.dataClass,
+        actorUid,
+        createdAt: now,
+      },
+    });
+  }
+
+  private async throttleKey(contact: string, requesterUid?: string | null): Promise<string> {
+    if (requesterUid) {
+      return requesterUid;
+    }
+    const bytes = new TextEncoder().encode(contact.toLowerCase());
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  private async bumpThrottle(key: string): Promise<void> {
+    const now = Date.now();
+    const path = `dataRequestThrottle/${key}`;
+    const current = await this.rtdb.get<{ count: number; windowStart: number }>(path);
+    if (!current || now - current.windowStart > THROTTLE_WINDOW_MS) {
+      await this.rtdb.object(path).set({ count: 1, windowStart: now });
+      return;
+    }
+    if (current.count >= THROTTLE_LIMIT) {
+      throw new Error('Too many requests from this contact. Try again later.');
+    }
+    await this.rtdb.object(path).set({ count: current.count + 1, windowStart: current.windowStart });
   }
 }

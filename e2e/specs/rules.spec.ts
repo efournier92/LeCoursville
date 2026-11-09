@@ -902,35 +902,66 @@ test.describe('admin tier split', () => {
     }
   });
 
-  test('dataRequests: public create only, admin read and status, super grant and audit', async () => {
-    const key = `rules-data-request-${Date.now()}`;
-    const record = {
-      id: key,
+  test('dataRequests: public create is throttled, validated, undeletable, and grant needs verification', async () => {
+    const suffix = String(Date.now()).slice(-9);
+    const keyFor = (tag: string) => `rules${tag}${suffix}abc`.slice(0, 20);
+    const key = keyFor('Rat');
+    const grantKey = keyFor('Gra');
+    const updateKey = keyFor('Upd');
+    const throttleKey = `throttle-${suffix}`;
+    const denial = (res: Response) => [401, 403].includes(res.status);
+    const createdAt = Date.now();
+    const record = (id: string, overrides: Record<string, unknown> = {}) => ({
+      id,
       kind: 'removal',
       dataClass: 'people',
       contact: 'rules-requester@e2e.local',
       description: 'Rules probe request.',
       status: 'open',
-      createdAt: Date.now(),
-    };
+      createdAt,
+      throttleKey: `throttle-${suffix}`,
+      ...overrides,
+    });
 
     try {
-      expect((await put(`dataRequests/${key}`, record)).status).toBe(200);
-      // Public create does not grant a public read, even for the same record.
-      expect((await get(`dataRequests/${key}`)).status).not.toBe(200);
-      expect((await get('dataRequests')).status).not.toBe(200);
+      // No throttle node means no public create.
+      expect(denial(await put(`dataRequests/${key}`, record(key)))).toBe(true);
 
-      // A client cannot create a pre-closed request or write audit fields.
-      expect(
-        (await put(`dataRequests/${key}-closed`, { ...record, id: `${key}-closed`, status: 'closed' })).status,
-      ).not.toBe(200);
-      expect(
-        (await put(`dataRequests/${key}-granted`, {
-          ...record,
-          id: `${key}-granted`,
-          grantedBy: 'forged',
-        })).status,
-      ).not.toBe(200);
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 1, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${key}`, record(key))).status).toBe(200);
+
+      // Public create does not grant a public read, even for the same record.
+      expect((await get(`dataRequests/${key}`)).status).toBe(401);
+      expect((await get('dataRequests')).status).toBe(401);
+
+      // Request ids must be push-shaped so PII cannot ride into the audit key.
+      expect((await put('dataRequests/attacker-chosen-id', {
+        ...record('attacker-chosen-id'),
+      })).status).toBe(401);
+
+      // Every malformed field is denied, not merely some non-200.
+      const badCreates: Record<string, unknown>[] = [
+        { status: 'closed' },
+        { grantedBy: 'forged' },
+        { kind: 'secret' },
+        { dataClass: 'secrets' },
+        { createdAt: createdAt - 2 * 86400000 },
+        { createdAt: createdAt + 3600000 },
+        { contact: 'a'.repeat(201) },
+        { contact: '' },
+        { description: 'b'.repeat(1001) },
+        { throttleKey: undefined },
+        { extra: 'nope' },
+        { id: 'someone-else' },
+      ];
+      for (const [index, overrides] of badCreates.entries()) {
+        const badKey = keyFor(`X${index}`);
+        expect(denial(await put(`dataRequests/${badKey}`, {
+          ...record(badKey, overrides),
+          ...(overrides.id ? { id: overrides.id } : {}),
+        }))).toBe(true);
+      }
 
       const userToken = await signIn('user');
       const staffToken = await signIn('staff');
@@ -938,55 +969,124 @@ test.describe('admin tier split', () => {
       const staffUid = await uidForEmail(E2E_USERS.staff.email);
       const superUid = await uidForEmail(E2E_USERS.admin.email);
 
-      expect((await get('dataRequests', userToken)).status).not.toBe(200);
+      expect(denial(await get('dataRequests', userToken))).toBe(true);
       expect((await get('dataRequests', staffToken)).status).toBe(200);
 
-      // Any admin can resolve or close; only a super can record a grant.
-      expect(
-        (await patch(`dataRequests/${key}`, {
-          status: 'resolved',
-          updatedAt: Date.now(),
-          updatedBy: staffUid,
-        }, staffToken)).status,
-      ).toBe(200);
-      expect(
-        (await patch(`dataRequests/${key}`, {
-          grantedAt: Date.now(),
-          grantedBy: staffUid,
-        }, staffToken)).status,
-      ).not.toBe(200);
-      expect(
-        (await patch(`dataRequests/${key}`, {
-          status: 'resolved',
-          grantedAt: Date.now(),
-          grantedBy: superUid,
-          updatedAt: Date.now(),
-          updatedBy: superUid,
-        }, superToken)).status,
-      ).toBe(200);
+      // Client deletes are denied for every admin, including super (C-125).
+      expect(denial(await del(`dataRequests/${key}`, staffToken))).toBe(true);
+      expect(denial(await del(`dataRequests/${key}`, superToken))).toBe(true);
+      expect((await readDb(`dataRequests/${key}`))).toBeTruthy();
 
-      const auditKey = `rules-data-audit-${Date.now()}`;
-      const audit = {
-        requestId: key,
+      // A normal admin can resolve; that also opens the PII-erasure path.
+      expect((await patch(`dataRequests/${key}`, {
+        status: 'resolved',
+        updatedAt: Date.now(),
+        updatedBy: staffUid,
+      }, staffToken)).status).toBe(200);
+      expect((await patch(`dataRequests/${key}`, {
+        contact: '[redacted]',
+        description: '',
+        redactedAt: Date.now(),
+        redactedBy: staffUid,
+      }, staffToken)).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${key}`, {
+        contact: 'second@example.com',
+      }, staffToken))).toBe(true);
+
+      // Grant constraints: removal only, open only, verified first, super only.
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 2, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${grantKey}`, record(grantKey))).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        grantedAt: Date.now(),
+        grantedBy: staffUid,
+      }, staffToken))).toBe(true);
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      expect((await patch(`dataRequests/${grantKey}`, {
+        verifiedAt: Date.now(),
+        verifiedBy: staffUid,
+        verificationMethod: 'admin_review',
+      }, staffToken)).status).toBe(200);
+      expect((await patch(`dataRequests/${grantKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+        updatedAt: Date.now(),
+        updatedBy: superUid,
+      }, superToken)).status).toBe(200);
+      // No re-grant without a reopen.
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 3, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${updateKey}`, record(updateKey, { kind: 'update' }))).status).toBe(200);
+      expect((await patch(`dataRequests/${updateKey}`, {
+        verifiedAt: Date.now(),
+        verifiedBy: staffUid,
+        verificationMethod: 'admin_review',
+      }, staffToken)).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${updateKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      // Audit rows must name a real request with the matching data class.
+      const auditBase = {
+        requestId: grantKey,
         action: 'removal_granted',
         actorUid: superUid,
         createdAt: Date.now(),
+        dataClass: 'people',
       };
-      expect((await put(`dataRequestAudit/${auditKey}`, audit, staffToken)).status).not.toBe(200);
-      expect((await put(`dataRequestAudit/${auditKey}`, audit, superToken)).status).toBe(200);
-      expect((await get('dataRequestAudit', userToken)).status).not.toBe(200);
+      const auditKey = keyFor('Aud');
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, auditBase, staffToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        dataClass: 'photos',
+      }, superToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        requestId: keyFor('None'),
+      }, superToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        note: 'extra',
+      }, superToken))).toBe(true);
+      expect((await put(`dataRequestAudit/${auditKey}`, auditBase, superToken)).status).toBe(200);
+      expect(denial(await get('dataRequestAudit', userToken))).toBe(true);
       expect((await get('dataRequestAudit', staffToken)).status).toBe(200);
-      expect((await get('dataRequestAudit', superToken)).status).toBe(200);
-    } finally {
-      await deleteDb(`dataRequests/${key}`);
-      await deleteDb(`dataRequests/${key}-closed`);
-      await deleteDb(`dataRequests/${key}-granted`);
-      const audits = await readDb<Record<string, unknown>>('dataRequestAudit');
-      for (const auditKey of Object.keys(audits || {})) {
-        if (auditKey.startsWith('rules-data-audit-')) {
-          await deleteDb(`dataRequestAudit/${auditKey}`);
-        }
+
+      // The throttle stops at ten increments and cannot be reset inside the window.
+      const limitKey = `limit-${suffix}`;
+      const limitWindow = Date.now();
+      expect((await put(`dataRequestThrottle/${limitKey}`, { count: 1, windowStart: limitWindow })).status)
+        .toBe(200);
+      for (let count = 2; count <= 10; count += 1) {
+        expect((await put(`dataRequestThrottle/${limitKey}`, { count, windowStart: limitWindow })).status)
+          .toBe(200);
       }
+      expect(denial(await put(`dataRequestThrottle/${limitKey}`, { count: 11, windowStart: limitWindow })))
+        .toBe(true);
+      expect(denial(await put(`dataRequestThrottle/${limitKey}`, { count: 1, windowStart: limitWindow })))
+        .toBe(true);
+      await deleteDb(`dataRequestThrottle/${limitKey}`);
+    } finally {
+      for (const id of [key, grantKey, updateKey, keyFor('Bad'),
+        ...Array.from({ length: 12 }, (_, index) => keyFor(`X${index}`))]) {
+        await deleteDb(`dataRequests/${id}`);
+      }
+      await deleteDb(`dataRequests/attacker-chosen-id`);
+      await deleteDb(`dataRequestThrottle/${throttleKey}`);
+      await deleteDb(`dataRequestAudit/${keyFor('Aud')}`);
     }
   });
 });

@@ -78,6 +78,19 @@
                       Close
                     </button>
                   }
+                  @if (canVerify(request)) {
+                    <button
+                      mat-button
+                      type="button"
+                      data-testid="admin-data-request-verify"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Record identity verification for ' + request.contact"
+                      (click)="verify(request)">
+                      Record verification
+                    </button>
+                  } @else if (request.verifiedAt) {
+                    <span class="request-meta" data-testid="admin-data-request-verified">Identity verified</span>
+                  }
                   @if (canGrant(request)) {
                     <button
                       mat-flat-button
@@ -88,6 +101,28 @@
                       [attr.aria-label]="'Grant removal for ' + request.contact"
                       (click)="grant(request)">
                       Grant removal
+                    </button>
+                  }
+                  @if (request.status === 'resolved' || request.status === 'closed') {
+                    <button
+                      mat-button
+                      type="button"
+                      data-testid="admin-data-request-reopen"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Reopen request from ' + request.contact"
+                      (click)="reopen(request)">
+                      Reopen
+                    </button>
+                  }
+                  @if (canRedact(request)) {
+                    <button
+                      mat-button
+                      type="button"
+                      data-testid="admin-data-request-redact"
+                      [disabled]="busy[request.id]"
+                      [attr.aria-label]="'Erase stored details for ' + request.contact"
+                      (click)="redact(request)">
+                      Erase details
                     </button>
                   }
                   @if (actionError[request.id]) {

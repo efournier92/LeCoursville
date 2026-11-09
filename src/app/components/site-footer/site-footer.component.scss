@@ -34,7 +34,7 @@
 
 .footer-draft {
   font-size: 0.75rem;
-  color: var(--color-ink-3);
+  color: var(--color-ink-2);
 }
 
 .footer-actions {
@@ -93,6 +93,12 @@
   margin-top: 4px;
 }
 
+.request-field-error {
+  margin: -4px 0 4px;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
 .request-error {
   margin: 0 0 8px;
   color: var(--color-error);
@@ -113,6 +119,11 @@
 
   mat-icon {
     color: var(--color-brand-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 }
 

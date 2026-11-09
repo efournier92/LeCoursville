@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import {
   DATA_REQUEST_CLASSES,
   DataRequestClass,
@@ -37,6 +37,10 @@ export class SiteFooterComponent {
   fieldErrors: Record<string, string> = {};
   submitted = false;
   busy = false;
+  readonly successMessage =
+    'Thank you. We will review your request and reply using the contact details you gave us.';
+
+  @ViewChild('successPanel') successPanel?: ElementRef<HTMLElement>;
 
   constructor(
     private dataRequests: DataRequestsService,
@@ -46,6 +50,8 @@ export class SiteFooterComponent {
   openForm(kind: DataRequestKind): void {
     this.kind = kind;
     this.dataClass = kind === 'contact' ? 'other' : 'people';
+    this.contact = '';
+    this.description = '';
     this.submitted = false;
     this.error = '';
     this.fieldErrors = {};
@@ -53,6 +59,8 @@ export class SiteFooterComponent {
 
   closeForm(): void {
     this.kind = null;
+    this.contact = '';
+    this.description = '';
     this.submitted = false;
     this.error = '';
     this.fieldErrors = {};
@@ -81,6 +89,7 @@ export class SiteFooterComponent {
       this.submitted = true;
       this.contact = '';
       this.description = '';
+      setTimeout(() => this.successPanel?.nativeElement.focus());
     } catch (error) {
       this.error = (error as Error)?.message || 'We could not send your request. Try again.';
     } finally {

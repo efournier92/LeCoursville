@@ -105,7 +105,7 @@
   }
   }
   <router-outlet></router-outlet>
-  @if (layout !== 'bare' && !isAdminRoute()) {
+  @if (!isAdminRoute()) {
     <app-site-footer></app-site-footer>
   }
 </body>

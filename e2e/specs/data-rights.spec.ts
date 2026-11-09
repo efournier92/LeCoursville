@@ -11,6 +11,12 @@ interface StoredRequest {
   description: string;
   status: string;
   createdAt: number;
+  throttleKey?: string;
+  verifiedAt?: number;
+  verifiedBy?: string;
+  grantedAt?: number;
+  grantedBy?: string;
+  redactedAt?: number;
 }
 
 async function storedRequests(): Promise<Record<string, StoredRequest>> {
@@ -20,8 +26,12 @@ async function storedRequests(): Promise<Record<string, StoredRequest>> {
 async function removeRequestsFor(contact: string): Promise<void> {
   const all = await storedRequests();
   for (const [key, request] of Object.entries(all)) {
-    if (request.contact === contact) {
-      await deleteDb(`dataRequests/${key}`);
+    if (request.contact !== contact) {
+      continue;
+    }
+    await deleteDb(`dataRequests/${key}`);
+    if (request.throttleKey) {
+      await deleteDb(`dataRequestThrottle/${request.throttleKey}`);
     }
   }
 }
@@ -54,6 +64,11 @@ test.describe('data rights footer', () => {
     await page.emulateMedia({ media: 'screen' });
     await expect(footer).toBeVisible();
 
+    // The family explorer uses the bare layout but stays a public user route.
+    await page.goto('/family-explorer/archive-1');
+    await expect(page.getByTestId('family-chart')).toBeVisible();
+    await expect(page.getByTestId('site-footer')).toBeVisible();
+
     await login(page, 'admin');
     await page.goto('/admin/data-requests');
     await expect(page.getByTestId('admin-data-requests-list')).toBeVisible({ timeout: 20000 });
@@ -70,6 +85,8 @@ test.describe('data rights footer', () => {
       expect(stored).toBeTruthy();
       expect(stored!.kind).toBe('removal');
       expect(stored!.status).toBe('open');
+      const throttle = await readDb<{ count: number }>(`dataRequestThrottle/${stored!.throttleKey}`);
+      expect(throttle?.count).toBe(1);
 
       await login(page, 'admin');
       await page.goto('/admin/data-requests');
@@ -92,6 +109,121 @@ test.describe('data rights footer', () => {
       expect(stored?.status).toBe('open');
     } finally {
       await removeRequestsFor(contact);
+    }
+  });
+
+  test('canceling the form clears the previous visitor contact and details', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('data-request-open-removal').click();
+    await page.getByTestId('data-request-contact').fill('shared-device@e2e.local');
+    await page.getByTestId('data-request-description').fill('Private details');
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByTestId('data-request-form')).toHaveCount(0);
+
+    await page.getByTestId('data-request-open-removal').click();
+    await expect(page.getByTestId('data-request-contact')).toHaveValue('');
+    await expect(page.getByTestId('data-request-description')).toHaveValue('');
+  });
+
+  test('labels, aria-invalid, and inline errors are wired to their fields', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('data-request-open-removal').click();
+
+    const contact = page.getByLabel('Email or phone');
+    await expect(contact).toHaveAttribute('data-testid', 'data-request-contact');
+    await expect(page.getByLabel('What is this about?')).toBeVisible();
+
+    await contact.fill('not a contact');
+    await page.getByTestId('data-request-submit').click();
+
+    await expect(contact).toHaveAttribute('aria-invalid', 'true');
+    await expect(contact).toHaveAttribute('aria-describedby', 'data-request-contact-error');
+    await expect(page.locator('#data-request-contact-error')).toHaveText(/valid email/);
+  });
+
+  test('resolve, close, and reopen each require confirmation and persist', async ({ page }) => {
+    const seeded = (await readDb<StoredRequest>('dataRequests/data-request-removal'))!;
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/data-requests');
+      const row = page.locator('.data-request-row').filter({ hasText: 'data-removal@e2e.local' });
+      await expect(row).toBeVisible({ timeout: 20000 });
+
+      await row.getByTestId('admin-data-request-resolve').click();
+      const resolveDialog = page.getByRole('dialog').filter({ hasText: 'Resolve request?' });
+      await expect(resolveDialog).toBeVisible();
+      await resolveDialog.getByTestId('admin-data-request-resolve-confirm').click();
+      await expect(row.getByTestId('admin-data-request-status')).toHaveText('resolved');
+      expect((await readDb<StoredRequest>('dataRequests/data-request-removal'))!.status).toBe('resolved');
+
+      await row.getByTestId('admin-data-request-close').click();
+      const closeDialog = page.getByRole('dialog').filter({ hasText: 'Close request?' });
+      await expect(closeDialog).toBeVisible();
+      await closeDialog.getByTestId('admin-data-request-close-confirm').click();
+      await expect(row.getByTestId('admin-data-request-status')).toHaveText('closed');
+      expect((await readDb<StoredRequest>('dataRequests/data-request-removal'))!.status).toBe('closed');
+
+      await row.getByTestId('admin-data-request-reopen').click();
+      const reopenDialog = page.getByRole('dialog').filter({ hasText: 'Reopen request?' });
+      await expect(reopenDialog).toBeVisible();
+      await reopenDialog.getByTestId('admin-data-request-reopen-confirm').click();
+      await expect(row.getByTestId('admin-data-request-status')).toHaveText('open');
+      const reopened = (await readDb<StoredRequest>('dataRequests/data-request-removal'))!;
+      expect(reopened.status).toBe('open');
+      expect(reopened.grantedAt).toBeUndefined();
+    } finally {
+      await writeDb('dataRequests/data-request-removal', seeded);
+    }
+  });
+
+  test('an admin records identity verification before the grant control appears', async ({ page }) => {
+    const seeded = (await readDb<StoredRequest>('dataRequests/data-request-removal'))!;
+    await writeDb('dataRequests/data-request-removal', {
+      ...seeded,
+      verifiedAt: null,
+      verifiedBy: null,
+      verificationMethod: null,
+    });
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/data-requests');
+      const row = page.locator('.data-request-row').filter({ hasText: 'data-removal@e2e.local' });
+      await expect(row).toBeVisible({ timeout: 20000 });
+      await expect(row.getByTestId('admin-data-request-grant')).toHaveCount(0);
+
+      await row.getByTestId('admin-data-request-verify').click();
+      await expect(row.getByTestId('admin-data-request-verified')).toBeVisible();
+      await expect(row.getByTestId('admin-data-request-grant')).toBeVisible();
+      await expect.poll(async () =>
+        (await readDb<StoredRequest>('dataRequests/data-request-removal'))?.verifiedAt,
+      ).toBeTruthy();
+      const verified = (await readDb<StoredRequest>('dataRequests/data-request-removal'))!;
+      expect(verified.verificationMethod).toBe('admin_review');
+    } finally {
+      await writeDb('dataRequests/data-request-removal', seeded);
+    }
+  });
+
+  test('erasing a resolved request clears its stored PII', async ({ page }) => {
+    const seeded = (await readDb<StoredRequest>('dataRequests/data-request-update'))!;
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/data-requests');
+      const row = page.locator('.data-request-row').filter({ hasText: 'data-update@e2e.local' });
+      await expect(row).toBeVisible({ timeout: 20000 });
+
+      await row.getByTestId('admin-data-request-redact').click();
+      const dialog = page.getByRole('dialog').filter({ hasText: 'Erase request details?' });
+      await dialog.getByTestId('admin-data-request-redact-confirm').click();
+
+      await expect.poll(async () =>
+        (await readDb<StoredRequest>('dataRequests/data-request-update'))?.contact,
+      ).toBe('[redacted]');
+      const redacted = (await readDb<StoredRequest>('dataRequests/data-request-update'))!;
+      expect(redacted.description).toBe('');
+      expect(redacted.redactedAt).toBeTruthy();
+    } finally {
+      await writeDb('dataRequests/data-request-update', seeded);
     }
   });
 
@@ -129,12 +261,19 @@ test.describe('data rights footer', () => {
       await page.getByTestId('admin-data-request-grant-confirm').click();
       await expect(row.getByTestId('admin-data-request-status')).toHaveText('resolved');
 
-      const granted = (await readDb<StoredRequest & { grantedBy?: string }>('dataRequests/data-request-removal'))!;
+      const granted = (await readDb<StoredRequest>('dataRequests/data-request-removal'))!;
       expect(granted.status).toBe('resolved');
       expect(granted.grantedBy).toBeTruthy();
+      expect(granted.grantedAt).toBeTruthy();
+      // The grant is a decision only; the operator script performs the hard delete.
+      expect(await readDb('people/person-a')).toBeTruthy();
       await expect.poll(async () => {
-        const audit = (await readDb<Record<string, { requestId: string }>>('dataRequestAudit')) ?? {};
-        return Object.values(audit).some(entry => entry.requestId === 'data-request-removal');
+        const audit = (await readDb<Record<string, { requestId: string; dataClass?: string }>>(
+          'dataRequestAudit',
+        )) ?? {};
+        const entry = Object.values(audit).find(row => row.requestId === 'data-request-removal');
+        expect(entry?.dataClass).toBe('people');
+        return !!entry;
       }).toBe(true);
     } finally {
       await writeDb('dataRequests/data-request-removal', seeded);
@@ -156,20 +295,39 @@ test.describe('data rights footer', () => {
     await expect(row.getByTestId('admin-data-request-resolve')).toBeVisible();
   });
 
-  test('footer is keyboard reachable and the form follows in DOM order', async ({ page }) => {
+  test('footer is Tab reachable, keeps visible focus, and announces success', async ({ page }) => {
     await page.goto('/');
     const removal = page.getByTestId('data-request-open-removal');
-    await removal.focus();
+
+    // WebKit follows the macOS default and skips buttons on plain Tab.
+    const tab = test.info().project.name === 'webkit' ? 'Alt+Tab' : 'Tab';
+    let reached = false;
+    for (let i = 0; i < 80 && !reached; i += 1) {
+      await page.keyboard.press(tab);
+      reached = await removal.evaluate(el => el === document.activeElement);
+    }
+    expect(reached).toBe(true);
     await expect(removal).toBeFocused();
+    await expect(removal).toHaveCSS('outline-style', 'solid');
+
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('data-request-form')).toBeVisible();
-    await page.getByTestId('data-request-contact').focus();
+    // Remaining action buttons, then the data-class select, then the contact field.
+    for (let i = 0; i < 4; i += 1) {
+      await page.keyboard.press(tab);
+    }
     await expect(page.getByTestId('data-request-contact')).toBeFocused();
     await page.keyboard.type('keyboard@e2e.local');
-    await page.getByTestId('data-request-submit').focus();
+    await page.keyboard.press(tab);
+    await page.keyboard.press(tab);
+    await page.keyboard.press(tab);
     await expect(page.getByTestId('data-request-submit')).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page.getByTestId('data-request-success')).toBeVisible();
+
+    const success = page.getByTestId('data-request-success');
+    await expect(success).toBeVisible();
+    await expect(success).toBeFocused();
+    await expect(page.getByTestId('data-request-status')).toContainText('We will review your request');
     await removeRequestsFor('keyboard@e2e.local');
   });
 

@@ -33,6 +33,12 @@ describe('data request contract', () => {
     expect(errors['dataClass']).toContain('Choose');
   });
 
+  it('rejects a contact that is neither an email nor a phone number', () => {
+    const errors = validateDataRequest({ ...input, contact: 'not a contact' });
+    expect(errors['contact']).toContain('valid email');
+    expect(validateDataRequest({ ...input, contact: '+1 (512) 555-0100' })['contact']).toBeUndefined();
+  });
+
   it('caps the free-text fields', () => {
     const errors = validateDataRequest({
       ...input,
