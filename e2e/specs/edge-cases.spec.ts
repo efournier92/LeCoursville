@@ -75,7 +75,7 @@ test.describe('edge cases', () => {
     // guards and settles on the last destination.
     const hops = ['People', 'Contacts', 'Calendar', 'Photos', 'Expressions', 'Contacts'];
     for (const label of hops) {
-      await nav.getByRole('button', { name: label }).click();
+      await nav.getByRole('link', { name: label }).click();
     }
     await expect(page).toHaveURL(/\/contacts/);
     await expect(page.locator('.contacts-skeleton-grid, .contacts-grid').first()).toBeAttached();
@@ -223,7 +223,7 @@ test.describe('theme control contract (light/dark parity)', () => {
     // Invalid surface: a malformed required email (auth form) flags the field
     // and the error edge override is wired to the invalid token. Sign out
     // first (via the Account page, the only home of the Sign out control).
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     // Touch the required email (focus), then blur it (focus the password):
     // empty + required + touched flags the field, engaging the error edge.
@@ -249,7 +249,7 @@ test.describe('theme control contract (light/dark parity)', () => {
 
   test('benign confirm uses brand Yes and neutral No, never red', async ({ page }) => {
     await login(page, 'admin');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
 
     const dialog = page.locator('app-prompt-modal');

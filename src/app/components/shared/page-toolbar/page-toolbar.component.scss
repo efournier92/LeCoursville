@@ -115,12 +115,23 @@
 
 @media (max-width: 600px) {
   .page-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 8px;
     min-height: 56px;
   }
 
-  // Tools drop below the title rather than squeezing it when the row is tight.
+  .page-toolbar-left,
+  .page-toolbar-title {
+    width: 100%;
+    text-align: left;
+  }
+
+  // Tools drop below the title and wrap from the left instead of the right.
   .page-toolbar-content:has(> *) {
-    flex-basis: 100%;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 
   // Projected icon buttons (search clear included) get a 44px touch target;

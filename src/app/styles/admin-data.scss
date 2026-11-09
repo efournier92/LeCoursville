@@ -100,7 +100,10 @@
   box-shadow: var(--shadow-card);
 
   @media (max-width: 600px) {
-    align-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    align-content: normal;
+    row-gap: 8px;
   }
 }
 
@@ -172,6 +175,8 @@
 
   @media (max-width: 600px) {
     flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 }
 

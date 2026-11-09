@@ -21,32 +21,32 @@ test.describe('navigation', () => {
   test('logged-in nav shows enabled features and never the Admin entry', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');
-    await expect(nav.getByRole('button', { name: 'People' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Contacts' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Calendar' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Videos' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Photos' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Expressions' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Upload' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Account' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Chat' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'People' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Contacts' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Calendar' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Audio' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Videos' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Photos' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Expressions' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Upload' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Account' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Chat' })).toHaveCount(0);
     // Family Explorer is a URL-shared public page, never app chrome.
-    await expect(nav.getByRole('button', { name: 'Family Explorer' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Family Explorer' })).toHaveCount(0);
     await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
   });
 
   test('Songs navigates to /songs and Audio still opens the audio library', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');
-    await expect(nav.getByRole('button', { name: 'Songs' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Audio' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Songs' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Audio' })).toBeVisible();
 
-    await nav.getByRole('button', { name: 'Songs' }).click();
+    await nav.getByRole('link', { name: 'Songs' }).click();
     await expect(page).toHaveURL(/\/songs/);
 
-    await nav.getByRole('button', { name: 'Audio' }).click();
+    await nav.getByRole('link', { name: 'Audio' }).click();
     await expect(page).toHaveURL(/\/media\/audio/);
   });
 
@@ -103,10 +103,10 @@ test.describe('navigation', () => {
 
   test('active nav button shows a 3px bar flush with the toolbar bottom', async ({ page }) => {
     await login(page, 'admin');
-    await page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'People' }).click();
+    await page.locator('#lecoursville-navbar-links').getByRole('link', { name: 'People' }).click();
     await expect(page).toHaveURL(/\/people/);
 
-    const bar = page.locator('button.active .active-indicator');
+    const bar = page.locator('a.active .active-indicator');
     await expect(bar).toBeVisible();
     await expect(bar).toHaveCSS('height', '3px');
 
@@ -115,14 +115,14 @@ test.describe('navigation', () => {
     // Flush: the bar's bottom edge sits on the toolbar's bottom edge.
     expect(Math.abs(barBox.y + barBox.height - (toolbarBox.y + toolbarBox.height))).toBeLessThanOrEqual(1);
     // Full-width: the bar spans the active button (icon + label + padding).
-    const buttonBox = (await page.locator('button.active').boundingBox())!;
+    const buttonBox = (await page.locator('a.active').boundingBox())!;
     expect(Math.abs(barBox.width - buttonBox.width)).toBeLessThanOrEqual(1);
     expect(Math.abs(barBox.x - buttonBox.x)).toBeLessThanOrEqual(1);
   });
 
   test('nav link computed font-size is 15px', async ({ page }) => {
     await login(page, 'admin');
-    const people = page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'People' });
+    const people = page.locator('#lecoursville-navbar-links').getByRole('link', { name: 'People' });
     await expect(people).toBeVisible();
     await expect(people).toHaveCSS('font-size', '15px');
   });
@@ -151,10 +151,170 @@ test.describe('navigation', () => {
       ['Upload', /\/upload/],
     ];
     for (const [label, url] of links) {
-      await nav.getByRole('button', { name: label }).click();
+      await nav.getByRole('link', { name: label }).click();
       await expect(page).toHaveURL(url);
       await expect(nav).toBeVisible();
     }
+  });
+
+  test('desktop nav anchors expose hrefs matching their routes', async ({ page }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    const links: [string, string][] = [
+      ['People', '/people'],
+      ['Contacts', '/contacts'],
+      ['Calendar', '/calendar'],
+      ['Songs', '/songs'],
+      ['Audio', '/media/audio'],
+      ['Videos', '/media/video'],
+      ['Photos', '/photos'],
+      ['Expressions', '/expressions'],
+      ['Upload', '/upload'],
+      ['Account', '/'],
+    ];
+    for (const [label, href] of links) {
+      await expect(nav.getByRole('link', { name: label })).toHaveAttribute('href', href);
+    }
+  });
+
+  test('middle click opens the nav target in a new page', async ({ page, context, browserName }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    // Calendar is the admin promoted route, so a fresh tab's auth boot cannot
+    // race the assertion by bouncing a deep link to the promoted route.
+    const calendar = nav.getByRole('link', { name: 'Calendar' });
+    const before = page.url();
+    if (browserName === 'webkit') {
+      // Playwright's WebKit does not open a tab for a synthesized middle click.
+      // Assert the native anchor contract that makes the browser do it.
+      await expect(calendar).toHaveAttribute('href', '/calendar');
+      await expect(calendar).not.toHaveAttribute('target', '_blank');
+      return;
+    }
+    const [opened] = await Promise.all([
+      context.waitForEvent('page'),
+      calendar.click({ button: 'middle' }),
+    ]);
+    await opened.waitForLoadState('domcontentloaded');
+    await expect(opened).toHaveURL(/\/calendar$/);
+    // The original page never navigates for a middle click.
+    await expect(page).toHaveURL(before);
+    await opened.close();
+  });
+
+  test('modifier click opens a new tab and leaves the current page unchanged', async ({ page, context, browserName }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    const before = page.url();
+    // macOS Chromium/WebKit use Cmd for a new tab; Firefox and other platforms use Ctrl.
+    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+    if (browserName === 'firefox') {
+      // Playwright's Firefox does not open a tab for a synthesized modifier click.
+      // Assert the native anchor contract that makes a real browser do it.
+      const calendar = nav.getByRole('link', { name: 'Calendar' });
+      await expect(calendar).toHaveAttribute('href', '/calendar');
+      await expect(calendar).not.toHaveAttribute('target', '_blank');
+      return;
+    }
+    const [opened] = await Promise.all([
+      context.waitForEvent('page'),
+      nav.getByRole('link', { name: 'Calendar' }).click({ modifiers: [modifier] }),
+    ]);
+    await opened.waitForLoadState('domcontentloaded');
+    await expect(opened).toHaveURL(/\/calendar$/);
+    await expect(page).toHaveURL(before);
+    await opened.close();
+  });
+
+  test('plain click navigates in place and marks the anchor active', async ({ page }) => {
+    await login(page, 'admin');
+    const nav = page.locator('#lecoursville-navbar-links');
+    await nav.getByRole('link', { name: 'People' }).click();
+    await expect(page).toHaveURL(/\/people/);
+    await expect(nav.getByRole('link', { name: 'People' })).toHaveClass(/active/);
+  });
+
+  test('mobile menu items are anchors with real hrefs', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.getByRole('button', { name: 'Open navigation menu' }).click();
+    const menu = page.locator('.mat-mdc-menu-panel');
+    await expect(menu).toBeVisible();
+    const people = menu.getByRole('menuitem', { name: 'People' });
+    await expect(people).toHaveAttribute('href', '/people');
+  });
+});
+
+test.describe('mobile page toolbars', () => {
+  const routes: { path: string; title?: string }[] = [
+    { path: '/admin/people', title: 'People' },
+    { path: '/people', title: 'People' },
+    { path: '/calendar', title: 'Calendar' },
+    // The photo albums toolbar has no title, only projected filter controls.
+    { path: '/photos' },
+  ];
+
+  for (const route of routes) {
+    test(`toolbar on ${route.path} stacks left at phone width`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await login(page, 'admin');
+      await page.goto(route.path);
+      const toolbar = page.locator('.page-toolbar');
+      await expect(toolbar).toBeVisible();
+      if (route.title) {
+        await expect(toolbar.locator('.page-toolbar-title')).toHaveText(route.title);
+      }
+      await expect(toolbar).toHaveCSS('flex-direction', 'column');
+      await expect(toolbar).toHaveCSS('align-items', 'stretch');
+      await expect(toolbar).toHaveCSS('row-gap', '8px');
+
+      const content = toolbar.locator('.page-toolbar-content');
+      if (await content.count()) {
+        await expect(content).toHaveCSS('justify-content', 'flex-start');
+        await expect(content).toHaveCSS('margin-left', '0px');
+        await expect(content).toHaveCSS('align-items', 'center');
+      }
+
+      const box = (await toolbar.boundingBox())!;
+      const inset = await toolbar.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft));
+      const left = box.x + inset;
+      for (const selector of ['.page-toolbar-left', '.page-toolbar-content']) {
+        const child = toolbar.locator(selector);
+        if (!(await child.count())) continue;
+        const childBox = (await child.boundingBox())!;
+        expect(Math.abs(childBox.x - left)).toBeLessThanOrEqual(1);
+      }
+      if (route.title) {
+        const titleBox = (await toolbar.locator('.page-toolbar-title').boundingBox())!;
+        expect(Math.abs(titleBox.x - left)).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+
+  test('admin filter bar stacks and left-aligns its actions at phone width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    const bar = page.locator('.admin-filter-bar');
+    await expect(bar).toBeVisible();
+    await expect(bar).toHaveCSS('flex-direction', 'column');
+    await expect(bar).toHaveCSS('align-items', 'stretch');
+
+    const actions = bar.locator('.admin-filter-actions');
+    await expect(actions).toHaveCSS('justify-content', 'flex-start');
+    await expect(actions).toHaveCSS('margin-left', '0px');
+    await expect(actions).toHaveCSS('flex-basis', '100%');
+
+    const box = (await bar.boundingBox())!;
+    const inset = await bar.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft));
+    const actionsBox = (await actions.boundingBox())!;
+    expect(Math.abs(actionsBox.x - (box.x + inset))).toBeLessThanOrEqual(1);
+    // The action buttons keep natural width: they are not stretched edge to edge.
+    const firstButton = actions.locator('button').first();
+    const firstBox = (await firstButton.boundingBox())!;
+    expect(firstBox.width).toBeLessThan(actionsBox.width);
+    // The first control sits one border-width in from the row's content edge.
+    expect(Math.abs(firstBox.x - (box.x + inset))).toBeLessThanOrEqual(3);
   });
 });
 
@@ -226,6 +386,6 @@ test.describe('admin sidebar navigation', () => {
     await login(page, 'user');
     const nav = page.locator('#lecoursville-navbar-links');
     await expect(nav.getByTestId('nav-admin-link')).toHaveCount(0);
-    await expect(nav.getByRole('button', { name: 'Expressions' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Expressions' })).toBeVisible();
   });
 });

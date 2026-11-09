@@ -141,7 +141,7 @@ test.describe('admin roles', () => {
 
   test('content admin sees the Content Admin badge and not the Super badge', async ({ page }) => {
     await login(page, 'staff');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin']);
   });
 
@@ -179,7 +179,7 @@ test.describe('admin roles', () => {
 
   test('member sees no role badges', async ({ page }) => {
     await login(page, 'user');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page.locator('.account-roles')).toHaveCount(0);
     await expect(page.getByText('Content Admin')).toHaveCount(0);
     await expect(page.getByText('Super')).toHaveCount(0);
@@ -187,7 +187,7 @@ test.describe('admin roles', () => {
 
   test('super sees the Content Admin and Super badges', async ({ page }) => {
     await login(page, 'admin');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin', 'Super']);
   });
 

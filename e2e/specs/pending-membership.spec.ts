@@ -159,9 +159,9 @@ test.describe('pending membership', () => {
     const nav = page.locator('#lecoursville-navbar-links');
     await expect(nav).toBeVisible();
 
-    await expect(nav.getByRole('button', { name: 'People' })).toHaveCount(0);
-    await expect(nav.getByRole('button', { name: 'Contacts' })).toHaveCount(0);
-    await expect(nav.getByRole('button', { name: 'Calendar' })).toHaveCount(0);
-    await expect(nav.getByRole('button', { name: 'Photos' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'People' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Contacts' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Calendar' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Photos' })).toBeVisible();
   });
 });

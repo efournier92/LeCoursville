@@ -1483,18 +1483,17 @@ test.describe('songs', () => {
     });
 
     for (const width of [320, 390]) {
-      test(`30. at ${width}px the toolbar shares one row and the filter bar collapses`, async ({ page }) => {
+      test(`30. at ${width}px the toolbar stacks left and the filter bar collapses`, async ({ page }) => {
         await page.setViewportSize({ width, height: 844 });
         await page.goto('/admin/songs');
         await expect(page.getByTestId('admin-songs-table')).toBeVisible();
 
         const titleBox = (await page.locator('.page-toolbar-title').boundingBox())!;
         const ctaBox = (await page.getByTestId('admin-add-song').boundingBox())!;
-        // Same row: the CTA's vertical span overlaps the title's.
-        expect(ctaBox.y).toBeLessThan(titleBox.y + titleBox.height);
-        expect(titleBox.y).toBeLessThan(ctaBox.y + ctaBox.height);
-        // CTA right-aligned, title left.
-        expect(ctaBox.x).toBeGreaterThan(titleBox.x);
+        // Stacked: the CTA starts below the title.
+        expect(ctaBox.y).toBeGreaterThanOrEqual(titleBox.y + titleBox.height);
+        // Both start on the bar's left content edge.
+        expect(Math.abs(ctaBox.x - titleBox.x)).toBeLessThanOrEqual(1);
 
         const filterHeight = await page
           .locator('.admin-filter-bar')

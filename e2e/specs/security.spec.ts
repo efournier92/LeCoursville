@@ -88,7 +88,7 @@ test.describe('security', () => {
       await page.getByTestId('chat-send').click();
       await page.getByRole('button', { name: 'Yes' }).click();
       // View as another user (the payload executes for ANY viewer).
-      await page.getByRole('button', { name: 'Account' }).click();
+      await page.getByRole('link', { name: 'Account' }).click();
       await logout(page);
       await login(page, 'other');
       await page.goto('/chat');

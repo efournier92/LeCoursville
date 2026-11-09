@@ -17,7 +17,7 @@
     class="toolbar-routes-buttons-inline"
     >
     @for (button of filteredButtons; track button) {
-      <button
+      <a
         mat-button
         [routerLink]="button.link"
         routerLinkActive="active"
@@ -26,7 +26,7 @@
         <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
         <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
         <span class="active-indicator" aria-hidden="true"></span>
-      </button>
+      </a>
     }
   </div>
 }
@@ -36,7 +36,7 @@
     class="toolbar-routes-buttons-inline"
     >
     @for (button of filteredButtons; track button) {
-      <button
+      <a
         mat-menu-item
         [routerLink]="button.link"
         routerLinkActive="active"
@@ -44,7 +44,7 @@
         >
         <mat-icon class="navbar-link-icon">{{ button.icon }}</mat-icon>
         <span><span class="first-char">{{ button.title.charAt(0) }}</span>{{ button.title.slice(1) }}</span>
-      </button>
+      </a>
     }
   </div>
 }

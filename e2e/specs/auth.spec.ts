@@ -170,7 +170,7 @@ test.describe('auth', () => {
     await login(page, 'admin');
     await expect(page).toHaveURL(/\/calendar/);
     // The Sign out button lives on the Account page (route '/').
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page).toHaveURL('/');
     await logout(page);
     await expect(page).toHaveURL('/');
@@ -199,7 +199,7 @@ test.describe('auth', () => {
 
   test('account action bar spaces the theme toggle evenly and Sign Out is neutral', async ({ page }) => {
     await login(page, 'user');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     const edit = page.getByRole('button', { name: 'Edit profile' });
     const out = page.getByRole('button', { name: 'Sign Out', exact: true });
     await expect(out).toHaveAccessibleName('Sign Out');
@@ -224,7 +224,7 @@ test.describe('auth', () => {
 
   test('signed-in email/password user sees their profile on the account page', async ({ page }) => {
     await login(page, 'user');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page).toHaveURL('/');
     await expect(page.locator('.account-name')).toHaveText('Regular User');
     await expect(page.locator('.account-email')).toHaveText(E2E_USERS.user.email);

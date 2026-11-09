@@ -510,7 +510,7 @@ test.describe('account recovery', () => {
 
     // Trigger an alert as an anonymous visitor. `/` redirects a signed-in user
     // to the promoted route, so open the account card via the nav first.
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     await addRecoveryRequest(page, triggerEmail, 'Recovery Eleven');
 

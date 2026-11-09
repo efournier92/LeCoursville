@@ -176,7 +176,7 @@ test.describe('photo-albums flag and the photos-legacy fallback', () => {
     // The legacy view has no navbar chrome; go to the landing page (navbar
     // present) and then the Account page, the only home of Sign out.
     await page.goto('/');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     await login(page, 'user');
     await page.goto('/photos');

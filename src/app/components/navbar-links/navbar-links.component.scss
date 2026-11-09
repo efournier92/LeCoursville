@@ -3,17 +3,17 @@
 }
 
 // M3's label-large recipe renders 14px; pin the prod-feel 15px explicitly.
-.toolbar-routes-buttons-inline button {
+.toolbar-routes-buttons-inline a {
   font-size: 15px;
 }
 
-button span {
+a span {
   font-weight: 400;
   letter-spacing: -0.02em;
 }
 
 // Active marker: white bar flush with the toolbar's bottom edge. The flex
-// row below centers the 40px button exactly in the 64px toolbar, and the
+// row below centers the 40px anchor exactly in the 64px toolbar, and the
 // offset derives from the toolbar height token instead of a magic -12px.
 // e2e verifies the flush via boundingBox math.
 :host {
@@ -21,21 +21,21 @@ button span {
 }
 
 // Flex kills the 22px toolbar strut's inline line box, which otherwise
-// leaves the button a hair above true center. Id-scoped: the mat-menu
+// leaves the anchor a hair above true center. Id-scoped: the mat-menu
 // branch reuses the class and must keep stacking vertically.
 #lecoursville-navbar-links {
   display: flex;
   align-items: center;
 }
 
-button.active {
+a.active {
   position: relative;
 }
 
-// Weight must be re-asserted on the span: `button span` above sets 400
-// directly on the label and would beat inheritance from the button.
-button.active,
-button.active span {
+// Weight must be re-asserted on the span: `a span` above sets 400
+// directly on the label and would beat inheritance from the anchor.
+a.active,
+a.active span {
   font-weight: 600;
 }
 
@@ -44,17 +44,17 @@ button.active span {
 }
 
 // MDC positions .mdc-button__label relative and keeps the icon outside it,
-// so left/right would resolve to the label box; neutralize to span the button.
-button.active ::ng-deep .mdc-button__label {
+// so left/right would resolve to the label box; neutralize to span the anchor.
+a.active ::ng-deep .mdc-button__label {
   position: static;
 }
 
-button.active .active-indicator {
+a.active .active-indicator {
   display: block;
   position: absolute;
   left: 0;
   right: 0;
-  // 100% = button height, so this spans button-bottom → toolbar-bottom.
+  // 100% = anchor height, so this spans anchor-bottom → toolbar-bottom.
   // minimalist: assumes vertical centering; upgrade path is measuring the
   // row at runtime.
   bottom: calc((100% - var(--mat-toolbar-standard-height, 64px)) / 2);

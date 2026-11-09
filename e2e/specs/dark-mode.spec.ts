@@ -126,7 +126,7 @@ test('theme toggle sits at the far right of the top nav, after Account', async (
   await login(page, 'user');
   const logo = page.locator('.toolbar-logo');
   const toggle = page.getByTestId('theme-toggle');
-  const account = page.getByRole('button', { name: 'Account' });
+  const account = page.getByRole('link', { name: 'Account' });
   await expect(logo).toBeVisible();
   await expect(toggle).toBeVisible();
   await expect(account).toBeVisible();
@@ -225,7 +225,7 @@ test('guest never renders dark', async ({ page }) => {
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   // The Sign out button lives on the Account page (route '/').
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await logout(page);
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
   await expect(body(page)).toHaveCSS('background-color', 'rgb(243, 244, 246)');
@@ -238,7 +238,7 @@ test('toolbar toggle is session-only and leaves the account pref untouched', asy
   // The account preference must remain unset (no RTDB write).
   await expect.poll(() => readDb(`users/${uid}/prefs/theme`), { timeout: 5000 }).toBeNull();
   // And the account card reflects no saved preference.
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   await expect(page.locator('.account-theme-label')).toHaveText('Always Light');
@@ -246,7 +246,7 @@ test('toolbar toggle is session-only and leaves the account pref untouched', asy
 
 test('account "Always use dark mode" persists to RTDB and a fresh session', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   const label = page.locator('.account-theme-label');
@@ -271,7 +271,7 @@ test('account "Always use dark mode" persists to RTDB and a fresh session', asyn
 
 test('account theme toggle keeps you on the account page', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await expect(page).toHaveURL(/\/$/);
   const pref = page.getByTestId('account-always-dark');
   await pref.click();
@@ -284,7 +284,7 @@ test('account theme toggle keeps you on the account page', async ({ page }) => {
 
 test('clicking anywhere on the account theme chip toggles it', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   // Click the text label, not the icon pair: the whole chip is the control.
@@ -379,7 +379,7 @@ test('dark mode keeps filled brand controls on brand green with white ink', asyn
   expect(text).toBe('rgb(255, 255, 255)');
   await expectReadable(print);
   // M3 filled buttons (Edit profile) follow the same brand-green + white rule.
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const edit = page.getByRole('button', { name: 'Edit profile' });
   await expect(edit).toBeVisible();
   const editColors = await surfaceColors(edit);
@@ -500,7 +500,7 @@ test('account card surface follows the dark theme', async ({ page }) => {
   // A fresh load at '/' bounces a signed-in user to the promoted route
   // (app.component), so reach the account card the way users do: the
   // Account toolbar link (client-side, no reload).
-  await page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'Account' }).click();
+  await page.locator('#lecoursville-navbar-links').getByRole('link', { name: 'Account' }).click();
   const card = page.locator('.auth-card--account');
   await expect(card).toBeVisible();
   const light = await card.evaluate((el) => getComputedStyle(el).backgroundColor);

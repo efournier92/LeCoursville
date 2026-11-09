@@ -15,7 +15,7 @@ async function openChatAs(page: Page, who: 'admin' | 'user' | 'other') {
     return;
   }
   // Sign out only from the Account page; reach it through the SPA link.
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await expect(page).toHaveURL('/');
   await logout(page);
   await login(page, who);

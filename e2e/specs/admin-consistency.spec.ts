@@ -82,10 +82,10 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
 
   const box = await toolbar.boundingBox();
   expect(box).not.toBeNull();
-  // Bars wrap and grow instead of clipping (DC-20261026-05): the minimum holds,
-  // and one wrapped control row (<=48px) is allowed.
+  // Below 600px the bar stacks its title above one action row (UI-019), so it
+  // grows instead of clipping; the minimum still holds.
   expect(box!.height).toBeGreaterThanOrEqual(expectedHeight - 1);
-  expect(box!.height).toBeLessThanOrEqual(expectedHeight + 48);
+  expect(box!.height).toBeLessThanOrEqual(expectedHeight + 64);
 
   const surface = await toolbar.evaluate((el) => {
     const styles = getComputedStyle(el);
