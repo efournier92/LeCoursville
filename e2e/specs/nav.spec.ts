@@ -7,6 +7,17 @@ test.describe('navigation', () => {
     await expect(page.locator('#lecoursville-navbar-links')).toHaveCount(0);
   });
 
+  test('root sign-in route hides the redundant toolbar Sign In link', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('auth-email')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign In' })).toHaveCount(0);
+  });
+
+  test('signed-out non-root route keeps the toolbar Sign In link', async ({ page }) => {
+    await page.goto('/feature-disabled');
+    await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+  });
+
   test('logged-in nav shows enabled features and never the Admin entry', async ({ page }) => {
     await login(page, 'admin');
     const nav = page.locator('#lecoursville-navbar-links');

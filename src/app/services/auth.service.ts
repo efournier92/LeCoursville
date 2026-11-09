@@ -3,6 +3,7 @@ import {
   onAuthStateChanged,
   signOut as firebaseSignOut,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithPopup,
   signInWithRedirect,
@@ -72,6 +73,14 @@ export class AuthService {
   /** Native email/password sign-in (replaces the FirebaseUI widget). */
   async signIn(email: string, password: string): Promise<FirebaseUser> {
     const cred = await signInWithEmailAndPassword(this.firebase.auth, email, password);
+    return cred.user;
+  }
+
+  /** Native email/password signup. Firebase signs the new account in, then the
+   *  shared onSignIn path writes the roleless profile and leaves it pending. */
+  async createAccount(email: string, password: string): Promise<FirebaseUser> {
+    const cred = await createUserWithEmailAndPassword(this.firebase.auth, email, password);
+    this.onSignIn({ authResult: { user: cred.user } });
     return cred.user;
   }
 
@@ -224,22 +233,29 @@ export class AuthService {
 
   async createUser(authData: any, existingUser: User): Promise<void> {
     const user: User = new User(authData, existingUser);
-    // Stamped before the write: the profile write must not re-enter the
-    // listener that also rewrites the record.
+    // Stamp and cache before the write: the RTDB local event fires
+    // synchronously inside update(), and its user emission triggers the
+    // promoted-route bounce whose guard reads this cache.
     this.hasAlreadyUpdatedUser = true;
+    this.user = user;
+    this.setUserInLocalStorage(user);
 
     // Membership is server-owned. The client creates the profile without
     // roles, then the callable stamps `roles/user` before anything renders.
     const profile: Partial<User> = { ...user };
     delete profile.roles;
+    // RTDB update rejects an explicit undefined (e.g. an unset `prefs`).
+    for (const key of Object.keys(profile) as (keyof User)[]) {
+      if (profile[key] === undefined) {
+        delete profile[key];
+      }
+    }
     await this.rtdb.object(`users/${user.id}`).update(profile as any);
     await this.claimMemberRole();
 
     // Stay pending locally: membership is granted by the server, never
     // optimistically by signup.
-    this.user = user;
     this.userSource.next(user);
-    this.setUserInLocalStorage(user);
   }
 
   async signOut(): Promise<void> {

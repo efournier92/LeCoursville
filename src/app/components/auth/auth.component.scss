@@ -87,6 +87,39 @@
   color: var(--color-ink-2);
 }
 
+.auth-mode-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border-radius: var(--radius-control);
+  background: var(--color-overlay-ink-10);
+}
+
+.auth-mode-tab {
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink-2);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.is-active {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
 .auth-field {
   display: block;
   width: 100%;

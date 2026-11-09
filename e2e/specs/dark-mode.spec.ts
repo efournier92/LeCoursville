@@ -177,6 +177,20 @@ test('toggling off restores light and persists', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 });
 
+test('signed-out sign-in page shows a working theme toggle', async ({ page }) => {
+  await page.goto('/');
+  // Wait for auth to resolve: sign-out clears the session override, which
+  // would race the toggles below if the form paints first.
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+  await expect(page.getByTestId('auth-email')).toBeVisible();
+  const toggle = page.getByTestId('theme-toggle');
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await toggle.click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
+
 test('guest never renders dark', async ({ page }) => {
   await login(page, 'user');
   await page.getByTestId('theme-toggle').click();

@@ -154,7 +154,7 @@ test.describe('loading contract', () => {
   test('top-nav never blank', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('mat-toolbar')).toBeVisible({ timeout: 1000 });
-    await expect(page.locator('mat-toolbar').getByText('Sign In')).toBeVisible();
+    await expect(page.locator('mat-toolbar').getByTestId('theme-toggle')).toBeVisible();
     await login(page, 'admin');
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
   });

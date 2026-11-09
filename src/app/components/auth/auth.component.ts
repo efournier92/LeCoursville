@@ -22,6 +22,8 @@ export class AuthComponent implements OnInit {
   showPassword = false;
   email = "";
   password = "";
+  confirmPassword = "";
+  isCreateAccount = false;
   loading = false;
   sendingReset = false;
   error = "";
@@ -94,6 +96,56 @@ export class AuthComponent implements OnInit {
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  get submitLabel(): string {
+    if (this.loading) {
+      return this.isCreateAccount ? "Creating Account…" : "Signing In…";
+    }
+    return this.isCreateAccount ? "Create Account" : "Sign In";
+  }
+
+  setMode(mode: "signin" | "create"): void {
+    this.isCreateAccount = mode === "create";
+    this.error = "";
+    this.info = "";
+    this.password = "";
+    this.confirmPassword = "";
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.isCreateAccount) {
+      return this.onCreateAccount();
+    }
+    return this.onSignIn();
+  }
+
+  async onCreateAccount(): Promise<void> {
+    if (!this.email.trim() || !this.password) {
+      this.error = "Enter your email and password.";
+      return;
+    }
+    if (this.password.length < 8) {
+      this.error = "Password must be at least 8 characters.";
+      return;
+    }
+    if (this.password !== this.confirmPassword) {
+      this.error = "Passwords do not match.";
+      return;
+    }
+    this.loading = true;
+    this.error = "";
+    this.info = "";
+    try {
+      const fbUser = await this.authService.createAccount(this.email.trim(), this.password);
+      this.analyticsService.logEvent("auth_sign_up", { userId: fbUser.uid });
+      this.password = "";
+      this.confirmPassword = "";
+    } catch (e: any) {
+      this.error = this.mapAuthError(e?.code || "");
+    } finally {
+      this.loading = false;
+    }
   }
 
   async onSignIn(): Promise<void> {
@@ -210,6 +262,10 @@ export class AuthComponent implements OnInit {
         return "Incorrect email or password.";
       case "auth/invalid-email":
         return "That email address looks invalid.";
+      case "auth/email-already-in-use":
+        return "An account already exists for that email. Sign in instead.";
+      case "auth/weak-password":
+        return "Password must be at least 8 characters.";
       case "auth/too-many-requests":
         return "Too many attempts — try again in a minute.";
       case "auth/network-request-failed":

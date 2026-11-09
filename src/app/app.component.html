@@ -35,12 +35,14 @@
           <div class="nav-skeleton-burger d-lg-none" aria-hidden="true"></div>
         </div>
       } @else if (!user?.id) {
-        <a
-          mat-button
-          routerLink="/"
-          >
-          Sign In
-        </a>
+        @if (!isSignInRoute()) {
+          <a
+            mat-button
+            routerLink="/"
+            >
+            Sign In
+          </a>
+        }
       } @else {
         <div
           class="d-none d-lg-block"
@@ -78,22 +80,22 @@
             </mat-menu>
           }
         </div>
-        <button
-          type="button"
-          class="theme-switch"
-          data-testid="theme-toggle"
-          role="switch"
-          [attr.aria-checked]="(theme$ | async) === 'dark'"
-          [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-          (click)="onThemeToggle()"
-          >
-          @if ((theme$ | async) === 'dark') {
-            <mat-icon class="theme-switch-icon" data-testid="theme-icon-sun">light_mode</mat-icon>
-          } @else {
-            <mat-icon class="theme-switch-icon" data-testid="theme-icon-moon">dark_mode</mat-icon>
-          }
-        </button>
       }
+      <button
+        type="button"
+        class="theme-switch"
+        data-testid="theme-toggle"
+        role="switch"
+        [attr.aria-checked]="(theme$ | async) === 'dark'"
+        [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        (click)="onThemeToggle()"
+        >
+        @if ((theme$ | async) === 'dark') {
+          <mat-icon class="theme-switch-icon" data-testid="theme-icon-sun">light_mode</mat-icon>
+        } @else {
+          <mat-icon class="theme-switch-icon" data-testid="theme-icon-moon">dark_mode</mat-icon>
+        }
+      </button>
     </div>
   </mat-toolbar>
   @if (isPending()) {

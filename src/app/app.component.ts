@@ -158,6 +158,11 @@ export class AppComponent implements OnInit {
     target?.scrollIntoView({ block: 'start' });
   }
 
+  /** The root route is the sign-in card; its toolbar link would duplicate it. */
+  isSignInRoute(): boolean {
+    return this.routingService.IsRootRoute();
+  }
+
   shouldShowSidenavToggle(): boolean {
     return this.isSuperAdmin() && this.routingService.isOnAdminRoute();
   }

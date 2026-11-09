@@ -109,7 +109,7 @@ async function addRecoveryRequest(page: Page, email: string, name: string, alter
   // Settle on a quiescent signed-out app before clicking: right after a
   // sign-out, Firefox can still be flipping auth state and re-rendering the
   // form region, and a click dispatched mid-flip lands on a detached node.
-  await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+  await expect(page.getByTestId('theme-toggle')).toBeVisible();
   await expect(page.getByTestId('auth-email')).toBeVisible();
   await page.getByTestId('auth-recovery-open').click();
   await expect(page.getByTestId('recovery-email')).toBeVisible();

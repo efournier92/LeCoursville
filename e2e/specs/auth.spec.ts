@@ -32,12 +32,28 @@ async function deleteAuthAccount(token: string): Promise<void> {
   );
 }
 
+/** Deletes an account the test just created, using its known password. */
+async function deleteCreatedAccount(email: string): Promise<void> {
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'E2e-pass-2026', returnSecureToken: true }),
+    },
+  );
+  const body = await res.json();
+  if (body.idToken) {
+    await deleteAuthAccount(body.idToken);
+  }
+}
+
 test.describe('auth', () => {
   test('anonymous redirect: /contacts lands on the sign-in page', async ({ page }) => {
     await page.goto('/contacts');
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('auth-email')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
   });
 
   test('anonymous unknown URL still shows the sign-in page', async ({ page }) => {
@@ -189,6 +205,75 @@ test.describe('auth', () => {
     await expect(page.locator('.user-edit-display-field').filter({ hasText: 'Email' }))
       .toContainText(E2E_USERS.user.email);
     await expect(page.locator('input[type="email"]')).toHaveCount(0);
+  });
+
+  test('sign-in card orders email above Google and uses the new copy', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByText('Welcome To LeCoursville')).toBeVisible();
+    await expect(page.getByTestId('auth-submit')).toContainText('Sign In');
+    const emailBox = (await page.getByTestId('auth-email').boundingBox())!;
+    const googleBox = (await page.getByTestId('auth-google').boundingBox())!;
+    expect(emailBox.y, 'email field renders above the Google button').toBeLessThan(googleBox.y);
+  });
+
+  test('create account lands pending with the pending banner', async ({ page }) => {
+    const email = `new-account-${Date.now()}@e2e.local`;
+    try {
+      await page.goto('/');
+      await page.getByTestId('auth-mode-create').click();
+      await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible();
+      await page.getByTestId('auth-email').fill(email);
+      await page.getByTestId('auth-password').fill('E2e-pass-2026');
+      await page.getByTestId('auth-confirm-password').fill('E2e-pass-2026');
+      await page.getByTestId('auth-submit').click();
+      await expect(page).toHaveURL('/photos');
+      await expect(page.getByRole('status').filter({ hasText: /pending approval/i })).toBeVisible();
+      await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+    } finally {
+      const uid = await page.evaluate(
+        () => JSON.parse(localStorage.getItem('user') || 'null')?.id as string | undefined,
+      );
+      if (uid) {
+        await deleteDb(`users/${uid}`);
+      }
+      await deleteCreatedAccount(email);
+      for (const mail of await findOutboundEmails('account_created')) {
+        if ((mail.text ?? '').includes(email)) {
+          await deleteDb(`outboundEmails/${mail.key}`);
+        }
+      }
+    }
+  });
+
+  test('create account rejects a short password and a mismatch', async ({ page }) => {
+    const email = `weak-${Date.now()}@e2e.local`;
+    await page.goto('/');
+    await page.getByTestId('auth-mode-create').click();
+    await page.getByTestId('auth-email').fill(email);
+    await page.getByTestId('auth-password').fill('short7');
+    await page.getByTestId('auth-confirm-password').fill('short7');
+    await page.getByTestId('auth-submit').click();
+    await expect(page.getByTestId('auth-error')).toContainText('at least 8 characters');
+
+    await page.getByTestId('auth-password').fill('E2e-pass-2026');
+    await page.getByTestId('auth-confirm-password').fill('E2e-pass-2027');
+    await page.getByTestId('auth-submit').click();
+    await expect(page.getByTestId('auth-error')).toContainText('Passwords do not match.');
+    await expect(page).toHaveURL('/');
+  });
+
+  test('create account with an existing email shows a friendly error', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('auth-mode-create').click();
+    await page.getByTestId('auth-email').fill(E2E_USERS.user.email);
+    await page.getByTestId('auth-password').fill(E2E_USERS.user.password);
+    await page.getByTestId('auth-confirm-password').fill(E2E_USERS.user.password);
+    await page.getByTestId('auth-submit').click();
+    await expect(page.getByTestId('auth-error')).toContainText(
+      'An account already exists for that email.',
+    );
+    await expect(page).toHaveURL('/');
   });
 
   test('new account: signup stays pending and the client cannot write roles', async () => {
