@@ -26,7 +26,7 @@ const ADMIN_ROUTES: AdminRoute[] = [
   {
     path: '/admin/people',
     title: 'People',
-    ready: (page) => expect(page.locator('.import-card .upload-area')).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('admin-people-table')).toBeVisible(),
   },
   {
     path: '/admin/calendars',

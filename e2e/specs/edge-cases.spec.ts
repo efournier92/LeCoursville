@@ -91,6 +91,7 @@ test.describe('edge cases', () => {
   test('malformed CSV import surfaces validation errors', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
     const bad = [
       'ID,Name_First_Given,Name_Last,Birthday',
       'bad-row-1,One',
@@ -111,6 +112,7 @@ test.describe('edge cases', () => {
     await login(page, 'admin');
     // Seed-like person created via the import pipeline with an XSS name.
     await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
     const payload = '<img src=x onerror=window.__xss=3>';
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Family',

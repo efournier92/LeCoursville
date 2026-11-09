@@ -141,9 +141,9 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   userRoles(user: User): string[] {
     const roles = user?.roles || { user: false, admin: false, super: false };
     return [
+      roles.user ? 'Member' : '',
       roles.admin ? 'Content Admin' : '',
       roles.super ? 'Super' : '',
-      roles.user ? 'Member' : '',
     ].filter(Boolean);
   }
 

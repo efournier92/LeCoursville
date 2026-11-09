@@ -4,7 +4,7 @@ import { map } from 'rxjs/operators';
 import { FeatureFlag } from 'src/app/models/feature-flag';
 import { RtdbService } from './rtdb.service';
 
-export type FeatureFlagAuditField = 'enabled' | 'promotedRoute';
+export type FeatureFlagAuditField = 'enabled' | 'promotedRoute' | 'promotedRoutePending';
 
 export interface FeatureFlagAuditRecord {
   flagId: string;
@@ -87,6 +87,20 @@ export class FeatureFlagsService {
 
   setPromotedRoute(route: string): Promise<void> {
     return this.rtdb.object('promotedRoute').set({
+      route,
+      updatedAt: Date.now(),
+    });
+  }
+
+  getPendingPromotedRoute(): Observable<string | null> {
+    // Sibling node, same { route, updatedAt } shape as promotedRoute.
+    return this.rtdb.object<{ route?: string }>('promotedRoutePending').valueChanges().pipe(
+      map(v => (v && typeof v === 'object' && v.route ? v.route : null)),
+    );
+  }
+
+  setPendingPromotedRoute(route: string): Promise<void> {
+    return this.rtdb.object('promotedRoutePending').set({
       route,
       updatedAt: Date.now(),
     });

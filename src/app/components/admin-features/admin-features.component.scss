@@ -7,6 +7,19 @@
   flex-wrap: wrap;
 }
 
+.promoted-route-row + .promoted-route-warning,
+.promoted-route-warning + .promoted-route-row,
+.promoted-route-row + .promoted-route-row {
+  margin-top: 20px;
+}
+
+.promoted-route-subtitle {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
 .promoted-route-copy {
   flex: 1 1 260px;
   min-width: 0;

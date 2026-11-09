@@ -27,7 +27,7 @@ const ROUTES: { route: string; url?: RegExp; content: (page: Page) => Locator }[
 const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/users', content: (p) => p.locator('[data-testid="admin-users-table"]') },
   { route: '/admin/families', content: (p) => p.locator('.admin-table').first() },
-  { route: '/admin/people', content: (p) => p.locator('.import-card') },
+  { route: '/admin/people', content: (p) => p.getByTestId('admin-people-table') },
   { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
   { route: '/admin/media', content: (p) => p.getByTestId('media-section-video') },
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
@@ -94,6 +94,37 @@ test.describe('loading contract', () => {
     } finally {
       await writeDb('people', people);
       await writeDb('photoAlbums', albums);
+    }
+  });
+
+  test('empty admin collections show an empty state, never a skeleton', async ({ page }) => {
+    // Admin-media and admin-analytics have no collection to empty; every other
+    // audited admin surface is exercised here. Each global node is restored.
+    const cases = [
+      { path: 'calendars', route: '/admin/calendars', empty: 'app-no-results-message' },
+      { path: 'songs', route: '/admin/songs', empty: '[data-testid="admin-songs-empty"]' },
+      { path: 'photoAlbums', route: '/admin/photo-albums', empty: 'app-no-results-message' },
+      { path: 'families', route: '/admin/families', empty: 'app-no-results-message' },
+      { path: 'userUploads', route: '/admin/uploads', empty: 'app-no-results-message' },
+      { path: 'familyExplorer', route: '/admin/family-explorer', empty: '[data-testid="archive-empty"]' },
+      { path: 'people', route: '/admin/people', empty: 'app-no-results-message' },
+    ];
+    const saved: Record<string, unknown> = {};
+    for (const item of cases) {
+      saved[item.path] = await readDb(item.path);
+    }
+    try {
+      await login(page, 'admin');
+      for (const item of cases) {
+        await deleteDb(item.path);
+        await page.goto(item.route);
+        await expect(page.locator(item.empty).first()).toBeVisible({ timeout: 45_000 });
+        await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+      }
+    } finally {
+      for (const item of cases) {
+        await writeDb(item.path, saved[item.path]);
+      }
     }
   });
 

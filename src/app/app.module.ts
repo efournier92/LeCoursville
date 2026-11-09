@@ -13,6 +13,7 @@ import { SharedModule } from "src/app/components/shared/shared.module";
 
 // Declarations
 import { AdminMediaComponent } from "src/app/components/admin-media/admin-media.component";
+import { AdminPhotoAlbumsComponent } from "src/app/components/admin-photo-albums/admin-photo-albums.component";
 import { AppComponent } from "src/app/app.component";
 import { AuthActionComponent } from "src/app/components/auth-action/auth-action.component";
 import { AuthComponent } from "src/app/components/auth/auth.component";
@@ -94,5 +95,6 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         NoResultsMessageComponent,
         PageToolbarComponent,
         PhotoUploadProgressComponent,
+        AdminPhotoAlbumsComponent,
         ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi()), { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: "outline" } }] })
 export class AppModule {}

@@ -416,7 +416,7 @@ test.describe('admin system surfaces', () => {
       await music.click();
       await expect(music).toHaveAttribute('aria-checked', 'false');
 
-      await page.getByLabel('Default Landing Page').click();
+      await page.getByLabel('Approved Users Landing Page').click();
       await page.getByRole('option', { name: /Chat/ }).click();
 
       await expect

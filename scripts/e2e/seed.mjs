@@ -487,6 +487,7 @@ async function main() {
     },
     features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: !FEATURES_OFF_BY_DEFAULT.has(id), updatedAt: now }])),
     promotedRoute: { route: '/calendar', updatedAt: now },
+    promotedRoutePending: { route: '/photos', updatedAt: now },
     config: {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.
       adminAlertRecipients: ['admin@e2e.local'],

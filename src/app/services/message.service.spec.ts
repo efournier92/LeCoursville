@@ -133,6 +133,15 @@ describe('MessageService', () => {
     expect(emitted[1].likes.length).toBe(1);
   });
 
+  it('messagesLoaded$ resolves true on an empty first read', () => {
+    const values: boolean[] = [];
+    service.messagesLoaded$.subscribe(value => values.push(value));
+
+    messagesFeed.next([]);
+
+    expect(values).toEqual([false, true]);
+  });
+
   it('deleteMessage removes only messages/<id>', () => {
     service.deleteMessage(makeMessage({ id: 'm1' }));
 

@@ -89,7 +89,7 @@ describe('UserViewComponent', () => {
       const text = (fixture.nativeElement as HTMLElement).textContent;
       expect(text).toContain('Content Admin');
       expect(text).toContain('Super');
-      expect(text).toContain('User');
+      expect(text).toContain('Member');
     });
 
     it('renders the Content Admin chip only for a content admin record', () => {

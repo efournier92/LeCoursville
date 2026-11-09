@@ -35,13 +35,13 @@ async function deleteAuthAccount(t: string): Promise<void> {
   );
 }
 
-/** Signs in through the real form; the pending account lands on /media. */
-async function signInAsPending(page: Page): Promise<void> {
+/** Signs in through the real form; the pending account lands on the pending route. */
+async function signInAsPending(page: Page, expected = '/photos'): Promise<void> {
   await page.goto('/');
   await page.getByTestId('auth-email').fill(email);
   await page.getByTestId('auth-password').fill(PASSWORD);
   await page.getByTestId('auth-submit').click();
-  await expect(page).toHaveURL('/media');
+  await expect(page).toHaveURL(expected);
   await page.locator('#lecoursville-navbar-links').waitFor({ state: 'attached', timeout: 30000 });
 }
 
@@ -78,6 +78,16 @@ test.afterAll(async () => {
 });
 
 test.describe('pending membership', () => {
+  test('pending user lands on the pending promoted route, not the approved one', async ({ page }) => {
+    const before = await readDb('promotedRoutePending');
+    await writeDb('promotedRoutePending', { route: '/expressions', updatedAt: Date.now() });
+    try {
+      await signInAsPending(page, '/expressions');
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
   test('pending user can browse media and sees the pending banner', async ({ page }) => {
     await signInAsPending(page);
     await expect(page.getByRole('status').filter({ hasText: /pending approval/i })).toBeVisible();

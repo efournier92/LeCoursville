@@ -14,7 +14,7 @@ const CONTENT_ROUTES: AdminRoute[] = [
   },
   {
     path: '/admin/people',
-    ready: (page) => expect(page.locator('.import-card .upload-area')).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('admin-people-table')).toBeVisible(),
   },
   {
     path: '/admin/calendars',
@@ -138,7 +138,7 @@ test.describe('admin roles', () => {
   test('content admin sees the Content Admin badge and not the Super badge', async ({ page }) => {
     await login(page, 'staff');
     await page.getByRole('button', { name: 'Account' }).click();
-    await expect(page.locator('.account-role')).toHaveText(['User', 'Content Admin']);
+    await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin']);
   });
 
   test('role badges use the brand-family tokens', async ({ page }) => {
@@ -184,7 +184,7 @@ test.describe('admin roles', () => {
   test('super sees the Content Admin and Super badges', async ({ page }) => {
     await login(page, 'admin');
     await page.getByRole('button', { name: 'Account' }).click();
-    await expect(page.locator('.account-role')).toHaveText(['User', 'Content Admin', 'Super']);
+    await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin', 'Super']);
   });
 
   test('super reaches every system admin page', async ({ page }) => {

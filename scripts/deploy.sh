@@ -75,10 +75,25 @@ build_dev() {
 
 tag_build() {
   echo "Tagging build..."
-  TAG=$(date +%y.%m.%d)
+  TAG="${VERSION:-$(date +%y.%m.%d)}"
   echo "Tagging as $TAG..."
   git tag $TAG
   git push origin $TAG
+}
+
+# The UI displays package.json's version, and the git tag must be the same
+# token. No leading zeros keeps it semver-shaped (26.11.8, not 26.11.08). A
+# second deploy on the same day is idempotent: npm version refuses an unchanged
+# version, so skip the write when it already matches.
+set_release_version() {
+  VERSION=$(date +%-y.%-m.%-d)
+  CURRENT=$(node -p "require('$REPO_ROOT/package.json').version")
+  if [ "$CURRENT" != "$VERSION" ]; then
+    echo "Bumping version $CURRENT -> $VERSION..."
+    (cd "$REPO_ROOT" && npm version "$VERSION" --no-git-tag-version >/dev/null)
+  else
+    echo "Version already $VERSION."
+  fi
 }
 
 validate_prod_branch() {
@@ -247,6 +262,7 @@ main() {
       echo "=== Production rules deploy complete ==="
       return
     fi
+    set_release_version
     build_prod
     validate_bundle_config prod
     deploy_prod
@@ -260,6 +276,7 @@ main() {
       echo "=== Dev rules deploy complete ==="
       return
     fi
+    set_release_version
     build_dev
     validate_bundle_config dev
     deploy_dev

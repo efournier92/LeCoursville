@@ -15,6 +15,7 @@ import {
 import { httpsCallable } from "firebase/functions";
 import { MatDialogRef } from "@angular/material/dialog";
 import { BehaviorSubject, Observable } from "rxjs";
+import { filter, take } from "rxjs/operators";
 import { User, isApprovedUser } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
@@ -213,7 +214,11 @@ export class AuthService {
 
       this.updateUser(existingUser);
 
-      this.routingService.NavigateToPromotedRoute();
+      // Wait for both promoted routes so a pending user is never bounced to
+      // the environment default before the RTDB value arrives.
+      this.routingService.routesReady().pipe(filter(ready => ready), take(1)).subscribe(() => {
+        this.routingService.NavigateToPromotedRoute(isApprovedUser(existingUser));
+      });
     });
   }
 

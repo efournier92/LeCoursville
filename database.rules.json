@@ -175,6 +175,10 @@
       ".read": "true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
+    "promotedRoutePending": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
+    },
     "clans": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"

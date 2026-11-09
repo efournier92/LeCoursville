@@ -21,7 +21,7 @@
         <p class="promoted-route-support">The page users see by default after signing in</p>
       </div>
       <mat-form-field class="promoted-route-input">
-        <mat-label>Default Landing Page</mat-label>
+        <mat-label>Approved Users Landing Page</mat-label>
         <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
           <mat-option value="">-- Select --</mat-option>
           @for (feature of featureOptions; track feature) {
@@ -37,6 +37,29 @@
         {{ promotedRouteWarning }}
       </p>
     }
+    <div class="promoted-route-row">
+      <div class="promoted-route-copy">
+        <h3 class="promoted-route-subtitle">Pending Users</h3>
+        <p class="promoted-route-support" id="pending-route-caption">
+          Pending users are signed in but cannot view PII, so they land on a restricted page.
+        </p>
+      </div>
+      <mat-form-field class="promoted-route-input">
+        <mat-label>Pending Users Landing Page</mat-label>
+        <mat-select
+          [(value)]="promotedRoutePending"
+          (selectionChange)="onPendingPromotedRouteChange($event.value)"
+          aria-describedby="pending-route-caption"
+          data-testid="pending-promoted-route">
+          <mat-option value="">-- Select --</mat-option>
+          @for (option of pendingRouteOptions; track option) {
+            <mat-option [value]="option.route">
+              {{ option.label }} ({{ option.route }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
   </mat-card-content>
 </mat-card>
 

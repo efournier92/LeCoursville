@@ -29,6 +29,8 @@ describe('AdminFeaturesComponent', () => {
       'setFeatureFlag',
       'getPromotedRoute',
       'setPromotedRoute',
+      'getPendingPromotedRoute',
+      'setPendingPromotedRoute',
       'addFeatureFlagAudit',
       'getFeatureFlagAudit',
       'flagsReady',
@@ -36,6 +38,8 @@ describe('AdminFeaturesComponent', () => {
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
     spy.setPromotedRoute.and.returnValue(Promise.resolve());
+    spy.getPendingPromotedRoute.and.returnValue(of(null));
+    spy.setPendingPromotedRoute.and.returnValue(Promise.resolve());
     spy.addFeatureFlagAudit.and.returnValue(Promise.resolve());
     spy.getFeatureFlagAudit.and.returnValue(auditSource.asObservable());
     spy.flagsReady.and.returnValue(of(true));

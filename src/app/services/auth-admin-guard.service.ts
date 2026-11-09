@@ -36,7 +36,7 @@ export class AuthAdminGuardService  {
         // Send a signed-in non-admin to the same place root sends a member,
         // directly. Redirecting through '/' relied on the app-level promoted
         // route bounce and could strand the user on the account page.
-        return this.router.parseUrl(this.routingService.getPromotedRoute());
+        return this.router.parseUrl(this.routingService.getPromotedRoute(true));
       }),
       catchError(() => of(this.router.parseUrl('/'))),
     );

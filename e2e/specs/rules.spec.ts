@@ -145,6 +145,7 @@ test.describe('rules', () => {
     const token = await signIn('staff');
     const featureBefore = await readDb('features/chat');
     const routeBefore = await readDb('promotedRoute');
+    const pendingRouteBefore = await readDb('promotedRoutePending');
 
     const featureRes = await put(
       'features/chat',
@@ -161,6 +162,14 @@ test.describe('rules', () => {
     );
     expect(routeRes.status).not.toBe(200);
     expect(await readDb('promotedRoute')).toEqual(routeBefore);
+
+    const pendingRouteRes = await put(
+      'promotedRoutePending',
+      { route: '/calendar', updatedAt: Date.now() },
+      token,
+    );
+    expect(pendingRouteRes.status).not.toBe(200);
+    expect(await readDb('promotedRoutePending')).toEqual(pendingRouteBefore);
   });
 
   test('super-only nodes reject staff reads and allow super reads', async () => {

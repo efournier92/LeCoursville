@@ -3,7 +3,7 @@ import { ActivatedRoute } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
 import { environment } from "src/environments/environment";
 import { AuthService } from "src/app/services/auth.service";
-import { User } from "src/app/models/user";
+import { User, isApprovedUser } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
 import { ThemeService } from "src/app/services/theme.service";
@@ -186,7 +186,7 @@ export class AuthComponent implements OnInit {
   }
 
   goToPromotedRoute(): void {
-    this.routingService.NavigateToPromotedRoute();
+    this.routingService.NavigateToPromotedRoute(isApprovedUser(this.user));
   }
 
   onAlwaysDarkChange(checked: boolean): void {

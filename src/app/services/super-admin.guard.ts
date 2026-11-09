@@ -24,7 +24,7 @@ export class SuperAdminGuard {
         ? true
         // Send a content admin to the promoted route, the same place root
         // sends a member, instead of rendering an empty system shell.
-        : this.router.parseUrl(this.routingService.getPromotedRoute())),
+        : this.router.parseUrl(this.routingService.getPromotedRoute(true))),
       catchError(() => of(this.router.parseUrl('/'))),
     );
   }

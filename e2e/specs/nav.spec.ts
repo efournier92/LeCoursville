@@ -148,6 +148,46 @@ test.describe('navigation', () => {
 });
 
 test.describe('admin sidebar navigation', () => {
+  test('super admin sidebar orders System, People, Content and their items', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+
+    const labels = await nav.locator('.sidebar-group-label').allTextContents();
+    expect(labels).toEqual(['System', 'People', 'Content']);
+
+    const ids = (group: string) =>
+      nav.locator(`[data-testid="admin-nav-group-${group}"] [data-testid^="admin-nav-link-"]`)
+        .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid')));
+    expect(await ids('system')).toEqual([
+      'admin-nav-link-features',
+      'admin-nav-link-analytics',
+      'admin-nav-link-users',
+      'admin-nav-link-recovery',
+    ]);
+    expect(await ids('people')).toEqual([
+      'admin-nav-link-families',
+      'admin-nav-link-people',
+      'admin-nav-link-contacts',
+    ]);
+    expect(await ids('content')).toEqual([
+      'admin-nav-link-uploads',
+      'admin-nav-link-media',
+      'admin-nav-link-expressions',
+      'admin-nav-link-songs',
+      'admin-nav-link-familyExplorer',
+    ]);
+  });
+
+  test('a content admin sees People first; the empty System group is skipped', async ({ page }) => {
+    await login(page, 'staff');
+    await page.goto('/admin/families');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+    expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['People', 'Content']);
+  });
+
   test('super admin sidebar shows Contacts (People) and Expressions (Content)', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/users');

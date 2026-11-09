@@ -70,6 +70,29 @@ test.describe('feature flags', () => {
     expect(await readDb('features/songs/enabled')).toBe(true);
   });
 
+  test('Features offers approved and pending landing selects; pending excludes PII routes', async ({ page }) => {
+    const before = await readDb('promotedRoutePending');
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+      await expect(page.getByLabel('Approved Users Landing Page')).toBeVisible();
+      const pending = page.getByLabel('Pending Users Landing Page');
+      await expect(pending).toBeVisible();
+      await expect(page.getByText('Pending users are signed in but cannot view PII')).toBeVisible();
+
+      await pending.click();
+      await expect(page.getByRole('option', { name: /Photos \(\/photos\)/ })).toBeVisible();
+      await expect(page.getByRole('option', { name: /People \(\/people\)/ })).toHaveCount(0);
+      await expect(page.getByRole('option', { name: /Calendar \(\/calendar\)/ })).toHaveCount(0);
+      await page.getByRole('option', { name: /Expressions \(\/expressions\)/ }).click();
+      await expect
+        .poll(async () => (await readDb<{ route?: string }>('promotedRoutePending'))?.route)
+        .toBe('/expressions');
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
   test('layout: every toggle right edge aligns to one shared column', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
@@ -114,11 +137,13 @@ test.describe('photo-albums flag and the photos-legacy fallback', () => {
     await writeDb('features/enablePhotoAlbums/enabled', true);
   });
 
-  test('flag off hides Photo Albums in the admin nav (visibleAdminNav filter)', async ({ page }) => {
+  test('flag off hides the Photo Albums tab but keeps the Media page', async ({ page }) => {
     await writeDb('features/enablePhotoAlbums/enabled', false);
     await login(page, 'admin');
-    await page.goto('/admin/users');
-    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await page.goto('/admin/media');
+    await expect(page.getByTestId('media-section-video')).toBeVisible();
+    await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
+    // Photo Albums is never a sidebar item.
     await expect(page.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
     // The unflagged Contacts entry is unaffected.
     await expect(page.getByTestId('admin-nav-link-contacts')).toBeVisible();

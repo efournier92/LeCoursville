@@ -76,7 +76,7 @@
     <app-load-error message="We couldn't load expressions." (retry)="retry()"></app-load-error>
   }
 
-  @if (isLoading && !error) {
+  @if (loading && !error) {
     <div class="expressions-skeleton" aria-busy="true">
       @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
         <div class="skeleton-card">
@@ -98,7 +98,7 @@
     </div>
   }
 
-  @if (!isLoading && !error) {
+  @if (!loading && !error) {
     <div class="expressions-list">
       @for (expression of displayedItems; track expression) {
         <div
@@ -126,14 +126,14 @@
     </div>
   }
 
-  @if (displayedItems.length === 0 && sortSettings.activeFilterQuery && !isLoading && !error) {
+  @if (displayedItems.length === 0 && sortSettings.activeFilterQuery && !loading && !error) {
     <app-no-results-message
       [searchTerm]="sortSettings.activeFilterQuery"
       noun="expressions"
     ></app-no-results-message>
   }
 
-  @if (displayedItems.length === 0 && !sortSettings.activeFilterQuery && !isLoading && !error) {
+  @if (displayedItems.length === 0 && !sortSettings.activeFilterQuery && !loading && !error) {
     <div class="expressions-empty surface-card">
       <div class="expressions-empty-icon" aria-hidden="true">
         <mat-icon>format_quote</mat-icon>

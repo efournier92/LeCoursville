@@ -48,6 +48,7 @@ test.describe('admin content surfaces', () => {
 
     await expect(page.getByTestId('media-section-video')).toBeVisible();
     await expect(page.getByTestId('media-section-audio')).toBeVisible();
+    await expect(page.getByTestId('media-section-photo-albums')).toBeVisible();
     await expect(page.getByRole('tab')).toHaveCount(0);
 
     await page.getByTestId('media-section-audio').click();
@@ -62,6 +63,36 @@ test.describe('admin content surfaces', () => {
 
     await audioPanel.getByLabel('Filter').fill('');
     await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
+  });
+
+  test('content sidebar order and Photo Albums embeds the album manager in Media', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+    const contentIds = await nav
+      .locator('[data-testid="admin-nav-group-content"] [data-testid^="admin-nav-link-"]')
+      .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid')));
+    expect(contentIds).toEqual([
+      'admin-nav-link-uploads',
+      'admin-nav-link-media',
+      'admin-nav-link-expressions',
+      'admin-nav-link-songs',
+      'admin-nav-link-familyExplorer',
+    ]);
+
+    await page.goto('/admin/media');
+    await page.getByTestId('media-section-photo-albums').click();
+    await expect(page).toHaveURL(/section=photo-albums/);
+    await expect(page.locator('app-admin-photo-albums')).toBeVisible();
+    await expect(page.locator('.admin-album-grid')).toBeVisible();
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+
+    // The legacy route aliases to the same tab.
+    await page.goto('/admin/photo-albums');
+    await expect(page.getByTestId('media-section-photo-albums')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('app-admin-photo-albums')).toBeVisible();
+    await expect(page.getByText('E2E Album One')).toBeVisible();
   });
 
   test('photo albums: seeded albums render, and a throwaway album delete can be cancelled then confirmed', async ({ page }) => {

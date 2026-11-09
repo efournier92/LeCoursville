@@ -143,7 +143,7 @@ describe('AdminUsersComponent', () => {
     expect(headers).toEqual(['Name', 'Email', 'Last Active', 'Registered', 'Roles', '']);
 
     const admin = { ...users[0], roles: { user: true, admin: true, super: true } };
-    expect(component.userRoles(admin)).toEqual(['Content Admin', 'Super', 'Member']);
+    expect(component.userRoles(admin)).toEqual(['Member', 'Content Admin', 'Super']);
   });
 
   it('renders the expected badge class for member, admin, super, and admin plus super', () => {
@@ -170,17 +170,17 @@ describe('AdminUsersComponent', () => {
       { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
     expect(labels('Admin Only')).toEqual([
-      { text: 'Content Admin', className: 'role-badge role-badge-admin' },
       { text: 'Member', className: 'role-badge role-badge-member' },
+      { text: 'Content Admin', className: 'role-badge role-badge-admin' },
     ]);
     expect(labels('Super Only')).toEqual([
-      { text: 'Super', className: 'role-badge role-badge-super' },
       { text: 'Member', className: 'role-badge role-badge-member' },
+      { text: 'Super', className: 'role-badge role-badge-super' },
     ]);
     expect(labels('Admin And Super')).toEqual([
+      { text: 'Member', className: 'role-badge role-badge-member' },
       { text: 'Content Admin', className: 'role-badge role-badge-admin' },
       { text: 'Super', className: 'role-badge role-badge-super' },
-      { text: 'Member', className: 'role-badge role-badge-member' },
     ]);
   });
 

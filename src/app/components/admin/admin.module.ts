@@ -6,12 +6,12 @@ import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
 import { AdminContactsComponent } from 'src/app/components/admin-contacts/admin-contacts.component';
 import { ExpressionsComponent } from 'src/app/components/expressions/expressions.component';
-import { AdminPhotoAlbumsComponent } from 'src/app/components/admin-photo-albums/admin-photo-albums.component';
 import { AdminUserUploadsComponent } from 'src/app/components/admin-user-uploads/admin-user-uploads.component';
 import { AdminAnalyticsComponent } from 'src/app/components/admin-analytics/admin-analytics.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
+import { SharedModule } from 'src/app/components/shared/shared.module';
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { MaterialModule } from 'src/app/modules/material.module';
 import { PhotoAlbumsFeatureGuard } from 'src/app/services/photo-albums-feature.guard';
@@ -22,6 +22,7 @@ import { AdminFamiliesComponent } from '../admin-families/admin-families.compone
 import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-family-explorer.component';
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
 import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-import.component';
+import { AdminPeopleComponent } from '../admin-people/admin-people.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
 import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
@@ -40,9 +41,11 @@ const routes: Routes = [
       },
       {
         path: ADMIN_ROUTE.photoAlbums,
-        component: AdminPhotoAlbumsComponent,
+        // Compatibility route: media is the only surface, with the Photo Albums
+        // section selected. Old links and tests no longer 404.
+        component: AdminMediaComponent,
         canActivate: [PhotoAlbumsFeatureGuard],
-        data: { fallbackUrl: '/admin' },
+        data: { fallbackUrl: '/admin', mediaSection: 'photo-albums' },
       },
       {
         path: ADMIN_ROUTE.songs,
@@ -60,7 +63,7 @@ const routes: Routes = [
       },
       {
         path: ADMIN_ROUTE.people,
-        component: AdminPeopleImportComponent,
+        component: AdminPeopleComponent,
       },
       {
         // Contact fixups after CSV import. AdminContactsComponent is declared
@@ -122,6 +125,7 @@ const routes: Routes = [
     AdminUsersComponent,
     AdminFeaturesComponent,
     AdminPeopleImportComponent,
+    AdminPeopleComponent,
     AdminFamiliesComponent,
     AdminCalendarsComponent,
     AdminFamilyExplorerComponent,
@@ -139,6 +143,7 @@ const routes: Routes = [
     NoResultsMessageComponent,
     PageToolbarComponent,
     AdminFilterBarComponent,
+    SharedModule,
   ],
 })
 export class AdminModule {}

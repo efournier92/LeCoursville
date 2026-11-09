@@ -6,7 +6,7 @@ import { ErrorsService } from './errors.service';
 import { User, isApprovedUser } from './models/user';
 import { RoutingService } from './services/routing.service';
 import { ThemeService } from './services/theme.service';
-import { filter } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-root',
@@ -70,9 +70,13 @@ export class AppComponent implements OnInit {
       // sign-in/restore, so this is only a one-shot safety net.
       if (!this.promotedRouteBounceDone) {
         this.promotedRouteBounceDone = true;
-        if (this.shouldNavigateToPromotedRoute()) {
-          this.routingService.NavigateToPromotedRoute();
-        }
+        // Wait for the RTDB routes so a pending user never bounces on the
+        // environment default before the stored value arrives.
+        this.routingService.routesReady().pipe(filter(ready => ready), take(1)).subscribe(() => {
+          if (this.shouldNavigateToPromotedRoute()) {
+            this.routingService.NavigateToPromotedRoute(this.isApproved());
+          }
+        });
       }
     });
   }
@@ -138,7 +142,7 @@ export class AppComponent implements OnInit {
   }
 
   onLogoClick(): void {
-    this.routingService.handleLogoNavigation(this.isSuperAdmin());
+    this.routingService.handleLogoNavigation(this.isSuperAdmin(), this.isApproved());
   }
 
   onMenuClick(): void {
