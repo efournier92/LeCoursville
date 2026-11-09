@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 
-import { User } from 'src/app/models/user';
+import { User, isApprovedUser } from 'src/app/models/user';
 import { RoutingService } from 'src/app/services/routing.service';
 import { Observable, of } from 'rxjs';
 import { filter, map, take, timeout, catchError } from 'rxjs/operators';
@@ -33,10 +33,12 @@ export class AuthAdminGuardService  {
         if (user?.roles?.admin === true || user?.roles?.super === true) {
           return true;
         }
-        // Send a signed-in non-admin to the same place root sends a member,
-        // directly. Redirecting through '/' relied on the app-level promoted
-        // route bounce and could strand the user on the account page.
-        return this.router.parseUrl(this.routingService.getPromotedRoute(true));
+        // Pending users get the configured pending landing page, approved
+        // non-admins the approved one. Redirecting through '/' relied on the
+        // app-level bounce and could strand the user on the account page.
+        return this.router.parseUrl(
+          this.routingService.getPromotedRoute(isApprovedUser(user)),
+        );
       }),
       catchError(() => of(this.router.parseUrl('/'))),
     );

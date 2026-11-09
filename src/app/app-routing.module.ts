@@ -24,6 +24,11 @@ const routes: Routes =
       component: AuthComponent,
     },
     {
+      path: 'account',
+      component: AuthComponent,
+      data: { account: true },
+    },
+    {
       path: 'contacts',
       component: ContactsComponent,
       canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],

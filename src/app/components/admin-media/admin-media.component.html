@@ -1,7 +1,7 @@
 <div class="admin-page">
-@if (section !== 'photo-albums') {
-  <app-page-toolbar title="Media"></app-page-toolbar>
+<app-page-toolbar [title]="section === 'photo-albums' ? 'Photo Albums' : 'Media'"></app-page-toolbar>
 
+@if (section !== 'photo-albums') {
   <p class="admin-intro">
     Upload and manage family videos and audio albums.
   </p>

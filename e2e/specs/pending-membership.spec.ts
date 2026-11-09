@@ -88,6 +88,36 @@ test.describe('pending membership', () => {
     }
   });
 
+  test('pending user at / bounces to the pending route and the logo stays there', async ({ page }) => {
+    await signInAsPending(page);
+
+    await page.goto('/');
+    await expect(page).toHaveURL('/photos');
+
+    await page.locator('.toolbar-logo').click();
+    await expect(page).toHaveURL('/photos');
+  });
+
+  test('pending user can open /account without a 404', async ({ page }) => {
+    await signInAsPending(page);
+
+    await page.goto('/account');
+    await expect(page).toHaveURL('/account');
+    await expect(page.locator('.auth-card--account')).toBeVisible();
+    await expect(page.getByTestId('not-found-card')).toHaveCount(0);
+  });
+
+  test('pending 404 CTA names and opens the pending route', async ({ page }) => {
+    await signInAsPending(page);
+
+    await page.goto('/definitely-not-a-route');
+    await expect(page.getByTestId('not-found-card')).toBeVisible();
+    const cta = page.getByTestId('not-found-cta');
+    await expect(cta).toContainText('Go to Photos');
+    await cta.click();
+    await expect(page).toHaveURL('/photos');
+  });
+
   test('pending user can browse media and sees the pending banner', async ({ page }) => {
     await signInAsPending(page);
     await expect(page.getByRole('status').filter({ hasText: /pending approval/i })).toBeVisible();
@@ -105,6 +135,13 @@ test.describe('pending membership', () => {
 
     await page.goto('/contacts');
     await expect(page).toHaveURL('/media');
+  });
+
+  test('pending user hitting /admin lands on the pending route, not the approved one', async ({ page }) => {
+    await signInAsPending(page);
+
+    await page.goto('/admin');
+    await expect(page).toHaveURL('/photos');
   });
 
   test('nav hides People, Contacts, and Calendar for a pending user', async ({ page }) => {

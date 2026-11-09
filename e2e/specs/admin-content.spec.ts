@@ -88,8 +88,17 @@ test.describe('admin content surfaces', () => {
     await expect(page.locator('.admin-album-grid')).toBeVisible();
     await expect(page.getByText('E2E Album One')).toBeVisible();
 
-    // The legacy route aliases to the same tab.
+    // The page title stays above the section switch, not below it.
+    const titleBox = await page.locator('.page-toolbar-title').boundingBox();
+    const switchBox = await page.locator('.admin-media-section-switch').boundingBox();
+    expect(titleBox).not.toBeNull();
+    expect(switchBox).not.toBeNull();
+    expect(titleBox!.y + titleBox!.height).toBeLessThanOrEqual(switchBox!.y);
+    await expect(page.locator('.page-toolbar-title')).toHaveText('Photo Albums');
+
+    // The legacy route redirects to the same tab with a matching URL.
     await page.goto('/admin/photo-albums');
+    await expect(page).toHaveURL(/\/admin\/media\?section=photo-albums$/);
     await expect(page.getByTestId('media-section-photo-albums')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('app-admin-photo-albums')).toBeVisible();
     await expect(page.getByText('E2E Album One')).toBeVisible();

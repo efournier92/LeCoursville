@@ -6,6 +6,7 @@ import { FeatureFlag } from 'src/app/models/feature-flag';
 import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { environment } from 'src/environments/environment';
 
 interface FeatureGroup {
   label: string;
@@ -30,6 +31,8 @@ const PENDING_ROUTE_OPTIONS: { label: string; route: string }[] = [
   { label: 'Account', route: '/account' },
   { label: 'Upload', route: '/upload' },
 ];
+
+const PENDING_ROUTES = new Set(PENDING_ROUTE_OPTIONS.map(option => option.route));
 
 @Component({
     selector: 'app-admin-features',
@@ -199,6 +202,17 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     });
   }
 
+  get pendingRouteWarning(): string {
+    const selected = this.pendingRouteIssue(this.promotedRoutePending);
+    if (selected) {
+      return selected;
+    }
+    if (this.storedPromotedRoutePending !== this.promotedRoutePending) {
+      return this.pendingRouteIssue(this.storedPromotedRoutePending);
+    }
+    return '';
+  }
+
   get promotedRouteWarning(): string {
     const selected = this.disabledRouteWarning(this.promotedRoute);
     if (selected) {
@@ -245,6 +259,21 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       return value ? 'On' : 'Off';
     }
     return value ? String(value) : 'None';
+  }
+
+  private pendingRouteIssue(route: string): string {
+    if (!route) {
+      return '';
+    }
+    const fallback = environment.promotedRoutePending || '/photos';
+    if (!PENDING_ROUTES.has(route)) {
+      return `“${route}” is not an allowed pending landing page, so pending users will land on ${fallback}.`;
+    }
+    const feature = this.featureForRoute(route);
+    if (feature && !this.isEnabled(feature.id)) {
+      return `${feature.label} is currently off, so pending users will land on the feature-disabled page.`;
+    }
+    return '';
   }
 
   private disabledRouteWarning(route: string): string {

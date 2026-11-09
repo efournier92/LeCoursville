@@ -7,7 +7,7 @@ set -e
 #        SKIP_GATE=1 ./deploy.sh <prod|dev>    # skip the e2e gate (sign-off still applies)
 #        E2E_FORCE=1 ./deploy.sh <prod|dev>    # deploy despite a red gate (non-interactive)
 
-REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+REPO_ROOT=${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 
 # Never use a bare `firebase deploy` here: firebase.json wires `storage.rules`,
 # which is deliberately open so the e2e gate can seed fixtures. Rules deploys go
@@ -77,8 +77,16 @@ tag_build() {
   echo "Tagging build..."
   TAG="${VERSION:-$(date +%y.%m.%d)}"
   echo "Tagging as $TAG..."
-  git tag $TAG
-  git push origin $TAG
+  if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+    echo "Tag $TAG already exists locally; skipping."
+  else
+    git tag "$TAG"
+  fi
+  if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+    echo "Tag $TAG already exists on origin; skipping push."
+  else
+    git push origin "$TAG"
+  fi
 }
 
 # The UI displays package.json's version, and the git tag must be the same
@@ -94,6 +102,23 @@ set_release_version() {
   else
     echo "Version already $VERSION."
   fi
+}
+
+# The tag must point at a commit whose package.json matches it, and the release
+# leaves no dirty version files behind. Skip when the bump is already committed.
+commit_release_version() {
+  local files=(package.json)
+  if [ -f "$REPO_ROOT/package-lock.json" ]; then
+    files+=(package-lock.json)
+  fi
+  if git -C "$REPO_ROOT" diff --quiet -- "${files[@]}" \
+    && git -C "$REPO_ROOT" diff --cached --quiet -- "${files[@]}"; then
+    echo "Version files already committed."
+    return
+  fi
+  git -C "$REPO_ROOT" add "${files[@]}"
+  git -C "$REPO_ROOT" commit -m "Release $VERSION" -- "${files[@]}" >/dev/null
+  echo "Committed version $VERSION."
 }
 
 validate_prod_branch() {
@@ -263,6 +288,7 @@ main() {
       return
     fi
     set_release_version
+    commit_release_version
     build_prod
     validate_bundle_config prod
     deploy_prod
@@ -277,6 +303,7 @@ main() {
       return
     fi
     set_release_version
+    commit_release_version
     build_dev
     validate_bundle_config dev
     deploy_dev
@@ -287,4 +314,6 @@ main() {
   fi
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi

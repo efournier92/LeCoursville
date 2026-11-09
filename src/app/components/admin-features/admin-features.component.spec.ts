@@ -342,6 +342,20 @@ describe('AdminFeaturesComponent', () => {
     expect(component.promotedRouteWarning).toContain('Chat is currently off');
   });
 
+  it('warns when the pending route is off the allowlist or its flag is off', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.promotedRoutePending = '/calendar';
+    expect(component.pendingRouteWarning).toContain('not an allowed pending landing page');
+
+    component.promotedRoutePending = '/media/audio';
+    component.flagsMap = { music: { enabled: false, updatedAt: Date.now() } };
+    expect(component.pendingRouteWarning).toContain('Audio is currently off');
+  });
+
   it('shows the absolute local changed time from the flag updatedAt', () => {
     component.flagsMap = {
       music: { enabled: true, updatedAt: new Date(2026, 0, 2, 3, 4).getTime() },

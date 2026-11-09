@@ -156,9 +156,7 @@ test.describe('admin', () => {
 
   test('admin nav badges count pending uploads and outstanding recovery requests', async ({ page }) => {
     const uploadKey = `badge-upload-${Date.now()}`;
-    const recoveryKey = `badge-recovery-${Date.now()}`;
     const pendingRecoveryKey = `badge-recovery-pending-${Date.now()}`;
-    const resolvedRecoveryKey = `badge-recovery-resolved-${Date.now()}`;
     await writeDb(`userUploads/${uploadKey}`, {
       id: uploadKey,
       path: `userUploads/e2e/${uploadKey}.png`,
@@ -167,18 +165,14 @@ test.describe('admin', () => {
       dateAdded: Date.now(),
       uploader: { name: 'Regular User', email: 'user@e2e.local' },
     });
-    for (const [key, status] of [
-      [recoveryKey, 'open'],
-      [pendingRecoveryKey, 'pending'],
-      [resolvedRecoveryKey, 'resolved'],
-    ] as const) {
-      await writeDb(`recoveryRequests/${key}`, {
-        id: key,
-        email: `${key}@e2e.local`,
-        status,
-        createdAt: Date.now(),
-      });
-    }
+    // The seed already carries one open request and one closed request; add a
+    // pending one so the badge proves it sums both outstanding statuses.
+    await writeDb(`recoveryRequests/${pendingRecoveryKey}`, {
+      id: pendingRecoveryKey,
+      email: `${pendingRecoveryKey}@e2e.local`,
+      status: 'pending',
+      createdAt: Date.now(),
+    });
 
     try {
       await login(page, 'admin');
@@ -201,18 +195,24 @@ test.describe('admin', () => {
       await page.keyboard.press('Escape');
 
       await deleteDb(`userUploads/${uploadKey}`);
-      await deleteDb(`recoveryRequests/${recoveryKey}`);
       await deleteDb(`recoveryRequests/${pendingRecoveryKey}`);
-      await deleteDb(`recoveryRequests/${resolvedRecoveryKey}`);
-      // The seeded pending upload keeps the uploads badge at one.
+      // The seeded pending upload and open recovery request remain.
       await expect(uploadsBadge).toContainText('1 pending');
-      await expect(recoveryBadge).toHaveCount(0);
+      await expect(recoveryBadge).toContainText('1 outstanding');
     } finally {
       await deleteDb(`userUploads/${uploadKey}`);
-      await deleteDb(`recoveryRequests/${recoveryKey}`);
       await deleteDb(`recoveryRequests/${pendingRecoveryKey}`);
-      await deleteDb(`recoveryRequests/${resolvedRecoveryKey}`);
     }
+  });
+
+  test('recovery list shows the seeded outstanding and closed requests', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/recovery');
+    const list = page.getByTestId('admin-recovery-list');
+    await expect(list.locator('.recovery-row').filter({ hasText: 'recovery-open@e2e.local' })).toBeVisible();
+    const closed = list.locator('.recovery-row').filter({ hasText: 'recovery-closed@e2e.local' });
+    await expect(closed).toBeVisible();
+    await expect(closed.getByTestId('admin-recovery-status')).toHaveText('closed');
   });
 
   test('admin nav hides the system badges from a content admin', async ({ page }) => {

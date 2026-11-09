@@ -172,6 +172,31 @@ test.describe('rules', () => {
     expect(await readDb('promotedRoutePending')).toEqual(pendingRouteBefore);
   });
 
+  test('promotedRoutePending validates shape and the pending allowlist server-side', async () => {
+    const token = await signIn('admin');
+    const before = await readDb('promotedRoutePending');
+    try {
+      for (const body of [
+        { route: '/calendar', updatedAt: Date.now() },
+        { route: '/photos' },
+        { route: 42, updatedAt: Date.now() },
+      ]) {
+        const res = await put('promotedRoutePending', body, token);
+        expect(res.status).not.toBe(200);
+      }
+      expect(await readDb('promotedRoutePending')).toEqual(before);
+
+      const valid = { route: '/photos', updatedAt: Date.now() };
+      expect((await put('promotedRoutePending', valid, token)).ok).toBe(true);
+      expect(await readDb('promotedRoutePending')).toEqual(valid);
+
+      // The route value is non-sensitive and stays world-readable.
+      expect((await get('promotedRoutePending')).status).toBe(200);
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
   test('super-only nodes reject staff reads and allow super reads', async () => {
     const staffToken = await signIn('staff');
     const superToken = await signIn('admin');

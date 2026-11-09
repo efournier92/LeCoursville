@@ -2,6 +2,7 @@ import { test, expect } from '../helpers/fixture';
 import { login, logout } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
 import { writeDb, readDb, deleteDb } from '../helpers/admin-db';
+import { failNextRtdbQuery } from '../helpers/rtdb-errors';
 
 // Chat is seeded OFF; the chat double-submit test turns it ON.
 test.afterEach(async () => {
@@ -86,6 +87,20 @@ test.describe('edge cases', () => {
     await page.goto('/photos');
     await page.getByLabel('Search albums').fill('zzznope');
     await expect(page.getByText('We couldn\'t find any albums matching "zzznope".')).toBeVisible();
+  });
+
+  test('admin people load failure shows the error state and retry recovers', async ({ page }) => {
+    await login(page, 'admin');
+    await failNextRtdbQuery(page, '/people');
+    await page.goto('/admin/people');
+
+    const error = page.locator('app-load-error');
+    await expect(error).toBeVisible();
+    await expect(page.getByTestId('admin-people-table')).toHaveCount(0);
+
+    await error.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.getByTestId('admin-people-table')).toBeVisible();
+    await expect(error).toHaveCount(0);
   });
 
   test('malformed CSV import surfaces validation errors', async ({ page }) => {

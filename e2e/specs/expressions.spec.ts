@@ -77,14 +77,14 @@ test.describe('expressions', () => {
     ).toBeVisible();
   });
 
-  test('empty state: zero expressions shows the empty message, never the skeleton', async ({ page }) => {
+  test('empty state: cold zero expressions shows the empty message, never the skeleton', async ({ page }) => {
     const messages = await readDb('messages');
     try {
+      // Delete before the first visit so the component takes the cold read
+      // path: no seeded card is loaded first, so a stale loading flag shows.
+      await deleteDb('messages');
       await login(page, 'admin');
       await page.goto('/expressions');
-      await expect(page.locator('.expression-card-wrapper').first()).toBeVisible();
-
-      await deleteDb('messages');
       await expect(page.getByText("We couldn't find any expressions.")).toBeVisible();
       await expect(page.locator('.expressions-skeleton')).toHaveCount(0);
     } finally {

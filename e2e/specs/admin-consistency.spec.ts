@@ -180,7 +180,10 @@ test.describe('admin visual contract', () => {
       await route.ready(page);
       await expectTitleBar(page, route.title, 64);
       await expectSharedPageGap(page);
-      if (await page.locator('.admin-filter-bar').count()) {
+      // The Media section switch sits between the title and the photo-album
+      // filter bar, so that surface is not a joined card by design.
+      const hasSectionSwitch = await page.locator('.admin-media-section-switch').count();
+      if (!hasSectionSwitch && await page.locator('.admin-filter-bar').count()) {
         await expectJoinedFilterBar(page);
       }
 

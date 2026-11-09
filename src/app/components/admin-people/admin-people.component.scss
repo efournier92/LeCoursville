@@ -10,14 +10,14 @@
 }
 
 .people-view-option {
-  min-height: 32px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 18px;
   border: 1px solid transparent;
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--color-ink-2);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
 
@@ -54,10 +54,29 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  // Laptop widths: eleven columns need explicit shares so a long header or
+  // name is not squeezed to an ellipsis by the fixed layout.
+  th:nth-child(1) { width: 14%; }
+  th:nth-child(2) { width: 7%; }
+  th:nth-child(3) { width: 10%; }
+  th:nth-child(4) { width: 7%; }
+  th:nth-child(5) { width: 7%; }
+  th:nth-child(6) { width: 11%; }
+  th:nth-child(7) { width: 9%; }
+  th:nth-child(8) { width: 11%; }
+  th:nth-child(9) { width: 10%; }
+  th:nth-child(10) { width: 7%; }
+  th:nth-child(11) { width: 7%; }
+
+  thead th {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
 }
 
 .people-pagination {
-  padding: 0 12px 12px;
+  padding: 12px;
 }
 
 @media (max-width: 600px) {
@@ -70,8 +89,17 @@
     flex: 1 1 0;
   }
 
+  // Phone: let columns size to content and wrap long values instead of
+  // clipping them inside fixed shares.
+  .people-browser-table {
+    table-layout: auto;
+  }
+
   .people-browser-table th,
   .people-browser-table td {
+    overflow: visible;
+    text-overflow: clip;
     white-space: normal;
+    overflow-wrap: anywhere;
   }
 }

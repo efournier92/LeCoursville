@@ -488,6 +488,24 @@ async function main() {
     features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: !FEATURES_OFF_BY_DEFAULT.has(id), updatedAt: now }])),
     promotedRoute: { route: '/calendar', updatedAt: now },
     promotedRoutePending: { route: '/photos', updatedAt: now },
+    // One outstanding and one closed request: the shell badge counts the
+    // former and the recovery list exercises the latter.
+    recoveryRequests: {
+      'recovery-open': {
+        id: 'recovery-open',
+        email: 'recovery-open@e2e.local',
+        name: 'Open Recovery E2E',
+        status: 'open',
+        createdAt: now - 2 * 86400000,
+      },
+      'recovery-closed': {
+        id: 'recovery-closed',
+        email: 'recovery-closed@e2e.local',
+        name: 'Closed Recovery E2E',
+        status: 'closed',
+        createdAt: now - 30 * 86400000,
+      },
+    },
     config: {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.
       adminAlertRecipients: ['admin@e2e.local'],

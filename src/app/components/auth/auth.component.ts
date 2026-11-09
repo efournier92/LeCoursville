@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
-import { environment } from "src/environments/environment";
 import { AuthService } from "src/app/services/auth.service";
 import { User, isApprovedUser } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
@@ -28,6 +27,7 @@ export class AuthComponent implements OnInit {
   error = "";
   info = "";
   isNotFound = false;
+  isAccount = false;
   // True while a cached session is being restored: the page holds a neutral
   // interstitial so a returning user at "/" never flashes the login form
   // (or the account card) before the promoted-route redirect lands.
@@ -46,10 +46,11 @@ export class AuthComponent implements OnInit {
 
   ngOnInit(): void {
     this.isNotFound = !!this.route.snapshot.data['notFound'];
+    this.isAccount = !!this.route.snapshot.data['account'];
     const cachedUser = this.authService.getCachedUser();
-    // A signed-in user on an unknown URL stays put so the not-found card can
+    // A signed-in user on an unknown or account URL stays put so its card can
     // render; everyone else is normalised back to the sign-in route.
-    if (!(this.isNotFound && cachedUser?.id)) {
+    if (!((this.isNotFound || this.isAccount) && cachedUser?.id)) {
       this.routingService.NavigateToSignIn();
     }
     this.isEditMode = false;
@@ -58,8 +59,8 @@ export class AuthComponent implements OnInit {
       // Firebase says there is no session: show the real login form.
       if (resolved && this.authService.isSignedOut()) {
         this.awaitingSession = false;
-        // A stale cached session must not leave the login form on an unknown URL.
-        if (this.isNotFound) {
+        // A stale cached session must not leave the login form on a deep URL.
+        if (this.isNotFound || this.isAccount) {
           this.routingService.NavigateToSignIn();
         }
       }
@@ -181,7 +182,8 @@ export class AuthComponent implements OnInit {
   }
 
   get promotedRouteLabel(): string {
-    const segment = (environment.promotedRoute || '').split('/').filter(Boolean).pop();
+    const route = this.routingService.getPromotedRoute(isApprovedUser(this.user));
+    const segment = route.split('/').filter(Boolean).pop();
     return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'home';
   }
 

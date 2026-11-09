@@ -93,6 +93,20 @@ test.describe('feature flags', () => {
     }
   });
 
+  test('an off-allowlist pending route warns on the Features page', async ({ page }) => {
+    const before = await readDb('promotedRoutePending');
+    await writeDb('promotedRoutePending', { route: '/calendar', updatedAt: Date.now() });
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+      const warning = page.getByTestId('pending-route-warning');
+      await expect(warning).toBeVisible();
+      await expect(warning).toContainText('not an allowed pending landing page');
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
   test('layout: every toggle right edge aligns to one shared column', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');

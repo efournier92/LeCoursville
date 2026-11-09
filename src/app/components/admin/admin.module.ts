@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Routes } from '@angular/router';
+import { CanActivateFn, Router, RouterModule, Routes } from '@angular/router';
 import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
 import { AdminContactsComponent } from 'src/app/components/admin-contacts/admin-contacts.component';
@@ -28,6 +28,10 @@ import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
 import { SongDraftDialogComponent } from '../song-draft-dialog/song-draft-dialog.component';
 
+// Legacy links open the Media photo-albums tab with a URL that matches it.
+const redirectPhotoAlbums: CanActivateFn = () =>
+  inject(Router).createUrlTree(['/admin/media'], { queryParams: { section: 'photo-albums' } });
+
 const routes: Routes = [
   {
     path: '',
@@ -43,9 +47,8 @@ const routes: Routes = [
         path: ADMIN_ROUTE.photoAlbums,
         // Compatibility route: media is the only surface, with the Photo Albums
         // section selected. Old links and tests no longer 404.
-        component: AdminMediaComponent,
-        canActivate: [PhotoAlbumsFeatureGuard],
-        data: { fallbackUrl: '/admin', mediaSection: 'photo-albums' },
+        canActivate: [PhotoAlbumsFeatureGuard, redirectPhotoAlbums],
+        data: { fallbackUrl: '/admin' },
       },
       {
         path: ADMIN_ROUTE.songs,

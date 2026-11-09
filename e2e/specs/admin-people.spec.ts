@@ -21,6 +21,11 @@ test.describe('admin people surfaces', () => {
       'Spouse', 'Contact', 'Address', 'Living', 'Updated',
     ]);
 
+    // Spouse resolves through the people list, never the raw id.
+    const carol = table.locator('tbody tr').filter({ hasText: 'Carol Clark' });
+    await expect(carol.locator('td[data-label="Spouse"]')).toHaveText('Dave Davis');
+    await expect(carol.locator('td[data-label="Spouse"]')).toHaveAttribute('title', 'Dave Davis');
+
     await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.locator('.people-pagination')).toContainText('Showing 11-20 of 24');
     await page.getByRole('button', { name: 'Next' }).click();
@@ -43,8 +48,22 @@ test.describe('admin people surfaces', () => {
     await page.getByRole('menuitem', { name: 'Name' }).click();
     const alice = table.locator('tbody tr').filter({ hasText: 'Alice Anderson' });
     await expect(alice).toBeVisible();
+    await expect(alice).toHaveAttribute('aria-label', 'View Alice Anderson');
     await alice.click();
     const modal = page.locator('app-person-detail-modal');
+    await expect(modal.locator('h2')).toContainText('Alice Anderson');
+    // The host can measure zero; the rendered dialog must own real space.
+    const contentBox = await modal.locator('.modal-content').boundingBox();
+    expect(contentBox).not.toBeNull();
+    expect(contentBox!.width).toBeGreaterThan(0);
+    expect(contentBox!.height).toBeGreaterThan(0);
+    await modal.locator('.close-button').click();
+    await expect(modal).toHaveCount(0);
+
+    // Keyboard path opens the same detail through Enter.
+    await alice.focus();
+    await expect(alice).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(modal.locator('h2')).toContainText('Alice Anderson');
     await modal.locator('.close-button').click();
     await expect(modal).toHaveCount(0);
@@ -244,6 +263,47 @@ test.describe('admin people surfaces', () => {
 
     await expect(page.getByText('Import Preview')).toBeVisible();
     await expect(page.getByTestId('import-file')).toHaveCount(1);
+  });
+
+  test('at laptop width no header is truncated and columns keep explicit shares', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+    const table = page.getByTestId('admin-people-table');
+    await expect(table).toBeVisible({ timeout: 20000 });
+
+    const truncated = await table.locator('thead th').evaluateAll((cells) =>
+      cells
+        .filter((cell) => cell.scrollWidth > cell.clientWidth + 1)
+        .map((cell) => cell.textContent?.trim() ?? ''),
+    );
+    expect(truncated).toEqual([]);
+    await expect(table.locator('tbody tr').filter({ hasText: 'Alice Anderson' })).toBeVisible();
+  });
+
+  test('at phone width long values wrap without clipping a column', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+    const table = page.getByTestId('admin-people-table');
+    await expect(table).toBeVisible({ timeout: 20000 });
+
+    const clipped = await table.locator('tbody td').evaluateAll((cells) =>
+      cells
+        .filter((cell) => cell.scrollWidth > cell.clientWidth + 1)
+        .map((cell) => cell.getAttribute('data-label')),
+    );
+    expect(clipped).toEqual([]);
+  });
+
+  test('the view switch and pagination match the shared control metrics', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+    const option = page.getByTestId('people-view-people');
+    await expect(option).toBeVisible();
+    await expect(option).toHaveCSS('min-height', '36px');
+    await expect(option).toHaveCSS('font-size', '14px');
+    await expect(page.locator('.people-pagination')).toHaveCSS('padding-top', '12px');
   });
 
   test('families render as cards at 390px with no horizontal overflow', async ({ page }) => {

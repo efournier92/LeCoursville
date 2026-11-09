@@ -177,7 +177,8 @@
     },
     "promotedRoutePending": {
       ".read": "true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      ".validate": "newData.hasChildren(['route', 'updatedAt']) && newData.child('updatedAt').isNumber() && (newData.child('route').val() === '/photos' || newData.child('route').val() === '/media/video' || newData.child('route').val() === '/media/audio' || newData.child('route').val() === '/expressions' || newData.child('route').val() === '/account' || newData.child('route').val() === '/upload')"
     },
     "clans": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",

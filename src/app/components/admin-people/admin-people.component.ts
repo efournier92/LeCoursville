@@ -200,7 +200,8 @@ export class AdminPeopleComponent implements OnInit, OnDestroy {
   }
 
   personSpouse(person: Person): string {
-    return person?.spouseId || '—';
+    const spouse = this.allPeople.find(candidate => candidate.id === person?.spouseId);
+    return spouse ? this.personName(spouse) : '—';
   }
 
   personContact(person: Person): string {

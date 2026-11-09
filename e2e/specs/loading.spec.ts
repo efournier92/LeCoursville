@@ -1,6 +1,7 @@
 import { test, expect, Page } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
+import { failNextRtdbQuery } from '../helpers/rtdb-errors';
 import type { Locator } from '@playwright/test';
 
 // Per-route content selectors come straight from each component template.
@@ -34,6 +35,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/uploads', content: (p) => p.getByText('pending.png').first() },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
   { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
+  { route: '/admin/analytics', content: (p) => p.getByTestId('admin-analytics-totals') },
   { route: '/admin/family-explorer', content: (p) => p.getByTestId('archive-row-archive-1') },
 ];
 
@@ -126,6 +128,27 @@ test.describe('loading contract', () => {
         await writeDb(item.path, saved[item.path]);
       }
     }
+  });
+
+  test('admin people import renders the upload area', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
+    await expect(page.locator('.import-card .upload-area')).toBeVisible();
+    await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+  });
+
+  test('retry after a load error recovers the collection', async ({ page }) => {
+    await login(page, 'admin');
+    await failNextRtdbQuery(page, '/songs');
+    await page.goto('/admin/songs');
+    const error = page.locator('app-load-error');
+    await expect(error).toBeVisible();
+    await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+
+    await error.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.locator('[data-testid="admin-songs-table"]')).toBeVisible();
+    await expect(error).toHaveCount(0);
   });
 
   test('top-nav never blank', async ({ page }) => {
