@@ -229,4 +229,22 @@ test.describe('theme control contract (light/dark parity)', () => {
       await deleteDb(`users/${uid}/prefs`);
     }
   });
+
+  test('benign confirm uses brand Yes and neutral No, never red', async ({ page }) => {
+    await login(page, 'admin');
+    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+
+    const dialog = page.locator('app-prompt-modal');
+    await expect(dialog).toBeVisible();
+    const no = dialog.getByRole('button', { name: 'No', exact: true });
+    const yes = dialog.getByRole('button', { name: 'Yes', exact: true });
+
+    await expect(yes).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(no).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+    await expect(no).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+
+    await no.click();
+    await expect(dialog).toBeHidden();
+  });
 });

@@ -79,7 +79,7 @@
         <mat-label>Title</mat-label>
         <input matInput [(ngModel)]="title" name="title" (input)="refreshPreview()" required />
       </mat-form-field>
-      <mat-checkbox [(ngModel)]="published" name="published">Published</mat-checkbox>
+      <mat-slide-toggle [(ngModel)]="published" name="published">Published</mat-slide-toggle>
       <mat-form-field class="admin-upload-input">
         <mat-label>People JSON</mat-label>
         <textarea

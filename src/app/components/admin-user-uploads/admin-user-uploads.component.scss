@@ -38,7 +38,7 @@
   margin-bottom: 12px;
   border-left: 4px solid var(--color-error);
   border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
+  background: var(--color-error-tint);
   color: var(--color-ink);
   font-size: 0.875rem;
 }
@@ -92,7 +92,7 @@
   white-space: nowrap;
 
   &.pending {
-    background: rgba(156, 107, 38, 0.12);
+    background: var(--color-warn-tint);
     color: var(--color-ink);
     .status-dot { background: var(--color-accent-strong); }
   }
@@ -104,7 +104,7 @@
   }
 
   &.rejected {
-    background: rgba(179, 38, 30, 0.10);
+    background: var(--color-error-tint-strong);
     color: var(--color-error);
     .status-dot { background: var(--color-error); }
   }
@@ -499,7 +499,7 @@
     }
 
     &:hover {
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--color-scrim-strong);
     }
   }
 }

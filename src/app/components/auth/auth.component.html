@@ -104,7 +104,7 @@
             <span class="account-theme-label">{{ alwaysDark ? 'Always Dark' : 'Always Light' }}</span>
             <span class="theme-pill" aria-hidden="true">
               <span class="theme-pill-opt" [class.is-active]="!alwaysDark"><mat-icon>light_mode</mat-icon></span>
-              <span class="theme-pill-opt" [class.is-active]="alwaysDark"><mat-icon>nightlight_round</mat-icon></span>
+              <span class="theme-pill-opt" [class.is-active]="alwaysDark"><mat-icon>dark_mode</mat-icon></span>
             </span>
           </button>
           <button mat-stroked-button type="button" class="account-action auth-signout" (click)="onSignOutButtonClick()">

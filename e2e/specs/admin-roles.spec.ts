@@ -141,6 +141,18 @@ test.describe('admin roles', () => {
     await expect(page.locator('.account-role')).toHaveText(['User', 'Content Admin']);
   });
 
+  test('role badges use the brand-family tokens', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    await expect(page.getByTestId('admin-users-table')).toBeVisible();
+
+    await expect(page.locator('.role-badge-super').first()).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(page.locator('.role-badge-admin').first()).toHaveCSS('background-color', 'rgb(220, 239, 227)');
+    await expect(
+      page.locator('.role-badge:not(.role-badge-admin):not(.role-badge-super)').first(),
+    ).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+  });
+
   test('member sees no role badges', async ({ page }) => {
     await login(page, 'user');
     await page.getByRole('button', { name: 'Account' }).click();

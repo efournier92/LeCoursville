@@ -18,9 +18,9 @@
 
 .calendar-toolbar-filters {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .calendar-toolbar-actions {
@@ -33,13 +33,6 @@
   font-weight: 500;
   color: var(--color-ink-2);
   margin: 0;
-
-  // Keep the checked box on the brand solid green with a white check in both
-  // themes; M3's dark palette would otherwise render it pale/neon green.
-  --mat-checkbox-selected-icon-color: var(--color-brand-solid);
-  --mat-checkbox-selected-hover-icon-color: var(--color-brand-solid-dark);
-  --mat-checkbox-selected-focus-icon-color: var(--color-brand-solid-dark);
-  --mat-checkbox-selected-checkmark-color: var(--color-on-brand);
 }
 
 // mat-flat-button supplies shape/states; pin the fill and label to the

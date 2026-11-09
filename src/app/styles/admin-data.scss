@@ -36,13 +36,25 @@
 
 // Absorbs the five per-page `.action-error` copies.
 .admin-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 12px 16px;
   margin-bottom: 12px;
   border-left: 4px solid var(--color-error);
   border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
+  background: var(--color-error-tint);
   color: var(--color-ink);
   font-size: 0.875rem;
+
+  mat-icon {
+    flex: 0 0 auto;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    margin-top: 1px;
+  }
 }
 
 // Mirrors the error shape so a success reads as the same kind of inline banner.

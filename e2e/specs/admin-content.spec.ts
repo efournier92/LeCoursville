@@ -88,7 +88,9 @@ test.describe('admin content surfaces', () => {
     await expect(deleteAlbumButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
     await expect(deleteAlbumButton).toHaveCSS('color', 'rgb(255, 255, 255)');
     await expect(deleteAlbumButton.locator('mat-icon')).toBeVisible();
-    await confirm.getByRole('button', { name: 'Cancel' }).click();
+    const cancelAlbumButton = confirm.getByRole('button', { name: 'Cancel' });
+    await expect(cancelAlbumButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await cancelAlbumButton.click();
     await expect(confirm).toBeHidden();
     await expect(throwaway).toBeVisible();
 

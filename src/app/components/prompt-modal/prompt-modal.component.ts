@@ -42,7 +42,6 @@ export class PromptModalComponent implements OnInit {
     return [
       {
         label: "No",
-        color: "warn",
         isConfirmAction: false,
       },
       {

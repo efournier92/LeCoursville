@@ -36,11 +36,11 @@
         }
 
         @if (isEditing()) {
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="replaceVideoFile"
             [(ngModel)]="replaceFile"
-            >Replace video file</mat-checkbox
+            >Replace video file</mat-slide-toggle>
             >
         }
       </section>
@@ -156,17 +156,17 @@
             </mat-form-field>
           }
 
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isSticky"
             [(ngModel)]="video.isSticky"
-            >Is Sticky?</mat-checkbox
+            >Is Sticky?</mat-slide-toggle>
             >
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isHidden"
             [(ngModel)]="video.isHidden"
-            >Should Hide from Lists?</mat-checkbox
+            >Should Hide from Lists?</mat-slide-toggle>
             >
         </div>
       </details>

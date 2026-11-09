@@ -20,7 +20,7 @@
 }
 
 .user-edit-display-label {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-ink-2);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -28,7 +28,7 @@
 }
 
 .user-edit-display-value {
-  color: rgba(0, 0, 0, 0.8);
+  color: var(--color-ink);
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;

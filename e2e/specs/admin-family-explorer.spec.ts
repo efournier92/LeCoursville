@@ -105,6 +105,21 @@ test.describe('admin family explorer', () => {
       'Family ID must be lowercase letters, numbers, and dashes.',
     );
     await expect(error).toHaveAttribute('role', 'alert');
+    await expect(error).toHaveCSS('display', 'flex');
+    await expect(error).toHaveCSS('align-items', 'flex-start');
+    await expect(error).toHaveCSS('gap', '8px');
+    const icon = error.locator('mat-icon');
+    await expect(icon).toHaveCSS('font-size', '20px');
+    await expect(icon).toHaveCSS('height', '20px');
+    await expect(icon).toHaveCSS('margin-top', '1px');
+    const offset = await error.evaluate((banner) => {
+      const glyph = banner.querySelector('mat-icon')!.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(banner.lastChild as Node);
+      const text = range.getBoundingClientRect();
+      return Math.abs((glyph.top + glyph.height / 2) - (text.top + text.height / 2));
+    });
+    expect(offset, 'icon and message vertical centers').toBeLessThanOrEqual(2);
     await expect(page.getByRole('button', { name: 'Confirm Upload' })).toBeDisabled();
     expect(await readDb('familyExplorer')).toEqual(before);
   });
@@ -117,7 +132,7 @@ test.describe('admin family explorer', () => {
     const archive1 = EXAMPLE_ARCHIVE(Date.now(), 'seed-fixture');
     await page.getByLabel('Family ID').fill('archive-1');
     await page.getByLabel('Title').fill('Example Family');
-    await expect(page.getByRole('checkbox', { name: 'Published' })).toBeChecked();
+    await expect(page.getByRole('switch', { name: 'Published' })).toHaveAttribute('aria-checked', 'true');
     await page
       .getByTestId('archive-json-input')
       .fill(JSON.stringify({ people: Object.values(archive1.people) }));

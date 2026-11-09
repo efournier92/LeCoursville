@@ -605,8 +605,8 @@ test.describe('calendar print', () => {
     await expect(christmas).toHaveCSS('font-style', 'italic');
     await expect(december.getByText('LECOURSVILLE.COM')).toBeVisible();
 
-    const holidays = page.getByRole('checkbox', { name: 'Holidays' });
-    await holidays.uncheck();
+    const holidays = page.getByRole('switch', { name: 'Holidays' });
+    await holidays.click();
     await expect(christmas).toHaveCount(0);
   });
 

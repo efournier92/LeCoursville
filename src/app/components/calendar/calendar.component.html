@@ -17,10 +17,10 @@
       <div class="calendar-toolbar">
         <div class="calendar-toolbar-row">
           <div class="calendar-toolbar-filters" role="group" aria-label="Calendar filters">
-            <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-checkbox>
-            <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-checkbox>
-            <mat-checkbox class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Show relatives who have passed</mat-checkbox>
-            <mat-checkbox class="calendar-checkbox" color="primary" data-testid="calendar-toggle-holidays" [(ngModel)]="showHolidays" (change)="toggleHolidays($event)">Holidays</mat-checkbox>
+            <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-slide-toggle>
+            <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-slide-toggle>
+            <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Show relatives who have passed</mat-slide-toggle>
+            <mat-slide-toggle class="calendar-checkbox" color="primary" data-testid="calendar-toggle-holidays" [(ngModel)]="showHolidays" (change)="toggleHolidays($event)">Holidays</mat-slide-toggle>
           </div>
           <div class="calendar-toolbar-actions">
             <button mat-flat-button color="primary" (click)="printPdf()" class="calendar-print-button" [disabled]="!printFlagsReady">

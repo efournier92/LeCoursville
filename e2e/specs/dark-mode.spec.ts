@@ -107,6 +107,7 @@ test('theme control exposes switch semantics with an action icon', async ({ page
   // Icon shows the action, not current state: moon in light (→ dark),
   // sun in dark (→ light).
   await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
+  await expect(page.getByTestId('theme-icon-moon')).toHaveText('dark_mode');
   await expect(page.getByTestId('theme-icon-sun')).toHaveCount(0);
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -482,4 +483,16 @@ test('topnav toolbar keeps the theme-invariant brand solid green in both themes'
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toolbar).toHaveCSS('background-color', 'rgb(39, 116, 74)'); // emerald brand-solid
+});
+
+test('filled brand buttons match the toolbar in both themes', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/admin/families');
+  const addFamily = page.getByRole('button', { name: /Add Family/ });
+  await expect(addFamily).toBeVisible();
+  await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
 });

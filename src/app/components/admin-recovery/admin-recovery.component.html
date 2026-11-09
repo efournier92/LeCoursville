@@ -122,12 +122,12 @@
                     <span class="reason-hint">{{ reasonHint(request) }}</span>
                   }
                   @if (request.alternateContact) {
-                    <mat-checkbox
+                    <mat-slide-toggle
                       data-testid="admin-recovery-email-alternate"
                       [aria-label]="'Email reset link to ' + request.alternateContact + ' for ' + request.email"
                       [(ngModel)]="emailAlternate[request.id]">
                       Email the reset link to {{ request.alternateContact }}
-                    </mat-checkbox>
+                    </mat-slide-toggle>
                   }
                   <button
                     mat-flat-button

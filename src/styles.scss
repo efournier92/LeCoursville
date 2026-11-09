@@ -88,7 +88,6 @@ html {
   // Filled brand surfaces that always carry white ink (filled buttons, brand
   // bars, avatar tiles). Theme-invariant: --color-brand-primary lightens in
   // dark mode for accents/text, which would otherwise put white on pale green.
-  --color-brand-solid: #27744A;
   --color-brand-solid-hover: #1F5F3C;
   --color-brand-solid-dark: #1F5F3C;
   // Success has its own identity: a green that stays distinct from brand.
@@ -97,10 +96,12 @@ html {
   --color-accent: #A8762D;          // honey — today marker, highlights
   --color-accent-strong: #8A5F1E;   // honey, AA for text on light surfaces
   --color-error: #B3261E;
-  // Filled destructive surfaces that always carry white ink. Theme-invariant:
-  // --color-error lightens in dark mode for text/borders, which would put
-  // white on pale pink. Mirrors the --color-brand-solid approach.
-  --color-error-solid: #B3261E;
+  // Warn is a distinct amber role, not a synonym for error red.
+  --color-warn: #8A5F1E;
+  --color-warn-solid: #A8762D;
+  --color-on-warn-solid: #FFFFFF;
+  --color-warn-container: #F6EBD9;
+  --color-on-warn-container: #4A2F0E;
   --color-border: #E1E4E8;          // hairlines on gray
   --color-link: #1F5F3C;            // brand-dark green links
 
@@ -114,15 +115,14 @@ html {
   --color-input-border-invalid: #B3261E;
   --color-focus: var(--color-brand-primary);
 
-  // Role badges — Material container/on-container pairs: member (neutral),
-  // admin (indigo), super (purple). Colour is redundant encoding; the role
-  // text stays. Every pair clears 4.5:1 within its own badge.
-  --role-member-bg: #ECEFF1;
+  // Role badges — member neutral, admin brand tint, super brand solid.
+  // Colour is redundant encoding; the role text stays. Every pair clears 4.5:1.
+  --role-member-bg: #EBEDF0;
   --role-member-fg: #37474F;
-  --role-admin-bg: #E8EAF6;
-  --role-admin-fg: #283593;
-  --role-super-bg: #F3E5F5;
-  --role-super-fg: #6A1B9A;
+  --role-admin-bg: #DCEFE3;
+  --role-admin-fg: #123726;
+  --role-super-bg: #27744A;
+  --role-super-fg: #FFFFFF;
 
   // Calendar event tags — birth blue, anniversary red, shared neutral fill.
   --cal-birth-accent: #2b6cb0;
@@ -135,6 +135,21 @@ html {
   --color-on-brand: #ffffff;      // text/icons on saturated brand or accent fills
   --color-media-backdrop: #000000; // slideshow / video letterbox surround
   --color-scrim: rgba(0, 0, 0, 0.65); // gradient scrim over photo captions
+  --color-scrim-soft: rgba(15, 23, 42, 0.4);
+  --color-scrim-strong: rgba(15, 23, 42, 0.7);
+  --color-scrim-drawer: rgba(0, 0, 0, 0.5);
+  --color-overlay-white-08: rgba(255, 255, 255, 0.08);
+  --color-overlay-white-40: rgba(255, 255, 255, 0.4);
+  --color-overlay-white-75: rgba(255, 255, 255, 0.75);
+  --color-overlay-white-90: rgba(255, 255, 255, 0.9);
+  --color-overlay-ink-04: rgba(15, 23, 42, 0.04);
+  --color-overlay-ink-07: rgba(15, 23, 42, 0.07);
+  --color-overlay-ink-10: rgba(15, 23, 42, 0.1);
+  --color-error-tint: rgba(179, 38, 30, 0.08);
+  --color-error-tint-strong: rgba(179, 38, 30, 0.1);
+  --color-warn-tint: rgba(156, 107, 38, 0.12);
+  --color-accent-tint: rgba(168, 118, 45, 0.12);
+  --color-accent-tint-soft: rgba(178, 106, 0, 0.08);
 
   // Shape
   --radius-card: 16px;
@@ -147,6 +162,15 @@ html {
   --shadow-pop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.12);
   --shadow-frost: 0 8px 32px rgba(15, 23, 42, 0.07);
   --shadow-drawer: -18px 0 44px -24px rgba(15, 23, 42, 0.30);
+  --shadow-auth-card: 0 18px 50px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-sidebar: 2px 0 8px rgba(15, 23, 42, 0.04);
+  --shadow-bubble: 0 1px 2px rgba(15, 23, 42, 0.2);
+  --shadow-bar: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-control: 0 1px 3px rgba(15, 23, 42, 0.12);
+  --shadow-thumb: 0 1px 4px rgba(0, 0, 0, 0.15);
+  --shadow-thumb-hover: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-thumb-soft: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-text-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 // Dark re-derivation of every color token; typography/shape/shadow tokens
@@ -170,6 +194,9 @@ html[data-theme="dark"] {
   --color-accent: #C99B55;
   --color-accent-strong: #D9AE6F;
   --color-error: #F2B8B5;
+  --color-warn: #D9AE6F;
+  --color-warn-container: #3A2E1B;
+  --color-on-warn-container: #F6EBD9;
   --color-border: #333940;
   --color-link: #8CCDA3;
   --color-input-border: #6B7683;
@@ -178,10 +205,10 @@ html[data-theme="dark"] {
 
   --role-member-bg: #2E3438;
   --role-member-fg: #C5CDD3;
-  --role-admin-bg: #2A2F4A;
-  --role-admin-fg: #BAC3F5;
-  --role-super-bg: #3A2A40;
-  --role-super-fg: #D9B0E8;
+  --role-admin-bg: #1C3A2A;
+  --role-admin-fg: #DCEFE3;
+  --role-super-bg: #27744A;
+  --role-super-fg: #FFFFFF;
 
   --cal-birth-accent: #7FAEDC;
   --cal-anniv-accent: #E58585;
@@ -943,4 +970,27 @@ app-calendar-cell {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+// Inset suffix icon buttons from an outlined field's right edge so the
+// circular state layer never touches the border (UI-010).
+.mat-mdc-form-field .mat-mdc-icon-button[matSuffix] {
+  margin-right: 4px;
+}
+
+// One switch control language: a 44px tap row and a 175ms thumb travel. The
+// row host (mat-slide-toggle) is the target so the whole label stays clickable.
+.mat-mdc-slide-toggle {
+  min-height: 44px;
+}
+
+.mat-mdc-slide-toggle .mdc-switch {
+  transition-duration: 175ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mat-mdc-slide-toggle .mdc-switch,
+  .mat-mdc-slide-toggle .mdc-switch__handle {
+    transition: none;
+  }
 }

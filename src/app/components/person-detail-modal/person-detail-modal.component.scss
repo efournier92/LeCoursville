@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.4);
+  background-color: var(--color-scrim-soft);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -158,7 +158,7 @@
   background-color: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
   color: var(--color-brand-primary-dark);
 }.event-type.badge.anniversary {
-  background-color: rgba(168, 118, 45, 0.12);
+  background-color: var(--color-accent-tint);
   color: var(--color-accent-strong);
 }.event-date {
   color: var(--color-ink-2);

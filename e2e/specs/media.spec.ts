@@ -196,7 +196,7 @@ async function prepareAlbum(page: Page, options: AlbumOptions): Promise<Locator>
 
   if (options.manualZip) {
     await openAdvanced(card);
-    await card.getByRole('checkbox', { name: 'Use my own zip' }).check();
+    await card.getByRole('switch', { name: 'Use my own zip' }).click();
     await expect(card.getByTestId('album-zip-input')).toBeVisible();
     if (options.zipFile) {
       await card.getByTestId('album-zip-input').setInputFiles(fixturePath(options.zipFile));
@@ -823,8 +823,7 @@ test.describe('media', () => {
       await expect(form.locator('input[name="videoDuration"]')).toBeVisible();
 
       await page
-        .getByRole('checkbox', { name: 'Replace video file' })
-        .check({ force: true });
+        .getByRole('switch', { name: 'Replace video file' }).click();
       await expect(page.getByTestId('video-file-input')).toBeVisible();
       await page.getByTestId('video-file-input').setInputFiles(fixturePath('fixture-2.mp4'));
       await expect(page.locator('.media-file-name')).toHaveText('fixture-2.mp4');
@@ -1524,9 +1523,9 @@ test.describe('media', () => {
     await expect(card.getByLabel('Choose cover image')).toBeVisible();
 
     await openAdvanced(card);
-    await expect(card.locator('mat-checkbox[name="useOwnZip"]')).toBeVisible();
+    await expect(card.getByRole('switch', { name: 'Use my own zip' })).toBeVisible();
 
-    await card.getByRole('checkbox', { name: 'Use my own zip' }).check();
+    await card.getByRole('switch', { name: 'Use my own zip' }).click();
     await expect(card.getByLabel('Zip file')).toBeVisible();
 
     const progress = card.getByTestId('album-upload-progress');
@@ -1558,5 +1557,15 @@ test.describe('media', () => {
     const audioActions = audioCard.locator('.admin-form-actions');
     await expect(audioActions).toHaveCSS('justify-content', 'flex-end');
     await expect(audioActions.getByRole('button', { name: 'Clear' })).toHaveCSS('height', '36px');
+  });
+
+  test('video S3 path box uses the 8px info-panel radius', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+    const form = page.locator('app-admin-media-upload-video .admin-media-upload-upload-form');
+    await openAdvanced(form);
+    const preview = page.getByTestId('video-path-preview');
+    await expect(preview).toBeVisible();
+    await expect(preview).toHaveCSS('border-radius', '8px');
   });
 });

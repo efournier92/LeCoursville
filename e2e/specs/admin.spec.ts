@@ -90,7 +90,7 @@ test.describe('admin', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
-      await editor.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
+      await editor.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
       const dialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
       await expect(dialog).toContainText('Give Regular User content admin access?');

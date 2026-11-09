@@ -291,9 +291,9 @@ test.describe('account recovery', () => {
     await expect(row.getByRole('button', { name: `Mark closed for ${accountEmail}` })).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
     await expect(
-      row.getByRole('checkbox', { name: `Email reset link to ${alternate} for ${accountEmail}` }),
+      row.getByRole('switch', { name: `Email reset link to ${alternate} for ${accountEmail}` }),
     ).toBeVisible();
-    await row.getByTestId('admin-recovery-email-alternate').locator('input').check();
+    await row.getByTestId('admin-recovery-email-alternate').getByRole('switch').click();
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
     const generateButton = page
@@ -410,7 +410,7 @@ test.describe('account recovery', () => {
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
-    await expect(row.getByTestId('admin-recovery-email-alternate').locator('input')).not.toBeChecked();
+    await expect(row.getByTestId('admin-recovery-email-alternate').getByRole('switch')).toHaveAttribute('aria-checked', 'false');
     await row.getByTestId('admin-recovery-generate').click();
     await page
       .locator('mat-dialog-container')
@@ -540,8 +540,11 @@ test.describe('account recovery', () => {
     const removeButton = page
       .locator('mat-dialog-container')
       .getByRole('button', { name: 'Remove', exact: true });
-    // Removing a recipient is reversible, so it is no longer marked destructive.
-    await expect(removeButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    // Remove is a destructive confirm: error-solid on the action, neutral Cancel.
+    await expect(removeButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(
+      page.locator('mat-dialog-container').getByRole('button', { name: 'Cancel', exact: true }),
+    ).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
     await removeButton.click();
     await expect(page.locator('.recipient-row', { hasText: added })).toHaveCount(0);
 

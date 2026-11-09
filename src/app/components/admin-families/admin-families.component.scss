@@ -148,7 +148,7 @@
     width: 24px;
     height: 24px;
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-overlay-ink-10);
   }
 
   .family-actions {
@@ -253,7 +253,7 @@
         }
 
         &::-webkit-color-swatch {
-          border: 1px solid rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--color-overlay-ink-10);
           border-radius: var(--radius-sm);
         }
       }
@@ -262,7 +262,7 @@
         width: 48px;
         height: 24px;
         border-radius: var(--radius-sm);
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--color-overlay-ink-10);
         margin-top: 8px;
       }
     }

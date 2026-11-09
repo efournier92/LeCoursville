@@ -96,7 +96,7 @@
 
 .error-card {
   border-left: 4px solid var(--color-error);
-  background: linear-gradient(to right, rgba(179, 38, 30, 0.10), var(--color-surface) 4px);
+  background: linear-gradient(to right, var(--color-error-tint-strong), var(--color-surface) 4px);
 
   .validation-header {
     display: flex;
@@ -131,7 +131,7 @@
 
 .warning-card {
   border-left: 4px solid var(--color-accent-strong);
-  background: linear-gradient(to right, rgba(156, 107, 38, 0.12), var(--color-surface) 4px);
+  background: linear-gradient(to right, var(--color-warn-tint), var(--color-surface) 4px);
 
   .validation-header {
     display: flex;
@@ -227,7 +227,7 @@
     }
 
     &.updated {
-      background: rgba(156, 107, 38, 0.12);
+      background: var(--color-warn-tint);
       .stat-value { color: var(--color-accent-strong); }
     }
 

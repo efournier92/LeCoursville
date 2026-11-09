@@ -102,7 +102,10 @@ export class PhotosLegacyComponent implements OnInit {
 
   deletePhoto(photoToDelete: Photo): void {
     const message = "Do you want to delete this photo from LeCoursville?";
-    const dialogRef = this.promptModal.openDialog("Are You Sure?", message);
+    const dialogRef = this.promptModal.openDialog("Are You Sure?", message, [
+      { label: "No", isConfirmAction: false },
+      { label: "Delete", color: "primary", isConfirmAction: true, destructive: true },
+    ]);
     dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {
       if (confirmedAction) {
         const idx = this.loadedPhotos.findIndex(p => p.id === photoToDelete.id);

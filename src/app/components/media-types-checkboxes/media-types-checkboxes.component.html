@@ -1,10 +1,10 @@
 <div class="media-types-checkboxes-container">
   @for (type of allTypes; track type) {
-    <mat-checkbox
+    <mat-slide-toggle
       (click)="onSelectMediaType(type)"
       class="col-12 col-md-4 col-lg-2"
       >
       {{ type.name }}
-    </mat-checkbox>
+    </mat-slide-toggle>
   }
 </div>

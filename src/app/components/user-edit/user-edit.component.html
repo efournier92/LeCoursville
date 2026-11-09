@@ -98,24 +98,24 @@
   </div>
   @if (isSuperUser) {
     <div class="user-roles-container mt-3">
-      <mat-checkbox name="user-roles-user" [(ngModel)]="formUser.roles.user">
+      <mat-slide-toggle name="user-roles-user" [(ngModel)]="formUser.roles.user">
         User
-      </mat-checkbox>
-      <mat-checkbox
+      </mat-slide-toggle>
+      <mat-slide-toggle
         name="user-roles-admin"
         [(ngModel)]="formUser.roles.admin"
         [disabled]="formUser.roles.super"
         (change)="onAdminChange(formUser)"
         >
         Content Admin
-      </mat-checkbox>
-      <mat-checkbox
+      </mat-slide-toggle>
+      <mat-slide-toggle
         name="user-roles-super"
         [(ngModel)]="formUser.roles.super"
         (change)="onSuperChange(formUser)"
         >
         Super
-      </mat-checkbox>
+      </mat-slide-toggle>
     </div>
   }
   @if (isAdminMode) {

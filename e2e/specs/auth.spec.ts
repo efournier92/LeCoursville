@@ -104,6 +104,17 @@ test.describe('auth', () => {
     await expect(password).toHaveAttribute('type', 'password');
   });
 
+  test('password toggle is inset from the field edge', async ({ page }) => {
+    await page.goto('/');
+    const toggle = page.getByTestId('auth-password-toggle');
+    const field = page.locator('.auth-field').filter({ has: page.getByTestId('auth-password') });
+    const toggleBox = await toggle.boundingBox();
+    const fieldBox = await field.boundingBox();
+    expect(toggleBox && fieldBox).toBeTruthy();
+    const inset = fieldBox!.x + fieldBox!.width - (toggleBox!.x + toggleBox!.width);
+    expect(inset, 'toggle right edge inset from the field box').toBeGreaterThanOrEqual(4);
+  });
+
   test('missing fields shows the validation error', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-submit').click();

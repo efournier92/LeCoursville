@@ -233,12 +233,12 @@ describe('AdminUsersComponent', () => {
       '--role-super-fg',
     ]);
     for (const declaration of [
-      '--role-member-bg: #ECEFF1;',
+      '--role-member-bg: #EBEDF0;',
       '--role-member-fg: #37474F;',
-      '--role-admin-bg: #E8EAF6;',
-      '--role-admin-fg: #283593;',
-      '--role-super-bg: #F3E5F5;',
-      '--role-super-fg: #6A1B9A;',
+      '--role-admin-bg: #DCEFE3;',
+      '--role-admin-fg: #123726;',
+      '--role-super-bg: #27744A;',
+      '--role-super-fg: #FFFFFF;',
     ]) {
       expect(tokensScss).toContain(declaration);
     }

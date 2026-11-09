@@ -23,8 +23,8 @@ describe('MediaTypesRadioSelectorComponent', () => {
     component.allTypes.forEach(type => (type.isSelected = false));
   });
 
-  it('renders one checkbox per visible type', () => {
-    const boxes = fixture.nativeElement.querySelectorAll('mat-checkbox');
+  it('renders one switch per visible type', () => {
+    const boxes = fixture.nativeElement.querySelectorAll('mat-slide-toggle');
 
     expect(boxes.length).toBe(component.allTypes.length);
     expect(component.allTypes.length).toBeGreaterThan(0);
@@ -35,7 +35,7 @@ describe('MediaTypesRadioSelectorComponent', () => {
     const emitted: string[][] = [];
     component.selectMediaTypeEvent.subscribe(ids => emitted.push(ids));
 
-    const boxes = fixture.nativeElement.querySelectorAll('mat-checkbox');
+    const boxes = fixture.nativeElement.querySelectorAll('mat-slide-toggle');
     component.allTypes.forEach((type, index) => {
       (boxes[index] as HTMLElement).click();
       expect(emitted.length).toBe(index + 1);

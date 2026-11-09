@@ -139,7 +139,7 @@ export abstract class MessageEditComponent implements OnInit {
       "Are You Sure?",
       "Do you want to remove this message from LeCoursville?",
       [
-        { label: "No", color: "warn", isConfirmAction: false },
+        { label: "No", isConfirmAction: false },
         { label: "Yes", color: "primary", isConfirmAction: true, destructive: true },
       ],
     );

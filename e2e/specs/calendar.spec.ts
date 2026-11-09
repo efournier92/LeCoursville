@@ -219,7 +219,7 @@ test.describe('calendar', () => {
   test('passed-away filter uses plain language, not the old jargon', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
-    await expect(page.getByRole('checkbox', { name: 'Show relatives who have passed' })).toBeVisible();
+    await expect(page.getByRole('switch', { name: 'Show relatives who have passed' })).toBeVisible();
     await expect(page.getByText('Include Not Living')).toHaveCount(0);
   });
 
@@ -240,7 +240,7 @@ test.describe('calendar', () => {
     await login(page, 'admin');
     await page.goto('/calendar?year=2026&month=3');
 
-    await page.getByRole('checkbox', { name: 'Birthdays' }).uncheck();
+    await page.getByRole('switch', { name: 'Birthdays' }).click();
     await page.getByRole('button', { name: 'Print', exact: true }).click();
     await expect(page.locator('.calendar-printer-summary')).toContainText(
       'Including anniversaries.',
@@ -248,7 +248,7 @@ test.describe('calendar', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('.calendar-printer-container')).toHaveCount(0);
 
-    await page.getByRole('checkbox', { name: 'Anniversaries' }).uncheck();
+    await page.getByRole('switch', { name: 'Anniversaries' }).click();
     await page.getByRole('button', { name: 'Print', exact: true }).click();
     await expect(page.locator('.calendar-printer-summary')).toContainText(
       'No event types selected.',
@@ -267,27 +267,27 @@ test.describe('calendar', () => {
     await page.goto('/calendar?year=2026&month=3');
     const alice = page.locator('.event-birth', { hasText: 'Alice Anderson' });
     await expect(alice.first()).toBeVisible();
-    await page.getByRole('checkbox', { name: 'Birthdays' }).uncheck();
+    await page.getByRole('switch', { name: 'Birthdays' }).click();
     await expect(alice).toHaveCount(0);
-    await page.getByRole('checkbox', { name: 'Birthdays' }).check();
+    await page.getByRole('switch', { name: 'Birthdays' }).click();
     await expect(alice.first()).toBeVisible();
 
     await page.goto('/calendar?year=2026&month=11');
     const anniversary = page.locator('.event-anniv', { hasText: 'Dave Davis' });
     await expect(anniversary.first()).toBeVisible();
-    await page.getByRole('checkbox', { name: 'Anniversaries' }).uncheck();
+    await page.getByRole('switch', { name: 'Anniversaries' }).click();
     await expect(anniversary).toHaveCount(0);
-    await page.getByRole('checkbox', { name: 'Anniversaries' }).check();
+    await page.getByRole('switch', { name: 'Anniversaries' }).click();
     await expect(anniversary.first()).toBeVisible();
 
     await page.goto('/calendar?year=2026&month=1');
     const edith = page.locator('.event-birth', { hasText: 'Edith Evans' });
-    const notLiving = page.getByRole('checkbox', { name: 'Show relatives who have passed' });
-    if (await notLiving.isChecked()) await notLiving.uncheck();
+    const notLiving = page.getByRole('switch', { name: 'Show relatives who have passed' });
+    if ((await notLiving.getAttribute('aria-checked')) === 'true') await notLiving.click();
     await expect(edith).toHaveCount(0);
-    await notLiving.check();
+    await notLiving.click();
     await expect(edith.first()).toBeVisible();
-    await notLiving.uncheck();
+    await notLiving.click();
     await expect(edith).toHaveCount(0);
   });
 
@@ -303,7 +303,7 @@ test.describe('calendar', () => {
       await expect(page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()).toBeVisible();
 
       // Holidays are events too; turn them off so an empty people list is truly empty.
-      await page.getByRole('checkbox', { name: 'Holidays' }).uncheck();
+      await page.getByRole('switch', { name: 'Holidays' }).click();
       await writeDb('people', null);
 
       await expect(page.getByText("We couldn't find any events.")).toBeVisible();
@@ -335,8 +335,8 @@ test.describe('calendar', () => {
     await expect(christmas.first()).toBeVisible();
     await expect(page.getByTestId('calendar-toggle-holidays')).toBeVisible();
 
-    const holidayCheckbox = page.getByRole('checkbox', { name: 'Holidays' });
-    await holidayCheckbox.uncheck();
+    const holidayCheckbox = page.getByRole('switch', { name: 'Holidays' });
+    await holidayCheckbox.click();
     await expect(christmas).toHaveCount(0);
     await expect.poll(async () => {
       if (!prefsUid) return true;
@@ -346,10 +346,10 @@ test.describe('calendar', () => {
 
     await page.reload();
     await expect(page.locator('.calendar-month-label')).toHaveText('December');
-    await expect(page.getByRole('checkbox', { name: 'Holidays' })).not.toBeChecked();
+    await expect(page.getByRole('switch', { name: 'Holidays' })).toHaveAttribute('aria-checked', 'false');
     await expect(page.locator('.event-holiday', { hasText: 'Christmas Day' })).toHaveCount(0);
 
-    await page.getByRole('checkbox', { name: 'Holidays' }).check();
+    await page.getByRole('switch', { name: 'Holidays' }).click();
     await expect(page.locator('.event-holiday', { hasText: 'Christmas Day' }).first()).toBeVisible();
   });
 
