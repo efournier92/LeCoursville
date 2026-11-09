@@ -210,7 +210,6 @@
                   name="useOwnZip"
                   [(ngModel)]="useOwnZip"
                   >Use my own zip</mat-slide-toggle>
-                  >
                 @if (useOwnZip) {
                   <label class="media-control-label" for="albumZipInput">Zip file</label>
                   <input
@@ -246,13 +245,11 @@
             name="isSticky"
             [(ngModel)]="album.isSticky"
             >Is Sticky?</mat-slide-toggle>
-            >
           <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isHidden"
             [(ngModel)]="album.isHidden"
             >Should Hide from Lists?</mat-slide-toggle>
-            >
         </div>
       </details>
 

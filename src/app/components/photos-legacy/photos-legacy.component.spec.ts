@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { vi } from 'vitest';
 import { of } from 'rxjs';
@@ -15,7 +16,7 @@ describe('PhotosLegacyComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [AppModule, TestSharedModule, MatMenuModule, FormsModule],
+      imports: [AppModule, TestSharedModule, MatMenuModule, FormsModule, MatSlideToggleModule],
       declarations: [PhotosLegacyComponent],
       schemas: [NO_ERRORS_SCHEMA],
     })
@@ -104,12 +105,33 @@ describe('PhotosLegacyComponent', () => {
 
     expect(loadMorePhotos).toHaveBeenCalledWith(10);
   });
+
+  it('toggles a photo circa switch and reflects the bound state', () => {
+    component.user = { roles: { admin: true } } as any;
+    component.showSpinner = false;
+    const photo = { id: 'p1', isEditable: true, isYearCirca: false, year: 1990 } as any;
+    component.loadedPhotos = [photo];
+    fixture.detectChanges();
+
+    const allToggles = fixture.nativeElement.querySelectorAll(
+      'mat-slide-toggle',
+    ) as NodeListOf<HTMLElement>;
+    const toggle = allToggles[0];
+    const button = toggle.querySelector('button[role="switch"]') as HTMLButtonElement;
+    expect(button.getAttribute('aria-checked')).toBe('false');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(photo.isYearCirca).toBe(true);
+    expect(button.getAttribute('aria-checked')).toBe('true');
+  });
 });
 
 describe('PhotosLegacyComponent empty state', () => {
   it('resolves the skeleton, shows the empty state, and hides Load More', async () => {
     TestBed.configureTestingModule({
-      imports: [AppModule, TestSharedModule, MatMenuModule, FormsModule],
+      imports: [AppModule, TestSharedModule, MatMenuModule, FormsModule, MatSlideToggleModule],
       declarations: [PhotosLegacyComponent],
       schemas: [NO_ERRORS_SCHEMA],
     });

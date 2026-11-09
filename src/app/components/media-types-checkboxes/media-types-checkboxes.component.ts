@@ -27,11 +27,7 @@ export class MediaTypesCheckboxesComponent implements OnInit {
   onSelectMediaType(type: MediaType): void {
     type.isSelected = !type.isSelected;
 
-    let selectedTypes = this.mediaTypesService.getSelectedTypes(this.allTypes);
-
-    if (!selectedTypes.length || selectedTypes.length < 1) {
-      selectedTypes = this.mediaTypesService.getAllTypes();
-    }
+    const selectedTypes = this.mediaTypesService.getSelectedTypes(this.allTypes);
 
     this.selectMediaTypeEvent.emit(selectedTypes);
   }

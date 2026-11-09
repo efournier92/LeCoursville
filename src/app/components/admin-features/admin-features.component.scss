@@ -107,19 +107,6 @@
     // MDC's track ends 4px inside the host; pull the visible track onto the
     // page's 16px right rail.
     margin-right: -4px;
-    // Size and travel tokens move together: Material derives travel from
-    // track width minus handle width.
-    --mat-slide-toggle-track-width: 36px;
-    --mat-slide-toggle-track-height: 20px;
-    --mat-slide-toggle-handle-width: 18px;
-    --mat-slide-toggle-unselected-handle-size: 14px;
-    --mat-slide-toggle-selected-handle-size: 14px;
-    --mat-slide-toggle-pressed-handle-size: 14px;
-    --mat-slide-toggle-with-icon-handle-size: 14px;
-    --mat-slide-toggle-unselected-handle-horizontal-margin: 0 2px;
-    --mat-slide-toggle-selected-handle-horizontal-margin: 0 2px;
-    --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0 2px;
-    --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 2px;
   }
 
   .feature-icon {

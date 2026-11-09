@@ -122,15 +122,15 @@
       font-weight: 500;
 
       &.error {
-        background: var(--color-error);
-        color: var(--color-on-brand);
+        background: var(--color-error-solid);
+        color: var(--color-on-brand-solid);
       }
     }
   }
 }
 
 .warning-card {
-  border-left: 4px solid var(--color-accent-strong);
+  border-left: 4px solid var(--color-warn);
   background: linear-gradient(to right, var(--color-warn-tint), var(--color-surface) 4px);
 
   .validation-header {
@@ -140,14 +140,14 @@
     margin-bottom: 12px;
 
     mat-icon {
-      color: var(--color-accent-strong);
+      color: var(--color-warn);
     }
 
     h3 {
       margin: 0;
       font-size: 16px;
       font-weight: 500;
-      color: var(--color-accent-strong);
+      color: var(--color-warn);
     }
 
     .count-badge {
@@ -157,8 +157,8 @@
       font-weight: 500;
 
       &.warning {
-        background: var(--color-accent-strong);
-        color: var(--color-on-brand);
+        background: var(--color-warn-solid);
+        color: var(--color-on-warn-solid);
       }
     }
   }

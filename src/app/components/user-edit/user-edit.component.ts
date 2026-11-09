@@ -127,6 +127,9 @@ export class UserEditComponent implements OnInit, OnChanges {
         };
       }
     } catch (error) {
+      // The switches are optimistic: roll the working copy back to the saved
+      // roles when persistence fails so the UI never claims an ungranted role.
+      this.resetForm();
       this.saveError = `Could not save ${this.displayName(user)}: ${this.errorMessage(error)}`;
       return;
     }

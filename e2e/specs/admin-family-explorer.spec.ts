@@ -68,6 +68,24 @@ test.describe('admin family explorer', () => {
     expect(await readDb('familyExplorer/wolf/published')).toBe(false);
   });
 
+  test('upload Published switch persists on the new archive', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/family-explorer');
+
+    await page.getByLabel('Family ID').fill('test-family');
+    await page.getByLabel('Title').fill('Test');
+    await page.getByTestId('archive-json-input').fill(uploadJson);
+
+    const published = page.getByRole('switch', { name: 'Published', exact: true });
+    await expect(published).toHaveAttribute('aria-checked', 'false');
+    await published.click();
+    await expect(published).toHaveAttribute('aria-checked', 'true');
+
+    await page.getByTestId('archive-confirm').click();
+    await expect(page.getByTestId('archive-success')).toBeVisible();
+    expect(await readDb('familyExplorer/test-family/published')).toBe(true);
+  });
+
   test('upload shows a live status banner and adds the new row', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/family-explorer');

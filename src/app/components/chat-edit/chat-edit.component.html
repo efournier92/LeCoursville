@@ -104,10 +104,10 @@
                           (mouseover)="highlightElement('sticky', true)"
                           (mouseleave)="highlightElement('sticky', false)"
                           >
-                          <mat-slide-toggle [(ngModel)]="message.isSticky" aria-label="Sticky"></mat-slide-toggle>
+                          <mat-slide-toggle id="chat-edit-sticky" [(ngModel)]="message.isSticky" aria-label="Sticky"></mat-slide-toggle>
                         </div>
-                        <span class="message-button-label d-flex justify-content-center"
-                          >Sticky</span
+                        <label class="message-button-label d-flex justify-content-center" for="chat-edit-sticky-button"
+                          >Sticky</label
                           >
                         </div>
                       }

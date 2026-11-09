@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
@@ -50,6 +51,7 @@ import {
     MatInputModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     MatTooltipModule,
     NoResultsMessageComponent,
     LvLoadErrorComponent,

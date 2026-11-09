@@ -246,5 +246,37 @@ test.describe('theme control contract (light/dark parity)', () => {
 
     await no.click();
     await expect(dialog).toBeHidden();
+
+    try {
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+
+      await expect(dialog).toBeVisible();
+      await expect(yes).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+      await expect(no).toHaveCSS('background-color', 'rgb(38, 43, 49)');
+      await expect(no).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+      await no.click();
+    } finally {
+      if ((await page.locator('html').getAttribute('data-theme')) === 'dark') {
+        await page.getByTestId('theme-toggle').click();
+      }
+    }
+  });
+
+  test('one-action info prompt uses the brand fill and no warning icon', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+    await page.getByRole('button', { name: 'Share' }).click();
+
+    const dialog = page.locator('app-prompt-modal');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button')).toHaveCount(1);
+    const action = dialog.getByRole('button', { name: 'Continue' });
+    await expect(action).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(action).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(action.locator('mat-icon')).toHaveCount(0);
+    await action.click();
+    await expect(dialog).toBeHidden();
   });
 });

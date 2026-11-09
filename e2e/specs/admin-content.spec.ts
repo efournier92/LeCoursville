@@ -78,6 +78,12 @@ test.describe('admin content surfaces', () => {
     const throwaway = page.locator('.admin-album-card', { hasText: 'E2E Throwaway Album' });
     await expect(throwaway).toBeVisible();
 
+    // Warn is its own amber role, not the M3 error red.
+    await expect(throwaway.locator('button[matTooltip="Delete"] mat-icon')).toHaveCSS(
+      'color',
+      'rgb(138, 95, 30)',
+    );
+
     await throwaway.locator('button[matTooltip="Delete"]').click();
     const confirm = page.locator('app-confirm-dialog');
     // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
@@ -553,5 +559,29 @@ test.describe('admin content surfaces', () => {
     await expect(renameDialog.getByLabel('Album title')).toHaveValue('E2E Album One');
     await renameDialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(renameDialog).toBeHidden();
+  });
+
+  test('every switch uses the same 36x20 track', async ({ page }) => {
+    const trackSize = (locator: import('@playwright/test').Locator) =>
+      locator.locator('.mdc-switch__track').evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height) };
+      });
+
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    await expect(page.getByTestId('feature-toggle-contacts')).toBeVisible();
+    const featureTrack = await trackSize(page.getByTestId('feature-toggle-contacts'));
+    await expect(
+      page.getByTestId('feature-toggle-contacts').locator('.mdc-switch__handle-track'),
+    ).toHaveCSS('transition-duration', '0.175s');
+
+    await page.goto('/admin/family-explorer');
+    const archiveSwitch = page.getByRole('switch', { name: 'Published', exact: true });
+    await expect(archiveSwitch).toBeVisible();
+    const archiveTrack = await trackSize(archiveSwitch);
+
+    expect(featureTrack).toEqual({ width: 36, height: 20 });
+    expect(archiveTrack).toEqual(featureTrack);
   });
 });

@@ -98,7 +98,7 @@ html {
   --color-error: #B3261E;
   // Warn is a distinct amber role, not a synonym for error red.
   --color-warn: #8A5F1E;
-  --color-warn-solid: #A8762D;
+  --color-warn-solid: #9C6B26;
   --color-on-warn-solid: #FFFFFF;
   --color-warn-container: #F6EBD9;
   --color-on-warn-container: #4A2F0E;
@@ -195,6 +195,8 @@ html[data-theme="dark"] {
   --color-accent-strong: #D9AE6F;
   --color-error: #F2B8B5;
   --color-warn: #D9AE6F;
+  --color-warn-solid: #9C6B26;
+  --color-on-warn-solid: #FFFFFF;
   --color-warn-container: #3A2E1B;
   --color-on-warn-container: #F6EBD9;
   --color-border: #333940;
@@ -361,6 +363,26 @@ html[data-theme="dark"] {
     filled-state-layer-color: var(--color-on-brand-solid),
     filled-ripple-color: var(--color-on-brand-solid),
   ));
+}
+
+// UI-001: M3 folds color="warn" into the error palette. Repaint the warn
+// variant onto the amber warn tokens so warn controls never read as error red.
+html .mat-warn.mat-mdc-button-base,
+html[data-theme="dark"] .mat-warn.mat-mdc-button-base {
+  --mat-button-text-label-text-color: var(--color-warn);
+  --mat-button-text-state-layer-color: var(--color-warn);
+  --mat-button-text-ripple-color: var(--color-warn);
+  --mat-button-outlined-label-text-color: var(--color-warn);
+  --mat-button-outlined-outline-color: var(--color-warn);
+  --mat-button-outlined-state-layer-color: var(--color-warn);
+  --mat-button-outlined-ripple-color: var(--color-warn);
+  --mat-button-protected-container-color: var(--color-warn-solid);
+  --mat-button-protected-label-text-color: var(--color-on-warn-solid);
+  --mat-button-protected-state-layer-color: var(--color-on-warn-solid);
+  --mat-button-protected-ripple-color: var(--color-on-warn-solid);
+  --mat-icon-button-icon-color: var(--color-warn);
+  --mat-icon-button-state-layer-color: var(--color-warn);
+  --mat-icon-button-ripple-color: var(--color-warn);
 }
 
 /* Destructive filled buttons: theme-invariant red fill with white ink, so a
@@ -717,16 +739,30 @@ select:-webkit-autofill:focus {
     --color-control-strong-hover: #313942;
     --color-ink-2: #5B6470;
     --color-ink-3: #8A919C;
-    --color-brand-primary: #2D5A27;
-    --color-brand-primary-hover: #3A7033;
-    --color-brand-primary-dark: #245020;
-    --color-brand-success: #2D5A27;
-    --color-brand-success-dark: #245020;
+    --color-brand-primary: #27744A;
+    --color-brand-primary-hover: #1F5F3C;
+    --color-brand-primary-dark: #1F5F3C;
+    --color-brand-success: #1B7A43;
+    --color-brand-success-dark: #166236;
+    --color-brand-solid: #27744A;
+    --color-on-brand-solid: #FFFFFF;
+    --color-error-solid: #B3261E;
     --color-accent: #A8762D;
-    --color-accent-strong: #9C6B26;
+    --color-accent-strong: #8A5F1E;
     --color-error: #B3261E;
+    --color-warn: #8A5F1E;
+    --color-warn-solid: #9C6B26;
+    --color-on-warn-solid: #FFFFFF;
+    --color-warn-container: #F6EBD9;
+    --color-on-warn-container: #4A2F0E;
     --color-border: #E1E4E8;
-    --color-link: #245020;
+    --color-link: #1F5F3C;
+    --role-member-bg: #EBEDF0;
+    --role-member-fg: #37474F;
+    --role-admin-bg: #DCEFE3;
+    --role-admin-fg: #123726;
+    --role-super-bg: #27744A;
+    --role-super-fg: #FFFFFF;
   }
 }
 
@@ -978,18 +1014,33 @@ app-calendar-cell {
   margin-right: 4px;
 }
 
-// One switch control language: a 44px tap row and a 175ms thumb travel. The
-// row host (mat-slide-toggle) is the target so the whole label stays clickable.
+// One switch control language: a 44px tap row and one 36x20 track for every
+// switch, matching the compact density used across the admin surfaces.
 .mat-mdc-slide-toggle {
   min-height: 44px;
+  // Size and travel tokens move together: Material derives travel from track
+  // width minus handle width.
+  --mat-slide-toggle-track-width: 36px;
+  --mat-slide-toggle-track-height: 20px;
+  --mat-slide-toggle-handle-width: 18px;
+  --mat-slide-toggle-unselected-handle-size: 14px;
+  --mat-slide-toggle-selected-handle-size: 14px;
+  --mat-slide-toggle-pressed-handle-size: 14px;
+  --mat-slide-toggle-with-icon-handle-size: 14px;
+  --mat-slide-toggle-unselected-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-selected-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 2px;
 }
 
-.mat-mdc-slide-toggle .mdc-switch {
+// The handle track is what Material actually translates; the switch shell does
+// not animate, so the duration belongs here (UI-026, 150 to 200ms).
+.mat-mdc-slide-toggle .mdc-switch__handle-track {
   transition-duration: 175ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mat-mdc-slide-toggle .mdc-switch,
+  .mat-mdc-slide-toggle .mdc-switch__handle-track,
   .mat-mdc-slide-toggle .mdc-switch__handle {
     transition: none;
   }

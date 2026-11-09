@@ -476,6 +476,8 @@ test.describe('media', () => {
     await advanced.locator('summary').click();
     await expect(advanced).toHaveAttribute('open', '');
     await expect(page.getByLabel('Storage name')).toBeVisible();
+    // The switch conversion must not leave a literal `>` text node behind.
+    await expect(advanced).not.toContainText('>');
 
     await page.getByTestId('video-file-input').setInputFiles(fixturePath('fixture.mp4'));
     await expect(page.getByTestId('video-thumbnail-preview')).toBeVisible();
@@ -516,6 +518,7 @@ test.describe('media', () => {
     await expect(audioPanel.getByLabel('Album tracks')).toBeVisible();
     await expect(audioSection).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('app-admin-media-upload-video')).toHaveCount(0);
+    await expect(audioPanel).not.toContainText('>');
   });
 
   test('audio cover preview renders with no radius', async ({ page }) => {
@@ -786,6 +789,13 @@ test.describe('media', () => {
       await form.locator('input[name="videoTitle"]').fill('fixture edited');
       await form.locator('input[name="videoDate"]').fill('2025');
       await form.locator('input[name="videoDuration"]').fill('3:45');
+      const sticky = form.getByRole('switch', { name: 'Is Sticky?' });
+      const hidden = form.getByRole('switch', { name: 'Should Hide from Lists?' });
+      await expect(sticky).toHaveAttribute('aria-checked', 'false');
+      await sticky.click();
+      await hidden.click();
+      await expect(sticky).toHaveAttribute('aria-checked', 'true');
+      await expect(hidden).toHaveAttribute('aria-checked', 'true');
       await form.locator('.admin-form-action-button-upload').click();
       await expect(page.getByTestId('video-upload-success')).toContainText(
         'Saved "fixture edited".',
@@ -795,6 +805,8 @@ test.describe('media', () => {
       expect(updated?.title).toBe('fixture edited');
       expect(updated?.date).toBe('2025');
       expect(updated?.duration).toBe('3:45');
+      expect(updated?.isSticky).toBe(true);
+      expect(updated?.isHidden).toBe(true);
       expect(updated?.storage?.key).toBe(created.storage?.key);
       expect(updated?.storage?.iconKey).toBe(created.storage?.iconKey);
       expect(updated?.urls).toEqual(created.urls);
@@ -962,6 +974,17 @@ test.describe('media', () => {
       await expect(page.getByTestId('video-finalize-reason')).toContainText(
         'forced failure',
       );
+      // The reason line stacks beneath the message, not beside it.
+      const stacked = await page.getByTestId('video-upload-error').evaluate((el) => {
+        const reason = el.querySelector('.admin-error-reason')!.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(el.firstChild as Node);
+        return {
+          messageBottom: range.getBoundingClientRect().bottom,
+          reasonTop: reason.top,
+        };
+      });
+      expect(stacked.reasonTop).toBeGreaterThanOrEqual(stacked.messageBottom - 1);
       const retry = page.locator('.admin-form-action-button-retry');
       await expect(retry).toBeVisible();
       await retry.click();
@@ -1178,6 +1201,15 @@ test.describe('media', () => {
         '01-fixture.mp3',
       ]);
 
+      await openAdvanced(card);
+      const sticky = card.getByRole('switch', { name: 'Is Sticky?' });
+      const hidden = card.getByRole('switch', { name: 'Should Hide from Lists?' });
+      await expect(sticky).toHaveAttribute('aria-checked', 'false');
+      await sticky.click();
+      await hidden.click();
+      await expect(sticky).toHaveAttribute('aria-checked', 'true');
+      await expect(hidden).toHaveAttribute('aria-checked', 'true');
+
       await card.locator('.admin-form-action-button-upload').click();
       await expect(page.getByTestId('album-upload-success')).toContainText(
         `Saved album "${editedTitle}".`,
@@ -1185,6 +1217,8 @@ test.describe('media', () => {
 
       const updated = await readDb<MediaRecord>(`media/${created.id}`);
       expect(updated?.title).toBe(editedTitle);
+      expect(updated?.isSticky).toBe(true);
+      expect(updated?.isHidden).toBe(true);
       expect(updated?.listing).toEqual([secondId, firstId]);
       expect(updated?.storage?.trackKeys).toEqual(created.storage?.trackKeys);
       expect(updated?.storage?.coverKey).toBe(created.storage?.coverKey);

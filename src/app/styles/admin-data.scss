@@ -37,6 +37,7 @@
 // Absorbs the five per-page `.action-error` copies.
 .admin-error {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
   padding: 12px 16px;
@@ -55,6 +56,11 @@
     line-height: 20px;
     margin-top: 1px;
   }
+}
+
+// The reason is a second line beneath the message, never a sibling column.
+.admin-error-reason {
+  flex: 1 0 100%;
 }
 
 // Mirrors the error shape so a success reads as the same kind of inline banner.

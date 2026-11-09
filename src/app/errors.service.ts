@@ -93,7 +93,6 @@ export class ErrorsService {
           label: 'Sign Out',
           color: 'primary',
           isConfirmAction: true,
-          destructive: true,
         },
       ],
     );

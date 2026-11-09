@@ -146,11 +146,31 @@ test.describe('admin roles', () => {
     await page.goto('/admin/users');
     await expect(page.getByTestId('admin-users-table')).toBeVisible();
 
-    await expect(page.locator('.role-badge-super').first()).toHaveCSS('background-color', 'rgb(39, 116, 74)');
-    await expect(page.locator('.role-badge-admin').first()).toHaveCSS('background-color', 'rgb(220, 239, 227)');
-    await expect(
-      page.locator('.role-badge:not(.role-badge-admin):not(.role-badge-super)').first(),
-    ).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+    const superBadge = page.locator('.role-badge-super').first();
+    const adminBadge = page.locator('.role-badge-admin').first();
+    const memberBadge = page
+      .locator('.role-badge:not(.role-badge-admin):not(.role-badge-super)')
+      .first();
+    const navBadge = page.getByTestId('admin-nav-badge-uploads');
+
+    await expect(superBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(adminBadge).toHaveCSS('background-color', 'rgb(220, 239, 227)');
+    await expect(memberBadge).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+    await expect(navBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+
+    try {
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+      await expect(superBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+      await expect(adminBadge).toHaveCSS('background-color', 'rgb(28, 58, 42)');
+      await expect(memberBadge).toHaveCSS('background-color', 'rgb(46, 52, 56)');
+      await expect(navBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    } finally {
+      if ((await page.locator('html').getAttribute('data-theme')) === 'dark') {
+        await page.getByTestId('theme-toggle').click();
+      }
+    }
   });
 
   test('member sees no role badges', async ({ page }) => {
