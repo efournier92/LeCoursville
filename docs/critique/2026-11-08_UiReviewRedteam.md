@@ -80,3 +80,23 @@
 - C-20261108-63 | 2026-11-08 | visual | low | high | addressed | The active-tab shadow is a raw `rgb(0 0 0 / 12%)` literal, the only raw colour in component SCSS and invisible in dark | `src/app/components/auth/auth.component.scss:114`
 - C-20261108-64 | 2026-11-08 | product | low | medium | addressed | Create Account gives no pre-submit notice that the account stays pending and can only browse Media and Photos | `src/app/components/auth/auth.component.html:32`
 - C-20261108-65 | 2026-11-08 | product | low | medium | addressed | Email signup captures no display name, so the new profile renders a blank name, a "?" avatar, and "Name: (none)" in the owner alert | `src/app/services/auth.service.ts:247`
+
+### WS5 Calendar
+
+- C-20261108-66 | 2026-11-08 | mobile | high | high | addressed | At 390px the years-since column overflows the tag content box and collapses the name container to 0px, clipping every event name with no tappable area | `src/app/components/calendar-cell/calendar-cell.component.scss:27`
+- C-20261108-67 | 2026-11-08 | mobile | medium | high | addressed | At 320px each fluid column is about 40.8px, under the 44px touch-target floor, and the tag content box falls to about 12px | `src/styles.scss:830`
+- C-20261108-68 | 2026-11-08 | visual | medium | high | addressed | Family accent bars miss the 3:1 contrast floor: the dark surface mix and raw admin hex both fall below it | `src/app/components/calendar-cell/calendar-cell.component.scss:19`
+- C-20261108-69 | 2026-11-08 | visual | low | high | addressed | The print calendar entry labels still carry the old hanging indent that UI-006 removed on screen | `src/app/components/calendar-print/calendar-print.component.scss:384`
+- C-20261108-70 | 2026-11-08 | accessibility | high | high | addressed | At 480px and below the full weekday label is `display:none` while the visible one-letter label is `aria-hidden`, leaving every columnheader with an empty accessible name | `src/app/components/calendar-view/calendar-view.component.html:10`
+- C-20261108-71 | 2026-11-08 | accessibility | high | high | addressed | The mobile `+N more` control and person/spouse links are click-only divs and spans with no tabindex, role, key handler, or aria-expanded | `src/app/components/calendar-view/calendar-view.component.html:44`
+- C-20261108-72 | 2026-11-08 | accessibility | medium | high | addressed | Family identity is conveyed only by the 4px bar hue, with no text, icon, or legend naming the family | `src/app/components/calendar-cell/calendar-cell.component.html:13`
+- C-20261108-73 | 2026-11-08 | accessibility | medium | high | addressed | The today state is visual only: the custom cell template has no `aria-current=date` and bypasses the library cell label | `src/app/components/calendar-view/calendar-view.component.html:21`
+- C-20261108-74 | 2026-11-08 | accessibility | medium | high | addressed | Mobile tap targets are undersized: the `+N more` control is about 18px tall and event titles about 20px, below the spec's 44px | `src/app/components/calendar-view/calendar-view.component.scss:19`
+- C-20261108-75 | 2026-11-08 | accessibility | medium | high | addressed | The 0.55 opacity on deceased tags also fades the family bar to 2.08:1 in light and 1.57:1 in dark | `src/app/components/calendar-cell/calendar-cell.component.html:6`
+- C-20261108-76 | 2026-11-08 | testing | medium | high | addressed | The dark-wash assertion only rejects a transparent background, so deleting the dark override leaves the test green | `e2e/specs/dark-mode.spec.ts:569`
+- C-20261108-77 | 2026-11-08 | testing | medium | high | addressed | Anniversary family-color derivation is untested: both the unit and e2e cases exercise only birthdays | `src/app/services/calendar.service.spec.ts:137`
+- C-20261108-78 | 2026-11-08 | testing | medium | high | addressed | The dark tag-bar test only asserts the computed color changed, so a low-contrast or wrong-surface mix passes | `e2e/specs/dark-mode.spec.ts:553`
+- C-20261108-79 | 2026-11-08 | testing | medium | high | addressed | The mobile header test locks in a columnheader with no accessible name and never asserts one | `e2e/specs/calendar.spec.ts:391`
+- C-20261108-80 | 2026-11-08 | testing | low | high | addressed | The mobile grid test never asserts UI-018's 64px cell min-height or 44px touch-target criteria | `e2e/specs/calendar.spec.ts:362`
+- C-20261108-81 | 2026-11-08 | testing | low | high | addressed | UI-006's anniversary ampersand-row alignment is unasserted after the padding change | `e2e/specs/calendar.spec.ts:146`
+- C-20261108-82 | 2026-11-08 | testing | low | high | addressed | The recorded red proofs omit focused commands, and the two new dark-mode tests have no red proof | `git log -1 --format=%B f609e7d3`
