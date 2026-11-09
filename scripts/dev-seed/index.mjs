@@ -9,7 +9,7 @@
  * the run, or on exit.
  *
  * Usage:
- *   npm run seed:dev                    # print the plan, write nothing
+ *   npm run seed:dev                    # resolve assets, read records, print the per-asset ledger
  *   npm run seed:dev -- --confirm       # download, upload, and write records
  *   npm run seed:dev -- --clean --confirm
  */
@@ -17,17 +17,27 @@ import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { rmSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { downloadAll } from './downloader.mjs';
+import { buildPerAssetLedger } from './ledger.mjs';
 import {
+  assertSeedNamespace,
   buildManifest,
   ID_PREFIX,
   OWNER_ID,
   OWNER_NAME,
-  PROJECT,
   STORAGE_PREFIX,
 } from './manifest.mjs';
-import { assertDevProject, hasFlag, resolveProjectId } from './project-guard.mjs';
+import {
+  assertDevCredential,
+  assertDevProject,
+  assertManifestProject,
+  assertProjectConfig,
+  credentialProjectFromFile,
+  expectedProjectConfig,
+  hasFlag,
+  resolveProjectId,
+} from './project-guard.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_DIR = join(HERE, '.cache');
@@ -41,47 +51,65 @@ const ICON_PNG = Buffer.from(
   'base64',
 );
 
-const argv = process.argv.slice(2);
-
 function cleanupCache() {
   rmSync(CACHE_DIR, { recursive: true, force: true });
 }
 
-function printPlan(manifest, clean) {
-  const counts = {
-    families: manifest.families.length,
-    people: Object.keys(manifest.people).length,
-    contacts: manifest.contacts.length,
-    calendarEvents: manifest.calendarEvents.length,
-    expressions: manifest.expressions.length,
-    songs: manifest.songs.length,
-    videos: manifest.assetSources.videos.want,
-    photoAlbums: manifest.assetSources.photoAlbums.want / manifest.assetSources.photoAlbums.perAlbum,
-    photoCount: manifest.assetSources.photoAlbums.want,
-    audioAlbums: manifest.assetSources.audioAlbums.want / manifest.assetSources.audioAlbums.perAlbum,
-    audioTracks: manifest.assetSources.audioAlbums.want,
-  };
-  console.log(`[seed:dev] project gated: ${PROJECT}`);
-  console.log(`[seed:dev] ${clean ? 'clean' : 'plan'}: ${JSON.stringify(counts)}`);
+function printPlan(project, assets, existing) {
+  const resolved = Object.fromEntries(
+    Object.entries(assets).map(([className, entries]) => [className, entries.length]),
+  );
+  console.log(`[seed:dev] project gated: ${project}`);
+  console.log(`[seed:dev] plan: resolved ${JSON.stringify(resolved)}`);
+  console.log(`[seed:dev] plan: existing ${JSON.stringify(existing)}`);
   console.log('[seed:dev] ids match devseed-*; storage matches dev-seed/*');
+  console.log(buildPerAssetLedger(assets));
 }
 
-function initAdmin() {
-  const require = createRequire(new URL('../../functions/package.json', import.meta.url));
+function functionsRequire() {
+  return createRequire(new URL('../../functions/package.json', import.meta.url));
+}
+
+function initAdmin(project) {
+  assertDevProject(project);
+  const expected = expectedProjectConfig(project);
+  const require = functionsRequire();
   const admin = require('firebase-admin');
   const { getDatabase } = require('firebase-admin/database');
   const { getStorage } = require('firebase-admin/storage');
   if (!admin.getApps().length) {
-    admin.initializeApp({
-      projectId: PROJECT,
-      databaseURL: `https://${PROJECT}-default-rtdb.firebaseio.com`,
-      storageBucket: `${PROJECT}.appspot.com`,
-    });
+    admin.initializeApp(expected);
   }
+  assertProjectConfig(admin.app().options, expected);
   return { admin, db: getDatabase(), bucket: getStorage().bucket() };
 }
 
-async function cleanDevRecords(db, bucket) {
+async function resolveCredentialProject() {
+  const file = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (file) {
+    return credentialProjectFromFile(file);
+  }
+  const { GoogleAuth } = functionsRequire()('google-auth-library');
+  try {
+    return await new GoogleAuth().getProjectId();
+  } catch {
+    return null;
+  }
+}
+
+/** Counts only this module's records so the dry run is a real idempotency check. */
+export async function readExisting(db) {
+  const existing = {};
+  for (const node of MANAGED_NODES) {
+    const snapshot = await db.ref(node).get();
+    const value = snapshot.val() ?? {};
+    existing[node] = Object.keys(value).filter((key) => key.startsWith(ID_PREFIX)).length;
+  }
+  return existing;
+}
+
+export async function cleanDevRecords(db, bucket) {
+  assertSeedNamespace();
   const removed = {};
   for (const node of MANAGED_NODES) {
     const snapshot = await db.ref(node).get();
@@ -97,11 +125,28 @@ async function cleanDevRecords(db, bucket) {
     removed[node] = keys.length;
   }
   const [files] = await bucket.getFiles({ prefix: STORAGE_PREFIX });
-  await Promise.all(files.map((file) => file.delete().catch(() => undefined)));
-  return { removed, objects: files.length };
+  const failures = [];
+  let objects = 0;
+  for (const file of files) {
+    try {
+      await file.delete();
+      objects += 1;
+    } catch (error) {
+      failures.push({ name: file.name, message: error?.message ?? String(error) });
+    }
+  }
+  if (failures.length) {
+    throw new Error(
+      `failed to delete ${failures.length} storage object(s): ${JSON.stringify(failures)}`,
+    );
+  }
+  return { removed, objects };
 }
 
-async function upload(bucket, buffer, destination, contentType) {
+export async function upload(bucket, buffer, destination, contentType) {
+  if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+    throw new Error(`refusing to upload empty or non-buffer content to ${destination}`);
+  }
   // The Firebase download-token URL never expires, unlike a v4 signed URL
   // capped at seven days, so seeded media stays playable in the dev app.
   const token = randomUUID();
@@ -126,7 +171,7 @@ function chunk(list, size) {
   return groups;
 }
 
-async function buildTree(manifest, assets, bucket, now) {
+async function buildTree(manifest, assets, bucket, now, runId) {
   const tree = {
     families: {},
     people: {},
@@ -188,9 +233,9 @@ async function buildTree(manifest, assets, bucket, now) {
   for (const [index, asset] of assets.videos.entries()) {
     const id = `${ID_PREFIX}video-${index + 1}`;
     const extension = extname(asset.path) || '.mp4';
-    const destination = `${STORAGE_PREFIX}videos/${id}${extension}`;
-    const download = await upload(bucket, asset, destination, asset.contentType || 'video/mp4');
-    const icon = await upload(bucket, ICON_PNG, `${STORAGE_PREFIX}icons/${id}.png`, 'image/png');
+    const destination = `${STORAGE_PREFIX}runs/${runId}/videos/${id}${extension}`;
+    const download = await upload(bucket, asset.buffer, destination, asset.contentType || 'video/mp4');
+    const icon = await upload(bucket, ICON_PNG, `${STORAGE_PREFIX}runs/${runId}/icons/${id}.png`, 'image/png');
     videoUrls[id] = { download, icon };
     tree.media[id] = {
       id,
@@ -217,8 +262,8 @@ async function buildTree(manifest, assets, bucket, now) {
     for (const [photoIndex, asset] of group.entries()) {
       const id = `${ID_PREFIX}photo-${albumIndex + 1}-${photoIndex + 1}`;
       const extension = extname(asset.path) || '.jpg';
-      const destination = `${STORAGE_PREFIX}photos/${albumId}/${id}${extension}`;
-      const url = await upload(bucket, asset, destination, asset.contentType || 'image/jpeg');
+      const destination = `${STORAGE_PREFIX}runs/${runId}/photos/${albumId}/${id}${extension}`;
+      const url = await upload(bucket, asset.buffer, destination, asset.contentType || 'image/jpeg');
       photoIds.push(id);
       tree.photos[id] = {
         id,
@@ -255,8 +300,8 @@ async function buildTree(manifest, assets, bucket, now) {
     for (const [trackIndex, asset] of group.entries()) {
       const id = `${ID_PREFIX}audio-track-${albumIndex + 1}-${trackIndex + 1}`;
       const extension = extname(asset.path) || '.mp3';
-      const destination = `${STORAGE_PREFIX}audio/${albumId}/${id}${extension}`;
-      const download = await upload(bucket, asset, destination, asset.contentType || 'audio/mpeg');
+      const destination = `${STORAGE_PREFIX}runs/${runId}/audio/${albumId}/${id}${extension}`;
+      const download = await upload(bucket, asset.buffer, destination, asset.contentType || 'audio/mpeg');
       if (!firstDownload) {
         firstDownload = download;
       }
@@ -335,34 +380,53 @@ async function buildTree(manifest, assets, bucket, now) {
   return { tree, summary };
 }
 
-async function main() {
+/** A write needs --confirm, and only --confirm chooses clean or seed. */
+export function resolveMode(argv = []) {
+  if (!hasFlag(argv, '--confirm')) {
+    return 'plan';
+  }
+  return hasFlag(argv, '--clean') ? 'clean' : 'seed';
+}
+
+export async function main(argv = process.argv.slice(2), deps = {}) {
   const project = resolveProjectId(argv);
   assertDevProject(project);
+  assertSeedNamespace();
 
   const manifest = buildManifest();
-  const clean = hasFlag(argv, '--clean');
-  const confirm = hasFlag(argv, '--confirm');
+  assertManifestProject(manifest.project, project);
+  const mode = resolveMode(argv);
+  const init = deps.initAdmin ?? initAdmin;
+  const download = deps.downloadAll ?? downloadAll;
+  const cleanup = deps.cleanupCache ?? cleanupCache;
+  const credential = deps.resolveCredentialProject ?? resolveCredentialProject;
 
-  if (!confirm) {
-    printPlan(manifest, clean);
-    console.log('[seed:dev] nothing written: pass --confirm');
-    return;
-  }
-
-  cleanupCache();
+  cleanup();
   let adminModule = null;
   try {
-    const { admin, db, bucket } = initAdmin();
+    const { admin, db, bucket } = init(project);
     adminModule = admin;
 
-    if (clean) {
-      const result = await cleanDevRecords(db, bucket);
-      console.log(`[seed:dev] cleaned ${JSON.stringify(result)}`);
-      return;
+    if (mode === 'plan') {
+      const assets = await download(manifest.assetSources, CACHE_DIR);
+      const existing = await readExisting(db);
+      printPlan(project, assets, existing);
+      console.log('[seed:dev] nothing written: pass --confirm');
+      return { mode, existing };
     }
 
-    const assets = await downloadAll(manifest.assetSources, CACHE_DIR);
-    const { tree, summary } = await buildTree(manifest, assets, bucket, Date.now());
+    await assertDevCredential(await credential());
+
+    if (mode === 'clean') {
+      assertSeedNamespace();
+      const result = await cleanDevRecords(db, bucket);
+      console.log(`[seed:dev] cleaned ${JSON.stringify(result)}`);
+      return { mode, result };
+    }
+
+    const assets = await download(manifest.assetSources, CACHE_DIR);
+    const runId = `${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const { tree, summary } = await buildTree(manifest, assets, bucket, Date.now(), runId);
     for (const [node, value] of Object.entries(tree)) {
       if (Object.keys(value).length) {
         await db.ref(node).update(value);
@@ -370,21 +434,26 @@ async function main() {
     }
     console.log(`[seed:dev] wrote ${JSON.stringify(summary)}`);
     console.log('[seed:dev] rerun replaces devseed-* records; --clean removes them');
+    return { mode, summary, runId };
   } finally {
-    cleanupCache();
+    cleanup();
     if (adminModule) {
       await adminModule.getApp().delete().catch(() => undefined);
     }
   }
 }
 
-process.on('SIGINT', () => {
-  cleanupCache();
-  process.exit(130);
-});
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
-main().catch((error) => {
-  cleanupCache();
-  console.error(`[seed:dev] FAILED: ${error.message}`);
-  process.exit(1);
-});
+if (isMain) {
+  process.on('SIGINT', () => {
+    cleanupCache();
+    process.exit(130);
+  });
+
+  main().catch((error) => {
+    cleanupCache();
+    console.error(`[seed:dev] FAILED: ${error.message}`);
+    process.exit(1);
+  });
+}

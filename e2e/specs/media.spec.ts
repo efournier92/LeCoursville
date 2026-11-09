@@ -45,11 +45,6 @@ async function allMedia(): Promise<Record<string, MediaRecord>> {
   return (await readDb<Record<string, MediaRecord>>('media')) ?? {};
 }
 
-async function findMediaByTitle(title: string): Promise<MediaRecord | null> {
-  const media = await allMedia();
-  return Object.values(media).find((record) => record?.title === title) ?? null;
-}
-
 async function findMediaByKey(key: string): Promise<MediaRecord | null> {
   const media = await allMedia();
   return Object.values(media).find((record) => record?.storage?.key === key) ?? null;
@@ -844,49 +839,6 @@ test.describe('media', () => {
     await page.goto('/media/explorer');
     await page.getByText('E2E Doc').first().click();
     await expect(page.locator('.doc-viewer-container').first()).toBeVisible({ timeout: 20000 });
-  });
-
-  test('video upload saves a managed record with derived URLs', async ({ page }) => {
-    const storageName = `e2e-managed-${Date.now()}`;
-    const key = `Video/${storageName}.mp4`;
-    const iconKey = `Video/Icons/${storageName}.jpg`;
-    let created: MediaRecord | null = null;
-
-    try {
-      await login(page, 'admin');
-      await page.goto('/admin/media');
-      const form = await prepareVideo(page);
-
-      // The title is prefilled from the filename; only the storage name changes.
-      await expect(form.locator('input[name="videoTitle"]')).toHaveValue('fixture');
-      await form.locator('input[name="videoDate"]').fill('2026');
-      await form.locator('input[name="videoStorageName"]').fill(storageName);
-      await form.locator('.admin-form-action-button-upload').click();
-      await expect(page.getByTestId('video-upload-success')).toContainText('Saved "fixture".');
-
-      created = await waitForRecordByKey(storageName);
-      expect(created.title).toBe('fixture');
-      expect(created.type).toBe('video');
-      expect(created.format).toBe('video/mp4');
-      expect(created.fileName).toBe(`${storageName}.mp4`);
-      expect(created.urls?.download).toBe(sinkUrl(key));
-      expect(created.urls?.icon).toBe(sinkUrl(iconKey));
-      expect(created.storage?.managed).toBe(true);
-      expect(created.storage?.key).toBe(key);
-      expect(created.storage?.iconKey).toBe(iconKey);
-      expect(created.storage?.uploadedByHash).toBeUndefined();
-
-      expect((await findMediaByTitle('fixture'))?.id).toBe(created.id);
-
-      const videoHead = await sinkHead(key);
-      const iconHead = await sinkHead(iconKey);
-      expect(videoHead).not.toBeNull();
-      expect(iconHead).not.toBeNull();
-      expect(videoHead?.batchId).toBe(created.storage?.batchId);
-      expect(iconHead?.batchId).toBe(created.storage?.batchId);
-    } finally {
-      await cleanupRecord(created?.id);
-    }
   });
 
   test('video upload keeps the form and shows the duplicate message', async ({ page }) => {

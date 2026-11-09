@@ -40,3 +40,56 @@ export function assertDevProject(project) {
     );
   }
 }
+
+/** The exact Admin SDK config derived from a validated project id. */
+export function expectedProjectConfig(project) {
+  return {
+    projectId: project,
+    databaseURL: `https://${project}-default-rtdb.firebaseio.com`,
+    storageBucket: `${project}.appspot.com`,
+  };
+}
+
+/** Every Admin SDK target must match the validated project, not a manifest constant. */
+export function assertProjectConfig(actual, expected = expectedProjectConfig(DEV_PROJECT)) {
+  for (const key of ['projectId', 'databaseURL', 'storageBucket']) {
+    if (actual?.[key] !== expected[key]) {
+      throw new Error(
+        `refusing to seed: Admin SDK ${key} "${actual?.[key] ?? 'missing'}" is not "${expected[key]}".`,
+      );
+    }
+  }
+}
+
+/** The manifest project must agree with the validated project before any write. */
+export function assertManifestProject(manifestProject, project) {
+  if (manifestProject !== project || manifestProject !== DEV_PROJECT) {
+    throw new Error(
+      `refusing to seed: manifest project "${manifestProject}" is not "${project}".`,
+    );
+  }
+}
+
+/** A resolved credential project is required and must be dev. */
+export function assertDevCredential(projectId) {
+  if (!projectId) {
+    throw new Error(
+      'refusing to seed: cannot verify the credential project. '
+        + 'Set GOOGLE_APPLICATION_CREDENTIALS to a lecoursville-dev service account.',
+    );
+  }
+  if (projectId !== DEV_PROJECT) {
+    throw new Error(
+      `refusing to seed: credential project "${projectId}" is not "${DEV_PROJECT}".`,
+    );
+  }
+}
+
+/** Reads project_id from a service-account JSON file without trusting its name. */
+export function credentialProjectFromFile(file, read = readFileSync) {
+  try {
+    return JSON.parse(read(file, 'utf8')).project_id ?? null;
+  } catch {
+    return null;
+  }
+}

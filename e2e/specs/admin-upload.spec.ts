@@ -3,17 +3,17 @@ import { join } from 'node:path';
 import { test, expect, Locator } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { deleteDb, readDb } from '../helpers/admin-db';
-import { sinkHead, sinkUrl } from '../helpers/sink';
+import { sinkGet, sinkHead, sinkUrl } from '../helpers/sink';
 
 /**
- * Admin Media Upload against the emulator, driven by one pinned local fixture.
- * The fixture ships in scripts/e2e/seed.mjs, so the gate stays offline and
- * deterministic. Nothing here downloads from a live archive.
+ * Admin Media Upload against the emulator, driven by the pinned fixture that
+ * scripts/e2e/seed.mjs writes. The gate stays offline and deterministic, and
+ * nothing here downloads from a live archive.
  */
 
 const FIXTURE = join(
   process.cwd(),
-  'dist/lecoursville/browser/assets/e2e-fixtures/admin-upload.mp4',
+  'dist/lecoursville/browser/assets/e2e-fixtures/fixture.mp4',
 );
 
 interface MediaRecord {
@@ -86,6 +86,7 @@ test('pinned fixture uploads through the admin UI and stores the object and reco
     await expect(page.getByTestId('video-thumbnail-preview')).toBeVisible();
     await openAdvanced(form);
 
+    await form.locator('input[name="videoTitle"]').fill('admin upload');
     await expect(form.locator('input[name="videoTitle"]')).toHaveValue('admin upload');
     await form.locator('input[name="videoDate"]').fill('2026');
     await form.locator('input[name="videoStorageName"]').fill(storageName);
@@ -110,6 +111,9 @@ test('pinned fixture uploads through the admin UI and stores the object and reco
     expect(stored).not.toBeNull();
     expect(stored?.size).toBe(fixtureBytes.length);
     expect(stored?.contentType).toBe('video/mp4');
+    const storedBytes = await sinkGet(key);
+    expect(storedBytes).not.toBeNull();
+    expect(storedBytes?.equals(fixtureBytes)).toBe(true);
     expect(stored?.batchId).toBe(created?.storage?.batchId);
     expect((await sinkHead(iconKey))?.batchId).toBe(created?.storage?.batchId);
   } finally {

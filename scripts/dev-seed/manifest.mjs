@@ -11,6 +11,19 @@
 export const PROJECT = 'lecoursville-dev';
 export const ID_PREFIX = 'devseed-';
 export const STORAGE_PREFIX = 'dev-seed/';
+const EXPECTED_ID_PREFIX = 'devseed-';
+const EXPECTED_STORAGE_PREFIX = 'dev-seed/';
+
+/** Refuses an empty or drifted namespace before any clean or write. */
+export function assertSeedNamespace(idPrefix = ID_PREFIX, storagePrefix = STORAGE_PREFIX) {
+  if (!idPrefix || !storagePrefix
+    || idPrefix !== EXPECTED_ID_PREFIX || storagePrefix !== EXPECTED_STORAGE_PREFIX) {
+    throw new Error(
+      `refusing to seed: namespace "${idPrefix}" / "${storagePrefix}" is not `
+        + `"${EXPECTED_ID_PREFIX}" / "${EXPECTED_STORAGE_PREFIX}".`,
+    );
+  }
+}
 export const OWNER_ID = `${ID_PREFIX}owner`;
 export const OWNER_NAME = 'Dev Seed Owner';
 
@@ -19,7 +32,7 @@ export const ASSET_SOURCES = {
     provider: 'internet-archive',
     query: 'collection:prelinger AND mediatype:movies',
     want: 20,
-    extensions: ['.mp4', '.webm', '.ogv'],
+    extensions: ['.mp4', '.webm'],
     license: 'Public domain',
     attribution: 'Prelinger Archives, Internet Archive',
   },

@@ -48,7 +48,7 @@ function cacheFile(cacheRoot, className, index, extension) {
   return join(dir, `${String(index + 1).padStart(2, '0')}${extension}`);
 }
 
-function verifyArchiveChecksum(file, buffer) {
+export function verifyArchiveChecksum(file, buffer) {
   if (file.md5 && md5(buffer) !== String(file.md5).toLowerCase()) {
     throw new Error(`checksum mismatch for ${file.name}: md5`);
   }
@@ -74,10 +74,12 @@ async function resolveInternetArchive(source, className, cacheRoot) {
     }
     const metadata = await fetchJson(`${IA_METADATA}${encodeURIComponent(doc.identifier)}`);
     const files = metadata?.files ?? [];
+    const extensionRank = (name) => (extOf(name) === '.mp4' ? 0 : 1);
     const file = files
       .filter((entry) => extensions.includes(extOf(entry.name)))
       .filter((entry) => Number(entry.size) > 0)
-      .sort((a, b) => Number(b.size) - Number(a.size))[0];
+      .sort((a, b) => extensionRank(a.name) - extensionRank(b.name)
+        || Number(a.size) - Number(b.size))[0];
     if (!file) {
       continue;
     }
@@ -89,6 +91,7 @@ async function resolveInternetArchive(source, className, cacheRoot) {
     const path = cacheFile(cacheRoot, className, assets.length, extOf(file.name));
     writeFileSync(path, buffer);
     assets.push({
+      identifier: doc.identifier,
       title: doc.title ?? file.name,
       sourceUrl: `${IA_DOWNLOAD}${encodeURIComponent(doc.identifier)}/${encodedPath}`,
       license: source.license,
@@ -97,6 +100,7 @@ async function resolveInternetArchive(source, className, cacheRoot) {
       bytes: buffer.length,
       sha256: sha256(buffer),
       path,
+      buffer,
     });
   }
   if (assets.length < source.want) {
@@ -128,13 +132,12 @@ async function resolveLibraryOfCongress(source, className, cacheRoot) {
     if (!contentType.startsWith('image/')) {
       continue;
     }
-    // Library of Congress does not publish one canonical checksum per
-    // derivative, so pin the bytes we resolve and keep the digest in the cache
-    // sidecar for rerun verification. Internet Archive checksums stay strict.
+    // Library of Congress publishes no canonical checksum per derivative, so
+    // these assets stay unverified and record their resolved digest only.
     const path = cacheFile(cacheRoot, className, assets.length, extOf(imageUrl) || '.jpg');
     writeFileSync(path, buffer);
-    writeFileSync(`${path}.sha256`, sha256(buffer));
     assets.push({
+      identifier: String(result.id ?? result.url ?? imageUrl),
       title: result.title ?? 'Library of Congress image',
       sourceUrl: imageUrl,
       license: source.license,
@@ -143,6 +146,7 @@ async function resolveLibraryOfCongress(source, className, cacheRoot) {
       bytes: buffer.length,
       sha256: sha256(buffer),
       path,
+      buffer,
     });
   }
   if (assets.length < source.want) {
@@ -154,8 +158,8 @@ async function resolveLibraryOfCongress(source, className, cacheRoot) {
 }
 
 /**
- * Resolves every asset class into the cache. Returns the downloaded buffers
- * grouped by class so the caller uploads them and then clears the cache.
+ * Resolves every asset class into the cache. Returns each asset with its
+ * downloaded Buffer, so the caller uploads the exact verified bytes.
  */
 export async function downloadAll(sources, cacheRoot) {
   const result = {};

@@ -6,6 +6,8 @@ Sign-off status: PENDING HUMAN REVIEW before the first dev seed run.
 
 Every asset below is public domain or a locally generated placeholder. The seed downloads at run time into a gitignored cache, verifies the Internet Archive checksum from item metadata, and deletes the cache when the run ends. The repository stores this ledger and the manifest, never the bulk assets.
 
+The committed rows below name the catalogs. The plan mode resolves the actual files and prints a per-asset ledger with each source URL and identifier, marked pending human sign-off. Run `npm run seed:dev` and review that output before the first dev run. It is a human-run artifact and is never produced by the e2e gate.
+
 ## Asset Sources
 
 | Class | Source | License | Attribution | Count |
@@ -14,7 +16,7 @@ Every asset below is public domain or a locally generated placeholder. The seed 
 | Photos | https://www.loc.gov/photos/?q=national+park | Public domain | Library of Congress, Prints and Photographs Division | 9 |
 | Audio | https://archive.org/details/great78 | Public domain | Great 78 Project, Internet Archive | 6 |
 
-The manifest resolves these catalogs at seed time and verifies each Internet Archive file against the checksum published in its item metadata. The Library of Congress does not publish one canonical checksum per derivative, so the downloader records the resolved digest in the cache for rerun verification.
+The manifest resolves these catalogs at seed time and verifies each Internet Archive file against the checksum published in its item metadata. The Library of Congress publishes no canonical checksum per derivative, so those images are not checksum-verified. The downloader records only their resolved digest in the generated per-asset ledger, and this gap stays open until a human reviews each Library of Congress source.
 
 ## Expressions
 
@@ -55,6 +57,6 @@ The manifest resolves these catalogs at seed time and verifies each Internet Arc
 
 | Fixture | Source | License | Attribution |
 |---|---|---|---|
-| admin-upload.mp4 | Generated locally by scripts/e2e/seed.mjs | Public domain placeholder | No external source, no copyright claim |
+| fixture.mp4 | Generated locally by scripts/e2e/seed.mjs | Public domain placeholder | No external source, no copyright claim |
 
 The pinned fixture keeps the Admin Media Upload spec offline and deterministic. It is separate from the bulk dev seed and is never fetched live.
