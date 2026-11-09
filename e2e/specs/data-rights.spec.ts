@@ -55,8 +55,13 @@ test.describe('data rights footer', () => {
     await page.goto('/');
     const footer = page.getByTestId('site-footer');
     await expect(footer).toBeVisible();
-    await expect(footer).toContainText('Request data removal');
-    await expect(footer).toContainText('Request data update');
+    await expect(footer).toContainText('You can ask us to correct information about you or ask us to remove it.');
+    await expect(footer.getByTestId('data-request-open-update')).toHaveText('Update');
+    await expect(footer.getByTestId('data-request-open-removal')).toHaveText('Remove');
+    await expect(footer.getByTestId('data-request-open-contact')).toHaveText('Contact');
+    await expect(footer.getByTestId('data-request-response')).toHaveText(
+      'We review requests and reply using the contact details you provide.',
+    );
     await expect(footer).toContainText('final wording is pending legal review');
 
     await page.emulateMedia({ media: 'print' });
@@ -73,6 +78,33 @@ test.describe('data rights footer', () => {
     await page.goto('/admin/data-requests');
     await expect(page.getByTestId('admin-data-requests-list')).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId('site-footer')).toHaveCount(0);
+  });
+
+  test('each action opens its own heading and body', async ({ page }) => {
+    await page.goto('/');
+    const cases = [
+      {
+        kind: 'update',
+        heading: 'Update Your Information',
+        body: 'Tell us what is wrong or out of date, and the best way to reach you. We will record your request for review.',
+      },
+      {
+        kind: 'removal',
+        heading: 'Remove Your Information',
+        body: 'Ask us to stop sharing information about you. We record the request and review it before any information is removed.',
+      },
+      {
+        kind: 'contact',
+        heading: 'Contact Us',
+        body: 'For anything else, send us a note about your information.',
+      },
+    ] as const;
+    for (const item of cases) {
+      await page.getByTestId(`data-request-open-${item.kind}`).click();
+      const panel = page.getByTestId('data-request-form');
+      await expect(panel.getByRole('heading', { name: item.heading })).toBeVisible();
+      await expect(panel).toContainText(item.body);
+    }
   });
 
   test('signed-out removal request persists and appears in the admin queue', async ({ page }) => {
@@ -313,7 +345,7 @@ test.describe('data rights footer', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('data-request-form')).toBeVisible();
     // Remaining action buttons, then the data-class select, then the contact field.
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
       await page.keyboard.press(tab);
     }
     await expect(page.getByTestId('data-request-contact')).toBeFocused();
@@ -355,7 +387,7 @@ test.describe('data rights footer', () => {
     expect(removal).not.toBeNull();
     expect(update).not.toBeNull();
     expect(Math.abs(removal!.x - update!.x)).toBeLessThan(2);
-    expect(update!.y).toBeGreaterThan(removal!.y);
+    expect(removal!.y).toBeGreaterThan(update!.y);
   });
 
   test('request text cannot inject script', async ({ page }) => {

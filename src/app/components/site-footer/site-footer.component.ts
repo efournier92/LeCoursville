@@ -18,16 +18,23 @@ import { DataRequestsService } from 'src/app/services/data-requests.service';
 })
 export class SiteFooterComponent {
   readonly dataClasses = DATA_REQUEST_CLASSES;
-  readonly kindLabels: Record<DataRequestKind, string> = {
-    removal: 'Request data removal',
-    update: 'Request data update',
-    contact: 'Contact us',
+  readonly panelHeadings: Record<DataRequestKind, string> = {
+    update: 'Update Your Information',
+    removal: 'Remove Your Information',
+    contact: 'Contact Us',
+  };
+  readonly panelBodies: Record<DataRequestKind, string> = {
+    update: 'Tell us what is wrong or out of date, and the best way to reach you. We will record your request for review.',
+    removal: 'Ask us to stop sharing information about you. We record the request and review it before any information is removed.',
+    contact: 'For anything else, send us a note about your information.',
   };
   readonly actions: { kind: DataRequestKind; label: string }[] = [
-    { kind: 'removal', label: this.kindLabels.removal },
-    { kind: 'update', label: this.kindLabels.update },
-    { kind: 'contact', label: this.kindLabels.contact },
+    { kind: 'update', label: 'Update' },
+    { kind: 'removal', label: 'Remove' },
+    { kind: 'contact', label: 'Contact' },
   ];
+  readonly responseLine =
+    'We review requests and reply using the contact details you provide.';
 
   kind: DataRequestKind | null = null;
   dataClass: DataRequestClass = 'people';

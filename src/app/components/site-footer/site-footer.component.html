@@ -2,10 +2,7 @@
   <div class="footer-inner">
     <div class="footer-copy">
       <p class="footer-title">Your information</p>
-      <p>
-        You can ask us to remove or correct information about you. We review every request and
-        reply using the contact details you give us. We do not promise a response time.
-      </p>
+      <p>You can ask us to correct information about you or ask us to remove it.</p>
       <p class="footer-draft">Draft wording - final wording is pending legal review.</p>
     </div>
     <p class="visually-hidden" role="status" aria-live="polite" data-testid="data-request-status">
@@ -23,13 +20,15 @@
         </button>
       }
     </div>
+    <p class="footer-response" data-testid="data-request-response">{{ responseLine }}</p>
 
     @if (kind) {
       <section
         class="request-panel"
         aria-labelledby="data-request-heading"
         data-testid="data-request-form">
-        <h2 id="data-request-heading">{{ kindLabels[kind] }}</h2>
+        <h2 id="data-request-heading">{{ panelHeadings[kind] }}</h2>
+        <p class="request-body">{{ panelBodies[kind] }}</p>
         @if (!submitted) {
           <form (ngSubmit)="submit()" novalidate>
             <mat-form-field class="request-field">
