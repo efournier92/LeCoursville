@@ -4,6 +4,7 @@ import {
   signOut as firebaseSignOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile,
   sendPasswordResetEmail,
   signInWithPopup,
   signInWithRedirect,
@@ -77,10 +78,15 @@ export class AuthService {
   }
 
   /** Native email/password signup. Firebase signs the new account in, then the
-   *  shared onSignIn path writes the roleless profile and leaves it pending. */
-  async createAccount(email: string, password: string): Promise<FirebaseUser> {
+   *  shared profile path writes the roleless record and leaves it pending. The
+   *  write is awaited so a rejected profile surfaces instead of stranding an
+   *  auth account with no record. */
+  async createAccount(email: string, password: string, name = ""): Promise<FirebaseUser> {
     const cred = await createUserWithEmailAndPassword(this.firebase.auth, email, password);
-    this.onSignIn({ authResult: { user: cred.user } });
+    if (name.trim()) {
+      await updateProfile(cred.user, { displayName: name.trim() });
+    }
+    await this.createUser({ authResult: { user: cred.user } }, null);
     return cred.user;
   }
 
@@ -231,7 +237,7 @@ export class AuthService {
     });
   }
 
-  async createUser(authData: any, existingUser: User): Promise<void> {
+  async createUser(authData: any, existingUser: User | null): Promise<void> {
     const user: User = new User(authData, existingUser);
     // Stamp and cache before the write: the RTDB local event fires
     // synchronously inside update(), and its user emission triggers the

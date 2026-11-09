@@ -144,6 +144,16 @@ test.describe('pending membership', () => {
     await expect(page).toHaveURL('/photos');
   });
 
+  test('pending user cannot reach songs or chat by direct URL', async ({ page }) => {
+    await signInAsPending(page);
+
+    await page.goto('/songs');
+    await expect(page).toHaveURL('/media');
+
+    await page.goto('/chat');
+    await expect(page).toHaveURL('/media');
+  });
+
   test('nav hides People, Contacts, and Calendar for a pending user', async ({ page }) => {
     await signInAsPending(page);
     const nav = page.locator('#lecoursville-navbar-links');

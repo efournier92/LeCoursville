@@ -104,6 +104,8 @@ test('theme control exposes switch semantics with an action icon', async ({ page
   const toggle = page.getByTestId('theme-toggle');
   await expect(toggle).toHaveAttribute('role', 'switch');
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
+  // The accessible name stays constant: state is carried by aria-checked.
+  await expect(toggle).toHaveAccessibleName('Dark mode');
   // Icon shows the action, not current state: moon in light (→ dark),
   // sun in dark (→ light).
   await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
@@ -112,6 +114,7 @@ test('theme control exposes switch semantics with an action icon', async ({ page
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  await expect(toggle).toHaveAccessibleName('Dark mode');
   await expect(page.getByTestId('theme-icon-sun')).toBeVisible();
   await expect(page.getByTestId('theme-icon-moon')).toHaveCount(0);
   await toggle.click();
@@ -189,6 +192,32 @@ test('signed-out sign-in page shows a working theme toggle', async ({ page }) =>
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await toggle.click();
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
+
+test('selected auth mode tab stays distinct in dark mode', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  const active = page.getByTestId('auth-mode-signin');
+  const inactive = page.getByTestId('auth-mode-create');
+  const track = page.locator('.auth-mode-switch');
+  const [activeBg, inactiveBg, trackBg] = await Promise.all([
+    active.evaluate((el) => getComputedStyle(el).backgroundColor),
+    inactive.evaluate((el) => getComputedStyle(el).backgroundColor),
+    track.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+
+  // The selected pill must not collapse into the track or the unselected tab.
+  expect(activeBg).not.toBe(trackBg);
+  expect(activeBg).not.toBe(inactiveBg);
+  const delta = (a: string, b: string) => {
+    const ca = parseRgb(a);
+    const cb = parseRgb(b);
+    return Math.abs(ca.r - cb.r) + Math.abs(ca.g - cb.g) + Math.abs(ca.b - cb.b);
+  };
+  expect(delta(activeBg, trackBg)).toBeGreaterThan(12);
 });
 
 test('guest never renders dark', async ({ page }) => {

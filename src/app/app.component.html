@@ -87,7 +87,7 @@
         data-testid="theme-toggle"
         role="switch"
         [attr.aria-checked]="(theme$ | async) === 'dark'"
-        [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        aria-label="Dark mode"
         (click)="onThemeToggle()"
         >
         @if ((theme$ | async) === 'dark') {

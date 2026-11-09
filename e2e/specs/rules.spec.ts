@@ -113,6 +113,56 @@ test.describe('rules', () => {
     }
   });
 
+  test('account creation pins the stored id to the uid and email to the token', async () => {
+    const email = `rules-pin-${Date.now()}@e2e.local`;
+    const { uid, token } = await signUp(email);
+    const profile = {
+      id: uid,
+      email,
+      name: 'Rules Pin',
+      dateRegistered: Date.now(),
+      dateLastActive: Date.now(),
+    };
+
+    try {
+      expect(
+        (await put(`users/${uid}`, { ...profile, id: 'someone-else' }, token)).status,
+      ).not.toBe(200);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+
+      expect(
+        (await put(`users/${uid}`, { ...profile, email: `other-${Date.now()}@e2e.local` }, token))
+          .status,
+      ).not.toBe(200);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+
+      expect((await put(`users/${uid}`, profile, token)).ok).toBe(true);
+      expect(await readDb<Record<string, any>>(`users/${uid}`)).toMatchObject({
+        id: uid,
+        email,
+      });
+    } finally {
+      await deleteDb(`users/${uid}`);
+      await deleteAuthAccount(token);
+    }
+  });
+
+  test('messages reads require an approved user, not just any auth session', async () => {
+    const userToken = await signIn('user');
+    const pending = await pendingSignIn();
+
+    try {
+      expect((await get('messages', pending.token)).status).not.toBe(200);
+      expect((await get('messages/msg-1', pending.token)).status).not.toBe(200);
+
+      const approved = await get('messages', userToken);
+      expect(approved.ok).toBe(true);
+      expect(await approved.json()).toHaveProperty('msg-1');
+    } finally {
+      await pending.dispose();
+    }
+  });
+
   test('creation writes and super deletes are still allowed', async () => {
     const email = `rules-create-${Date.now()}@e2e.local`;
     const { uid, token } = await signUp(email);

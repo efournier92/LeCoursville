@@ -20,13 +20,16 @@ export class AuthComponent implements OnInit {
   user: User;
   isEditMode: boolean;
   showPassword = false;
+  showConfirmPassword = false;
   email = "";
+  name = "";
   password = "";
   confirmPassword = "";
   isCreateAccount = false;
   loading = false;
   sendingReset = false;
   error = "";
+  errorField: "email" | "name" | "password" | "confirmPassword" | "" = "";
   info = "";
   isNotFound = false;
   isAccount = false;
@@ -98,6 +101,10 @@ export class AuthComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
   get submitLabel(): string {
     if (this.loading) {
       return this.isCreateAccount ? "Creating Account…" : "Signing In…";
@@ -106,11 +113,32 @@ export class AuthComponent implements OnInit {
   }
 
   setMode(mode: "signin" | "create"): void {
+    // Switching mid-request would rewrite the submit label and clear the
+    // password while the auth call is still in flight.
+    if (this.loading) {
+      return;
+    }
     this.isCreateAccount = mode === "create";
     this.error = "";
+    this.errorField = "";
     this.info = "";
     this.password = "";
     this.confirmPassword = "";
+  }
+
+  onModeKeydown(event: KeyboardEvent, mode: "signin" | "create"): void {
+    const modes: ("signin" | "create")[] = ["signin", "create"];
+    const current = modes.indexOf(mode);
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      const next = event.key === "ArrowRight"
+        ? (current + 1) % modes.length
+        : (current - 1 + modes.length) % modes.length;
+      this.setMode(modes[next]);
+      const target = event.currentTarget as HTMLElement | null;
+      const sibling = target?.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]')[next];
+      sibling?.focus();
+    }
   }
 
   async onSubmit(): Promise<void> {
@@ -123,26 +151,45 @@ export class AuthComponent implements OnInit {
   async onCreateAccount(): Promise<void> {
     if (!this.email.trim() || !this.password) {
       this.error = "Enter your email and password.";
+      this.errorField = "email";
+      return;
+    }
+    if (!this.name.trim()) {
+      this.error = "Enter your name so an admin can identify you.";
+      this.errorField = "name";
       return;
     }
     if (this.password.length < 8) {
       this.error = "Password must be at least 8 characters.";
+      this.errorField = "password";
       return;
     }
     if (this.password !== this.confirmPassword) {
       this.error = "Passwords do not match.";
+      this.errorField = "confirmPassword";
       return;
     }
     this.loading = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     try {
-      const fbUser = await this.authService.createAccount(this.email.trim(), this.password);
+      const fbUser = await this.authService.createAccount(
+        this.email.trim(),
+        this.password,
+        this.name.trim(),
+      );
       this.analyticsService.logEvent("auth_sign_up", { userId: fbUser.uid });
       this.password = "";
       this.confirmPassword = "";
     } catch (e: any) {
-      this.error = this.mapAuthError(e?.code || "");
+      const code = e?.code || "";
+      // A profile write failure leaves the auth account behind but no
+      // membership: tell the user to sign in so the retry path can finish it.
+      this.error = code.startsWith("auth/")
+        ? this.mapAuthError(code)
+        : "Your account was created, but we couldn't finish setting it up. Try signing in.";
+      this.errorField = this.errorFieldForCode(code);
     } finally {
       this.loading = false;
     }
@@ -151,10 +198,12 @@ export class AuthComponent implements OnInit {
   async onSignIn(): Promise<void> {
     if (!this.email.trim() || !this.password) {
       this.error = "Enter your email and password.";
+      this.errorField = "email";
       return;
     }
     this.loading = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     try {
       const fbUser = await this.authService.signIn(this.email.trim(), this.password);
@@ -171,6 +220,7 @@ export class AuthComponent implements OnInit {
   async onGoogleSignIn(): Promise<void> {
     this.loading = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     try {
       const fbUser = await this.authService.signInWithGoogle();
@@ -193,6 +243,7 @@ export class AuthComponent implements OnInit {
     }
     this.sendingReset = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     this.analyticsService.logEvent("auth_forgot_clicked", {});
     try {
@@ -253,6 +304,18 @@ export class AuthComponent implements OnInit {
   }
 
   // HELPERS
+
+  private errorFieldForCode(code: string): "email" | "password" | "" {
+    switch (code) {
+      case "auth/invalid-email":
+      case "auth/email-already-in-use":
+        return "email";
+      case "auth/weak-password":
+        return "password";
+      default:
+        return "";
+    }
+  }
 
   private mapAuthError(code: string): string {
     switch (code) {

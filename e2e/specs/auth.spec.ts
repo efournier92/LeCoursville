@@ -32,8 +32,21 @@ async function deleteAuthAccount(token: string): Promise<void> {
   );
 }
 
-/** Deletes an account the test just created, using its known password. */
-async function deleteCreatedAccount(email: string): Promise<void> {
+/** True when the auth emulator still has an account for this email/password. */
+async function accountExists(email: string): Promise<boolean> {
+  const res = await fetch(
+    `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${E2E_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'E2e-pass-2026', returnSecureToken: true }),
+    },
+  );
+  return res.ok;
+}
+
+/** Removes every trace a signup may have left, including audit and rate limits. */
+async function cleanupSignup(email: string): Promise<void> {
   const res = await fetch(
     `http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${E2E_API_KEY}`,
     {
@@ -43,8 +56,24 @@ async function deleteCreatedAccount(email: string): Promise<void> {
     },
   );
   const body = await res.json();
+  const uid = body.localId as string | undefined;
+  if (uid) {
+    await deleteDb(`users/${uid}`);
+    await deleteDb(`rateLimits/accountCreatedNotify/${uid}`);
+  }
   if (body.idToken) {
     await deleteAuthAccount(body.idToken);
+  }
+  for (const mail of await findOutboundEmails('account_created')) {
+    if ((mail.text ?? '').includes(email)) {
+      await deleteDb(`outboundEmails/${mail.key}`);
+    }
+  }
+  const audit = (await readDb<Record<string, { email?: string }>>('recoveryAudit')) ?? {};
+  for (const [key, entry] of Object.entries(audit)) {
+    if (entry?.email === email) {
+      await deleteDb(`recoveryAudit/${key}`);
+    }
   }
 }
 
@@ -207,22 +236,94 @@ test.describe('auth', () => {
     await expect(page.locator('input[type="email"]')).toHaveCount(0);
   });
 
-  test('sign-in card orders email above Google and uses the new copy', async ({ page }) => {
+  test('sign-in card orders email above Google and uses the exact copy', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
-    await expect(page.getByText('Welcome To LeCoursville')).toBeVisible();
-    await expect(page.getByTestId('auth-submit')).toContainText('Sign In');
+    await expect(page.getByRole('heading', { name: 'Sign In', exact: true })).toBeVisible();
+    await expect(page.getByText('Welcome To LeCoursville', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('auth-submit')).toHaveText('Sign In');
+    await expect(page.getByTestId('auth-mode-signin')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('auth-mode-create')).toHaveAttribute('aria-selected', 'false');
     const emailBox = (await page.getByTestId('auth-email').boundingBox())!;
     const googleBox = (await page.getByTestId('auth-google').boundingBox())!;
     expect(emailBox.y, 'email field renders above the Google button').toBeLessThan(googleBox.y);
   });
 
-  test('create account lands pending with the pending banner', async ({ page }) => {
+  test('mode tabs expose tab semantics, roving tabindex, and arrow navigation', async ({ page }) => {
+    await page.goto('/');
+    const signin = page.getByTestId('auth-mode-signin');
+    const create = page.getByTestId('auth-mode-create');
+
+    await expect(signin).toHaveAttribute('role', 'tab');
+    await expect(signin).toHaveAttribute('aria-controls', 'auth-tabpanel');
+    await expect(signin).toHaveAttribute('tabindex', '0');
+    await expect(create).toHaveAttribute('tabindex', '-1');
+    await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'auth-tab-signin');
+
+    await signin.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(create).toHaveAttribute('aria-selected', 'true');
+    await expect(create).toBeFocused();
+    await expect(create).toHaveAttribute('tabindex', '0');
+    await expect(signin).toHaveAttribute('tabindex', '-1');
+    await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'auth-tab-create');
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(signin).toHaveAttribute('aria-selected', 'true');
+    await expect(signin).toBeFocused();
+  });
+
+  test('create mode keeps recovery links and shows the pending notice', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('auth-mode-create').click();
+    await expect(page.getByTestId('auth-pending-notice')).toContainText('pending until an admin approves');
+    await expect(page.getByTestId('auth-forgot')).toBeVisible();
+    await expect(page.getByTestId('auth-recovery-open')).toBeVisible();
+
+    await page.getByTestId('auth-mode-signin').click();
+    await expect(page.getByTestId('auth-pending-notice')).toHaveCount(0);
+  });
+
+  test('form errors are announced by role and associated with the failing field', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('auth-mode-create').click();
+    await page.getByTestId('auth-name').fill('Error Probe');
+    await page.getByTestId('auth-email').fill(`error-${Date.now()}@e2e.local`);
+    await page.getByTestId('auth-password').fill('E2e-pass-2026');
+    await page.getByTestId('auth-confirm-password').fill('E2e-pass-2027');
+    await page.getByTestId('auth-submit').click();
+
+    const error = page.getByTestId('auth-error');
+    await expect(error).toHaveAttribute('role', 'alert');
+    await expect(error).toContainText('Passwords do not match.');
+    await expect(page.getByTestId('auth-confirm-password')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByTestId('auth-confirm-password')).toHaveAttribute(
+      'aria-describedby',
+      'auth-error-message',
+    );
+    await expect(page.getByTestId('auth-email')).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByTestId('auth-email')).not.toHaveAttribute('aria-describedby', 'auth-error-message');
+  });
+
+  test('confirm password has its own visibility toggle', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('auth-mode-create').click();
+    const confirm = page.getByTestId('auth-confirm-password');
+    const password = page.getByTestId('auth-password');
+    await confirm.fill('E2e-pass-2026');
+    await expect(confirm).toHaveAttribute('type', 'password');
+    await page.getByTestId('auth-confirm-password-toggle').click();
+    await expect(confirm).toHaveAttribute('type', 'text');
+    await expect(password).toHaveAttribute('type', 'password');
+  });
+
+  test('create account writes the bound profile, stays pending, and survives reload', async ({ page }) => {
     const email = `new-account-${Date.now()}@e2e.local`;
+    const name = 'New E2E Person';
     try {
       await page.goto('/');
       await page.getByTestId('auth-mode-create').click();
-      await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Create Account', exact: true })).toBeVisible();
+      await page.getByTestId('auth-name').fill(name);
       await page.getByTestId('auth-email').fill(email);
       await page.getByTestId('auth-password').fill('E2e-pass-2026');
       await page.getByTestId('auth-confirm-password').fill('E2e-pass-2026');
@@ -230,42 +331,87 @@ test.describe('auth', () => {
       await expect(page).toHaveURL('/photos');
       await expect(page.getByRole('status').filter({ hasText: /pending approval/i })).toBeVisible();
       await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
-    } finally {
+
       const uid = await page.evaluate(
         () => JSON.parse(localStorage.getItem('user') || 'null')?.id as string | undefined,
       );
-      if (uid) {
-        await deleteDb(`users/${uid}`);
-      }
-      await deleteCreatedAccount(email);
-      for (const mail of await findOutboundEmails('account_created')) {
-        if ((mail.text ?? '').includes(email)) {
-          await deleteDb(`outboundEmails/${mail.key}`);
-        }
-      }
+      expect(uid, 'signup must cache its uid').toBeTruthy();
+      // The profile write must actually land, bound to the auth uid and name.
+      expect(await readDb<Record<string, any>>(`users/${uid}`)).toMatchObject({
+        id: uid,
+        email,
+        name,
+      });
+
+      // Reload: the session must resolve to the same pending record, with no
+      // membership granted behind the banner's back.
+      await page.reload();
+      await expect(page).toHaveURL('/photos');
+      await expect(page.getByRole('status').filter({ hasText: /pending approval/i })).toBeVisible();
+      expect(await readDb(`users/${uid}/roles/user`)).not.toBe(true);
+      expect(await readDb<Record<string, any>>(`users/${uid}`)).toMatchObject({ id: uid, name });
+    } finally {
+      await cleanupSignup(email);
     }
   });
 
-  test('create account rejects a short password and a mismatch', async ({ page }) => {
-    const email = `weak-${Date.now()}@e2e.local`;
-    await page.goto('/');
-    await page.getByTestId('auth-mode-create').click();
-    await page.getByTestId('auth-email').fill(email);
-    await page.getByTestId('auth-password').fill('short7');
-    await page.getByTestId('auth-confirm-password').fill('short7');
-    await page.getByTestId('auth-submit').click();
-    await expect(page.getByTestId('auth-error')).toContainText('at least 8 characters');
+  test('mode tabs are disabled while the create request is in flight', async ({ page }) => {
+    const email = `inflight-${Date.now()}@e2e.local`;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/accounts:signUp**', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    try {
+      await page.goto('/');
+      await page.getByTestId('auth-mode-create').click();
+      await page.getByTestId('auth-name').fill('In Flight');
+      await page.getByTestId('auth-email').fill(email);
+      await page.getByTestId('auth-password').fill('E2e-pass-2026');
+      await page.getByTestId('auth-confirm-password').fill('E2e-pass-2026');
+      await page.getByTestId('auth-submit').click();
 
-    await page.getByTestId('auth-password').fill('E2e-pass-2026');
-    await page.getByTestId('auth-confirm-password').fill('E2e-pass-2027');
-    await page.getByTestId('auth-submit').click();
-    await expect(page.getByTestId('auth-error')).toContainText('Passwords do not match.');
-    await expect(page).toHaveURL('/');
+      await expect(page.getByTestId('auth-mode-signin')).toBeDisabled();
+      await expect(page.getByTestId('auth-mode-create')).toBeDisabled();
+
+      release();
+      await expect(page).toHaveURL('/photos');
+    } finally {
+      release();
+      await cleanupSignup(email);
+    }
+  });
+
+  test('create account rejects a short password and a mismatch without creating an account', async ({ page }) => {
+    const email = `weak-${Date.now()}@e2e.local`;
+    try {
+      await page.goto('/');
+      await page.getByTestId('auth-mode-create').click();
+      await page.getByTestId('auth-name').fill('Weak Probe');
+      await page.getByTestId('auth-email').fill(email);
+      await page.getByTestId('auth-password').fill('short7');
+      await page.getByTestId('auth-confirm-password').fill('short7');
+      await page.getByTestId('auth-submit').click();
+      await expect(page.getByTestId('auth-error')).toContainText('at least 8 characters');
+      // The component never reaches Firebase, so no auth account may exist.
+      expect(await accountExists(email)).toBe(false);
+
+      await page.getByTestId('auth-password').fill('E2e-pass-2026');
+      await page.getByTestId('auth-confirm-password').fill('E2e-pass-2027');
+      await page.getByTestId('auth-submit').click();
+      await expect(page.getByTestId('auth-error')).toContainText('Passwords do not match.');
+      await expect(page).toHaveURL('/');
+      expect(await accountExists(email)).toBe(false);
+    } finally {
+      await cleanupSignup(email);
+    }
   });
 
   test('create account with an existing email shows a friendly error', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-mode-create').click();
+    await page.getByTestId('auth-name').fill('Duplicate Probe');
     await page.getByTestId('auth-email').fill(E2E_USERS.user.email);
     await page.getByTestId('auth-password').fill(E2E_USERS.user.password);
     await page.getByTestId('auth-confirm-password').fill(E2E_USERS.user.password);

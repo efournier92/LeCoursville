@@ -93,7 +93,7 @@
   margin-bottom: 18px;
   padding: 4px;
   border-radius: var(--radius-control);
-  background: var(--color-overlay-ink-10);
+  background: var(--color-app-bg);
 }
 
 .auth-mode-tab {
@@ -111,7 +111,12 @@
   &.is-active {
     background: var(--color-surface);
     color: var(--color-ink);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+    box-shadow: var(--shadow-control);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
   }
 
   &:focus-visible {
@@ -161,6 +166,13 @@
 .auth-banner--info {
   background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
   color: var(--color-brand-primary);
+}
+
+.auth-pending-note {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-ink-2);
 }
 
 .auth-submit {

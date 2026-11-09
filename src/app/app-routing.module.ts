@@ -42,20 +42,20 @@ const routes: Routes =
     },
     {
       path: 'songs',
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'songs' },
       loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
     },
     {
       path: 'songs/:id',
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'songs' },
       loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
     },
     {
       path: 'chat',
       component: ChatComponent,
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'chat' },
     },
     {
