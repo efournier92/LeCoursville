@@ -1,5 +1,19 @@
 <div class="calendar-view-container">
   <ng-template
+    #customHeaderTemplate
+    let-days="days"
+    let-locale="locale"
+    >
+    <div class="cal-cell-row cal-header" role="row">
+      @for (day of days; track day.date.toISOString()) {
+        <div class="cal-cell" role="columnheader" [class.cal-weekend]="day.isWeekend">
+          <span class="cal-header-full">{{ day.date | calendarDate : 'monthViewColumnHeader' : locale }}</span>
+          <span class="cal-header-short" aria-hidden="true">{{ day.date | calendarDate : 'monthViewColumnHeader' : locale | slice : 0 : 1 }}</span>
+        </div>
+      }
+    </div>
+  </ng-template>
+  <ng-template
     #customCellTemplate
     let-day="day"
     let-locale="locale"
@@ -44,16 +58,13 @@
       </div>
     </div>
   </ng-template>
-  <div class="calendar-pan-hint" aria-hidden="true">
-    <mat-icon>swipe</mat-icon>
-    <span>Swipe to see the full month</span>
-  </div>
   <div class="calendar-scroll-container">
     <div class="calendar-month-view-container">
       <mwl-calendar-month-view
         [activeDay]="activeDay"
         [viewDate]="viewDate"
         [events]="events"
+        [headerTemplate]="customHeaderTemplate"
         [cellTemplate]="customCellTemplate"
         >
       </mwl-calendar-month-view>

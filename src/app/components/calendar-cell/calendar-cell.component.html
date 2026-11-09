@@ -9,7 +9,11 @@
     'event-holiday': event.type === 'holiday'
   }"
     >
-    <div class="calendar-cell-event-container" [ngClass]="event.type === 'birth' ? 'border-birth' : event.type === 'holiday' ? 'border-holiday' : 'border-anniv'">
+    <div
+      class="calendar-cell-event-container"
+      [class.border-holiday]="event.type === 'holiday'"
+      [style.--event-accent]="event.familyColor || 'var(--color-brand-primary)'"
+    >
       @if (event.type !== 'holiday') {
         <div class="calendar-years-since-container" [ngClass]="event.type === 'birth' ? 'birthday-color' : 'anniversary-color'">
           <div class="calendar-years-since">

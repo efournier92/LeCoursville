@@ -110,16 +110,61 @@ test.describe('calendar', () => {
     await expect(firstPage.getByTestId('calendar-print-brand')).toHaveText(/^LeCours Family$/i);
   });
 
-  test('birth tags use the blue accent and anniversary tags the red accent', async ({ page }) => {
+  test('event tags use the family color and fall back to brand', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar?year=2026&month=3');
 
-    const birth = page.locator('.event-birth .calendar-cell-event-container').first();
-    const anniv = page.locator('.event-anniv .calendar-cell-event-container').first();
-    await expect(birth).toBeVisible();
-    await expect(anniv).toBeVisible();
-    await expect(birth).toHaveCSS('border-left-color', 'rgb(43, 108, 176)');
-    await expect(anniv).toHaveCSS('border-left-color', 'rgb(197, 48, 48)');
+    // Alice is family-1 #F44336; Nora has no family, so brand applies.
+    const alder = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+      .locator('.calendar-cell-event-container');
+    const noFamily = page.locator('.event-birth', { hasText: 'Nora Nobody' }).first()
+      .locator('.calendar-cell-event-container');
+    await expect(alder).toBeVisible();
+    await expect(noFamily).toBeVisible();
+    await expect(alder).toHaveCSS('border-left-color', 'rgb(244, 67, 54)');
+    await expect(noFamily).toHaveCSS('border-left-color', 'rgb(39, 116, 74)');
+
+    // A second family proves the accent follows the family, not the event type.
+    await page.goto('/calendar?year=2026&month=4');
+    const cedar = page.locator('.event-birth', { hasText: 'Ben Brown' }).first()
+      .locator('.calendar-cell-event-container');
+    await expect(cedar).toBeVisible();
+    await expect(cedar).toHaveCSS('border-left-color', 'rgb(33, 150, 243)');
+  });
+
+  test('today marker uses a brand circle and a brand cell wash', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    const today = page.locator('.cal-day-cell.cal-today');
+    await expect(today).toBeVisible();
+    await expect(today.locator('.cal-day-number')).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(today.locator('.cal-day-number')).toHaveCSS('color', 'rgb(255, 255, 255)');
+    const wash = await today.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(wash).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('wrapped tag labels share one left edge', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+
+    const label = page.locator('.event-birth', { hasText: 'Bartholomew' }).first()
+      .locator('.event-title-link').first();
+    await expect(label).toBeVisible();
+    await expect(label).toHaveCSS('text-indent', '0px');
+
+    const lineLefts = await label.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return Array.from(range.getClientRects()).map((rect) => Math.round(rect.left));
+    });
+    expect(lineLefts.length).toBeGreaterThan(1);
+    expect(new Set(lineLefts).size, `wrapped line offsets ${lineLefts.join(',')}`).toBe(1);
+
+    await page.goto('/calendar?year=2026&month=12');
+    const holiday = page.locator('.event-holiday', { hasText: 'Christmas Day' }).first()
+      .locator('.event-title-holiday');
+    await expect(holiday).toBeVisible();
+    await expect(holiday).toHaveCSS('text-indent', '0px');
   });
 
   test('event tags are inset 4px from the day cell edge', async ({ page }) => {
@@ -314,12 +359,40 @@ test.describe('calendar', () => {
     }
   });
 
-  test('mobile month grid advertises that it pans horizontally', async ({ page }) => {
+  test('mobile month grid shows seven aligned fluid columns without horizontal scroll', async ({ page }) => {
     await login(page, 'admin');
+    const original = page.viewportSize()!;
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/calendar');
-    await expect(page.locator('.calendar-pan-hint')).toBeVisible();
-    await expect(page.locator('.calendar-pan-hint')).toContainText('Swipe to see the full month');
+    try {
+      await page.goto('/calendar');
+      await expect(page.locator('.cal-days')).toBeVisible();
+
+      const headers = page.locator('.cal-header .cal-cell');
+      await expect(headers).toHaveCount(7);
+      const cells = page.locator('.cal-days .cal-cell-row').first().locator('.cal-day-cell');
+      await expect(cells).toHaveCount(7);
+
+      const headerLefts = await headers.evaluateAll((els) =>
+        els.map((el) => el.getBoundingClientRect().left));
+      const cellLefts = await cells.evaluateAll((els) =>
+        els.map((el) => el.getBoundingClientRect().left));
+      for (let i = 0; i < 7; i++) {
+        expect(Math.abs(headerLefts[i] - cellLefts[i])).toBeLessThanOrEqual(1);
+      }
+
+      const saturday = headers.last();
+      await expect(saturday).toBeVisible();
+      const satBox = await saturday.boundingBox();
+      expect(satBox).not.toBeNull();
+      expect(satBox!.x + satBox!.width).toBeLessThanOrEqual(390);
+      await expectNoHorizontalOverflow(page.locator('.calendar-scroll-container'));
+
+      // Weekday names shorten to one letter at phone width.
+      await expect(page.locator('.cal-header-short').first()).toBeVisible();
+      await expect(page.locator('.cal-header-full').first()).toBeHidden();
+    } finally {
+      await page.setViewportSize(original);
+    }
   });
 
   test('holidays show on the calendar and the filter persists across reloads', async ({ page }) => {

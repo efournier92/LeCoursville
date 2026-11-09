@@ -539,3 +539,33 @@ test('filled brand buttons match the toolbar in both themes', async ({ page }) =
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
 });
+
+test('calendar family tag bars adapt in dark', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/calendar?year=2026&month=3');
+  const bar = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+    .locator('.calendar-cell-event-container');
+  await expect(bar).toBeVisible();
+  const lightBar = await bar.evaluate((el) => getComputedStyle(el).borderLeftColor);
+  await expect(bar).toHaveCSS('border-left-width', '4px');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const darkBar = await bar.evaluate((el) => getComputedStyle(el).borderLeftColor);
+  expect(darkBar).not.toBe(lightBar);
+});
+
+test('dark today marker uses a lighter-on-dark circle and a visible wash', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/calendar');
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  const today = page.locator('.cal-day-cell.cal-today');
+  await expect(today).toBeVisible();
+  // Dark brand primary #8CCDA3 fill with the dark ground as ink.
+  await expect(today.locator('.cal-day-number')).toHaveCSS('background-color', 'rgb(140, 205, 163)');
+  await expect(today.locator('.cal-day-number')).toHaveCSS('color', 'rgb(17, 20, 24)');
+  const wash = await today.evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(wash).not.toBe('rgba(0, 0, 0, 0)');
+});

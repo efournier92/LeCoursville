@@ -211,7 +211,7 @@ describe('CalendarComponent', () => {
     component.allEvents = [{
       id: 'birth-1', type: 'birth', title: 'Alice Anderson',
       date: new Date(1996, 2, 10), start: new Date(2026, 2, 10), isLiving: true,
-      personId: 'person-a', personId2: null,
+      personId: 'person-a', personId2: null, familyColor: '',
     }];
     component.showBirthdays = true;
     component.showAnniversaries = false;
@@ -357,7 +357,7 @@ describe('CalendarComponent', () => {
     component.allEvents = [{
       id: 'birth-march', type: 'birth', title: 'Alice Anderson',
       date: new Date(1996, 2, 10), start: new Date(2026, 2, 10), isLiving: true,
-      personId: 'person-a', personId2: null,
+      personId: 'person-a', personId2: null, familyColor: '',
     }];
     component.datePickerOpen = true;
     fixture.detectChanges();

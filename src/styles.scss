@@ -828,13 +828,21 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
 }
 
 @media (max-width: 768px) {
+  // Fluid seven columns: the header and body share one width by construction.
+  .cal-month-view .cal-header .cal-cell,
   .cal-month-view .cal-day-cell {
-    min-width: 160px;
-    min-height: 120px;
+    flex: 1 1 0;
+    min-width: 0;
+    width: calc(100% / 7);
+  }
+
+  .cal-month-view .cal-day-cell {
+    min-height: 64px;
   }
 
   .cal-month-view .cal-cell-top {
-    min-height: 48px;
+    min-height: 40px;
+    padding: 6px 4px;
   }
 }
 
@@ -852,12 +860,12 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
 
 @media (max-width: 768px) {
   .cal-month-view .cal-day-number {
-    font-size: 1.1em;
-    margin: 4px auto 0;
+    font-size: 0.9em;
+    margin: 2px auto 0;
   }
 
-  .cal-month-view .cal-day-headers .cal-cell {
-    padding: 10px 0;
+  .cal-month-view .cal-header .cal-cell {
+    padding: 8px 0;
     font-size: 0.75em;
   }
 }
@@ -912,10 +920,14 @@ app-calendar-cell {
   cursor: default;
 }
 
-/* Today = the honey marker: warm accent instead of the stock blue dot */
+/* Today = the brand marker: a brand wash on the cell and a brand fill on the day number. */
+.cal-month-view .cal-day-cell.cal-today {
+  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+}
+
 .cal-month-view .cal-day-cell.cal-today .cal-day-number {
-  background: var(--color-accent-strong);
-  color: var(--color-on-brand);
+  background: var(--color-brand-solid);
+  color: var(--color-on-brand-solid);
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -926,6 +938,16 @@ app-calendar-cell {
   margin: 2px auto 0;
   font-weight: 600;
   font-size: 1.2em;
+}
+
+/* Dark needs a lighter-on-dark marker; the theme-invariant brand solid reads muddy. */
+html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today {
+  background: color-mix(in srgb, var(--color-brand-primary) 18%, transparent);
+}
+
+html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number {
+  background: var(--color-brand-primary);
+  color: var(--color-app-bg);
 }
 
 .cal-month-view .cal-day-headers {

@@ -77,23 +77,6 @@
   display: block;
 }
 
-// The month grid is intentionally wider than a phone viewport; the hint is
-// the affordance that tells a first-time viewer the grid pans sideways.
-.calendar-pan-hint {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
-  font-size: 0.85em;
-  color: var(--color-ink-2);
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-}
-
 @media (min-width: 1350px) {
   .calendar-scroll-container {
     overflow-x: hidden;
@@ -136,12 +119,8 @@
 @media (max-width: 768px) {
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 700px;
-    width: max-content;
-  }
-
-  .calendar-pan-hint {
-    display: flex;
+    min-width: 0;
+    width: 100%;
   }
 
   .calendar-title-date {
@@ -156,11 +135,30 @@
 
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 700px;
-    width: max-content;
+    min-width: 0;
+    width: 100%;
   }
 
   .calendar-title-date {
     font-size: 1.1em;
+  }
+}
+
+// One-letter weekday labels when seven columns get too narrow for full names.
+.cal-header-full {
+  display: inline;
+}
+
+.cal-header-short {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .cal-header-full {
+    display: none;
+  }
+
+  .cal-header-short {
+    display: inline;
   }
 }

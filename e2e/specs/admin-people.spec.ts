@@ -13,7 +13,7 @@ test.describe('admin people surfaces', () => {
     await expect(table).toBeVisible({ timeout: 20000 });
     const rows = table.locator('tbody tr');
     await expect(rows).toHaveCount(10);
-    await expect(page.locator('.people-pagination')).toContainText('Showing 1-10 of 24');
+    await expect(page.locator('.people-pagination')).toContainText('Showing 1-10 of 25');
 
     const headers = await table.locator('thead th').allTextContents();
     expect(headers).toEqual([
@@ -27,11 +27,11 @@ test.describe('admin people surfaces', () => {
     await expect(carol.locator('td[data-label="Spouse"]')).toHaveAttribute('title', 'Dave Davis');
 
     await page.getByRole('button', { name: 'Next' }).click();
-    await expect(page.locator('.people-pagination')).toContainText('Showing 11-20 of 24');
+    await expect(page.locator('.people-pagination')).toContainText('Showing 11-20 of 25');
     await page.getByRole('button', { name: 'Next' }).click();
-    await expect(page.locator('.people-pagination')).toContainText('Showing 21-24 of 24');
+    await expect(page.locator('.people-pagination')).toContainText('Showing 21-25 of 25');
     await page.getByRole('button', { name: 'Prev' }).click();
-    await expect(page.locator('.people-pagination')).toContainText('Showing 11-20 of 24');
+    await expect(page.locator('.people-pagination')).toContainText('Showing 11-20 of 25');
 
     await page.getByTestId('admin-people-sort').click();
     await page.getByRole('menuitem', { name: 'Born' }).click();

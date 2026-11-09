@@ -231,7 +231,7 @@ async function main() {
   const person = (id, first, last, birthday, extra = {}) => ({
     id,
     name: { firstGiven: first, firstPreferred: first, maiden: null, last, suffix: null },
-    familyId: extra.familyId ?? 'family-1',
+    familyId: 'familyId' in extra ? extra.familyId : 'family-1',
     birthday: birthday ?? { year, month: month1, day: clampDay(day) },
     spouseId: extra.spouseId ?? null,
     anniversaryDate: extra.anniversaryDate ?? null,
@@ -285,6 +285,8 @@ async function main() {
     'person-m': person('person-m', 'Maximiliana', 'Wolfeschlegelsteinhausenbergerdorff', { year: 1986, month: 3, day: 18 }),
     'person-n': person('person-n', 'Clementine', 'Featherstonehaugh', { year: 1988, month: 3, day: 20 }, { spouseId: 'person-o' }),
     'person-o': person('person-o', 'Thaddeus', 'Featherstonehaugh', { year: 1987, month: 3, day: 21 }),
+    // No family: proves the calendar tag accent falls back to the brand color.
+    'person-p': person('person-p', 'Nora', 'Nobody', { year: 1995, month: 3, day: 26 }, { familyId: null }),
   };
   people['person-c'].anniversaryDate = { year: 2016, month: 11, day: 14 };
   people['person-i'].anniversaryDate = { year: 2014, month: 5, day: 1 };

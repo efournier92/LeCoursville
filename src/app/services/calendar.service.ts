@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 import { PeopleService } from 'src/app/services/people.service';
+import { FamilyService } from 'src/app/services/family.service';
 import { Person } from 'src/app/models/person';
+import { Family } from 'src/app/models/family';
 import { getHolidaysForYear } from 'src/app/config/calendar-holidays';
 
 export const Months: string[] = [
@@ -32,13 +34,14 @@ export class CalendarService {
   eventsLoaded$: Observable<boolean>;
 
   constructor(
-    private peopleService: PeopleService
+    private peopleService: PeopleService,
+    private familyService: FamilyService
   ) {
     this.eventsLoaded$ = this.peopleService.peopleLoaded$;
 
-    this.peopleService.people$.subscribe(
-      (people: Person[]) => {
-        this.deriveEventsFromPeople(people);
+    combineLatest([this.peopleService.people$, this.familyService.families$]).subscribe(
+      ([people, families]: [Person[], Family[]]) => {
+        this.deriveEventsFromPeople(people, families);
       }
     );
 
@@ -49,8 +52,9 @@ export class CalendarService {
     }
   }
 
-  private deriveEventsFromPeople(people: Person[]): void {
+  private deriveEventsFromPeople(people: Person[], families: Family[]): void {
     const events: RecurringEvent[] = [];
+    const familyColors = new Map(families.map(family => [family.id, family.hexColor]));
 
     for (const person of people) {
       // Birthdays include virtual spouses, except when duplicating a primary's birthday.
@@ -69,6 +73,7 @@ export class CalendarService {
           event.date = new Date(person.birthday.year, person.birthday.month - 1, person.birthday.day);
           event.start = new Date(event.date);
           event.isLiving = person.isLiving;
+          event.familyColor = familyColors.get(person.familyId ?? '') ?? '';
           events.push(event);
         }
       }
@@ -99,6 +104,7 @@ export class CalendarService {
       event.date = new Date(person.anniversaryDate.year, person.anniversaryDate.month - 1, person.anniversaryDate.day);
       event.start = new Date(event.date);
       event.isLiving = anchor.isLiving;
+      event.familyColor = familyColors.get(anchor.familyId ?? '') ?? '';
       events.push(event);
 
       seenAnniversaries.add(person.id);
@@ -175,6 +181,7 @@ export class CalendarService {
       eventClone.personId = event.personId;
       eventClone.personId2 = event.personId2;
       eventClone.isLiving = event.isLiving;
+      eventClone.familyColor = event.familyColor;
       const month = event.date.getMonth();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       // Clamp Feb 29 to Feb 28 in non-leap view years so month, render, and sort agree.
