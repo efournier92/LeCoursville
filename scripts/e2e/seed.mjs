@@ -518,11 +518,6 @@ async function main() {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.
       adminAlertRecipients: ['admin@e2e.local'],
     },
-    contacts: {
-      'contact-1': { id: 'contact-1', name: 'Legacy Contact One', addresses: [], family: '', emails: [{ info: 'home', address: 'one@e2e.local' }], phones: [{ info: 'mobile', number: '555-0101' }], isEditable: true },
-      'contact-2': { id: 'contact-2', name: 'Legacy Contact Two', addresses: [], family: '', emails: [], phones: [], isEditable: true },
-      'contact-3': { id: 'contact-3', name: 'Legacy Contact Three', addresses: [], family: '', emails: [], phones: [], isEditable: false },
-    },
     people,
     families,
     familyExplorer,

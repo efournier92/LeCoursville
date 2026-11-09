@@ -472,22 +472,27 @@ test.describe('security', () => {
 });
 
 test.describe('read-only boundary (theme+input standardization)', () => {
-  test('member is blocked from /admin/contacts and /admin/expressions', async ({ page }) => {
+  test('member is blocked from admin expressions and the retired contacts routes', async ({ page }) => {
     await login(page, 'user');
-    for (const route of ['/admin/contacts', '/admin/expressions', '/admin/contacts/contact-1']) {
+    await page.goto('/admin/expressions');
+    await expect(page).not.toHaveURL(/\/admin/);
+    await expect(page.locator('app-admin')).toHaveCount(0);
+    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
+
+    for (const route of ['/admin/contacts', '/admin/contacts/contact-1']) {
       await page.goto(route);
-      await expect(page).not.toHaveURL(/\/admin/);
+      await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
       await expect(page.locator('app-admin')).toHaveCount(0);
       await expect(page.getByTestId('admin-nav')).toHaveCount(0);
     }
   });
 
-  test('rules probe: a member write to /contacts/$id is permission-denied', async () => {
+  test('rules probe: the retired contacts node denies client writes', async () => {
     const token = await signIn('user');
-    const res = await put('contacts/contact-1', { name: 'tampered' }, token);
+    const res = await put('contacts/retired-probe', { name: 'tampered' }, token);
     expect(res.status).toBe(401);
-    const record = await readDb<Record<string, any>>('contacts/contact-1');
-    expect(record?.name).not.toBe('tampered');
+    const record = await readDb<Record<string, any>>('contacts/retired-probe');
+    expect(record).toBeNull();
   });
 
   test('/upload stays reachable without auth', async ({ page }) => {

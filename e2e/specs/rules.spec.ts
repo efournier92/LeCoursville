@@ -672,13 +672,14 @@ test.describe('rules', () => {
     }
   });
 
-  test('contacts reads require an authenticated user', async () => {
+  test('the retired contacts node denies client reads and writes', async () => {
     const userToken = await signIn('user');
+    const staffToken = await signIn('staff');
 
     expect((await get('contacts')).status).not.toBe(200);
-    const userRead = await get('contacts', userToken);
-    expect(userRead.status).toBe(200);
-    expect(await userRead.json()).toMatchObject({ 'contact-1': { id: 'contact-1' } });
+    expect((await get('contacts', userToken)).status).not.toBe(200);
+    expect((await get('contacts', staffToken)).status).not.toBe(200);
+    expect((await put('contacts/retired-probe', { name: 'x' }, staffToken)).status).not.toBe(200);
   });
 
   test('a member cannot create an expression message', async () => {
@@ -766,13 +767,6 @@ test.describe('rules', () => {
     }
   });
 
-  test('a plain admin can read contacts', async () => {
-    const staffToken = await signIn('staff');
-
-    const res = await get('contacts', staffToken);
-    expect(res.status).toBe(200);
-  });
-
   test('a plain admin can create an expression message', async () => {
     const token = await signIn('staff');
     const uid = await uidForEmail(E2E_USERS.staff.email);
@@ -822,7 +816,6 @@ test.describe('admin tier split', () => {
     const token = await signIn('staff');
     const key = `rules-staff-content-${Date.now()}`;
     const nodes = [
-      'contacts',
       'calendars',
       'calendarEvents',
       'photos',

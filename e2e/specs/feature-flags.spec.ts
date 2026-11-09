@@ -159,8 +159,8 @@ test.describe('photo-albums flag and the photos-legacy fallback', () => {
     await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
     // Photo Albums is never a sidebar item.
     await expect(page.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
-    // The unflagged Contacts entry is unaffected.
-    await expect(page.getByTestId('admin-nav-link-contacts')).toBeVisible();
+    // The retired Contacts entry stays gone.
+    await expect(page.getByTestId('admin-nav-link-contacts')).toHaveCount(0);
   });
 
   test('flag off renders photos-legacy with its admin edit controls; album view is read-only', async ({ page }) => {

@@ -23,7 +23,6 @@ const FIXTURE: AnalyticsSummary = {
     { label: "/", value: 2400 },
     { label: "/calendar", value: 1873 },
     { label: "/photos", value: 1512 },
-    { label: "/contacts", value: 1104 },
     { label: "/people", value: 986 },
     { label: "/music", value: 745 },
     { label: "/videos", value: 622 },

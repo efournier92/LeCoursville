@@ -474,7 +474,6 @@ test.describe('admin sidebar navigation', () => {
     expect(await ids('people')).toEqual([
       'admin-nav-link-families',
       'admin-nav-link-people',
-      'admin-nav-link-contacts',
     ]);
     expect(await ids('content')).toEqual([
       'admin-nav-link-uploads',
@@ -493,25 +492,20 @@ test.describe('admin sidebar navigation', () => {
     expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['People', 'Content']);
   });
 
-  test('super admin sidebar shows Contacts (People) and Expressions (Content)', async ({ page }) => {
+  test('super admin sidebar drops retired Contacts and keeps Expressions (Content)', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/users');
     const nav = page.getByTestId('admin-nav');
-    const contacts = nav.getByTestId('admin-nav-link-contacts');
-    await expect(contacts).toBeVisible();
-    await expect(contacts).toHaveText(/Contacts/);
+    await expect(nav.getByTestId('admin-nav-link-contacts')).toHaveCount(0);
     await expect(
-      page.getByTestId('admin-nav-group-people').locator('.admin-nav-link-contacts, [data-testid="admin-nav-link-contacts"]'),
-    ).toHaveCount(1);
+      page.getByTestId('admin-nav-group-people').locator('[data-testid="admin-nav-link-contacts"]'),
+    ).toHaveCount(0);
     const expressions = nav.getByTestId('admin-nav-link-expressions');
     await expect(expressions).toBeVisible();
     await expect(expressions).toHaveText(/Expressions/);
     await expect(
       page.getByTestId('admin-nav-group-content').locator('[data-testid="admin-nav-link-expressions"]'),
     ).toHaveCount(1);
-    // The entries navigate to their admin routes.
-    await contacts.click();
-    await expect(page).toHaveURL(/\/admin\/contacts/);
     await expressions.click();
     await expect(page).toHaveURL(/\/admin\/expressions/);
   });

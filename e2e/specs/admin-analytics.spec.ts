@@ -14,7 +14,7 @@ test.describe('admin analytics', () => {
     await expect(page.getByTestId('admin-analytics-sessions')).toHaveText('3567');
 
     const pages = page.getByTestId('admin-analytics-pages');
-    await expect(pages.locator('tbody tr')).toHaveCount(10);
+    await expect(pages.locator('tbody tr')).toHaveCount(9);
     await expect(pages).toContainText('/calendar');
 
     const events = page.getByTestId('admin-analytics-events');

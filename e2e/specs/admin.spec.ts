@@ -120,7 +120,6 @@ test.describe('admin', () => {
       { name: 'Recovery', path: '/admin/recovery' },
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
-      { name: 'Contacts', path: '/admin/contacts' },
       { name: 'Uploads', path: '/admin/uploads' },
       { name: 'Media', path: '/admin/media' },
       { name: 'Expressions', path: '/admin/expressions' },
@@ -137,6 +136,19 @@ test.describe('admin', () => {
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.locator('app-page-toolbar').first()).toBeVisible();
     }
+  });
+
+  test('the retired admin Contacts route and nav item are gone', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+    await expect(nav.getByTestId('admin-nav-link-contacts')).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Contacts', exact: true })).toHaveCount(0);
+
+    await page.goto('/admin/contacts');
+    await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
   });
 
   test('the sidebar brand is not a page heading; admin pages keep their h1', async ({ page }) => {
@@ -345,7 +357,7 @@ test.describe('admin', () => {
       await page.goto('/admin');
       const nav = page.getByTestId('admin-nav');
       await expect(nav.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
-      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(12);
+      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(11);
       await page.goto('/admin/media');
       await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
     } finally {
