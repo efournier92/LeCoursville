@@ -9,30 +9,37 @@ Delete the retired `contacts` Realtime Database node in dev and then prod. Peopl
 ## Preconditions
 
 - This change is deployed, so the legacy admin UI and the app writes are gone.
-- The `contacts` block is removed from `database.rules.json` and the rules are deployed. The script refuses to run while the checked-in rules still grant a client write to `contacts`, because a client could recreate the node after deletion.
+- The `contacts` block is removed from `database.rules.json` and the rules are deployed. The script first refuses while the checked-in rules still grant a client write, then reads the target project's deployed rules and refuses while those still grant a write at the top level or under `contacts/$id`.
+- Only `lecoursville-dev` and `lecoursville` are accepted, and the log names the environment.
 - A prod backup export is an open human decision. Take one before the prod run if the operator requires it, because the deleted node cannot be restored from this repo.
 
 ## Commands
 
-Run the dry run first. It reports the timestamp, the project, the record count, and the byte size, then exits without writing.
+Run the dry run first. It reports the timestamp, the project, the environment, the record count, and the byte size, then exits without writing. The dry run cannot verify that People is the sole source of truth, so it prints that warning explicitly.
 
 ```bash
 npm run migrate:drop-contacts -- --project lecoursville-dev
 ```
 
-Delete in dev after reviewing the dry-run report.
+Run the prod dry run before the dev delete so the prod count and byte size are reviewed while nothing has been destroyed.
 
 ```bash
-npm run migrate:drop-contacts -- --project lecoursville-dev --confirm
+npm run migrate:drop-contacts -- --project lecoursville
+```
+
+Verify People is the sole source of truth or take an export, then acknowledge it. `--confirm` exits non-zero without `--acknowledge-people-source`.
+
+```bash
+npm run migrate:drop-contacts -- --project lecoursville-dev --confirm --acknowledge-people-source
 ```
 
 Delete in prod after the dev run is clean.
 
 ```bash
-npm run migrate:drop-contacts -- --project lecoursville --confirm
+npm run migrate:drop-contacts -- --project lecoursville --confirm --acknowledge-people-source
 ```
 
-The script deletes only `contacts/`. A second run reports zero records and exits zero, so the migration is idempotent.
+The script deletes only `contacts/`. It reads the node back after the delete and exits non-zero if records remain. A second run reports zero records and exits zero, so the migration is idempotent. The old `--rules <path>` bypass is gone. The checked-in check always reads `database.rules.json` from the repo root.
 
 ## Verification
 

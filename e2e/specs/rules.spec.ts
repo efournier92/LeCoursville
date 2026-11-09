@@ -679,7 +679,10 @@ test.describe('rules', () => {
     expect((await get('contacts')).status).not.toBe(200);
     expect((await get('contacts', userToken)).status).not.toBe(200);
     expect((await get('contacts', staffToken)).status).not.toBe(200);
-    expect((await put('contacts/retired-probe', { name: 'x' }, staffToken)).status).not.toBe(200);
+    const denied = await put('contacts/retired-probe', { name: 'x' }, staffToken);
+    expect(denied.status).toBe(401);
+    expect(await denied.text()).toMatch(/permission denied/i);
+    expect(await readDb('contacts/retired-probe')).toBeNull();
   });
 
   test('a member cannot create an expression message', async () => {
