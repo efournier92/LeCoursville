@@ -415,6 +415,89 @@ test.describe('media', () => {
     );
   });
 
+  test('video: the native player reaches a playable ready state', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+    const nativePlayer = page.getByTestId('native-video-player');
+    await expect(nativePlayer).toBeVisible();
+    // WebKit settles at HAVE_METADATA without a play gesture, so metadata plus
+    // a real duration proves the source decodes (the spec accepts loadedmetadata).
+    await expect
+      .poll(
+        async () =>
+          nativePlayer.evaluate((el) => (el as HTMLVideoElement).readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+    const duration = await nativePlayer.evaluate(
+      (el) => (el as HTMLVideoElement).duration,
+    );
+    expect(duration).toBeGreaterThan(0);
+    await expect(page.locator('.video-error')).toHaveCount(0);
+  });
+
+  test('video: a broken source shows an announced error instead of a blank player', async ({ page }) => {
+    await page.route('**/assets/e2e-fixtures/fixture.mp4', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/plain', body: 'not a video' }),
+    );
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+
+    const error = page.locator('.video-error');
+    await expect(error).toBeVisible();
+    await expect(error).toHaveAttribute('role', 'alert');
+    await expect(error).toContainText('could not be played');
+  });
+
+  test('video: actions render below the player, right aligned', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+    const player = page.getByTestId('native-video-player');
+    await expect(player).toBeVisible();
+
+    const actions = page.locator('.media-explorer-actions-container');
+    await expect(actions.locator('button', { hasText: 'Share' })).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const playerEl = document.querySelector('[data-testid="native-video-player"]')!;
+      const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      const p = playerEl.getBoundingClientRect();
+      const a = actionsEl.getBoundingClientRect();
+      return {
+        afterPlayer: a.top >= p.bottom,
+        justifyContent: getComputedStyle(actionsEl).justifyContent,
+        shareRightGap:
+          a.right - actionsEl.querySelector('button:last-child')!.getBoundingClientRect().right,
+      };
+    });
+    expect(layout.afterPlayer).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
+    expect(layout.shareRightGap).toBeCloseTo(0, 0);
+  });
+
+  test('music: actions render below the track list, right aligned', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await page.getByText('E2E Audio').first().click();
+
+    const tracklist = page.locator('.audio-player-tracklist');
+    const actions = page.locator('.media-explorer-actions-container');
+    await expect(tracklist).toBeVisible();
+    await expect(actions.locator('button', { hasText: 'Share' })).toBeVisible();
+
+    const layout = await page.evaluate(() => {
+      const tracklistEl = document.querySelector('.audio-player-tracklist')!;
+      const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      return {
+        afterTracklist:
+          actionsEl.getBoundingClientRect().top >=
+          tracklistEl.getBoundingClientRect().bottom,
+        justifyContent: getComputedStyle(actionsEl).justifyContent,
+      };
+    });
+    expect(layout.afterTracklist).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
+  });
+
   test('audio: player shell renders and the local WAV plays', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');

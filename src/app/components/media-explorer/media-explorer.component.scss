@@ -15,20 +15,29 @@
   padding: 16px;
 }
 
+.video-error {
+  margin: 12px 0 0;
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
 .media-explorer-actions-container {
   margin-top: 12px;
   margin-bottom: 12px;
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .media-explorer-action-button {
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--color-ink-2);
-  min-width: 120px;
-  height: 36px;
+  min-width: 44px;
+  min-height: 44px;
+  height: auto;
+  padding: 0 12px;
+  font-size: 0.875rem;
   border: 1px solid var(--color-border);
 
   &:hover {

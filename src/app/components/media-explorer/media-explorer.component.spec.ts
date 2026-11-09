@@ -105,6 +105,37 @@ describe('MediaExplorerComponent video player branch', () => {
     ).not.toBeNull();
   });
 
+  it('surfaces an announced message when the native video errors', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    component.onVideoError({ target: { error: { code: 4 } } } as any);
+    fixture.detectChanges();
+
+    const message = fixture.nativeElement.querySelector('.video-error');
+    expect(message).not.toBeNull();
+    expect(message.getAttribute('role')).toBe('alert');
+    expect(message.textContent).toContain('could not be played');
+  });
+
+  it('renders the action row after the player', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    fixture.detectChanges();
+
+    const player = fixture.nativeElement.querySelector(
+      '[data-testid="native-video-player"]',
+    );
+    const actions = fixture.nativeElement.querySelector(
+      '.media-explorer-actions-container',
+    );
+    expect(
+      player.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('renders native video without a poster when the icon is missing', () => {
     component.selectedMedia = videoMedia({
       download: 'https://assets.lecoursville.com/Video/no-icon.mp4',

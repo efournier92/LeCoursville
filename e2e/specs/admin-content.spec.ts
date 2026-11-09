@@ -42,6 +42,17 @@ async function storageObjectExists(path: string): Promise<boolean> {
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin content surfaces', () => {
+  test('media: video drop zone reads the requested copy', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+
+    const zone = page.locator('app-admin-media-upload-video .media-drop-zone');
+    await expect(zone).toBeVisible();
+    await expect(zone.locator('.media-drop-zone-hint')).toHaveText(
+      'Drag/Drop an mp4 here, or click to select a file',
+    );
+  });
+
   test('media: only the live sections render, and a filtered-out section shows an empty message', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/media');

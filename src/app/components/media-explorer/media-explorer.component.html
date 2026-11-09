@@ -16,32 +16,6 @@
       <div
         class="media-explorer-player-container col-lg-7 justify-content-center"
         >
-        <div
-          class="media-explorer-actions-container"
-          >
-          @if (shouldShowDownloadButton()) {
-            <button
-              mat-stroked-button
-              class="media-explorer-action-button"
-              matTooltip="Downloads the selected media to a file"
-              (click)="downloadSelectedMedia()"
-              >
-              <mat-icon>download</mat-icon>
-              <span>Download</span>
-            </button>
-          }
-          @if (shouldShowShareableLinkButton()) {
-            <button
-              mat-stroked-button
-              class="media-explorer-action-button"
-              matTooltip="Copies a shareable link to your clipboard"
-              (click)="onGetShareableLink()"
-              >
-              <mat-icon>share</mat-icon>
-              <span>Share</span>
-            </button>
-          }
-        </div>
         @if (isVideo(selectedMedia)) {
           <div
             class="media-component-container"
@@ -60,8 +34,12 @@
                 preload="metadata"
                 [src]="selectedMedia.urls.download"
                 [attr.poster]="selectedMedia.urls.icon || null"
+                (error)="onVideoError($event)"
                 >
               </video>
+              @if (videoErrorMessage) {
+                <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
+              }
             }
           </div>
         }
@@ -94,6 +72,30 @@
             </app-audio-player>
           </div>
         }
+        <div class="media-explorer-actions-container">
+          @if (shouldShowDownloadButton()) {
+            <button
+              mat-stroked-button
+              class="media-explorer-action-button"
+              matTooltip="Downloads the selected media to a file"
+              (click)="downloadSelectedMedia()"
+              >
+              <mat-icon>download</mat-icon>
+              <span>Download</span>
+            </button>
+          }
+          @if (shouldShowShareableLinkButton()) {
+            <button
+              mat-stroked-button
+              class="media-explorer-action-button"
+              matTooltip="Copies a shareable link to your clipboard"
+              (click)="onGetShareableLink()"
+              >
+              <mat-icon>share</mat-icon>
+              <span>Share</span>
+            </button>
+          }
+        </div>
       </div>
     }
 

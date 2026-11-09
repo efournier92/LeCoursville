@@ -40,6 +40,24 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   }
 
   private updateVideoUrl(video: Video): void {
-    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(video.urls.download);
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.toPreviewUrl(video.urls.download),
+    );
+  }
+
+  // Drive only embeds /preview; /view and /edit links refuse to frame.
+  private toPreviewUrl(url: string): string {
+    if (!url) {
+      return url;
+    }
+    const openId = url.match(/[?&]id=([^&#]+)/);
+    if (openId && /^(https:\/\/)?(docs|drive)\.google\.com\/open/.test(url)) {
+      return `https://drive.google.com/file/d/${openId[1]}/preview`;
+    }
+    const fileId = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId[1]}/preview`;
+    }
+    return url;
   }
 }

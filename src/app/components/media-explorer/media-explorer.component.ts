@@ -29,6 +29,7 @@ export class MediaExplorerComponent implements OnInit {
   eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
   isLoading: boolean;
   searchQuery = '';
+  videoErrorMessage = '';
 
   constructor(
     private authService: AuthService,
@@ -133,6 +134,14 @@ export class MediaExplorerComponent implements OnInit {
     );
   }
 
+  onVideoError(event: Event): void {
+    const code = (event.target as HTMLVideoElement).error?.code;
+    this.videoErrorMessage =
+      code === 4 // MEDIA_ERR_SRC_NOT_SUPPORTED
+        ? 'This video could not be played. Its format may not be supported.'
+        : 'This video could not be played.';
+  }
+
   downloadSelectedMedia(): void {
     this.analyticsService.logEvent('media_download', {
       id: this.selectedMedia?.id,
@@ -179,8 +188,10 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   isExternalDriveUrl(selectedMedia: UploadableMedia): boolean {
-    return !!selectedMedia?.urls?.download?.startsWith(
-      'https://drive.google.com/',
+    const url = selectedMedia?.urls?.download ?? '';
+    return (
+      url.startsWith('https://drive.google.com/') ||
+      /^(https:\/\/)?docs\.google\.com\/open\?/.test(url)
     );
   }
 
@@ -206,6 +217,7 @@ export class MediaExplorerComponent implements OnInit {
 
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
+    this.videoErrorMessage = '';
   }
 
   private scrollToTop(): void {
