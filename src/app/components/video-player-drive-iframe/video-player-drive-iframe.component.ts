@@ -17,7 +17,8 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   videos: Video[];
   videogular: any;
   isLoading: boolean;
-  videoUrl: SafeResourceUrl;
+  videoUrl: SafeResourceUrl | null;
+  videoErrorMessage = '';
 
   private eventsSubscription: Subscription;
 
@@ -40,24 +41,42 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   }
 
   private updateVideoUrl(video: Video): void {
-    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-      this.toPreviewUrl(video.urls.download),
-    );
+    const previewUrl = this.toPreviewUrl(video.urls.download);
+    if (!previewUrl) {
+      this.videoUrl = null;
+      this.videoErrorMessage =
+        'This video could not be played because its Drive link could not be recognized.';
+      return;
+    }
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(previewUrl);
+    this.videoErrorMessage = '';
   }
 
-  // Drive only embeds /preview; /view and /edit links refuse to frame.
-  private toPreviewUrl(url: string): string {
+  // Drive only embeds /preview; /view, /edit, /open, and /uc links need
+  // normalizing. Anything else returns null so the caller fails visibly
+  // instead of framing an unvalidated URL.
+  private toPreviewUrl(url: string): string | null {
     if (!url) {
-      return url;
-    }
-    const openId = url.match(/[?&]id=([^&#]+)/);
-    if (openId && /^(https:\/\/)?(docs|drive)\.google\.com\/open/.test(url)) {
-      return `https://drive.google.com/file/d/${openId[1]}/preview`;
+      return null;
     }
     const fileId = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
     if (fileId) {
-      return `https://drive.google.com/file/d/${fileId[1]}/preview`;
+      return this.previewUrl(fileId[1], url);
     }
-    return url;
+    const openId = url.match(/[?&]id=([^&#]+)/);
+    if (
+      openId &&
+      /^(https:\/\/)?(docs|drive)\.google\.com\/(open|uc)([?#&]|$)/.test(url)
+    ) {
+      return this.previewUrl(openId[1], url);
+    }
+    return null;
+  }
+
+  private previewUrl(fileId: string, url: string): string {
+    const resourceKey = url.match(/[?&]resourcekey=([^&#]+)/);
+    return `https://drive.google.com/file/d/${fileId}/preview${
+      resourceKey ? `?resourcekey=${resourceKey[1]}` : ''
+    }`;
   }
 }

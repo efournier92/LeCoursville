@@ -336,6 +336,7 @@ test.describe('media', () => {
       'src',
       'https://drive.google.com/file/d/e2efixture/preview',
     );
+    await expect(videoFrame).toHaveAttribute('title', 'E2E Video');
     await expect(page.getByTestId('auth-email')).toHaveCount(0);
     await expect(page.locator('.media-list-item')).toHaveCount(0);
 
@@ -413,27 +414,44 @@ test.describe('media', () => {
       'poster',
       'http://localhost:5000/assets/e2e-fixtures/fixture.png',
     );
+    await expect(nativePlayer).toHaveAttribute('playsinline', '');
+    await expect(nativePlayer).toHaveAttribute('aria-label', 'E2E S3 Video');
   });
 
-  test('video: the native player reaches a playable ready state', async ({ page }) => {
+  test('video: the native player actually plays', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video-s3');
     const nativePlayer = page.getByTestId('native-video-player');
     await expect(nativePlayer).toBeVisible();
-    // WebKit settles at HAVE_METADATA without a play gesture, so metadata plus
-    // a real duration proves the source decodes (the spec accepts loadedmetadata).
+
+    // Autoplay can be blocked; drive play explicitly and wait for time to
+    // advance, which proves decoding and playback rather than just metadata.
+    await nativePlayer.evaluate((el) => (el as HTMLVideoElement).play().catch(() => {}));
     await expect
       .poll(
-        async () =>
-          nativePlayer.evaluate((el) => (el as HTMLVideoElement).readyState),
+        async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).currentTime),
         { timeout: 15000 },
       )
-      .toBeGreaterThanOrEqual(1);
-    const duration = await nativePlayer.evaluate(
-      (el) => (el as HTMLVideoElement).duration,
-    );
-    expect(duration).toBeGreaterThan(0);
+      .toBeGreaterThan(0);
+    await expect
+      .poll(
+        async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(2);
     await expect(page.locator('.video-error')).toHaveCount(0);
+  });
+
+  test('video: reselecting a failed source retries and shows the error again', async ({ page }) => {
+    await page.route('**/assets/e2e-fixtures/fixture.mp4', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/plain', body: 'not a video' }),
+    );
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+    await expect(page.locator('.video-error')).toBeVisible();
+
+    await page.locator('.media-list-item').filter({ hasText: 'E2E S3 Video' }).first().click();
+    await expect(page.locator('.video-error')).toBeVisible();
   });
 
   test('video: a broken source shows an announced error instead of a blank player', async ({ page }) => {
@@ -456,22 +474,93 @@ test.describe('media', () => {
     await expect(player).toBeVisible();
 
     const actions = page.locator('.media-explorer-actions-container');
-    await expect(actions.locator('button', { hasText: 'Share' })).toBeVisible();
+    const download = actions.getByRole('button', { name: /Download/ });
+    const share = actions.getByRole('button', { name: /Share/ });
+    await expect(download).toBeVisible();
+    await expect(share).toBeVisible();
+    const buttonLabels = await page.evaluate(() =>
+      Array.from(
+        document.querySelectorAll('.media-explorer-actions-container button'),
+      ).map((button) => button.textContent?.trim() ?? ''),
+    );
+    expect(buttonLabels).toHaveLength(2);
+    expect(buttonLabels[0]).toContain('Download');
+    expect(buttonLabels[1]).toContain('Share');
+
     const layout = await page.evaluate(() => {
       const playerEl = document.querySelector('[data-testid="native-video-player"]')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      const shareEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Share'),
+      )!;
+      const downloadEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Download'),
+      )!;
       const p = playerEl.getBoundingClientRect();
       const a = actionsEl.getBoundingClientRect();
+      const d = downloadEl.getBoundingClientRect();
+      const s = shareEl.getBoundingClientRect();
+      const dStyle = getComputedStyle(downloadEl);
       return {
         afterPlayer: a.top >= p.bottom,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
-        shareRightGap:
-          a.right - actionsEl.querySelector('button:last-child')!.getBoundingClientRect().right,
+        shareRightGap: a.right - s.right,
+        downloadWidth: d.width,
+        downloadHeight: d.height,
+        downloadMinWidth: dStyle.minWidth,
+        downloadMinHeight: dStyle.minHeight,
       };
     });
     expect(layout.afterPlayer).toBe(true);
     expect(layout.justifyContent).toBe('flex-end');
     expect(layout.shareRightGap).toBeCloseTo(0, 0);
+    expect(layout.downloadMinWidth).toBe('44px');
+    expect(layout.downloadMinHeight).toBe('44px');
+    expect(layout.downloadWidth).toBeGreaterThanOrEqual(44);
+    expect(layout.downloadHeight).toBeGreaterThanOrEqual(44);
+  });
+
+  test('doc: actions render below the document viewer, right aligned', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-doc');
+    const viewer = page.locator('.doc-viewer-container').first();
+    await expect(viewer).toBeVisible({ timeout: 20000 });
+
+    const actions = page.locator('.media-explorer-actions-container');
+    await expect(actions.getByRole('button', { name: /Share/ })).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const viewerEl = document.querySelector('.doc-viewer-container')!;
+      const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      return {
+        afterViewer:
+          actionsEl.getBoundingClientRect().top >= viewerEl.getBoundingClientRect().bottom,
+        justifyContent: getComputedStyle(actionsEl).justifyContent,
+      };
+    });
+    expect(layout.afterViewer).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
+  });
+
+  test('photo album: actions render below the album, right aligned', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-photo-album');
+    const album = page.locator('app-photo-album');
+    await expect(album).toBeAttached();
+
+    const actions = page.locator('.media-explorer-actions-container');
+    await expect(actions.getByRole('button', { name: /Download/ })).toBeVisible();
+    await expect(actions.getByRole('button', { name: /Share/ })).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const albumEl = document.querySelector('app-photo-album')!;
+      const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      return {
+        afterAlbum:
+          actionsEl.getBoundingClientRect().top >= albumEl.getBoundingClientRect().bottom,
+        justifyContent: getComputedStyle(actionsEl).justifyContent,
+      };
+    });
+    expect(layout.afterAlbum).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
   });
 
   test('music: actions render below the track list, right aligned', async ({ page }) => {

@@ -435,6 +435,12 @@ async function main() {
     },
     // Legacy non-Drive record with no storage block: exercises the native player
     // and the database-only delete path.
+    'media-photo-album': {
+      id: 'media-photo-album', title: 'E2E Photo Album', artist: '', date: '2026',
+      folderName: 'E2E', fileName: '', isSticky: false, isHidden: false, listing: [],
+      urls: { download: 'http://localhost:5000/assets/e2e-fixtures/fixture.zip', icon: '' },
+      type: 'photo-album', format: 'collection/photo', dateUpdated: now,
+    },
     'media-video-s3': {
       id: 'media-video-s3', title: 'E2E S3 Video', artist: '', date: '2026',
       folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
