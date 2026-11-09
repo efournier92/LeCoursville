@@ -59,7 +59,8 @@ Expect 507 e2e passing per browser with no skips, 921 unit passing, theme and PI
 - UI-008 `--clean` and the live download path are implemented and unit-tested but not executed.
 - UI-013 migration dev then prod runs. The script, dry run, runbook, and rules snapshot are ready. Prod backup export before deletion remains your call.
 - UI-027 deploy version bump is deploy-affecting and needs sign-off. `deploy.sh` was not run.
-- C-88 captions for native video are escalated: there is no caption field in the media model and adding a caption pipeline is out of spec scope.
+- C-88 was escalated as video captions. The owner clarified they meant Expressions, so the item is being re-scoped and is not yet closed.
+- Deployment tasks are consolidated in `docs/runbooks/2026-11-09_NextProdDeployChecklist.md`. It lists every blocking sign-off, the environment contract, the dev then prod deploy order, migration ordering, post-deploy verification, and rollback.
 
 ## Open Risks
 
