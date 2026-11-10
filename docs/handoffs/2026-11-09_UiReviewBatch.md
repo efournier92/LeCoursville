@@ -10,7 +10,7 @@
 All eight workstreams of the UI review batch are implemented, redteamed, and gate-green on the branch. Nothing is pushed or merged.
 
 - Items UI-001 through UI-031 implemented across WS1, WS2, WS3, WS4, WS5, WS6, WS7, and WS8.
-- Ledger has 160 findings: 157 addressed, 2 rejected with evidence (C-46, C-47), 1 escalated (C-88 captions).
+- Ledger has 160 findings: 158 addressed, 2 rejected with evidence (C-46, C-47), none open.
 - Final gate on code HEAD: 507 passed per browser on Chromium, WebKit, and Firefox, zero skipped, zero unexpected, zero flaky.
 - Unit suite 921 passed across 114 files. Theme check and PII canary clean.
 - Working tree clean at `7c9f82c3`.
@@ -29,6 +29,14 @@ All eight workstreams of the UI review batch are implemented, redteamed, and gat
 - `01111d75` WS3, `6f8f0555` WS3 fixes, `4dc5b1ef` WS3 ledger
 - `996a479b` UI-005, `4926f5fb` UI-005 fixes, `6f7c2037` UI-005 ledger
 - `8d72e0ac` UI-008, `3204ee28` UI-008 fixes, `b62a5a31` ledger, `7c9f82c3` ledger status fix
+
+## Follow-up Commits
+
+- `7bb624d2` next production deploy checklist and handoff update
+- `c6046a86` dev seed Expressions attribution fix, the C-88 re-scope
+- `6e06c5a3` split footer copy and UI
+- `509104ba` family-voice footer copy
+- `fb4189e0` footer draft marker removed on sign-off
 
 ## Key Decisions
 
@@ -54,12 +62,12 @@ Expect 507 e2e passing per browser with no skips, 921 unit passing, theme and PI
 
 ## Open Human Decisions
 
-- UI-005 final legal copy. The footer ships clearly marked draft wording with no promised response window and needs your review.
+- UI-005 final legal copy is signed off. The footer uses the family-voice split copy for Update, Remove, and Contact, and the draft marker was removed in `fb4189e0`.
 - UI-008 first dev seed run and the license ledger sign-off. Nothing was downloaded or seeded.
 - UI-008 `--clean` and the live download path are implemented and unit-tested but not executed.
 - UI-013 migration dev then prod runs. The script, dry run, runbook, and rules snapshot are ready. Prod backup export before deletion remains your call.
 - UI-027 deploy version bump is deploy-affecting and needs sign-off. `deploy.sh` was not run.
-- C-88 was escalated as video captions. The owner clarified they meant Expressions, so the item is being re-scoped and is not yet closed.
+- C-88 was re-scoped. The owner meant Expressions in the dev seed, not video captions. The seed now carries the real author and year and the card dedupes the author, fixed in `c6046a86`.
 - Deployment tasks are consolidated in `docs/runbooks/2026-11-09_NextProdDeployChecklist.md`. It lists every blocking sign-off, the environment contract, the dev then prod deploy order, migration ordering, post-deploy verification, and rollback.
 
 ## Open Risks

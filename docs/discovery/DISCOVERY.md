@@ -5,6 +5,10 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261109-12 | 2026-11-09 | [decision] | admin/ui | Data rights footer uses a family-voice split copy: friendly Update, calm Remove, and Contact, signed off with the draft marker removed | docs/handoffs/2026-11-09_UiReviewBatch.md
+
+- D-20261109-11 | 2026-11-09 | [trap] | build/perf | The dev seed must set expression authorName to the historical author, not the seed owner, because expression-view renders authorName with yearWritten | scripts/dev-seed/index.mjs:203
+
 - D-20261109-10 | 2026-11-09 | [decision] | admin/security | Open email signup requires messages read to be approved-user-only (`roles/user === true`). pending accounts no longer read chat | database.rules.json:23
 
 - D-20261109-09 | 2026-11-09 | [trap] | admin/security | An RTDB ancestor `.write` overrides child `.write`, and child `.validate` sees `newData.val()` at that path. put field restrictions in `.validate` | database.rules.json:205
