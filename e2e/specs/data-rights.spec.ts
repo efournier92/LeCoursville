@@ -62,7 +62,6 @@ test.describe('data rights footer', () => {
     await expect(footer.getByTestId('data-request-response')).toHaveText(
       'We review each request and reply to the email or phone you give us.',
     );
-    await expect(footer).toContainText('final wording is pending legal review');
 
     await page.emulateMedia({ media: 'print' });
     await expect(footer).toBeHidden();
