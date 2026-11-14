@@ -16,7 +16,7 @@ Done:
 - Engine parity: Chromium scrollbar drift removed with `--hide-scrollbars`, WebKit toolbar stretch fixed, Firefox calendar font-metric delta logged.
 - Dialog sweep: 5 surfaces pass at 390x844, chat skipped because its composer is inline.
 - Admin convergence: 216 pass, 0 fail, 4 low warns on Chromium. Super routes and the content tier both covered. Reviewed dashboard, users, features, families, people, media, recovery, calendars, uploads, songs.
-- Regression gate: unit 941 passed, `theme:check` PASS, and `npm run e2e:gate` green at 548 expected per browser with 0 skipped, 0 unexpected, 0 flaky. The gate was re-run after the last admin table wrapper.
+- Regression gate: unit 946 passed, `theme:check` PASS, and the browser matrix is green at 556 expected per engine with 0 skipped, 0 unexpected, 0 flaky. Run the three `firebase emulators:exec` browser stages individually if a single `npm run e2e:gate` invocation hangs at the functions install step.
 
 In progress: nothing. The loop is closed at the automated bar with the residue below.
 
@@ -48,7 +48,7 @@ cd /Users/e/mnt/bnk/cs/lecoursville
 git status --porcelain=v1        # expect clean
 git log --oneline -10            # expect the ten commits named in the ledger
 npx ng build --configuration=e2e
-npm run e2e:gate                 # expect 548 expected per browser, 0 skipped/unexpected/flaky
+npm run e2e:gate                 # expect 556 expected per browser, 0 skipped/unexpected/flaky
 CI=true npm test -- --watch=false
 npm run theme:check
 ```

@@ -24,10 +24,10 @@ Admin convergence holds at the automated bar and at the visual bar for the revie
 Gate:
 
 ```
-chromium  expected 548  skipped 0  unexpected 0  flaky 0
-webkit    expected 548  skipped 0  unexpected 0  flaky 0
-firefox   expected 548  skipped 0  unexpected 0  flaky 0
-unit      115 files, 941 tests passed
+chromium  expected 556  skipped 0  unexpected 0  flaky 0  (7.2 min)
+webkit    expected 556  skipped 0  unexpected 0  flaky 0  (10.6 min)
+firefox   expected 556  skipped 0  unexpected 0  flaky 0  (9.7 min)
+unit      115 files, 946 tests passed
 theme     theme:check PASS
 ```
 
@@ -67,7 +67,7 @@ theme     theme:check PASS
 
 - Unit suite 941 passed. `theme:check` PASS.
 - First full gate run: chromium 548 and webkit 548 clean; firefox had one intermittent failure in "editing a published song updates the member detail after reload" (title field received the key value). The test passes in isolation (3.3s) and the full firefox stage passed on rerun with 548, 0 unexpected, 0 flaky.
-- Final gate rerun after the last admin-calendars wrapper is recorded in the handoff.
+- Final gate on the finished tree, stage by stage because one full gate invocation hung past ninety minutes at the functions step: chromium, webkit, and firefox each report 556 expected, 0 skipped, 0 unexpected, 0 flaky. Unit 946 passed. `theme:check` PASS. The functions build, functions tests, PII canary, prod-rules pass, and rules project all passed in the earlier full invocation and their sources did not change after it.
 
 ## Findings, newest first
 
