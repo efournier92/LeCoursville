@@ -22,6 +22,8 @@ export class AppComponent implements OnInit {
   // firebase-auth restore time — that gap flashed a wrong Sign In link).
   authResolved = false;
   layout = 'default';
+  // The account page owns a labeled theme preference, so the header toggle
+  // would duplicate it there. Set from Router.events, never sniffed in CSS.
 
   get sidenavOpen$() {
     return this.routingService.sidenavOpen$;
@@ -93,7 +95,9 @@ export class AppComponent implements OnInit {
     }
     this.subscribeToAuthResolved();
     this.subscribeToUserObservable();
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => this.readLayout());
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.readLayout();
+    });
     this.readLayout();
     this.versionService.writeVersionToWindow();
     this.errorsService.listenForErrors(this.user);

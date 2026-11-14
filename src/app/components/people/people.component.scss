@@ -87,6 +87,7 @@
     font-weight: 500;
     letter-spacing: 0.01em;
     cursor: pointer;
+    overflow-wrap: anywhere;
     transition: color 0.15s;
 
     &:hover {
@@ -105,6 +106,10 @@
     }}.spouse-separator {
     color: var(--color-ink-2);
     margin: 0 4px;
+  }.person-separator {
+    color: var(--color-ink-2);
+    font-weight: 400;
+    line-height: 1;
   }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
@@ -181,4 +186,18 @@
     font-size: 0.66rem;
   }.first-generation-row {
     padding: 8px 12px 6px 0;
-  }}
+  }
+
+  // Filter and family select share one row so the first card starts higher.
+  .filter-people-form-field,
+  .family-filter-form-field {
+    flex: 1 1 0;
+    width: auto;
+  }
+
+  // Clickable names read as the page's actions; captions and deceased names
+  // stay on the plain ink scale.
+  .first-generation-row .first-gen-person:not(.deceased):not(:hover) {
+    color: var(--color-link);
+  }
+}

@@ -43,7 +43,8 @@
 
 .couple-ampersand {
   color: var(--color-ink-2);
-  margin: 0 4px;
+  // The template already supplies one space either side; a margin doubled it.
+  margin: 0;
   font-weight: 500;
 }
 

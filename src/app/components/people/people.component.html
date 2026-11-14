@@ -94,6 +94,9 @@
           @if (group.firstGeneration.length > 0) {
             <div class="first-generation-row">
               @for (node of group.firstGeneration; track node) {
+                @if (!$first) {
+                  <span class="person-separator" aria-hidden="true">&middot;</span>
+                }
                 <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getPersonId(node))" (keydown)="onFirstGenKeydown($event, getPersonId(node))">
                   {{ getPersonName(node) }}
                 </span>

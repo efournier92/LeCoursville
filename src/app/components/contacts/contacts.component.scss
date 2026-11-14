@@ -14,6 +14,14 @@
   max-height: 300px !important;
 }
 
+@media (max-width: 600px) {
+  // The filter spans the full card width; the select keeps its own row.
+  .filter-people-form-field {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
 .contacts-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

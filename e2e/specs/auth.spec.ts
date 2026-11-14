@@ -519,3 +519,37 @@ test.describe('google redirect fallback', () => {
     });
   });
 });
+
+test.describe('mobile convergence', () => {
+  test('auth tabs stay single-line and submit stays above the fold at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/');
+    const tabs = page.locator('.auth-mode-tab');
+    await expect(tabs).toHaveCount(2);
+    for (const testId of ['auth-mode-signin', 'auth-mode-create']) {
+      const tab = page.getByTestId(testId);
+      await expect(tab).toBeVisible();
+      const metrics = await tab.evaluate((el) => ({
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+      }));
+      expect(
+        Math.abs(metrics.scrollHeight - metrics.clientHeight),
+        `${testId} label wraps`,
+      ).toBeLessThanOrEqual(2);
+    }
+    const submit = page.getByTestId('auth-submit');
+    await expect(submit).toBeVisible();
+    const box = await submit.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(568);
+  });
+
+  test('reset action page exposes a Back to sign in link to / at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/auth/action?mode=resetPassword&oobCode=not-a-real-code');
+    const back = page.getByRole('link', { name: 'Back to sign in' });
+    await expect(back).toBeVisible();
+    await expect(back).toHaveAttribute('href', '/');
+  });
+});

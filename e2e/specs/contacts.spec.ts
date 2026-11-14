@@ -100,3 +100,24 @@ test.describe('mobile touch targets', () => {
     await expectMinTouchTarget(page, '.email-value');
   });
 });
+
+test.describe('mobile convergence', () => {
+  test('contacts filter field spans the controls card at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/contacts');
+    const card = page.locator('.page-toolbar');
+    const field = card.locator('.filter-people-form-field');
+    await expect(field).toBeVisible();
+    const contentWidth = await card.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return (
+        el.getBoundingClientRect().width -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
+      );
+    });
+    const fieldWidth = await field.evaluate((el) => el.getBoundingClientRect().width);
+    expect(Math.abs(fieldWidth - contentWidth)).toBeLessThanOrEqual(2);
+  });
+});

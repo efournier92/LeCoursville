@@ -842,22 +842,27 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
 }
 
 .cal-month-view .cal-day-cell {
-  // 7 cells × 160px + borders ≈ 1128px — fits the 1200px page column
-  // (1168px content box) on desktop; smaller screens pan via the
-  // calendar-view-component scroll container.
+  // Desktop floor (1024px and up): 7 cells × 160px + borders ≈ 1128px fits the
+  // 1200px page column. Below that the fluid seven-column grid takes over.
   min-width: 160px;
   min-height: 120px;
 }
 
 @media (max-width: 1023px) {
-  // Fluid seven columns: the header and body share one width by construction.
-  // Below 7 x 44px the columns stop shrinking and the shared scroll container
-  // pans instead of dropping a column or clipping a target.
+  // Fluid seven-column track: the week rows and the header row share one
+  // minmax(0, 1fr) grid, so cells shrink to the available width (about 39px
+  // at a 320px phone) instead of enforcing a 44px minimum that clips the
+  // Saturday column. Height keeps the touch box well above 24px.
+  .cal-month-view .cal-days .cal-cell-row,
+  .cal-month-view .cal-header.cal-cell-row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
   .cal-month-view .cal-header .cal-cell,
   .cal-month-view .cal-day-cell {
-    flex: 1 1 0;
-    min-width: 44px;
-    width: calc(100% / 7);
+    min-width: 0;
+    width: auto;
   }
 
   .cal-month-view .cal-day-cell {

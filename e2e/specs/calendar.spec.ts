@@ -547,7 +547,10 @@ test.describe('calendar', () => {
     }
   });
 
-  test('very narrow phone keeps 44px columns and scrolls horizontally', async ({ page }) => {
+  test('very narrow phone fits seven fluid columns without panning', async ({ page }) => {
+    // Supersedes the 44px-column scroll contract: a panned grid hid the
+    // Saturday column with no affordance, which is a worse defect than 39px
+    // cells. Cells keep the 64px height floor, so the touch box stays large.
     await login(page, 'admin');
     const original = page.viewportSize()!;
     await page.setViewportSize({ width: 320, height: 700 });
@@ -557,12 +560,17 @@ test.describe('calendar', () => {
       await expect(headers).toHaveCount(7);
       const widths = await headers.evaluateAll((els) =>
         els.map((el) => el.getBoundingClientRect().width));
-      for (const width of widths) expect(width).toBeGreaterThanOrEqual(44);
+      for (const width of widths) expect(width).toBeGreaterThanOrEqual(24);
 
-      // Seven 44px columns no longer fit, so the grid pans instead of shrinking.
+      // The grid shrinks to the box instead of panning sideways.
       const overflow = await page.locator('.calendar-scroll-container').evaluate(
         (el) => el.scrollWidth - el.clientWidth);
-      expect(overflow).toBeGreaterThan(0);
+      expect(overflow).toBeLessThanOrEqual(0);
+
+      const last = await headers.last().boundingBox();
+      const box = await page.locator('.calendar-scroll-container').boundingBox();
+      expect(last && box).toBeTruthy();
+      expect(last!.x + last!.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
     } finally {
       await page.setViewportSize(original);
     }
@@ -637,5 +645,26 @@ test.describe('control standard geometry', () => {
     expect(style.radius).toBe('999px');
     expect(style.bg).toBe('rgb(39, 116, 74)');
     expect(style.border).toBe('0px');
+  });
+});
+
+test.describe('mobile convergence', () => {
+  test('deceased and holidays toggles share a row at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/calendar?year=2026&month=11');
+    const deceased = page.locator('mat-slide-toggle.calendar-checkbox', { hasText: 'Deceased' });
+    const holidays = page.locator('mat-slide-toggle.calendar-checkbox', { hasText: 'Holidays' });
+    await expect(deceased).toBeVisible();
+    await expect(holidays).toBeVisible();
+    const [deceasedBox, holidaysBox] = await Promise.all([
+      deceased.boundingBox(),
+      holidays.boundingBox(),
+    ]);
+    expect(deceasedBox).not.toBeNull();
+    expect(holidaysBox).not.toBeNull();
+    const deceasedCenter = deceasedBox!.y + deceasedBox!.height / 2;
+    const holidaysCenter = holidaysBox!.y + holidaysBox!.height / 2;
+    expect(Math.abs(deceasedCenter - holidaysCenter)).toBeLessThanOrEqual(4);
   });
 });

@@ -3,13 +3,18 @@
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 32px 16px 56px;
   box-sizing: border-box;
   background:
     radial-gradient(900px 420px at 50% -8%, color-mix(in srgb, var(--color-brand-primary) 12%, transparent), transparent 65%),
     linear-gradient(180deg, color-mix(in srgb, var(--color-brand-primary) 8%, transparent) 0%, var(--color-app-bg) 48%);
+
+  // Short viewports: centering would clip a tall card, so keep it top-anchored.
+  @media (max-height: 700px) {
+    align-items: flex-start;
+  }
 }
 
 .auth-action-card {
@@ -77,6 +82,19 @@
 
 .auth-action-resend {
   margin-top: 10px;
+}
+
+.auth-action-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-action-back {
+  --mdc-text-button-label-text-color: var(--color-ink-2);
+  font-size: 0.875rem;
+  color: var(--color-ink-2);
 }
 
 .auth-action-banner {

@@ -45,7 +45,7 @@
 
 .auth-card--account {
   max-width: 560px;
-  padding: 32px 28px 24px;
+  padding: 32px 28px calc(32px + env(safe-area-inset-bottom, 0px));
 
   // user-view / user-edit render their own mat-card; in the account page the
   // outer card is the visual container, so flatten the inner one.
@@ -98,7 +98,7 @@
 
 .auth-mode-tab {
   flex: 1;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   border-radius: var(--radius-control);
   background: transparent;
@@ -106,6 +106,7 @@
   font: inherit;
   font-size: 0.875rem;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 
   &.is-active {
@@ -122,6 +123,14 @@
   &:focus-visible {
     outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
+  }
+
+  // At the narrowest phones both labels must stay on one line inside equal
+  // halves; trim the label size and padding rather than let "Create Account"
+  // wrap and misalign the pill.
+  @media (max-width: 360px) {
+    padding: 0 6px;
+    font-size: 0.8125rem;
   }
 }
 
@@ -381,4 +390,64 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
   animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+// Reserve breathing room below the card at the tall-phone size (390x844),
+// where the form stack currently ends exactly on the fold.
+@media (max-width: 480px) and (min-height: 701px) {
+  .auth-card--login {
+    padding-top: 24px;
+  }
+
+  .auth-subtitle {
+    margin-bottom: 18px;
+  }
+}
+
+// Short viewports: the app bar plus the logo/title block otherwise push the
+// primary action (or even the password field on landscape phones) below the
+// fold. Compress the header block and field rhythm only.
+@media (max-height: 700px) {
+  .auth-page {
+    padding-top: 12px;
+    padding-bottom: 24px;
+  }
+
+  .auth-card--login {
+    padding-top: 16px;
+    padding-bottom: 20px;
+  }
+
+  .auth-card--login .auth-logo {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    padding: 6px;
+  }
+
+  .auth-card--login .auth-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-card--login .auth-subtitle {
+    margin: 2px 0 12px;
+  }
+
+  .auth-card--login .auth-mode-switch {
+    margin-bottom: 10px;
+  }
+
+  .auth-card--login .auth-field + .auth-field {
+    margin-top: 2px;
+  }
+
+  .auth-card--login .auth-submit {
+    margin-top: 16px;
+  }
+
+  // Account page: lift the Sign Out pill clear of the fold.
+  .account-action-bar {
+    margin-top: 14px;
+    padding-top: 10px;
+  }
 }

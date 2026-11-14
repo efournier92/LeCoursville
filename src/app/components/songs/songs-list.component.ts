@@ -126,8 +126,13 @@ export class SongsListComponent implements OnInit, OnDestroy {
 
     // Every chord-only line is sheet notation, not a lyric, so none of them
     // enters the preview pool — only the first two lyric lines are shown.
-    const lyrics = candidates.filter(entry => !entry.chordOnly);
-    return lyrics.slice(0, 2).map(entry => entry.text).join('\n');
+    // Chord-only lines between two repeats drop out first, so consecutive
+    // identical lyric lines collapse instead of reading as a glitch.
+    const lyrics = candidates
+      .filter(entry => !entry.chordOnly)
+      .map(entry => entry.text)
+      .filter((text, index, all) => index === 0 || text !== all[index - 1]);
+    return lyrics.slice(0, 2).join('\n');
   }
 
   private matches(song: Song, needle: string): boolean {

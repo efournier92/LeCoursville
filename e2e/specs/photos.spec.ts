@@ -172,3 +172,16 @@ test.describe('mobile touch targets', () => {
     await expectNoHorizontalOverflow(page.locator('.app-container'));
   });
 });
+
+test.describe('mobile convergence', () => {
+  test('album grid uses exactly two columns at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    const grid = page.locator('.album-grid:not([data-testid="albums-skeleton"])');
+    await expect(grid).toBeVisible();
+    const columns = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    const tracks = columns.split(/\s+/).filter((part) => part.length > 0);
+    expect(tracks).toHaveLength(2);
+  });
+});

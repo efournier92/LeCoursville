@@ -158,8 +158,19 @@ const PAGE_AUDIT = (zoom) => {
   // Primary means a button-class action. Inline text controls (row links,
   // chips, clickable names) fall under the 24px inline floor instead.
   const isPrimary = (el) => el.matches(PRIMARY);
+  // An element painted at opacity 0, or with pointer-events none, is not a
+  // tappable target even though it still has a layout box.
+  const paintedOut = (el) => {
+    if (cs(el).pointerEvents === 'none') return true;
+    for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+      const s = cs(node);
+      if (parseFloat(s.opacity) < 0.05) return true;
+      if (s.display === 'none' || s.visibility === 'hidden') return true;
+    }
+    return false;
+  };
   const controlVisible = (el) => {
-    if (!visible(el)) return false;
+    if (!visible(el) || paintedOut(el)) return false;
     if (el.getAttribute('aria-hidden') === 'true' || el.disabled) return false;
     if (el.tagName === 'INPUT' && (el.getAttribute('type') || '').toLowerCase() === 'hidden') return false;
     return true;

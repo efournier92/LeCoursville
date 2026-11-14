@@ -344,30 +344,31 @@ test.describe('songs', () => {
     await expect(chordOver).toBeHidden();
   });
 
-  test('10b. the body scales to 1.2rem on desktop and 0.95rem on mobile', async ({ page }) => {
+  test('10b. the body scales to 1.2rem on desktop and steps down on narrow phones', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await openSong(page, 'song-a');
     const body = page.getByTestId('song-body-inline');
     await expectCssNumber(body, 'font-size', 19.2, 0);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await expectCssNumber(body, 'font-size', 15.2, 0);
+    // One step below the 600px phone size so fewer words orphan per line.
+    await expectCssNumber(body, 'font-size', 14, 0);
     // The 72ch measure still applies; no width regression from the scale bump.
     const measure = await body.evaluate(el => parseFloat(getComputedStyle(el).maxWidth));
     expect(measure).toBeGreaterThan(500);
   });
 
-  test('10c. the preview skips a leading chord-only line and cards stretch to a row', async ({ page }) => {
+  test('10c. the preview skips chord-only lines, collapses repeats, and cards stretch to a row', async ({ page }) => {
     await page.goto('/songs');
     await expect(cards(page)).toHaveCount(4);
 
     const blessed = cards(page).filter({ hasText: 'Blessed Be the Name' });
     const lines = (await blessed.locator('.song-excerpt').textContent())!.trim().split('\n');
+    // Every chord-only line is filtered from the pool, not just a leading one,
+    // and the two identical lyric lines separated only by "A          E" now
+    // collapse into one so the preview no longer reads as a glitch.
     expect(lines[0]).toBe('Blessed be the name of the Lord');
-    // Every chord-only line is filtered from the pool, not just a leading one:
-    // the second preview line is the next lyric, not the "A          E" run.
-    expect(lines[1]).toBe('Blessed be the name of the Lord');
-    expect(lines).toHaveLength(2);
+    expect(lines).toHaveLength(1);
 
     const grid = await page.locator('.songs-grid').evaluate(el => getComputedStyle(el).alignItems);
     expect(grid).toBe('stretch');
@@ -1579,5 +1580,24 @@ test.describe('mobile touch targets', () => {
     await page.goto('/songs');
     await expect(page.getByTestId('song-card').first()).toBeVisible();
     await expectMinTouchTarget(page, 'a.song-title');
+  });
+});
+
+test.describe('mobile convergence', () => {
+  test('chord chips break above the lyric line at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/songs/song-a');
+    const body = page.getByTestId('song-body-inline');
+    await expect(body).toBeVisible();
+    const chord = body.locator('.chord').first();
+    await expect(chord).toBeVisible();
+    const { display, width } = await chord.evaluate((el) => ({
+      display: getComputedStyle(el).display,
+      width: el.getBoundingClientRect().width,
+    }));
+    expect(display).toBe('block');
+    const bodyWidth = await body.evaluate((el) => el.getBoundingClientRect().width);
+    expect(width).toBeLessThan(bodyWidth);
   });
 });

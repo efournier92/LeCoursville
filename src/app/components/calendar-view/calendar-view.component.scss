@@ -215,10 +215,8 @@
   box-shadow: var(--shadow-card);
   overflow: visible;
   min-width: 700px;
-  // minimalist: max-content let long event text push the 7-column grid past
-  // the scroll container, clipping Saturday. Cap at 100% so the grid always
-  // fits when the column is >= 700px; below that the min-width keeps the
-  // intentional horizontal scroller. Upgrade path: per-cell minmax grid.
+  // Desktop: max-content lets long event text size the grid; max-width caps it
+  // at the column so Saturday never clips. Below 1024px the fluid grid fits.
   width: max-content;
   max-width: 100%;
 }
@@ -226,9 +224,9 @@
 @media (max-width: 1023px) {
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    // Seven 44px columns plus the grid borders: below this the shared scroll
-    // container pans rather than squeezing a target under 44px.
-    min-width: 310px;
+    // The fluid seven-column track fits the viewport, so no fixed floor:
+    // a min-width here would push the grid past the scroll container again.
+    min-width: 0;
     width: 100%;
   }
 
@@ -244,7 +242,7 @@
 
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 310px;
+    min-width: 0;
     width: 100%;
   }
 

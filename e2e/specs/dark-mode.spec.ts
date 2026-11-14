@@ -349,7 +349,7 @@ test('clicking anywhere on the account theme chip toggles it', async ({ page }) 
   await expect(pref).toHaveAttribute('aria-checked', 'true');
 });
 
-test('mobile: logo, toggle, and hamburger sit left to right', async ({ page }) => {
+test('mobile: logo left, theme toggle and hamburger grouped at the right', async ({ page }) => {
   await page.setViewportSize({ width: 600, height: 800 });
   await login(page, 'user');
   const logo = page.locator('.toolbar-logo');
@@ -362,13 +362,19 @@ test('mobile: logo, toggle, and hamburger sit left to right', async ({ page }) =
   const toggleBox = await toggle.boundingBox();
   const burgerBox = await burger.boundingBox();
   expect(logoBox && toggleBox && burgerBox).toBeTruthy();
-  // Logo, then toggle beside it, then the hamburger at the right edge.
+  // Logo left, then the toggle and hamburger grouped at the right edge. The
+  // centered slot read as the page's primary control on a phone.
   expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
   expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(burgerBox!.x);
-  // The toggle is centered in the logo-to-hamburger gap, within 2px.
-  const gapCenter = (logoBox!.x + logoBox!.width + burgerBox!.x) / 2;
+  const adjacency = burgerBox!.x - (toggleBox!.x + toggleBox!.width);
+  expect(adjacency).toBeGreaterThanOrEqual(10);
+  expect(adjacency).toBeLessThanOrEqual(24);
+  const toolbar = await page.locator('mat-toolbar').boundingBox();
+  expect(toolbar).toBeTruthy();
+  expect(toolbar!.x + toolbar!.width - (burgerBox!.x + burgerBox!.width)).toBeLessThanOrEqual(24);
+  // The toggle sits in the right third of the bar, not the middle.
   const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
-  expect(Math.abs(toggleCenterX - gapCenter)).toBeLessThanOrEqual(2);
+  expect(toggleCenterX).toBeGreaterThan(toolbar!.x + toolbar!.width * 0.6);
 
   await toggle.click();
   // WebKit does not focus buttons on click, so never assert focus here.
@@ -378,9 +384,8 @@ test('mobile: logo, toggle, and hamburger sit left to right', async ({ page }) =
   const clickBurgerBox = await burger.boundingBox();
   expect(clickToggleBox && clickBurgerBox).toBeTruthy();
   expect(clickBurgerBox!.x - (clickToggleBox!.x + clickToggleBox!.width)).toBeGreaterThanOrEqual(10);
-  // The gap still centers the toggle after the click.
-  const clickGapCenter = (logoBox!.x + logoBox!.width + clickBurgerBox!.x) / 2;
-  expect(Math.abs(clickToggleBox!.x + clickToggleBox!.width / 2 - clickGapCenter)).toBeLessThanOrEqual(2);
+  // Clicking must not shift the right cluster.
+  expect(Math.abs(clickToggleBox!.x - toggleBox!.x)).toBeLessThanOrEqual(1);
 });
 
 test('light dialog scrim separates the sheet from the pale page', async ({ page }) => {

@@ -164,3 +164,29 @@ test.describe('mobile touch targets', () => {
     await expectMinTouchTarget(page, '.person-name.clickable');
   });
 });
+
+test.describe('mobile convergence', () => {
+  test('people list separates members and colors clickable names at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/people');
+    await expect(page.locator('.people-container')).toBeVisible();
+    const separators = page.locator('.person-separator[aria-hidden="true"]');
+    await expect(separators.first()).toBeVisible();
+    expect(await separators.count()).toBeGreaterThanOrEqual(1);
+    // /people renders first-generation names as .first-gen-person.
+    const clickable = page.locator('.first-gen-person:not(.deceased)').first();
+    await expect(clickable).toBeVisible();
+    await expectMinTouchTarget(page, '.first-gen-person');
+    const clickableColor = await clickable.evaluate((el) => getComputedStyle(el).color);
+    const probeColor = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--color-link)';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+    expect(clickableColor).toBe(probeColor);
+  });
+});

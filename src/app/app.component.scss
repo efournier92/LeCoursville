@@ -59,14 +59,6 @@
   align-items: center;
 }
 
-.toolbar-center {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
 .toolbar-logo {
   display: inline-flex;
   align-items: center;
@@ -103,6 +95,14 @@
   align-items: center;
 }
 
+.toolbar-center {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 // Primary nav actions in the app header: raise the 40px Material touch box to
 // the 44px minimum. The token drives the state layer; min-* is what moves the
 // layout box, which the token alone did not.
@@ -113,6 +113,23 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
+  }
+
+  // Phones put the theme toggle beside the menu instead of centering it in the
+  // bar, where it read as the page's primary control. The left cluster takes
+  // the free space so the toggle and menu sit together at the right edge.
+  mat-toolbar {
+    justify-content: flex-start;
+  }
+
+  .toolbar-left {
+    margin-right: auto;
+  }
+
+  .toolbar-center {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin-right: 10px;
   }
 }
 

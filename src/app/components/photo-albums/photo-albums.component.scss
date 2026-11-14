@@ -36,11 +36,16 @@
   }
 }
 
-// A single full-bleed 1:1 tile fills most of a phone screen; cap the height so
-// more than one album is visible without scrolling.
+// A single full-bleed 1:1 tile fills most of a phone screen; two columns with
+// a capped tile height keep several albums above the fold and captions legible.
 @media (max-width: 600px) {
+  .album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .album-tile {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1 / 1;
+    max-height: 200px;
   }
 }
 
@@ -123,4 +128,50 @@
 .album-tile-count {
   font-size: 0.8rem;
   opacity: 0.85;
+}
+
+// Phone toolbar: fold the count onto the title row and put the sort control
+// beside the upload CTA, so the tools card stops eating the first screen.
+@media (max-width: 600px) {
+  // The bar itself keeps the shared mobile contract (a flex column, stretch,
+  // 8px rows). Tighten only the tools slot: compact count line, full-width
+  // search, then sort and upload sharing one row.
+  :host ::ng-deep .page-toolbar .page-toolbar-content:has(> *) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "count count"
+      "search search"
+      "sort upload";
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 8px;
+    width: 100%;
+  }
+
+  .gallery-count {
+    grid-area: count;
+  }
+
+  .gallery-search {
+    grid-area: search;
+    width: 100%;
+    max-width: none;
+  }
+
+  .gallery-segmented {
+    grid-area: sort;
+    justify-self: start;
+    padding: 2px;
+  }
+
+  .gallery-segmented-btn {
+    padding: 0 6px;
+  }
+
+  .gallery-upload-cta {
+    grid-area: upload;
+    justify-self: end;
+    padding: 0 10px;
+  }
 }

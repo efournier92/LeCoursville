@@ -19,7 +19,7 @@
           <div class="calendar-toolbar-filters" role="group" aria-label="Calendar filters">
             <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-slide-toggle>
             <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-slide-toggle>
-            <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Show deceased</mat-slide-toggle>
+            <mat-slide-toggle class="calendar-checkbox" color="primary" aria-label="Show deceased" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Deceased</mat-slide-toggle>
             <mat-slide-toggle class="calendar-checkbox" color="primary" data-testid="calendar-toggle-holidays" [(ngModel)]="showHolidays" (change)="toggleHolidays($event)">Holidays</mat-slide-toggle>
           </div>
           <div class="calendar-toolbar-actions">

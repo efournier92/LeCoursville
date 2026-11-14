@@ -62,7 +62,7 @@
         }
         <div class="album-tile-scrim">
           <div class="album-tile-title">{{ album.title }}</div>
-          <div class="album-tile-count">{{ getPhotoCount(album) }} photos</div>
+          <div class="album-tile-count">{{ getPhotoCount(album) }} photo{{ getPhotoCount(album) === 1 ? '' : 's' }}</div>
         </div>
       </div>
     }
