@@ -26,8 +26,8 @@ test.describe('expressions', () => {
       await login(page, 'admin');
       await page.goto('/expressions');
       const card = page.locator('.expression-card-wrapper', { hasText: 'Live long and prosper' }).first();
-      await expect(card.locator('.expression-attribution')).toHaveText('- E2E Family');
-      await expect(card.locator('.expression-author')).toContainText('- 2000');
+      await expect(card.locator('.expression-attribution')).toHaveText('E2E Family');
+      await expect(card.locator('.expression-author')).toContainText('2000');
     } finally {
       if (seeded) {
         await writeDb('messages/expr-1', seeded);

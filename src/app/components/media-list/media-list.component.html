@@ -58,6 +58,8 @@
         @if (shouldDisplayMedia(media)) {
           <button
             class="media-list-item"
+            [class.media-list-item-compact]="compact"
+            [attr.aria-label]="compact ? mediaRowLabel(media) : null"
             (click)="onMediaSelect(media)"
             >
             <div class="imageContainer">
@@ -75,13 +77,22 @@
                   />
               </div>
             </div>
-            <div class="media-details">
-              <div class="media-details-name">{{ media.title }}</div>
-              <div class="media-details-artist">{{ media.artist }}</div>
-              <div class="media-details-location">{{ media.location }}</div>
-              <div class="media-details-date">{{ formatDate(media.date) }}</div>
-              <span class="media-details-duration">{{ media.duration }}</span>
-            </div>
+            @if (compact) {
+              <div class="media-details media-details-compact">
+                <div class="media-details-name">{{ media.title }}</div>
+                @if (formatYear(media.date)) {
+                  <span class="media-details-year">{{ formatYear(media.date) }}</span>
+                }
+              </div>
+            } @else {
+              <div class="media-details">
+                <div class="media-details-name">{{ media.title }}</div>
+                <div class="media-details-artist">{{ media.artist }}</div>
+                <div class="media-details-location">{{ media.location }}</div>
+                <div class="media-details-date">{{ formatDate(media.date) }}</div>
+                <span class="media-details-duration">{{ media.duration }}</span>
+              </div>
+            }
           </button>
         }
       </div>

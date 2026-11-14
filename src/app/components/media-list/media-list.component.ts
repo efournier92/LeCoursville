@@ -18,6 +18,8 @@ import { MediaIconsService } from 'src/assets/img/media-placeholders/services/me
 export class MediaListComponent implements OnInit, OnChanges {
   @Input() mediaTypesToShow: string[];
   @Input() isAdminMode = false;
+  /** Detail-route rows collapse to icon + title + year. */
+  @Input() compact = false;
   /** External search term — set by the hosting page toolbar (non-admin mode).
    *  The list re-filters whenever it changes. In admin mode the internal
    *  toolbar binds to the same property. */
@@ -120,6 +122,30 @@ export class MediaListComponent implements OnInit, OnChanges {
 
   onImageLoaded(media: any): void {
     media.isIconLoaded = true;
+  }
+
+  /** Four-digit year extracted from the stored date, or the raw value. */
+  formatYear(date: string): string {
+    const formatted = this.formatDate(date);
+    const match = formatted.match(/^(\d{4})/);
+    return match ? match[1] : formatted;
+  }
+
+  /** Preserves the row's pre-compact accessible name when subtitles are hidden. */
+  mediaRowLabel(media: UploadableMedia): string {
+    const extra = media as UploadableMedia & {
+      location?: string;
+      duration?: string;
+    };
+    return [
+      media.title,
+      media.artist,
+      extra.location,
+      this.formatDate(media.date),
+      extra.duration,
+    ]
+      .filter((part) => !!part)
+      .join(' ');
   }
 
   onMediaSelect(media: UploadableMedia): void {

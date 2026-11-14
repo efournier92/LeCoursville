@@ -13,7 +13,37 @@
   width: 160px;
   min-width: 0;
   max-width: 100%;
-}// ── Family card ──────────────────────────────────────────────────────────────
+}
+
+// At 320px the shared toolbar gives each field about half the row, so the
+// "By Family" label ellipsizes. Swap to the shorter visible label there while
+// the full text stays available to assistive tech.
+.family-label-short {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .family-filter-form-field {
+    .family-label-full {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .family-label-short {
+      display: inline;
+    }
+  }
+}
+
+// ── Family card ──────────────────────────────────────────────────────────────
 // Each family is an entry in the family book: a white sheet with a full-height
 // rail in the family's own color. The rail is the identity marker; the tree's
 // generation bars echo the same hue at lower opacity.
@@ -56,7 +86,7 @@
 }.member-count {
   margin-left: auto;
   flex: none;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-ink-2);
   background: var(--color-surface-muted);
@@ -82,7 +112,19 @@
   padding: 10px 16px 8px 0;
   color: var(--color-ink);
 
+  // One flex item per person (plus spouse and trailing dot) so a separator can
+  // never be laid out alone on its own flex line.
+  .first-gen-entry {
+    display: block;
+    min-width: 0;
+  }
+
   .first-gen-person {
+    // The name is the tap target: a 24px inline box keeps it above the touch
+    // floor while the separator stays glued to the preceding name.
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -103,13 +145,14 @@
     }&.deceased {
       color: var(--color-ink-2);
       font-style: italic;
-    }}.spouse-separator {
+    }  }.spouse-separator {
     color: var(--color-ink-2);
-    margin: 0 4px;
+    margin: 0 8px;
   }.person-separator {
     color: var(--color-ink-2);
     font-weight: 400;
     line-height: 1;
+    margin-left: 4px;
   }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
@@ -183,7 +226,7 @@
     }}.family-link {
     font-size: 1.15rem;
   }.member-count {
-    font-size: 0.66rem;
+    font-size: 0.75rem;
   }.first-generation-row {
     padding: 8px 12px 6px 0;
   }

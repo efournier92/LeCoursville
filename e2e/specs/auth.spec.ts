@@ -239,7 +239,7 @@ test.describe('auth', () => {
   test('sign-in card orders email above Google and uses the exact copy', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Sign In', exact: true })).toBeVisible();
-    await expect(page.getByText('Welcome To LeCoursville', { exact: true })).toBeVisible();
+    await expect(page.getByText('Welcome to LeCoursville', { exact: true })).toBeVisible();
     await expect(page.getByTestId('auth-submit')).toHaveText('Sign In');
     await expect(page.getByTestId('auth-mode-signin')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('auth-mode-create')).toHaveAttribute('aria-selected', 'false');

@@ -472,7 +472,83 @@ test.describe('media', () => {
     await expect(error).toContainText('could not be played');
   });
 
-  test('video: actions render below the player, right aligned', async ({ page }) => {
+  test('video: an unrecognized Drive link shows the in-app fallback with retry', async ({ page }) => {
+    const id = 'media-video-unrecognized';
+    await writeDb(`media/${id}`, {
+      id,
+      title: 'E2E Unrecognized Video',
+      artist: '',
+      date: '2026',
+      folderName: 'E2E',
+      fileName: 'fixture.mp4',
+      isSticky: false,
+      isHidden: false,
+      listing: [],
+      urls: { download: 'https://drive.google.com/not-a-file/abc', icon: '' },
+      type: 'video',
+      format: 'video/mp4',
+      dateUpdated: new Date().toISOString(),
+      duration: '00:30',
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto(`/media/explorer?id=${id}`);
+
+      const fallback = page.locator('.video-fallback');
+      await expect(fallback).toBeVisible();
+      await expect(fallback.locator('.video-error')).toHaveAttribute('role', 'alert');
+      await expect(fallback.getByRole('button', { name: 'Try again' })).toBeVisible();
+      await expect(page.locator('iframe.video-iframe')).toHaveCount(0);
+    } finally {
+      await deleteDb(`media/${id}`);
+    }
+  });
+
+  test('video: detail shows the title, date, and duration above the player', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video');
+
+    await expect(page.locator('.media-explorer-title')).toHaveText('E2E Video');
+    await expect(page.locator('.media-explorer-meta')).toContainText('2026');
+    await expect(page.locator('.media-explorer-meta')).toContainText('00:30');
+    await expect(page.locator('input[name="media-explorer-filter"]')).toHaveCount(0);
+  });
+
+  test('list route keeps the filter field', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+
+    await expect(page.locator('input[name="media-explorer-filter"]')).toBeVisible();
+  });
+
+  test('detail: related rows are one line with the year right aligned', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video');
+
+    const row = mediaRow(page, 'E2E S3 Video');
+    await expect(row.locator('.media-details-year')).toHaveText('2026');
+    await expect(row.locator('.media-details-artist')).toHaveCount(0);
+    await expect(row.locator('.media-details-location')).toHaveCount(0);
+    await expect(row).toHaveAccessibleName(/E2E S3 Video/);
+
+    const layout = await row.evaluate((el) => {
+      const details = el.querySelector('.media-details-compact') as HTMLElement;
+      const year = el.querySelector('.media-details-year') as HTMLElement;
+      const detailsBox = details.getBoundingClientRect();
+      const yearBox = year.getBoundingClientRect();
+      return {
+        display: getComputedStyle(details).display,
+        flexWrap: getComputedStyle(el).flexWrap,
+        yearRightGap: detailsBox.right - yearBox.right,
+      };
+    });
+    expect(layout.display).toBe('flex');
+    expect(layout.flexWrap).toBe('nowrap');
+    expect(layout.yearRightGap).toBeCloseTo(0, 0);
+  });
+
+  test('video: actions render below the player, left aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video-s3');
     const player = page.getByTestId('native-video-player');
@@ -495,21 +571,17 @@ test.describe('media', () => {
     const layout = await page.evaluate(() => {
       const playerEl = document.querySelector('[data-testid="native-video-player"]')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
-      const shareEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
-        button.textContent?.includes('Share'),
-      )!;
       const downloadEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
         button.textContent?.includes('Download'),
       )!;
       const p = playerEl.getBoundingClientRect();
       const a = actionsEl.getBoundingClientRect();
       const d = downloadEl.getBoundingClientRect();
-      const s = shareEl.getBoundingClientRect();
       const dStyle = getComputedStyle(downloadEl);
       return {
         afterPlayer: a.top >= p.bottom,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
-        shareRightGap: a.right - s.right,
+        downloadLeftGap: d.left - a.left,
         downloadWidth: d.width,
         downloadHeight: d.height,
         downloadMinWidth: dStyle.minWidth,
@@ -517,15 +589,15 @@ test.describe('media', () => {
       };
     });
     expect(layout.afterPlayer).toBe(true);
-    expect(layout.justifyContent).toBe('flex-end');
-    expect(layout.shareRightGap).toBeCloseTo(0, 0);
+    expect(layout.justifyContent).toBe('flex-start');
+    expect(layout.downloadLeftGap).toBeCloseTo(0, 0);
     expect(layout.downloadMinWidth).toBe('44px');
     expect(layout.downloadMinHeight).toBe('44px');
     expect(layout.downloadWidth).toBeGreaterThanOrEqual(44);
     expect(layout.downloadHeight).toBeGreaterThanOrEqual(44);
   });
 
-  test('doc: actions render below the document viewer, right aligned', async ({ page }) => {
+  test('doc: actions render below the document viewer, left aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-doc');
     const viewer = page.locator('.doc-viewer-container').first();
@@ -543,10 +615,10 @@ test.describe('media', () => {
       };
     });
     expect(layout.afterViewer).toBe(true);
-    expect(layout.justifyContent).toBe('flex-end');
+    expect(layout.justifyContent).toBe('flex-start');
   });
 
-  test('photo album: actions render below the album, right aligned', async ({ page }) => {
+  test('photo album: actions render below the album, left aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-photo-album');
     const album = page.locator('app-photo-album');
@@ -565,10 +637,10 @@ test.describe('media', () => {
       };
     });
     expect(layout.afterAlbum).toBe(true);
-    expect(layout.justifyContent).toBe('flex-end');
+    expect(layout.justifyContent).toBe('flex-start');
   });
 
-  test('music: actions render below the track list, right aligned', async ({ page }) => {
+  test('music: actions render below the track list, left aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
     await page.getByText('E2E Audio').first().click();
@@ -589,7 +661,7 @@ test.describe('media', () => {
       };
     });
     expect(layout.afterTracklist).toBe(true);
-    expect(layout.justifyContent).toBe('flex-end');
+    expect(layout.justifyContent).toBe('flex-start');
   });
 
   test('audio: player shell renders and the local WAV plays', async ({ page }) => {

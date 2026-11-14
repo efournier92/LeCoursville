@@ -1,7 +1,12 @@
 <div class="d-flex justify-content-center">
   <div class="video-iframe-container w-100">
-    @if (videoErrorMessage) {
-      <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
+    @if (showFallback) {
+      <div class="video-fallback">
+        <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
+        <button type="button" class="video-retry-button" (click)="retry()">
+          Try again
+        </button>
+      </div>
     } @else {
       <iframe
         class="video-iframe"
@@ -11,6 +16,7 @@
         height="100%"
         allow="autoplay"
         allowfullscreen="allowfullscreen"
+        (load)="onIframeLoad()"
       >
       </iframe>
     }

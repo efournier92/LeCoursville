@@ -83,12 +83,15 @@
 
 .slideshow-controls {
   position: fixed;
-  bottom: 24px;
+  // The 24px floating gap stays the floor; the safe-area inset lifts the whole
+  // pill clear of the iOS home indicator instead of parking inside it.
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 12px;
+  max-width: calc(100vw - 24px);
   padding: 8px 16px;
   background: color-mix(in srgb, var(--color-media-backdrop) 50%, transparent);
   border-radius: var(--radius-card);
@@ -102,6 +105,28 @@
   font-size: 14px;
   min-width: 60px;
   text-align: center;
+}
+
+// Phones: an uncapped pill stretched to ~10px side margins and read like a
+// system toolbar. Cap it so it stays a floating control, keep the controls
+// evenly spaced, and hold every target at 44px.
+@media (max-width: 480px) {
+  .slideshow-controls {
+    width: min(300px, calc(100vw - 32px));
+    justify-content: space-evenly;
+    gap: 4px;
+    padding: 8px;
+
+    .mat-mdc-icon-button {
+      --mat-icon-button-state-layer-size: 44px;
+    }
+  }
+
+  .slideshow-counter {
+    min-width: 0;
+    font-size: 13px;
+    white-space: nowrap;
+  }
 }
 
 // Respect reduced-motion: no Ken Burns drift, show the photo statically.

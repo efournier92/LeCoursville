@@ -14,19 +14,22 @@
 h1 {
   text-align: center;
   color: var(--color-ink);
+  margin-top: 0;
   margin-bottom: 8px;
 }
 
 .subtitle {
   text-align: center;
   color: var(--color-ink-2);
-  margin-bottom: 32px;
+  margin-top: 0;
+  margin-bottom: 24px;
 }
 
 .drop-zone {
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-card);
   padding: 60px 40px;
+  box-sizing: border-box;
   text-align: center;
   cursor: pointer;
   background: var(--color-surface);
@@ -39,9 +42,16 @@ h1 {
 }
 
 .drop-icon {
-  font-size: 48px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 16px;
   color: var(--color-brand-primary);
+
+  mat-icon {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .drop-zone p {
@@ -49,35 +59,49 @@ h1 {
   color: var(--color-ink);
   font-size: 16px;
 
-  &:last-child {
+  &.drop-copy-drag {
     color: var(--color-ink-2);
     font-size: 14px;
   }
 }
 
+// Desktop copy names a pointer gesture; touch devices get a tap instruction.
+.drop-copy-tap {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .drop-copy-select,
+  .drop-copy-drag {
+    display: none;
+  }
+
+  .drop-copy-tap {
+    display: block;
+  }
+}
+
 .folder-upload-link {
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 12px;
 }
 
 .btn-folder-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
   background: none;
   border: none;
   color: var(--color-ink-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: underline;
   text-underline-offset: 2px;
-  font-style: italic;
 
   &:hover {
     color: var(--color-brand-primary);
-  }
-
-  @media (max-width: 1024px) {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
   }
 }
 
@@ -128,9 +152,35 @@ h1 {
   }
 }
 
-.event-input {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+@media (max-width: 600px) {
+  .upload-container {
+    margin: 12px auto;
+  }
+
+  .subtitle {
+    margin-bottom: 16px;
+  }
+
+  .name-input,
+  .event-input {
+    margin-bottom: 12px;
+  }
+
+  .drop-zone {
+    padding: 24px 16px;
+  }
+
+  .drop-icon {
+    margin-bottom: 12px;
+  }
+}
+
+// Narrow phones: cap the zone so the whole drop target and the folder row
+// clear a 568px fold.
+@media (max-width: 360px) {
+  .drop-zone {
+    max-height: 200px;
+  }
 }
 
 .file-list {

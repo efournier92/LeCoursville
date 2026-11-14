@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 
 import { VideoPlayerDriveIframeComponent } from './video-player-drive-iframe.component';
 
@@ -76,6 +77,64 @@ describe('VideoPlayerDriveIframeComponent', () => {
     expect(error).not.toBeNull();
     expect(error.getAttribute('role')).toBe('alert');
     expect(fixture.nativeElement.querySelector('iframe.video-iframe')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.video-fallback')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.video-retry-button').textContent.trim(),
+    ).toBe('Try again');
+  });
+
+  it('falls back with a retry action when the embed never fires load', () => {
+    fixture.destroy();
+    vi.useFakeTimers();
+    try {
+      fixture = TestBed.createComponent(VideoPlayerDriveIframeComponent);
+      component = fixture.componentInstance;
+      component.video = makeVideo();
+      component.events = of(makeVideo());
+      fixture.detectChanges();
+
+      expect(component.showFallback).toBe(false);
+      expect(fixture.nativeElement.querySelector('iframe.video-iframe')).not.toBeNull();
+
+      vi.advanceTimersByTime(8000);
+      fixture.detectChanges();
+
+      expect(component.showFallback).toBe(true);
+      const fallback = fixture.nativeElement.querySelector('.video-fallback');
+      expect(fallback).not.toBeNull();
+      expect(fallback.querySelector('.video-error').getAttribute('role')).toBe('alert');
+      expect(fixture.nativeElement.querySelector('iframe.video-iframe')).toBeNull();
+
+      component.retry();
+      fixture.detectChanges();
+      expect(component.showFallback).toBe(false);
+      expect(fixture.nativeElement.querySelector('iframe.video-iframe')).not.toBeNull();
+    } finally {
+      component.ngOnDestroy();
+      vi.useRealTimers();
+    }
+  });
+
+  it('clears the load timeout when the iframe loads', () => {
+    fixture.destroy();
+    vi.useFakeTimers();
+    try {
+      fixture = TestBed.createComponent(VideoPlayerDriveIframeComponent);
+      component = fixture.componentInstance;
+      component.video = makeVideo();
+      component.events = of(makeVideo());
+      fixture.detectChanges();
+
+      component.onIframeLoad();
+      vi.advanceTimersByTime(8000);
+      fixture.detectChanges();
+
+      expect(component.showFallback).toBe(false);
+      expect(fixture.nativeElement.querySelector('iframe.video-iframe')).not.toBeNull();
+    } finally {
+      component.ngOnDestroy();
+      vi.useRealTimers();
+    }
   });
 
   it('gives the iframe an accessible title', () => {

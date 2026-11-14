@@ -217,6 +217,50 @@
   display: inline;
 }
 
+// Detail-route rows: one line with a small icon, the title, and the year.
+.media-list-item.media-list-item-compact {
+  flex-wrap: nowrap;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+
+  .imageContainer {
+    width: 40px;
+    height: 40px;
+  }
+
+  .imageCenterer img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .media-list-placeholder-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .media-details-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-left: 10px;
+  }
+
+  .media-details-name {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+    font-size: 13px;
+  }
+
+  .media-details-year {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--color-ink-2);
+  }
+}
+
 .media-skeleton-list {
   display: flex;
   flex-direction: column;

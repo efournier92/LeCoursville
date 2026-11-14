@@ -21,8 +21,11 @@
     </mat-form-field>
 
     <mat-form-field class="family-filter-form-field">
-      <mat-label>By Family</mat-label>
-      <mat-select [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
+      <mat-label>
+        <span class="family-label-full">By Family</span>
+        <span class="family-label-short" aria-hidden="true">Family</span>
+      </mat-label>
+      <mat-select aria-label="By Family" [(value)]="selectedFamily" (selectionChange)="onFamilyChange()">
         @for (family of getFamilies(); track family) {
           <mat-option [value]="family.name">{{ family.name }}</mat-option>
         }
@@ -94,20 +97,22 @@
           @if (group.firstGeneration.length > 0) {
             <div class="first-generation-row">
               @for (node of group.firstGeneration; track node) {
-                @if (!$first) {
-                  <span class="person-separator" aria-hidden="true">&middot;</span>
-                }
-                <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getPersonId(node))" (keydown)="onFirstGenKeydown($event, getPersonId(node))">
-                  {{ getPersonName(node) }}
-                </span>
-                @if (getSpouseName(node)) {
-                  <span class="spouse-separator"> &amp; </span>
-                }
-                @if (getSpouseName(node)) {
-                  <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getSpouseId(node))" (keydown)="onFirstGenKeydown($event, getSpouseId(node))">
-                    {{ getSpouseName(node) }}
+                <span class="first-gen-entry">
+                  <span class="first-gen-person" [class.deceased]="isPersonDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getPersonId(node))" (keydown)="onFirstGenKeydown($event, getPersonId(node))">
+                    {{ getPersonName(node) }}
                   </span>
-                }
+                  @if (getSpouseName(node)) {
+                    <span class="spouse-separator"> &amp; </span>
+                  }
+                  @if (getSpouseName(node)) {
+                    <span class="first-gen-person" [class.deceased]="isSpouseDeceased(node)" role="button" tabindex="0" (click)="openPersonDetail(getSpouseId(node))" (keydown)="onFirstGenKeydown($event, getSpouseId(node))">
+                      {{ getSpouseName(node) }}
+                    </span>
+                  }
+                  @if (!$last) {
+                    <span class="person-separator" aria-hidden="true">&middot;</span>
+                  }
+                </span>
               }
             </div>
           }

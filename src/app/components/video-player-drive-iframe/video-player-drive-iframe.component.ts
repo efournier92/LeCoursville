@@ -19,8 +19,11 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   isLoading: boolean;
   videoUrl: SafeResourceUrl | null;
   videoErrorMessage = '';
+  showFallback = false;
 
   private eventsSubscription: Subscription;
+  private loadTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly LOAD_TIMEOUT_MS = 8000;
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -37,19 +40,51 @@ export class VideoPlayerDriveIframeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearLoadTimer();
     this.eventsSubscription.unsubscribe();
   }
 
+  onIframeLoad(): void {
+    this.clearLoadTimer();
+  }
+
+  retry(): void {
+    this.showFallback = false;
+    this.videoErrorMessage = '';
+    this.updateVideoUrl(this.video);
+  }
+
   private updateVideoUrl(video: Video): void {
+    this.clearLoadTimer();
+    this.showFallback = false;
     const previewUrl = this.toPreviewUrl(video.urls.download);
     if (!previewUrl) {
       this.videoUrl = null;
+      this.showFallback = true;
       this.videoErrorMessage =
         'This video could not be played because its Drive link could not be recognized.';
       return;
     }
     this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(previewUrl);
     this.videoErrorMessage = '';
+    this.startLoadTimer();
+  }
+
+  // Cross-origin error pages still fire `load`, so the app cannot inspect
+  // Drive's response. A missing load event is the one failure it can detect.
+  private startLoadTimer(): void {
+    this.loadTimer = setTimeout(() => {
+      this.showFallback = true;
+      this.videoErrorMessage =
+        'This video is taking longer than expected to load.';
+    }, VideoPlayerDriveIframeComponent.LOAD_TIMEOUT_MS);
+  }
+
+  private clearLoadTimer(): void {
+    if (this.loadTimer) {
+      clearTimeout(this.loadTimer);
+      this.loadTimer = null;
+    }
   }
 
   // Drive only embeds /preview; /view, /edit, /open, and /uc links need

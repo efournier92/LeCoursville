@@ -18,15 +18,21 @@
           <input id="eventName" type="text" [(ngModel)]="suggestedEvent" placeholder="LeCoursville Reunion" />
         </div>
         <div class="drop-zone"
+          role="button"
+          tabindex="0"
+          aria-label="Select files to upload"
           [class.dragging]="isDragging"
           (dragover)="onDragOver($event)"
           (dragleave)="onDragLeave($event)"
           (drop)="onDrop($event)"
-          (click)="fileInput.click()">
+          (click)="fileInput.click()"
+          (keydown.enter)="fileInput.click()"
+          (keydown.space)="fileInput.click(); $event.preventDefault()">
           <input #fileInput type="file" multiple (change)="onFileSelect($event)" hidden data-testid="upload-file-input">
           <div class="drop-icon"><mat-icon>perm_media</mat-icon></div>
-          <p>Click To Select Files</p>
-          <p>Or Drag & Drop</p>
+          <p class="drop-copy-select">Click To Select Files</p>
+          <p class="drop-copy-drag">Or Drag & Drop</p>
+          <p class="drop-copy-tap">Tap to select files</p>
         </div>
         <div class="folder-upload-link">
           <input #folderInput type="file" webkitDirectory (change)="onFolderSelect($event)" hidden>

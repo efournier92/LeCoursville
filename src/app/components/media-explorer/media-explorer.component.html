@@ -1,14 +1,16 @@
 <div class="media-explorer-component page-ground page-content">
   <app-page-toolbar [title]="title">
-    <mat-form-field class="media-list-filters-input" appearance="outline">
-      <mat-label>Filter</mat-label>
-      <input
-        matInput
-        name="media-explorer-filter"
-        (input)="onSearchInputChange($event)"
-        [(ngModel)]="searchQuery"
-        />
-    </mat-form-field>
+    @if (!selectedMedia?.id) {
+      <mat-form-field class="media-list-filters-input" appearance="outline">
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          name="media-explorer-filter"
+          (input)="onSearchInputChange($event)"
+          [(ngModel)]="searchQuery"
+          />
+      </mat-form-field>
+    }
   </app-page-toolbar>
 
   <div class="row">
@@ -16,6 +18,19 @@
       <div
         class="media-explorer-player-container col-lg-7 justify-content-center"
         >
+        <div class="media-explorer-heading">
+          <h1 class="media-explorer-title">{{ selectedMedia.title }}</h1>
+          @if (selectedMedia.date || selectedMedia.duration) {
+            <p class="media-explorer-meta">
+              @if (selectedMedia.date) {
+                <span class="media-explorer-meta-date">{{ selectedMedia.date }}</span>
+              }
+              @if (selectedMedia.duration) {
+                <span class="media-explorer-meta-duration">{{ selectedMedia.duration }}</span>
+              }
+            </p>
+          }
+        </div>
         @if (isVideo(selectedMedia)) {
           <div
             class="media-component-container"
@@ -132,6 +147,7 @@
         <app-media-list
           [mediaTypesToShow]="mediaTypesToShow"
           [isAdminMode]="false"
+          [compact]="!!selectedMedia?.id"
           [searchQuery]="searchQuery"
           (mediaClickEvent)="onMediaSelect($event)"
         ></app-media-list>
