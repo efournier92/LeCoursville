@@ -99,47 +99,101 @@ test('toggle switches the document to dark', async ({ page }) => {
   await expect(body(page)).not.toHaveCSS('background-color', 'rgb(243, 244, 246)');
 });
 
-test('theme control exposes switch semantics with an action icon', async ({ page }) => {
+test('theme control exposes a two-option sun/moon pill with switch semantics', async ({ page }) => {
   await login(page, 'user');
   const toggle = page.getByTestId('theme-toggle');
+  const sun = page.getByTestId('theme-icon-sun');
+  const moon = page.getByTestId('theme-icon-moon');
   await expect(toggle).toHaveAttribute('role', 'switch');
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
   // The accessible name stays constant: state is carried by aria-checked.
   await expect(toggle).toHaveAccessibleName('Dark mode');
-  // Icon shows the action, not current state: moon in light (→ dark),
-  // sun in dark (→ light).
-  await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
-  await expect(page.getByTestId('theme-icon-moon')).toHaveText('dark_mode');
-  await expect(page.getByTestId('theme-icon-sun')).toHaveCount(0);
+  // Both options are always present; the active one carries the highlight.
+  await expect(sun).toBeVisible();
+  await expect(sun).toHaveText(/light_mode/);
+  await expect(moon).toBeVisible();
+  await expect(moon).toHaveText(/dark_mode/);
+  await expect(sun).toHaveClass(/is-active/);
+  await expect(moon).not.toHaveClass(/is-active/);
+  // The active option's background must differ from the inactive one.
+  const [sunBg, moonBg] = await Promise.all([
+    sun.evaluate((el) => getComputedStyle(el).backgroundColor),
+    moon.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+  expect(sunBg).not.toBe(moonBg);
+
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
   await expect(toggle).toHaveAccessibleName('Dark mode');
-  await expect(page.getByTestId('theme-icon-sun')).toBeVisible();
-  await expect(page.getByTestId('theme-icon-moon')).toHaveCount(0);
+  await expect(sun).toBeVisible();
+  await expect(moon).toBeVisible();
+  await expect(moon).toHaveClass(/is-active/);
+  await expect(sun).not.toHaveClass(/is-active/);
+  const [sunDarkBg, moonDarkBg] = await Promise.all([
+    sun.evaluate((el) => getComputedStyle(el).backgroundColor),
+    moon.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+  expect(moonDarkBg).not.toBe(sunDarkBg);
+
   await toggle.click();
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
 });
 
-test('theme toggle sits at the far right of the top nav, after Account', async ({ page }) => {
+test('theme toggle has no lit circle on hover', async ({ page }) => {
+  await login(page, 'user');
+  const toggle = page.getByTestId('theme-toggle');
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await page.hover('[data-testid="theme-toggle"]');
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  // The two-option pill itself stays visible on hover.
+  await expect(page.getByTestId('theme-icon-sun')).toBeVisible();
+  await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
+});
+
+test('theme toggle sits immediately left of the desktop nav items', async ({ page }) => {
   await login(page, 'user');
   const logo = page.locator('.toolbar-logo');
   const toggle = page.getByTestId('theme-toggle');
+  const people = page.getByRole('link', { name: 'People' });
   const account = page.getByRole('link', { name: 'Account' });
+  const toolbar = page.locator('mat-toolbar');
   await expect(logo).toBeVisible();
   await expect(toggle).toBeVisible();
+  await expect(people).toBeVisible();
   await expect(account).toBeVisible();
   const logoBox = await logo.boundingBox();
   const toggleBox = await toggle.boundingBox();
+  const pillBox = await toggle.locator('app-theme-pill').boundingBox();
+  const peopleBox = await people.boundingBox();
   const accountBox = await account.boundingBox();
-  expect(logoBox && toggleBox && accountBox).toBeTruthy();
+  const toolbarBox = await toolbar.boundingBox();
+  expect(logoBox && toggleBox && pillBox && peopleBox && accountBox && toolbarBox).toBeTruthy();
+  // The pill must sit fully inside the button on both axes: no circular
+  // button edge peeking past the wider pill.
+  expect(toggleBox!.x).toBeLessThanOrEqual(pillBox!.x);
+  expect(pillBox!.x + pillBox!.width).toBeLessThanOrEqual(toggleBox!.x + toggleBox!.width);
+  expect(toggleBox!.y).toBeLessThanOrEqual(pillBox!.y);
+  expect(pillBox!.y + pillBox!.height).toBeLessThanOrEqual(toggleBox!.y + toggleBox!.height);
   // Logo stays within the 64px toolbar row (it had blown up when the left
   // cluster lost its definite height).
   expect(logoBox!.height).toBeLessThanOrEqual(64);
-  // Logo on the left; toggle is the rightmost control, after Account.
+  expect(toolbarBox!.height).toBe(64);
+  // Logo on the left, the toggle centered in the gap before the nav items.
   expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
-  expect(accountBox!.x + accountBox!.width).toBeLessThanOrEqual(toggleBox!.x);
+  expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(peopleBox!.x);
+  expect(peopleBox!.x).toBeLessThanOrEqual(accountBox!.x);
+  // The toggle sits in the middle of the logo-to-People gap, within 2px.
+  const gapCenter = (logoBox!.x + logoBox!.width + peopleBox!.x) / 2;
+  const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
+  expect(Math.abs(toggleCenterX - gapCenter)).toBeLessThanOrEqual(2);
+  // Toggle keeps its 44px target.
+  expect(toggleBox!.height).toBe(44);
+  // Toggle stays vertically centered in the toolbar.
+  const toggleCenter = toggleBox!.y + toggleBox!.height / 2;
+  const toolbarCenter = toolbarBox!.y + toolbarBox!.height / 2;
+  expect(Math.abs(toggleCenter - toolbarCenter)).toBeLessThanOrEqual(2);
 });
 
 test('theme switch operates by keyboard', async ({ page }) => {
@@ -274,6 +328,9 @@ test('account theme toggle keeps you on the account page', async ({ page }) => {
   await page.getByRole('link', { name: 'Account' }).click();
   await expect(page).toHaveURL('/account');
   const pref = page.getByTestId('account-always-dark');
+  // The shared pill is the same structure as the topbar's: two options, one active.
+  await expect(pref.locator('app-theme-pill .theme-pill-opt')).toHaveCount(2);
+  await expect(pref.locator('app-theme-pill .theme-pill-opt.is-active')).toHaveCount(1);
   await pref.click();
   await expect(pref).toHaveAttribute('aria-checked', 'true');
   // Regression: the profile write used to emit a user update that re-ran the
@@ -292,18 +349,38 @@ test('clicking anywhere on the account theme chip toggles it', async ({ page }) 
   await expect(pref).toHaveAttribute('aria-checked', 'true');
 });
 
-test('mobile: theme toggle sits just left of the hamburger', async ({ page }) => {
+test('mobile: logo, toggle, and hamburger sit left to right', async ({ page }) => {
   await page.setViewportSize({ width: 600, height: 800 });
   await login(page, 'user');
+  const logo = page.locator('.toolbar-logo');
   const toggle = page.getByTestId('theme-toggle');
   const burger = page.locator('.menu-icon-container');
+  await expect(logo).toBeVisible();
   await expect(toggle).toBeVisible();
   await expect(burger).toBeVisible();
+  const logoBox = await logo.boundingBox();
   const toggleBox = await toggle.boundingBox();
   const burgerBox = await burger.boundingBox();
-  expect(toggleBox && burgerBox).toBeTruthy();
-  // Toggle is immediately left of the burger, which stays at the right edge.
+  expect(logoBox && toggleBox && burgerBox).toBeTruthy();
+  // Logo, then toggle beside it, then the hamburger at the right edge.
+  expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
   expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(burgerBox!.x);
+  // The toggle is centered in the logo-to-hamburger gap, within 2px.
+  const gapCenter = (logoBox!.x + logoBox!.width + burgerBox!.x) / 2;
+  const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
+  expect(Math.abs(toggleCenterX - gapCenter)).toBeLessThanOrEqual(2);
+
+  await toggle.click();
+  // WebKit does not focus buttons on click, so never assert focus here.
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(toggle).toHaveCSS('outline-style', 'none');
+  const clickToggleBox = await toggle.boundingBox();
+  const clickBurgerBox = await burger.boundingBox();
+  expect(clickToggleBox && clickBurgerBox).toBeTruthy();
+  expect(clickBurgerBox!.x - (clickToggleBox!.x + clickToggleBox!.width)).toBeGreaterThanOrEqual(10);
+  // The gap still centers the toggle after the click.
+  const clickGapCenter = (logoBox!.x + logoBox!.width + clickBurgerBox!.x) / 2;
+  expect(Math.abs(clickToggleBox!.x + clickToggleBox!.width / 2 - clickGapCenter)).toBeLessThanOrEqual(2);
 });
 
 test('light dialog scrim separates the sheet from the pale page', async ({ page }) => {

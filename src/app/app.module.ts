@@ -24,6 +24,7 @@ import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-mod
 import { ConfirmDialogComponent } from "src/app/components/confirm-dialog/confirm-dialog.component";
 import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
 import { SiteFooterComponent } from "src/app/components/site-footer/site-footer.component";
+import { DataPrivacyDialogComponent } from "src/app/components/data-privacy-dialog/data-privacy-dialog.component";
 import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
 import { ContactsComponent } from "src/app/components/contacts/contacts.component";
 import { FileInputComponent } from "src/app/components/file-input/file-input.component";
@@ -46,6 +47,7 @@ import { PeopleComponent } from "./components/people/people.component";
 import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
+import { ThemePillComponent } from "./components/shared/theme-pill/theme-pill.component";
 
 @NgModule({ declarations: [
         AdminMediaComponent,
@@ -77,6 +79,8 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         AuthActionComponent,
         RecoveryRequestComponent,
         SiteFooterComponent,
+        DataPrivacyDialogComponent,
+        ThemePillComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     bootstrap: [AppComponent],

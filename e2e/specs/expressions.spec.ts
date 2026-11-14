@@ -129,4 +129,13 @@ test.describe('expressions', () => {
     await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
     await expect(page.locator('.expression-actions').first()).toBeVisible();
   });
+
+  test('create expression button uses the theme-invariant brand fill', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/expressions');
+    const button = page.getByRole('button', { name: 'Create Expression' });
+    await expect(button).toBeVisible();
+    await expect(button).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(button).toHaveCSS('color', 'rgb(255, 255, 255)');
+  });
 });

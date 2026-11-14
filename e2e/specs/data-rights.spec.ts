@@ -36,12 +36,18 @@ async function removeRequestsFor(contact: string): Promise<void> {
   }
 }
 
+async function openDialog(page: import('@playwright/test').Page): Promise<void> {
+  await page.getByTestId('data-privacy-link').click();
+  await expect(page.getByTestId('data-privacy-dialog')).toBeVisible();
+}
+
 async function submitRequest(
   page: import('@playwright/test').Page,
   kind: 'removal' | 'update',
   contact: string,
   description: string,
 ): Promise<void> {
+  await openDialog(page);
   await page.getByTestId(`data-request-open-${kind}`).click();
   await expect(page.getByTestId('data-request-form')).toBeVisible();
   await page.getByTestId('data-request-contact').fill(contact);
@@ -51,17 +57,20 @@ async function submitRequest(
 }
 
 test.describe('data rights footer', () => {
-  test('footer renders on user routes, the signed-out root, and hides on admin and print', async ({ page }) => {
+  test('footer renders a slim data privacy link on user routes, the signed-out root, and hides on admin and print', async ({ page }) => {
     await page.goto('/');
     const footer = page.getByTestId('site-footer');
     await expect(footer).toBeVisible();
-    await expect(footer).toContainText('Our family keeps this site, and we want it to be right for all who visit.');
-    await expect(footer.getByTestId('data-request-open-update')).toHaveText('Update');
-    await expect(footer.getByTestId('data-request-open-removal')).toHaveText('Remove');
-    await expect(footer.getByTestId('data-request-open-contact')).toHaveText('Contact');
-    await expect(footer.getByTestId('data-request-response')).toHaveText(
-      'We review each request and reply to the email or phone you give us.',
-    );
+    await expect(footer.getByTestId('data-privacy-link')).toHaveText('Privacy');
+    await expect(footer).not.toContainText('Our family keeps this site');
+
+    const quiet = await footer.evaluate(el => {
+      const styles = getComputedStyle(el);
+      return { background: styles.backgroundColor, borderTop: styles.borderTopWidth };
+    });
+    expect(quiet.background).toBe('rgba(0, 0, 0, 0)');
+    expect(quiet.borderTop).toBe('0px');
+    await expect(footer.getByTestId('data-privacy-link')).toHaveCSS('text-decoration-line', 'underline');
 
     await page.emulateMedia({ media: 'print' });
     await expect(footer).toBeHidden();
@@ -74,13 +83,71 @@ test.describe('data rights footer', () => {
     await expect(page.getByTestId('site-footer')).toBeVisible();
 
     await login(page, 'admin');
+
+    // The quiet footer's link right-aligns with the page content column.
+    await page.goto('/expressions');
+    await expect(page.locator('.page-content')).toBeVisible();
+    const linkRight = await page.getByTestId('data-privacy-link').evaluate(el => el.getBoundingClientRect().right);
+    const contentRight = await page.locator('.page-content').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.right - parseFloat(getComputedStyle(el).paddingRight);
+    });
+    expect(Math.abs(linkRight - contentRight)).toBeLessThanOrEqual(1);
+
     await page.goto('/admin/data-requests');
     await expect(page.getByTestId('admin-data-requests-list')).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId('site-footer')).toHaveCount(0);
   });
 
+  test('the data privacy dialog holds the information section and its actions', async ({ page }) => {
+    await page.goto('/');
+    await openDialog(page);
+
+    const dialog = page.getByTestId('data-privacy-dialog');
+    await expect(dialog.getByRole('heading', { name: 'Your information' })).toBeVisible();
+    await expect(dialog).toContainText('Our family keeps this site, and we want it to be right for all who visit.');
+    await expect(dialog.getByTestId('data-request-open-update')).toHaveText('Update');
+    await expect(dialog.getByTestId('data-request-open-removal')).toHaveText('Remove');
+    await expect(dialog.getByTestId('data-request-open-contact')).toHaveText('Contact');
+    await expect(dialog.getByTestId('data-request-response')).toHaveText(
+      'We review each request and reply to the email or phone you give us.',
+    );
+  });
+
+  test('a short page pins the footer to the viewport bottom', async ({ page }) => {
+    // Taller than the family explorer's content, so there is free vertical space.
+    await page.setViewportSize({ width: 1280, height: 1000 });
+    await page.goto('/family-explorer/archive-1');
+    await expect(page.getByTestId('family-chart')).toBeVisible();
+    const footer = page.getByTestId('site-footer');
+    await expect(footer).toBeVisible();
+    const viewport = page.viewportSize()!;
+    const box = (await footer.boundingBox())!;
+    expect(Math.abs(viewport.height - (box.y + box.height))).toBeLessThanOrEqual(2);
+  });
+
+  test('Escape closes the dialog and resets the request state', async ({ page }) => {
+    await page.goto('/');
+    await openDialog(page);
+    await page.getByTestId('data-request-open-removal').click();
+    await page.getByTestId('data-request-contact').fill('escape@e2e.local');
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('data-privacy-dialog')).toHaveCount(0);
+
+    await openDialog(page);
+    await page.getByTestId('data-request-open-removal').click();
+    await expect(page.getByTestId('data-request-contact')).toHaveValue('');
+
+    await page.getByTestId('data-request-contact').fill('close@e2e.local');
+    await page.getByTestId('data-privacy-close').click();
+    await expect(page.getByTestId('data-privacy-dialog')).toHaveCount(0);
+    await openDialog(page);
+    await expect(page.getByTestId('data-request-success')).toHaveCount(0);
+  });
+
   test('each action opens its own heading and body', async ({ page }) => {
     await page.goto('/');
+    await openDialog(page);
     const cases = [
       {
         kind: 'update',
@@ -145,6 +212,7 @@ test.describe('data rights footer', () => {
 
   test('canceling the form clears the previous visitor contact and details', async ({ page }) => {
     await page.goto('/');
+    await openDialog(page);
     await page.getByTestId('data-request-open-removal').click();
     await page.getByTestId('data-request-contact').fill('shared-device@e2e.local');
     await page.getByTestId('data-request-description').fill('Private details');
@@ -158,6 +226,7 @@ test.describe('data rights footer', () => {
 
   test('labels, aria-invalid, and inline errors are wired to their fields', async ({ page }) => {
     await page.goto('/');
+    await openDialog(page);
     await page.getByTestId('data-request-open-removal').click();
 
     const contact = page.getByLabel('Email or phone');
@@ -326,67 +395,76 @@ test.describe('data rights footer', () => {
     await expect(row.getByTestId('admin-data-request-resolve')).toBeVisible();
   });
 
-  test('footer is Tab reachable, keeps visible focus, and announces success', async ({ page }) => {
+  test('privacy link is Tab reachable, keeps visible focus, and announces success', async ({ page }) => {
     await page.goto('/');
-    const removal = page.getByTestId('data-request-open-removal');
+    const link = page.getByTestId('data-privacy-link');
+    const dialog = page.getByTestId('data-privacy-dialog');
+    const removal = dialog.getByTestId('data-request-open-removal');
 
     // WebKit follows the macOS default and skips buttons on plain Tab.
     const tab = test.info().project.name === 'webkit' ? 'Alt+Tab' : 'Tab';
     let reached = false;
     for (let i = 0; i < 80 && !reached; i += 1) {
       await page.keyboard.press(tab);
-      reached = await removal.evaluate(el => el === document.activeElement);
+      reached = await link.evaluate(el => el === document.activeElement);
     }
     expect(reached).toBe(true);
-    await expect(removal).toBeFocused();
-    await expect(removal).toHaveCSS('outline-style', 'solid');
+    await expect(link).toBeFocused();
+    await expect(link).toHaveCSS('outline-style', 'solid');
 
     await page.keyboard.press('Enter');
-    await expect(page.getByTestId('data-request-form')).toBeVisible();
+    await expect(dialog).toBeVisible();
+    // MatDialog moves focus inside the dialog on open.
+    await expect(dialog.locator(':focus')).toHaveCount(1);
+
+    await page.keyboard.press(tab);
+    await expect(removal).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(dialog.getByTestId('data-request-form')).toBeVisible();
     // Remaining action buttons, then the data-class select, then the contact field.
     for (let i = 0; i < 3; i += 1) {
       await page.keyboard.press(tab);
     }
-    await expect(page.getByTestId('data-request-contact')).toBeFocused();
+    await expect(dialog.getByTestId('data-request-contact')).toBeFocused();
     await page.keyboard.type('keyboard@e2e.local');
     await page.keyboard.press(tab);
     await page.keyboard.press(tab);
     await page.keyboard.press(tab);
-    await expect(page.getByTestId('data-request-submit')).toBeFocused();
+    await expect(dialog.getByTestId('data-request-submit')).toBeFocused();
     await page.keyboard.press('Enter');
 
-    const success = page.getByTestId('data-request-success');
+    const success = dialog.getByTestId('data-request-success');
     await expect(success).toBeVisible();
     await expect(success).toBeFocused();
-    await expect(page.getByTestId('data-request-status')).toContainText('We will review your request');
+    await expect(dialog.getByTestId('data-request-status')).toContainText('We will review your request');
     await removeRequestsFor('keyboard@e2e.local');
   });
 
-  test('footer is legible in both themes', async ({ page }) => {
+  test('slim footer is legible in both themes', async ({ page }) => {
     await page.goto('/');
     const footer = page.getByTestId('site-footer');
     await expect(footer).toBeVisible();
-    await expect(footer).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    const link = page.getByTestId('data-privacy-link');
+    await expect(link).toBeVisible();
+    await expect(link).toHaveCSS('color', 'rgb(91, 100, 112)');
     await expect(page.getByTestId('theme-toggle')).toBeVisible();
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(footer).toHaveCSS('background-color', 'rgb(27, 31, 36)');
-    await expect(footer).toHaveCSS('color', 'rgb(230, 233, 237)');
+    await expect(link).toHaveCSS('color', 'rgb(168, 176, 186)');
   });
 
-  test('mobile footer stacks without horizontal overflow', async ({ page }) => {
+  test('mobile footer stays slim without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     const footer = page.getByTestId('site-footer');
     await expect(footer).toBeVisible();
     await expectNoHorizontalOverflow(footer);
 
-    const removal = await page.getByTestId('data-request-open-removal').boundingBox();
-    const update = await page.getByTestId('data-request-open-update').boundingBox();
-    expect(removal).not.toBeNull();
-    expect(update).not.toBeNull();
-    expect(Math.abs(removal!.x - update!.x)).toBeLessThan(2);
-    expect(removal!.y).toBeGreaterThan(update!.y);
+    const link = (await page.getByTestId('data-privacy-link').boundingBox())!;
+    expect(link.x).toBeGreaterThanOrEqual(0);
+    expect(link.x + link.width).toBeLessThanOrEqual(390);
+    await openDialog(page);
+    await expect(page.getByTestId('data-request-open-removal')).toBeVisible();
   });
 
   test('request text cannot inject script', async ({ page }) => {

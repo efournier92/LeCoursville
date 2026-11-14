@@ -149,7 +149,7 @@
   border: none;
   border-radius: var(--radius-control);
   background: var(--color-brand-solid);
-  color: var(--color-on-brand);
+  color: var(--color-on-brand-solid);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
@@ -166,7 +166,7 @@
   }
 
   &:hover:not(:disabled) {
-    background: var(--color-brand-primary-hover);
+    background: var(--color-brand-solid-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-primary) 35%, transparent);
   }

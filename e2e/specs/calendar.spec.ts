@@ -22,6 +22,54 @@ test.describe('calendar', () => {
     await writeDb('features/legacyCalendarPdf/enabled', false);
   });
 
+  test('top bar keeps filters on one horizontal row without label overlap', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    await page.setViewportSize({ width: 1280, height: 900 });
+    try {
+      await page.goto('/calendar');
+      const filters = page.locator('.calendar-toolbar-filters');
+      await expect(filters).toHaveCSS('flex-direction', 'row');
+
+      const gaps = await filters.locator('mat-slide-toggle').evaluateAll((toggles) =>
+        toggles.map((toggle) => {
+          const track = toggle.querySelector('.mdc-switch__track');
+          const label = toggle.querySelector('label');
+          if (!track || !label) return null;
+          return label.getBoundingClientRect().left - track.getBoundingClientRect().right;
+        }));
+      expect(gaps).not.toContain(null);
+      for (const gap of gaps) {
+        expect(gap, `label/track gap ${gaps.join(',')}`).toBeGreaterThanOrEqual(0);
+      }
+
+      const handles = await filters.locator('mat-slide-toggle').evaluateAll((toggles) =>
+        toggles.map((toggle) => {
+          const track = toggle.querySelector('.mdc-switch__track');
+          const handle = toggle.querySelector('.mdc-switch__handle');
+          if (!track || !handle) return null;
+          const t = track.getBoundingClientRect();
+          const h = handle.getBoundingClientRect();
+          return { track: { left: t.left, right: t.right, top: t.top, bottom: t.bottom },
+            handle: { left: h.left, right: h.right, top: h.top, bottom: h.bottom } };
+        }));
+      expect(handles).not.toContain(null);
+      for (const box of handles) {
+        expect(box!.handle.right - box!.handle.left, `handle boxes ${JSON.stringify(handles)}`).toBeGreaterThan(0);
+        expect(box!.handle.left, `handle left ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(box!.track.left - 1);
+        expect(box!.handle.right, `handle right ${JSON.stringify(box)}`).toBeLessThanOrEqual(box!.track.right + 1);
+        expect(box!.handle.top, `handle top ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(box!.track.top - 1);
+        expect(box!.handle.bottom, `handle bottom ${JSON.stringify(box)}`).toBeLessThanOrEqual(box!.track.bottom + 1);
+      }
+
+      const bar = await page.locator('app-page-toolbar .page-toolbar').boundingBox();
+      expect(bar).not.toBeNull();
+      expect(bar!.height).toBeLessThan(120);
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('top bar does not overflow horizontally at 900px and 768px', async ({ page }) => {
     await login(page, 'admin');
     const original = page.viewportSize()!;
@@ -268,6 +316,41 @@ test.describe('calendar', () => {
     expect(mobileMargins.top).toBe(mobileMargins.bottom);
   });
 
+  test('mobile toolbar lays filters in a 2x2 grid and stretches Print to the card width', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    await page.setViewportSize({ width: 390, height: 844 });
+    try {
+      await page.goto('/calendar');
+      const filters = page.locator('.calendar-toolbar-filters');
+      const columns = await filters.evaluate((el) =>
+        getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+      expect(columns).toBe(2);
+
+      const print = page.locator('.calendar-print-button');
+      await expect(print).toBeVisible();
+      const actions = page.locator('.calendar-toolbar-actions');
+      const printBox = await print.boundingBox();
+      const actionsBox = await actions.boundingBox();
+      expect(printBox).not.toBeNull();
+      expect(actionsBox).not.toBeNull();
+      expect(Math.abs(printBox!.width - actionsBox!.width)).toBeLessThanOrEqual(2);
+      expect(printBox!.width).toBeGreaterThanOrEqual(200);
+
+      const clips = await filters.locator('mat-slide-toggle').evaluateAll((toggles) =>
+        toggles.map((toggle) => toggle.scrollWidth - toggle.clientWidth));
+      for (const clip of clips) {
+        expect(clip).toBeLessThanOrEqual(1);
+      }
+
+      const pageOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(pageOverflow).toBeLessThanOrEqual(0);
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('legacy picker uses the shared scale and the primary action treatment', async ({ page }) => {
     await writeDb('features/legacyCalendarPdf/enabled', true);
     await login(page, 'admin');
@@ -294,7 +377,7 @@ test.describe('calendar', () => {
   test('passed-away filter uses plain language, not the old jargon', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
-    await expect(page.getByRole('switch', { name: 'Show relatives who have passed' })).toBeVisible();
+    await expect(page.getByRole('switch', { name: 'Show deceased' })).toBeVisible();
     await expect(page.getByText('Include Not Living')).toHaveCount(0);
   });
 
@@ -357,7 +440,7 @@ test.describe('calendar', () => {
 
     await page.goto('/calendar?year=2026&month=1');
     const edith = page.locator('.event-birth', { hasText: 'Edith Evans' });
-    const notLiving = page.getByRole('switch', { name: 'Show relatives who have passed' });
+    const notLiving = page.getByRole('switch', { name: 'Show deceased' });
     if ((await notLiving.getAttribute('aria-checked')) === 'true') await notLiving.click();
     await expect(edith).toHaveCount(0);
     await notLiving.click();

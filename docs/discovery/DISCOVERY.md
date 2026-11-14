@@ -5,6 +5,12 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261113-03 | 2026-11-13 | [decision] | admin/ui | Data rights footer is a slim pinned "Data Privacy" bar. The information and request form live in a MatDialog, and print hides the footer host | src/app/components/site-footer/site-footer.component.html:1
+
+- D-20261113-02 | 2026-11-13 | [trap] | calendar/print | A zero-height block (the footer host) landing exactly on a print page boundary makes Chromium emit a blank trailing PDF sheet | src/app/components/site-footer/site-footer.component.scss:37
+
+- D-20261113-01 | 2026-11-13 | [trap] | admin/ui | mat-slide-toggle with-icon handle margin defaults to 0 24px, pushing the 14px handle outside a 36px track and the check icon over the label. Set both with-icon margins and icon size | src/styles.scss:1060
+
 - D-20261109-12 | 2026-11-09 | [decision] | admin/ui | Data rights footer uses a family-voice split copy: friendly Update, calm Remove, and Contact, signed off with the draft marker removed | docs/handoffs/2026-11-09_UiReviewBatch.md
 
 - D-20261109-11 | 2026-11-09 | [trap] | build/perf | The dev seed must set expression authorName to the historical author, not the seed owner, because expression-view renders authorName with yearWritten | scripts/dev-seed/index.mjs:203

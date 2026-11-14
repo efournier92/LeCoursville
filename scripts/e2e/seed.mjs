@@ -313,6 +313,7 @@ async function main() {
     'album-1': { id: 'album-1', title: 'E2E Album One', coverPhotoId: 'photo-1-1', createdAt: now - 86400000, updatedAt: now - 86400000 },
     'album-2': { id: 'album-2', title: 'E2E Album Two', coverPhotoId: 'photo-2-1', createdAt: now, updatedAt: now },
     'album-3': { id: 'album-3', title: 'E2E Delete Album', coverPhotoId: 'photo-3-1', createdAt: now, updatedAt: now },
+    'album-4': { id: 'album-4', title: 'E2E Empty Album', coverPhotoId: '', createdAt: now, updatedAt: now },
   };
 
   const photos = {};
@@ -431,6 +432,13 @@ async function main() {
       id: 'media-video', title: 'E2E Video', artist: '', date: '2026',
       folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
       urls: { download: 'https://drive.google.com/file/d/e2efixture/preview', icon: '' },
+      type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:30',
+    },
+    // Legacy Google Docs video link: must route to the Drive iframe player.
+    'media-video-docs': {
+      id: 'media-video-docs', title: 'Legacy Drive Video', artist: '', date: '2026',
+      folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
+      urls: { download: 'https://docs.google.com/file/d/e2edocs/view', icon: '' },
       type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:30',
     },
     // Legacy non-Drive record with no storage block: exercises the native player

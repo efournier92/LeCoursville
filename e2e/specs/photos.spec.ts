@@ -77,6 +77,22 @@ test.describe('photos', () => {
       .toBe(true);
   });
 
+  test('empty album shows a page-level centered empty state', async ({ page }) => {
+    await login(page, 'admin');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/photos/album-4');
+    const message = page.locator('.no-results-message');
+    await expect(message).toBeVisible();
+    const [messageBox, pageBox] = await Promise.all([
+      message.boundingBox(),
+      page.locator('.page-content').boundingBox(),
+    ]);
+    expect(messageBox!.width).toBeGreaterThanOrEqual(400);
+    const messageCenter = messageBox!.x + messageBox!.width / 2;
+    const pageCenter = pageBox!.x + pageBox!.width / 2;
+    expect(Math.abs(messageCenter - pageCenter)).toBeLessThanOrEqual(2);
+  });
+
   test('slideshow renders and next/prev advance the image', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/photos/album-1/slideshow');

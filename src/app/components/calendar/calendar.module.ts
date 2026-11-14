@@ -12,6 +12,7 @@ import { CalendarDatepickerDialogComponent } from 'src/app/components/calendar-d
 import { CalendarPrintComponent } from 'src/app/components/calendar-print/calendar-print.component';
 import { CalendarPrinterComponent } from 'src/app/components/calendar-printer/calendar-printer.component';
 import { CalendarViewComponent } from 'src/app/components/calendar-view/calendar-view.component';
+import { DayAgendaComponent } from 'src/app/components/day-agenda/day-agenda.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { SharedModule } from 'src/app/components/shared/shared.module';
@@ -44,6 +45,7 @@ const routes: Routes = [
     CalendarComponent,
     CalendarViewComponent,
     CalendarCellComponent,
+    DayAgendaComponent,
     CalendarDatepickerDialogComponent,
     CalendarPrinterComponent,
     CalendarPrintComponent,

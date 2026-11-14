@@ -3,8 +3,8 @@
   min-height: var(--height-control);
   padding: 12px 16px;
   margin-top: 16px;
-  background: var(--color-brand-success);
-  color: var(--color-on-brand);
+  background: var(--color-brand-solid);
+  color: var(--color-on-brand-solid);
   border: none;
   border-radius: var(--radius-control);
   font-size: 16px;
@@ -13,7 +13,7 @@
   transition: background 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--color-brand-success-dark);
+    background: var(--color-brand-solid-hover);
   }
 
   &:disabled {

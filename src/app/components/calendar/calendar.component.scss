@@ -11,24 +11,28 @@
 .calendar-toolbar-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: space-between;
+  justify-content: flex-end;
   flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 .calendar-toolbar-filters {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
 }
 
 .calendar-toolbar-actions {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .calendar-checkbox {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--color-ink-2);
@@ -271,25 +275,31 @@
 
   .calendar-toolbar-row {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: stretch;
+    gap: 12px;
   }
 
   .calendar-toolbar-filters {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 4px;
     width: 100%;
   }
 
   .calendar-checkbox {
     font-size: 1rem;
     margin: 0;
+    height: 44px;
+  }
+
+  .calendar-toolbar-actions {
+    width: 100%;
   }
 
   .calendar-print-button {
     width: 100%;
-    margin-top: 4px;
+    margin-top: 0;
   }
 
   .calendar-nav-row {
@@ -315,6 +325,19 @@
     font-size: 0.8em;
   }
 }
+
+// Filters stay a wrapping row; Print needs the full row below once it no
+// longer fits beside them.
+@media (min-width: 601px) and (max-width: 720px) {
+  .calendar-toolbar-actions {
+    flex: 1 1 100%;
+  }
+
+  .calendar-print-button {
+    width: 100%;
+  }
+}
+
 .calendar-skeleton {
   display: flex;
   flex-direction: column;

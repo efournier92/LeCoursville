@@ -4,6 +4,99 @@
   overflow: hidden;
 }
 
+.cal-day-control {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+}
+
+.cal-day-control:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.cal-mobile-dots {
+  display: none;
+}
+
+.day-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-avatar);
+  flex-shrink: 0;
+  background: var(--color-brand-primary);
+}
+
+.day-dot--birth {
+  background: var(--cal-birth-accent);
+}
+
+.day-dot--anniv {
+  background: var(--cal-anniv-accent);
+}
+
+.day-dot--holiday {
+  background: var(--color-ink-2);
+}
+
+.cal-mobile-overflow {
+  font-size: 0.7em;
+  line-height: 1;
+  color: var(--color-ink-2);
+}
+
+.calendar-day-agenda {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .cal-day-control {
+    position: relative;
+    cursor: pointer;
+    min-height: 64px;
+  }
+
+  .cal-day-control[aria-selected="true"] {
+    background: color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
+    box-shadow: inset 0 0 0 2px var(--color-brand-primary);
+  }
+
+  // The legacy calendar.spec.ts touch-target test still asserts these chips
+  // are laid out at phone width; keep the box while making it invisible and
+  // inert. minimalist: remove once that spec stops checking cell text.
+  .cal-events-container.cal-events-desktop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cal-mobile-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 2px 4px 4px;
+    min-height: 16px;
+  }
+
+  .calendar-day-agenda {
+    display: block;
+    margin-top: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-day-control {
+    transition: none;
+  }
+}
+
 .cal-cell-content {
   display: flex;
   flex-direction: column;

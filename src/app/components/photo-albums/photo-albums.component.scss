@@ -5,11 +5,6 @@
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
 
-  // The no-results/empty message lives inside the grid; without this it is
-  // squeezed into a single 180px cell.
-  app-no-results-message {
-    grid-column: 1 / -1;
-  }
 }
 
 .skeleton-tile {

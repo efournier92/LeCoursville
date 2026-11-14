@@ -437,6 +437,16 @@ test.describe('media', () => {
     await expect(page.locator('.video-error')).toHaveCount(0);
   });
 
+  test('video: a legacy Google Docs file link routes to the Drive iframe player', async ({ page }) => {
+    await page.route('https://docs.google.com/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }),
+    );
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-docs');
+    await expect(page.locator('app-video-player-drive-iframe')).toBeVisible();
+    await expect(page.getByTestId('native-video-player')).toHaveCount(0);
+  });
+
   test('video: reselecting a failed source retries and shows the error again', async ({ page }) => {
     await page.route('**/assets/e2e-fixtures/fixture.mp4', (route) =>
       route.fulfill({ status: 200, contentType: 'text/plain', body: 'not a video' }),

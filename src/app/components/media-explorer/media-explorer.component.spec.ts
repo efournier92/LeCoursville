@@ -162,6 +162,34 @@ describe('MediaExplorerComponent video player branch', () => {
     expect(labels).toEqual(['Download', 'Share']);
   });
 
+  it('offers a new-tab link when the native source type is unsupported', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    component.onVideoError({ target: { error: { code: 4 } } } as any);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('.video-open-link');
+    expect(link).not.toBeNull();
+    expect(link.getAttribute('href')).toBe(
+      'https://assets.lecoursville.com/Video/broken.mp4',
+    );
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
+  });
+
+  it('shows no new-tab link for non code-4 errors', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    component.onVideoError({ target: { error: { code: 2 } } } as any);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.video-open-link')).toBeNull();
+  });
+
   it('reloads a reselected native video so a failed source retries', async () => {
     component.selectedMedia = videoMedia({
       download: 'https://assets.lecoursville.com/Video/broken.mp4',

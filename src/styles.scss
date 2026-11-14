@@ -506,7 +506,7 @@ html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
   animation: nav-skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-/* Below lg the real nav collapses to the hamburger; mirror it. */
+/* Below the desktop breakpoint the real nav collapses to the hamburger; mirror it. */
 .nav-skeleton-burger {
   width: 40px;
   height: 40px;
@@ -1040,7 +1040,7 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   margin-right: 4px;
 }
 
-// One switch control language: a 44px tap row and one 36x20 track for every
+// One switch control language: an iconless, halo-free 36x20 track for every
 // switch, matching the compact density used across the admin surfaces.
 .mat-mdc-slide-toggle {
   min-height: 44px;
@@ -1055,8 +1055,43 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   --mat-slide-toggle-with-icon-handle-size: 14px;
   --mat-slide-toggle-unselected-handle-horizontal-margin: 0 2px;
   --mat-slide-toggle-selected-handle-horizontal-margin: 0 2px;
+  // The handle icon is hidden, so the with-icon margins only keep the 14px
+  // knob inside the 18px travel.
+  --mat-slide-toggle-unselected-with-icon-handle-horizontal-margin: 0 2px;
+  --mat-slide-toggle-selected-with-icon-handle-horizontal-margin: 0 2px;
   --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0 2px;
   --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 2px;
+  // No interaction halo: a zero-size state layer with every state opacity off.
+  --mat-slide-toggle-state-layer-size: 0px;
+  --mat-slide-toggle-selected-hover-state-layer-opacity: 0;
+  --mat-slide-toggle-selected-focus-state-layer-opacity: 0;
+  --mat-slide-toggle-selected-pressed-state-layer-opacity: 0;
+  --mat-slide-toggle-unselected-hover-state-layer-opacity: 0;
+  --mat-slide-toggle-unselected-focus-state-layer-opacity: 0;
+  --mat-slide-toggle-unselected-pressed-state-layer-opacity: 0;
+  // Calm two-tone state: brand track with a white knob when selected, hairline
+  // track with a surface knob when not, and the same tones on every state.
+  --mat-slide-toggle-selected-track-color: var(--color-brand-solid);
+  --mat-slide-toggle-selected-hover-track-color: var(--color-brand-solid);
+  --mat-slide-toggle-selected-focus-track-color: var(--color-brand-solid);
+  --mat-slide-toggle-selected-pressed-track-color: var(--color-brand-solid);
+  --mat-slide-toggle-selected-handle-color: var(--color-on-brand-solid);
+  --mat-slide-toggle-selected-hover-handle-color: var(--color-on-brand-solid);
+  --mat-slide-toggle-selected-focus-handle-color: var(--color-on-brand-solid);
+  --mat-slide-toggle-selected-pressed-handle-color: var(--color-on-brand-solid);
+  --mat-slide-toggle-unselected-track-color: var(--color-border);
+  --mat-slide-toggle-unselected-hover-track-color: var(--color-border);
+  --mat-slide-toggle-unselected-focus-track-color: var(--color-border);
+  --mat-slide-toggle-unselected-pressed-track-color: var(--color-border);
+  --mat-slide-toggle-unselected-handle-color: var(--color-surface);
+  --mat-slide-toggle-unselected-hover-handle-color: var(--color-surface);
+  --mat-slide-toggle-unselected-focus-handle-color: var(--color-surface);
+  --mat-slide-toggle-unselected-pressed-handle-color: var(--color-surface);
+}
+
+// The handle icon is decorative; the geometry tokens above keep the knob sized.
+.mat-mdc-slide-toggle .mdc-switch__icons {
+  display: none;
 }
 
 // The handle track is what Material actually translates; the switch shell does

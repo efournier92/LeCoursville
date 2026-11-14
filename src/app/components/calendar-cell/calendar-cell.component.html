@@ -8,6 +8,7 @@
     'event-anniv': event.type === 'anniversary',
     'event-holiday': event.type === 'holiday'
   }"
+    (click)="$event.stopPropagation()"
     >
     <div
       class="calendar-cell-event-container"

@@ -1,0 +1,34 @@
+// Presentational sun/moon pill. The parent button owns the click; the track
+// sets its own vars and lets consumers override them for tinted surfaces.
+.theme-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--theme-pill-gap, 2px);
+  height: var(--theme-pill-height, 26px);
+  padding: var(--theme-pill-padding, 2px);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--theme-pill-track, color-mix(in srgb, var(--color-ink) 9%, transparent));
+  pointer-events: none;
+}
+
+.theme-pill-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--theme-pill-opt-width, 24px);
+  height: var(--theme-pill-opt-height, 22px);
+  border-radius: var(--radius-control);
+  color: var(--theme-pill-icon, var(--color-ink-2));
+
+  mat-icon {
+    font-size: var(--theme-pill-icon-size, 15px);
+    width: var(--theme-pill-icon-size, 15px);
+    height: var(--theme-pill-icon-size, 15px);
+  }
+
+  &.is-active {
+    background: var(--theme-pill-active-bg, var(--color-brand-solid));
+    color: var(--theme-pill-active-ink, var(--color-on-brand));
+  }
+}

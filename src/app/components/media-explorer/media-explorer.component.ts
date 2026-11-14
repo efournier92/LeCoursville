@@ -10,6 +10,7 @@ import { MediaService } from 'src/app/services/media.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { isExternalDriveUrl as isGoogleDriveUrl } from './video-source';
 
 @Component({
     selector: 'app-media-explorer',
@@ -32,6 +33,7 @@ export class MediaExplorerComponent implements OnInit {
   isLoading: boolean;
   searchQuery = '';
   videoErrorMessage = '';
+  videoErrorIsSrcNotSupported = false;
 
   constructor(
     private authService: AuthService,
@@ -142,6 +144,7 @@ export class MediaExplorerComponent implements OnInit {
 
   onVideoError(event: Event): void {
     const code = (event.target as HTMLVideoElement).error?.code;
+    this.videoErrorIsSrcNotSupported = code === 4;
     this.videoErrorMessage =
       code === 1 // MEDIA_ERR_ABORTED
         ? 'This video could not be played because playback was aborted.'
@@ -202,11 +205,7 @@ export class MediaExplorerComponent implements OnInit {
   }
 
   isExternalDriveUrl(selectedMedia: UploadableMedia): boolean {
-    const url = selectedMedia?.urls?.download ?? '';
-    return (
-      url.startsWith('https://drive.google.com/') ||
-      /^(https:\/\/)?docs\.google\.com\/open\?/.test(url)
-    );
+    return isGoogleDriveUrl(selectedMedia?.urls?.download);
   }
 
   isDocument(selectedMedia: UploadableMedia): boolean {
@@ -232,6 +231,7 @@ export class MediaExplorerComponent implements OnInit {
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
     this.videoErrorMessage = '';
+    this.videoErrorIsSrcNotSupported = false;
   }
 
   private scrollToTop(): void {
@@ -300,6 +300,7 @@ export class MediaExplorerComponent implements OnInit {
     if (media?.id === id) {
       this.selectedMedia = media;
       this.videoErrorMessage = '';
+      this.videoErrorIsSrcNotSupported = false;
       this.analyticsService.logEvent('media_explorer_load_by_query_param', {
         id: this.selectedMedia?.id,
         type: this.selectedMedia.type,

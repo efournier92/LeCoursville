@@ -43,6 +43,15 @@
               @if (videoErrorMessage) {
                 <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
               }
+              @if (videoErrorIsSrcNotSupported) {
+                <a
+                  class="video-open-link"
+                  [href]="selectedMedia.urls.download"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Open video in a new tab</a
+                >
+              }
             }
           </div>
         }

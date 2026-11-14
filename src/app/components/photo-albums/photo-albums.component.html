@@ -66,18 +66,19 @@
         </div>
       </div>
     }
-    @if (getFilteredAlbums().length === 0 && searchTerm) {
-      <app-no-results-message
-        [searchTerm]="searchTerm"
-        noun="albums"
-      ></app-no-results-message>
-    }
-    @if (getFilteredAlbums().length === 0 && !searchTerm) {
-      <app-no-results-message
-        title="We couldn't find any albums."
-        hint="Check back later."
-        [isCentered]="true"
-      ></app-no-results-message>
-    }
   </div>
+
+  @if (getFilteredAlbums().length === 0 && searchTerm) {
+    <app-no-results-message
+      [searchTerm]="searchTerm"
+      noun="albums"
+    ></app-no-results-message>
+  }
+  @if (getFilteredAlbums().length === 0 && !searchTerm) {
+    <app-no-results-message
+      title="We couldn't find any albums."
+      hint="Check back later."
+      [isCentered]="true"
+    ></app-no-results-message>
+  }
 }

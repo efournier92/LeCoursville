@@ -353,41 +353,6 @@
   white-space: nowrap;
 }
 
-// Compact sun/moon switch reusing the top-nav glyphs. Small by design: it
-// sits between Edit profile and Sign Out and should not compete with them.
-.theme-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: 26px;
-  padding: 2px;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--color-ink) 9%, transparent);
-  pointer-events: none;
-}
-
-.theme-pill-opt {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 22px;
-  border-radius: var(--radius-control);
-  color: var(--color-ink-2);
-
-  mat-icon {
-    font-size: 15px;
-    width: 15px;
-    height: 15px;
-  }
-
-  &.is-active {
-    background: var(--color-brand-solid);
-    color: var(--color-on-brand);
-  }
-}
-
 .auth-signout {
   min-height: 40px;
 

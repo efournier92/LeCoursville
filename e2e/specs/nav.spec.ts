@@ -89,7 +89,7 @@ test.describe('navigation', () => {
   test('at 600px the inline links are hidden and the hamburger carries them', async ({ page }) => {
     await login(page, 'admin');
     await page.setViewportSize({ width: 600, height: 800 });
-    // Below lg the inline nav collapses; only the hamburger shows.
+    // Below the 1280px desktop breakpoint the inline nav collapses; only the hamburger shows.
     await expect(page.locator('#lecoursville-navbar-links')).toBeHidden();
     const hamburger = page.locator('.icons-menu .menu-icon-container');
     await expect(hamburger).toBeVisible();
@@ -99,6 +99,19 @@ test.describe('navigation', () => {
     // mat-menu items carry role=menuitem, not button.
     await expect(menu.getByRole('menuitem', { name: 'People' })).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: 'Calendar' })).toBeVisible();
+  });
+
+  test('the nav collapses just below the 1280px desktop breakpoint', async ({ page }) => {
+    await login(page, 'user');
+    const hamburger = page.getByRole('button', { name: 'Open navigation menu' });
+
+    await page.setViewportSize({ width: 1279, height: 800 });
+    await expect(page.locator('#lecoursville-navbar-links')).toBeHidden();
+    await expect(hamburger).toBeVisible();
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+    await expect(hamburger).toBeHidden();
   });
 
   test('active nav button shows a 3px bar flush with the toolbar bottom', async ({ page }) => {

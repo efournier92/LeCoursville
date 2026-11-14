@@ -23,56 +23,74 @@
     let-day="day"
     let-locale="locale"
     >
-    <div class="cal-cell-content">
-      <div class="cal-cell-top">
-        <span
-          class="cal-day-number"
-          [attr.aria-current]="day.isToday ? 'date' : null"
-        >{{
-          day.date | calendarDate : 'monthViewDayNumber' : locale
-        }}</span>
-      </div>
-      <div
-        class="cal-events-container"
-        [id]="'events-' + day.date.getTime()"
-        [class.expanded]="expandedDays[day.date.toISOString()]"
+    <div
+      class="cal-day-control"
+      role="button"
+      tabindex="0"
+      [attr.aria-selected]="isSelectedDay(day.date)"
+      [attr.aria-label]="getDayAriaLabel(day)"
+      (click)="onDaySelect(day)"
+      (keydown)="onDayKeydown($event, day)"
       >
-        @for (event of day.events; track event; let i = $index) {
-          <small
-            class="mb-1"
-            >
-            @if (isEventInActiveMonth(event) && (expandedDays[day.date.toISOString()] || i < maxEventsPerCell)) {
-              <app-calendar-cell
-                [event]="event"
-                [selectedYear]="selectedYear"
-                (personClick)="personClick.emit($event)"
-                (spouseClick)="spouseClick.emit($event)"
-              ></app-calendar-cell>
-            }
-          </small>
-        }
-        @if (getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]) {
-          <button
-            type="button"
-            class="cal-events-overflow"
-            aria-expanded="false"
-            [attr.aria-controls]="'events-' + day.date.getTime()"
-            (click)="toggleDayExpanded(day)"
-            >
-            +{{ getHiddenEventCount(day) }} more
-          </button>
-        }
-        @if (expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0) {
-          <button
-            type="button"
-            class="cal-events-collapse"
-            aria-expanded="true"
-            [attr.aria-controls]="'events-' + day.date.getTime()"
-            (click)="toggleDayExpanded(day)"
-            >
-            Show less
-          </button>
-        }
+      <div class="cal-cell-content">
+        <div class="cal-cell-top">
+          <span
+            class="cal-day-number"
+            [attr.aria-current]="day.isToday ? 'date' : null"
+          >{{
+            day.date | calendarDate : 'monthViewDayNumber' : locale
+          }}</span>
+        </div>
+        <div
+          class="cal-events-container cal-events-desktop"
+          [id]="'events-' + day.date.getTime()"
+          [class.expanded]="expandedDays[day.date.toISOString()]"
+        >
+          @for (event of day.events; track event; let i = $index) {
+            <small
+              class="mb-1"
+              >
+              @if (isEventInActiveMonth(event) && (expandedDays[day.date.toISOString()] || i < maxEventsPerCell)) {
+                <app-calendar-cell
+                  [event]="event"
+                  [selectedYear]="selectedYear"
+                  (personClick)="personClick.emit($event)"
+                  (spouseClick)="spouseClick.emit($event)"
+                ></app-calendar-cell>
+              }
+            </small>
+          }
+          @if (getHiddenEventCount(day) > 0 && !expandedDays[day.date.toISOString()]) {
+            <button
+              type="button"
+              class="cal-events-overflow"
+              aria-expanded="false"
+              [attr.aria-controls]="'events-' + day.date.getTime()"
+              (click)="toggleDayExpanded(day)"
+              >
+              +{{ getHiddenEventCount(day) }} more
+            </button>
+          }
+          @if (expandedDays[day.date.toISOString()] && getHiddenEventCount(day) > 0) {
+            <button
+              type="button"
+              class="cal-events-collapse"
+              aria-expanded="true"
+              [attr.aria-controls]="'events-' + day.date.getTime()"
+              (click)="toggleDayExpanded(day)"
+              >
+              Show less
+            </button>
+          }
+        </div>
+        <div class="cal-mobile-dots" aria-hidden="true">
+          @for (event of getMobileDots(day); track event.id) {
+            <span class="day-dot" [ngClass]="dotClass(event)"></span>
+          }
+          @if (getMobileOverflowCount(day) > 0) {
+            <span class="cal-mobile-overflow">+{{ getMobileOverflowCount(day) }}</span>
+          }
+        </div>
       </div>
     </div>
   </ng-template>
@@ -88,4 +106,9 @@
       </mwl-calendar-month-view>
     </div>
   </div>
+  <app-day-agenda
+    class="calendar-day-agenda"
+    [day]="selectedDay"
+    [events]="getSelectedDayEvents()"
+  ></app-day-agenda>
 </div>

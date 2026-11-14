@@ -1,164 +1,52 @@
+:host {
+  display: block;
+  // Pushed to the bottom when a short page leaves the body flex column with
+  // spare height.
+  margin-top: auto;
+}
+
 .site-footer {
-  margin-top: 40px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-ink);
-}
-
-.footer-inner {
-  width: 100%;
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 32px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px 32px;
-  align-items: start;
-}
+  padding: 0 16px 16px;
+  display: flex;
+  justify-content: flex-end;
 
-.footer-copy {
-  max-width: 60ch;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--color-ink-2);
-
-  p {
-    margin: 0 0 8px;
+  @media (max-width: 600px) {
+    padding-bottom: 12px;
   }
 }
 
-.footer-title {
-  color: var(--color-ink);
-  font-weight: 600;
-}
-
-.footer-response {
-  grid-column: 1 / -1;
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--color-ink-2);
-}
-
-.footer-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.footer-action {
+.privacy-link {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-  color: var(--color-link);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-2);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
   cursor: pointer;
 
   &:hover {
-    background: var(--color-surface-muted);
+    color: var(--color-ink);
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
-  }
-}
-
-.request-panel {
-  grid-column: 1 / -1;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 1rem;
-  }
-
-  .request-body {
-    margin: 0 0 16px;
-    font-size: 0.875rem;
-    line-height: 1.55;
-    color: var(--color-ink-2);
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    max-width: 560px;
-  }
-}
-
-.request-field {
-  width: 100%;
-}
-
-.request-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.request-field-error {
-  margin: -4px 0 4px;
-  color: var(--color-error);
-  font-size: 0.875rem;
-}
-
-.request-error {
-  margin: 0 0 8px;
-  color: var(--color-error);
-  font-size: 0.875rem;
-}
-
-.request-success {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  max-width: 560px;
-  color: var(--color-ink);
-
-  p {
-    margin: 0;
-  }
-
-  mat-icon {
-    color: var(--color-brand-primary);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-}
-
-@media (max-width: 600px) {
-  .footer-inner {
-    grid-template-columns: 1fr;
-    padding: 20px 16px 28px;
-  }
-
-  .footer-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .footer-action {
-    width: 100%;
-  }
-
-  .request-actions {
-    flex-direction: column;
-    align-items: stretch;
   }
 }
 
 @media print {
+  // A zero-height host box landing on a page boundary makes Chromium emit a blank trailing sheet.
+  :host {
+    display: none;
+  }
+
   .site-footer {
     display: none;
   }
