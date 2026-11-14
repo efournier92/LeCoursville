@@ -180,6 +180,16 @@
   }
 }
 
+// Phones: an admin table pans inside its card instead of being clipped by it.
+// min-width: 0 keeps a grid or flex parent from forcing the wrapper wider than
+// the surface it sits in.
+.admin-table-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;

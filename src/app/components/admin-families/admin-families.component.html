@@ -71,26 +71,28 @@
           </div>
         }
         @if (csvPreview.length > 0) {
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Sort Order</th>
-              <th>Hex</th>
-              <th>Color</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (family of csvPageData.items; track family) {
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
               <tr>
-                <td data-label="Name" class="bold">{{ family.name }}</td>
-                <td data-label="Sort Order" class="mono">{{ family.sortOrder }}</td>
-                <td data-label="Hex" class="mono">{{ family.hexColor }}</td>
-                <td data-label="Color"><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
+                <th>Name</th>
+                <th>Sort Order</th>
+                <th>Hex</th>
+                <th>Color</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (family of csvPageData.items; track family) {
+                <tr>
+                  <td data-label="Name" class="bold">{{ family.name }}</td>
+                  <td data-label="Sort Order" class="mono">{{ family.sortOrder }}</td>
+                  <td data-label="Hex" class="mono">{{ family.hexColor }}</td>
+                  <td data-label="Color"><div class="color-swatch" [style.background-color]="family.hexColor"></div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         <div class="admin-pagination">
           <span>{{ csvShowingRange }}</span>
           <div class="pager admin-pager">
@@ -136,49 +138,51 @@
             hint="Add your first family or upload a CSV."
             />
         } @else {
-          <table class="admin-table families-table">
-            <thead>
-              <tr>
-                <th>Color</th>
-                <th>Name</th>
-                <th>Hex</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (family of familyPageData.items; track family.id) {
+          <div class="admin-table-scroll">
+            <table class="admin-table families-table">
+              <thead>
                 <tr>
-                  <td data-label="Color">
-                    <div class="color-swatch" [style.background-color]="family.hexColor"></div>
-                  </td>
-                  <td data-label="Name" class="family-name">{{ family.name }}</td>
-                  <td data-label="Hex" class="family-hex">{{ family.hexColor }}</td>
-                  <td data-label="Actions">
-                    <div class="family-actions">
-                      <button
-                        mat-icon-button
-                        color="primary"
-                        [attr.aria-label]="'Edit ' + family.name"
-                        (click)="onEdit(family)"
-                        matTooltip="Edit"
-                        >
-                        <mat-icon>edit</mat-icon>
-                      </button>
-                      <button
-                        mat-icon-button
-                        color="warn"
-                        [attr.aria-label]="'Delete ' + family.name"
-                        (click)="onDelete(family)"
-                        matTooltip="Delete"
-                        >
-                        <mat-icon>delete</mat-icon>
-                      </button>
-                    </div>
-                  </td>
+                  <th>Color</th>
+                  <th>Name</th>
+                  <th>Hex</th>
+                  <th>Actions</th>
                 </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (family of familyPageData.items; track family.id) {
+                  <tr>
+                    <td data-label="Color">
+                      <div class="color-swatch" [style.background-color]="family.hexColor"></div>
+                    </td>
+                    <td data-label="Name" class="family-name">{{ family.name }}</td>
+                    <td data-label="Hex" class="family-hex">{{ family.hexColor }}</td>
+                    <td data-label="Actions">
+                      <div class="family-actions">
+                        <button
+                          mat-icon-button
+                          color="primary"
+                          [attr.aria-label]="'Edit ' + family.name"
+                          (click)="onEdit(family)"
+                          matTooltip="Edit"
+                          >
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                          mat-icon-button
+                          color="warn"
+                          [attr.aria-label]="'Delete ' + family.name"
+                          (click)="onDelete(family)"
+                          matTooltip="Delete"
+                          >
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
           <div class="admin-pagination">
             <span>{{ familyShowingRange }}</span>
             <div class="pager admin-pager">

@@ -23,15 +23,82 @@
   font-size: 0.8rem;
 }
 
+// The link keeps its own ellipsis so the copy button never pushes the row wide.
+.calendar-url-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .calendar-url-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
+
+  // The URL is the row's only non-Material action, so it misses the global
+  // 44px icon-button floor. Inline vertical padding grows the link's hit box
+  // past 24px without changing the line box, the row height, or the ellipsis.
+  @media (max-width: 1024px) {
+    padding: 6px 0;
+  }
+}
+
+.calendar-copy {
+  --mat-icon-button-state-layer-size: 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 auto;
+  color: var(--color-ink-2);
+}
+
+.calendar-copy-status {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+
+.calendar-copy-status-error {
+  color: var(--color-error);
 }
 
 .calendar-actions {
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
   white-space: nowrap;
+
+  // 44px hit boxes with a 12px gap keep the two row actions apart on touch.
+  .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    flex: 0 0 auto;
+  }
+}
+
+// Neutral at rest, destructive only on hover, focus, or press.
+.calendar-delete {
+  color: var(--color-ink-2);
+  transition: color 120ms ease;
+
+  &:hover,
+  &:focus-visible,
+  &:active {
+    color: var(--color-error);
+  }
 }
 
 // Mobile keeps the shared label/value columns so URL lines up with YEAR.
@@ -59,14 +126,49 @@
     padding: 12px 16px 16px;
   }
 
-  .calendar-url {
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+  // Phones: year and actions share the top row, URL takes the full width below,
+  // and the inner card border collapses to a single row divider.
+  .calendars-card .admin-table {
+    tbody tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'year actions'
+        'url url';
+      gap: 4px 12px;
+      padding: 8px 0;
+      margin-bottom: 0;
+      border: none;
+      border-bottom: 1px solid var(--color-border);
+      border-radius: 0;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .calendar-year {
+      grid-area: year;
+      align-items: center;
+    }
+
+    .calendar-actions {
+      grid-area: actions;
+    }
+
+    td.calendar-url-cell {
+      grid-area: url;
+      align-items: center;
+    }
   }
 
-  .calendar-actions {
-    text-align: left;
+  .calendar-url-row {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  // One line with an ellipsis: the copy button carries the full value.
+  .calendar-url {
+    max-width: 100%;
   }
 }

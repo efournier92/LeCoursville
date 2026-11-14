@@ -172,7 +172,11 @@ const PAGE_AUDIT = (zoom) => {
   const controlVisible = (el) => {
     if (!visible(el) || paintedOut(el)) return false;
     if (el.getAttribute('aria-hidden') === 'true' || el.disabled) return false;
-    if (el.tagName === 'INPUT' && (el.getAttribute('type') || '').toLowerCase() === 'hidden') return false;
+    const type = el.tagName === 'INPUT' ? (el.getAttribute('type') || 'text').toLowerCase() : '';
+    if (type === 'hidden') return false;
+    // A 1x1 file input is a proxy driven by a styled label button; the label
+    // is the real target, so the proxy cannot be measured as one.
+    if (type === 'file' && el.getBoundingClientRect().width <= 2) return false;
     return true;
   };
   // Material renders a bare inner input inside the form-field label click target,
@@ -458,7 +462,10 @@ async function main() {
   const merged = new Map(existing.map((record) => [`${record.viewport}|${record.slug}`, record]));
   const totals = { pass: 0, fail: 0, warn: 0, blocked: 0, 'print-exempt': 0 };
 
-  const browser = await ENGINES[engineName].launch({ headless: true });
+  const browser = await ENGINES[engineName].launch({
+    headless: true,
+    args: engineName === 'chromium' ? ['--hide-scrollbars'] : [],
+  });
   const storageStates = new Map();
   try {
     for (const [role, roleEntries] of roles) {

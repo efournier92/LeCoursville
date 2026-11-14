@@ -100,12 +100,14 @@
                 }
                 <td data-label="">
                   <div class="upload-actions">
-                    <button mat-icon-button class="preview-btn" (click)="onPreview(upload)" matTooltip="Preview"
+                    <button mat-icon-button class="preview-btn" (click)="onPreview(upload)"
+                      [matTooltip]="'Preview ' + upload.fileName"
                       data-label="Preview"
                       [attr.aria-label]="'Preview ' + upload.fileName">
                       <mat-icon>visibility</mat-icon>
                     </button>
                     <button mat-icon-button class="approve-btn" (click)="onApprove(upload)"
+                      [matTooltip]="'Approve ' + upload.fileName"
                       data-label="Approve"
                       [disabled]="isProcessing(upload.id) || upload.status !== 'pending'"
                       [attr.aria-label]="'Approve ' + upload.fileName">
@@ -117,6 +119,7 @@
                       }
                     </button>
                     <button mat-icon-button class="reject-btn" (click)="onReject(upload)"
+                      [matTooltip]="'Reject ' + upload.fileName"
                       data-label="Reject"
                       [disabled]="isProcessing(upload.id)"
                       [attr.aria-label]="'Reject ' + upload.fileName">
@@ -133,13 +136,15 @@
             }
           </tbody>
         </table>
-        <div class="admin-pagination-footer">
-          <span>{{ showingRange }}</span>
-          <div class="pager">
-            <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Prev</button>
-            <button mat-button [disabled]="pageData.page >= pageData.pageCount" (click)="nextPage()">Next</button>
+        @if (pageData.pageCount > 1) {
+          <div class="admin-pagination-footer">
+            <span>{{ showingRange }}</span>
+            <div class="pager">
+              <button mat-button [disabled]="pageData.page <= 1" (click)="prevPage()">Prev</button>
+              <button mat-button [disabled]="pageData.page >= pageData.pageCount" (click)="nextPage()">Next</button>
+            </div>
           </div>
-        </div>
+        }
       }
 
       <!-- Review queue empty state -->

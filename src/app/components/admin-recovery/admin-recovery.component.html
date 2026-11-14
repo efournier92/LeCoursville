@@ -79,104 +79,106 @@
         noun="requests"
         [isCentered]="true" />
     } @else {
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Requester</th>
-            <th>Status</th>
-            <th>Received</th>
-            <th aria-label="Actions"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (request of requestPageData.items; track request.id) {
-            <tr class="recovery-row">
-              <td data-label="Requester">
-                <div class="recovery-email">{{ request.email }}</div>
-                <div class="recovery-meta">{{ request.name }}</div>
-                <div class="recovery-meta" [class.no-contact]="!request.alternateContact">
-                  {{ request.alternateContact || 'No alternate contact' }}
-                </div>
-                @if (request.message) {
-                  <div class="recovery-message">{{ request.message }}</div>
-                }
-              </td>
-              <td data-label="Status">
-                <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
-              </td>
-              <td data-label="Received">
-                <span class="recovery-age">{{ formatTimestamp(request.createdAt) }}</span>
-              </td>
-              <td data-label="" class="recovery-actions">
-                <div class="recovery-actions-inner">
-                  <mat-form-field class="reason-field">
-                    <mat-label>Reason</mat-label>
-                    <input
-                      matInput
-                      required
-                      data-testid="admin-recovery-reason"
-                      [attr.aria-label]="'Reason for ' + request.email"
-                      [(ngModel)]="reasons[request.id]" />
-                  </mat-form-field>
-                  @if (!canGenerate(request) && !generating[request.id]) {
-                    <span class="reason-hint">{{ reasonHint(request) }}</span>
-                  }
-                  @if (request.alternateContact) {
-                    <mat-slide-toggle
-                      data-testid="admin-recovery-email-alternate"
-                      [aria-label]="'Email reset link to ' + request.alternateContact + ' for ' + request.email"
-                      [(ngModel)]="emailAlternate[request.id]">
-                      Email the reset link to {{ request.alternateContact }}
-                    </mat-slide-toggle>
-                  }
-                  <button
-                    mat-flat-button
-                    color="primary"
-                    data-testid="admin-recovery-generate"
-                    [attr.aria-label]="'Generate reset link for ' + request.email"
-                    [disabled]="generating[request.id] || !canGenerate(request)"
-                    (click)="generate(request)">
-                    Generate reset link
-                  </button>
-                  <button
-                    mat-button
-                    data-testid="admin-recovery-close"
-                    [attr.aria-label]="'Mark closed for ' + request.email"
-                    [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
-                    (click)="markClosed(request)">
-                    Mark closed
-                  </button>
-                  @if (generated[request.id]; as result) {
-                    <div class="generated-result">
-                      <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
-                      <span class="generated-expiry" data-testid="admin-recovery-expiry">
-                        {{ expiryLabel(request.id) }}
-                      </span>
-                      <button
-                        mat-button
-                        data-testid="admin-recovery-copy"
-                        [attr.aria-label]="'Copy reset link for ' + request.email"
-                        [disabled]="isLinkExpired(request.id)"
-                        (click)="copyLink(result.link, request.id)">
-                        {{ copied[request.id] ? 'Copied' : 'Copy' }}
-                      </button>
-                      <span class="generated-emailed">
-                        {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; copy the link yourself.' }}
-                      </span>
-                      @if (copyErrors[request.id]) {
-                        <span class="row-error" role="alert">{{ copyErrors[request.id] }}</span>
-                      }
-                    </div>
-                  }
-                  @if (errors[request.id]) {
-                    <div class="row-error" role="alert">{{ errors[request.id] }}</div>
-                  }
-                </div>
-              </td>
+      <div class="admin-table-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Status</th>
+              <th>Received</th>
+              <th aria-label="Actions"></th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (request of requestPageData.items; track request.id) {
+              <tr class="recovery-row">
+                <td data-label="Requester">
+                  <div class="recovery-email">{{ request.email }}</div>
+                  <div class="recovery-meta">{{ request.name }}</div>
+                  <div class="recovery-meta" [class.no-contact]="!request.alternateContact">
+                    {{ request.alternateContact || 'No alternate contact' }}
+                  </div>
+                  @if (request.message) {
+                    <div class="recovery-message">{{ request.message }}</div>
+                  }
+                </td>
+                <td data-label="Status">
+                  <span class="recovery-status" data-testid="admin-recovery-status">{{ request.status }}</span>
+                </td>
+                <td data-label="Received">
+                  <span class="recovery-age">{{ formatTimestamp(request.createdAt) }}</span>
+                </td>
+                <td data-label="" class="recovery-actions">
+                  <div class="recovery-actions-inner">
+                    <mat-form-field class="reason-field">
+                      <mat-label>Reason</mat-label>
+                      <input
+                        matInput
+                        required
+                        data-testid="admin-recovery-reason"
+                        [attr.aria-label]="'Reason for ' + request.email"
+                        [(ngModel)]="reasons[request.id]" />
+                    </mat-form-field>
+                    @if (!canGenerate(request) && !generating[request.id]) {
+                      <span class="reason-hint">{{ reasonHint(request) }}</span>
+                    }
+                    @if (request.alternateContact) {
+                      <mat-slide-toggle
+                        data-testid="admin-recovery-email-alternate"
+                        [aria-label]="'Email reset link to ' + request.alternateContact + ' for ' + request.email"
+                        [(ngModel)]="emailAlternate[request.id]">
+                        Email the reset link to {{ request.alternateContact }}
+                      </mat-slide-toggle>
+                    }
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      data-testid="admin-recovery-generate"
+                      [attr.aria-label]="'Generate reset link for ' + request.email"
+                      [disabled]="generating[request.id] || !canGenerate(request)"
+                      (click)="generate(request)">
+                      Generate reset link
+                    </button>
+                    <button
+                      mat-button
+                      data-testid="admin-recovery-close"
+                      [attr.aria-label]="'Mark closed for ' + request.email"
+                      [disabled]="closing[request.id] || generating[request.id] || !canClose(request)"
+                      (click)="markClosed(request)">
+                      Mark closed
+                    </button>
+                    @if (generated[request.id]; as result) {
+                      <div class="generated-result">
+                        <span class="generated-link" data-testid="admin-recovery-link">{{ result.link }}</span>
+                        <span class="generated-expiry" data-testid="admin-recovery-expiry">
+                          {{ expiryLabel(request.id) }}
+                        </span>
+                        <button
+                          mat-button
+                          data-testid="admin-recovery-copy"
+                          [attr.aria-label]="'Copy reset link for ' + request.email"
+                          [disabled]="isLinkExpired(request.id)"
+                          (click)="copyLink(result.link, request.id)">
+                          {{ copied[request.id] ? 'Copied' : 'Copy' }}
+                        </button>
+                        <span class="generated-emailed">
+                          {{ result.emailed ? 'Emailed to the alternate contact.' : 'Not emailed; copy the link yourself.' }}
+                        </span>
+                        @if (copyErrors[request.id]) {
+                          <span class="row-error" role="alert">{{ copyErrors[request.id] }}</span>
+                        }
+                      </div>
+                    }
+                    @if (errors[request.id]) {
+                      <div class="row-error" role="alert">{{ errors[request.id] }}</div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       <div class="admin-pagination">
         <span>{{ requestShowingRange }}</span>
         <div class="pager admin-pager">
@@ -213,32 +215,34 @@
           hint="With zero recipients, recovery alerts go nowhere. Add an address below so someone sees them."
           [isCentered]="true" />
       } @else {
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th aria-label="Actions"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (recipient of recipientPageData.items; track recipient) {
-              <tr class="recipient-row">
-                <td data-label="Email">{{ recipient }}</td>
-                <td data-label="" class="recipient-actions">
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    data-testid="admin-recipient-remove"
-                    [disabled]="recipientsBusy"
-                    aria-label="Remove recipient"
-                    (click)="removeRecipient(recipient)">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </td>
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th aria-label="Actions"></th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (recipient of recipientPageData.items; track recipient) {
+                <tr class="recipient-row">
+                  <td data-label="Email">{{ recipient }}</td>
+                  <td data-label="" class="recipient-actions">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      data-testid="admin-recipient-remove"
+                      [disabled]="recipientsBusy"
+                      aria-label="Remove recipient"
+                      (click)="removeRecipient(recipient)">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         <div class="admin-pagination">
           <span>{{ recipientShowingRange }}</span>
           <div class="pager admin-pager">

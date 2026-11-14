@@ -179,7 +179,7 @@
   // search, then sort and upload sharing one row.
   :host ::ng-deep .page-toolbar .page-toolbar-content:has(> *) {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "count count"
       "search search"
@@ -197,7 +197,12 @@
   .gallery-search {
     grid-area: search;
     width: 100%;
+    min-width: 0;
     max-width: none;
+  }
+
+  .gallery-upload-cta {
+    min-width: 0;
   }
 
   .gallery-segmented {

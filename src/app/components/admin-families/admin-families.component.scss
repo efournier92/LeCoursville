@@ -180,8 +180,37 @@
     }
   }
 
+  // Stacked cards: each icon action keeps a 44px target and a hairline in the
+  // gap separates Edit from Delete without changing either handler.
   .admin-table .family-actions {
     justify-content: flex-start;
+    gap: 8px;
+
+    .mat-mdc-icon-button {
+      --mat-icon-button-state-layer-size: 44px;
+    }
+
+    button + button {
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -4px;
+        width: 1px;
+        height: 20px;
+        transform: translateY(-50%);
+        background: var(--color-border);
+      }
+    }
+  }
+
+  // Stacked cards share one value column: the swatch starts where NAME and
+  // HEX values do instead of floating right.
+  .admin-table.families-table td[data-label='Color'] {
+    justify-content: flex-start;
+    text-align: left;
   }
 
   .form-section .form-card mat-card-content {

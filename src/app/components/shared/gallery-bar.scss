@@ -17,7 +17,9 @@
   height: var(--height-control);
   min-width: 180px;
   max-width: 360px;
-  flex: 1 1 240px;
+  // Zero basis: share the free space instead of sizing from content, which
+  // made the field 252 to 297px across engines at the same viewport.
+  flex: 1 1 0;
   padding: 0 8px 0 14px;
   border-radius: var(--radius-card);
   background: var(--color-surface);

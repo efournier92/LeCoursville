@@ -123,7 +123,7 @@ test.describe('feature flags', () => {
     }
   });
 
-  test('layout: Changed tag sits left of its toggle with a small gap, Title Case', async ({ page }) => {
+  test('layout: Changed tag is a muted line under the route, Title Case', async ({ page }) => {
     await login(page, 'admin');
     // Toggle through the real UI so updatedAt lands and the tag renders.
     await setFeatureFlag(page, 'chat', true);
@@ -135,14 +135,26 @@ test.describe('feature flags', () => {
     const text = (await tag.textContent())?.trim() ?? '';
     expect(text).toMatch(/^Changed\b/);
     expect(text.replace(/[^\d]/g, '')).not.toBe('');
-    const toggle = page.getByTestId('feature-toggle-chat');
-    const tagBox = await tag.boundingBox();
-    const toggleBox = await toggle.boundingBox();
-    expect(tagBox && toggleBox).toBeTruthy();
-    const gap = toggleBox!.x - (tagBox!.x + tagBox!.width);
-    // Small fixed gap: present but not a wide void (scss gap is 12px).
-    expect(gap).toBeGreaterThanOrEqual(2);
-    expect(gap).toBeLessThanOrEqual(24);
+    const geometry = await page.getByTestId('feature-toggle-chat').evaluate((toggleEl) => {
+      const row = toggleEl.closest('.feature-row') as HTMLElement;
+      const tagEl = row.querySelector('[data-testid="feature-changed-chat"]') as HTMLElement;
+      const copy = row.querySelector('.feature-copy') as HTMLElement;
+      const route = row.querySelector('.feature-route') as HTMLElement;
+      const rect = (el: Element) => el.getBoundingClientRect();
+      return {
+        tagLeft: Math.round(rect(tagEl).left),
+        copyLeft: Math.round(rect(copy).left),
+        tagTop: Math.round(rect(tagEl).top),
+        routeBottom: Math.round(rect(route).bottom),
+        tagRight: Math.round(rect(tagEl).right),
+        toggleLeft: Math.round(rect(toggleEl).left),
+      };
+    });
+    // The tag shares the copy column's left edge and sits below the route,
+    // clear of the toggle's right-aligned control column.
+    expect(Math.abs(geometry.tagLeft - geometry.copyLeft)).toBeLessThanOrEqual(1);
+    expect(geometry.tagTop).toBeGreaterThanOrEqual(geometry.routeBottom - 1);
+    expect(geometry.tagRight).toBeLessThan(geometry.toggleLeft);
   });
 });
 

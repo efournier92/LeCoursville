@@ -5,6 +5,14 @@
 .admin-media-upload-upload-form {
   max-width: 640px;
   margin: 0 auto;
+  // Clear the pinned action bar when focus or an anchor scrolls a field into
+  // view. Bar = 8 pad + 12 actions margin + 36 button + 20 progress + 8 pad;
+  // the mobile bar stacks a second 36px button plus its 8px gap on top.
+  scroll-padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+
+  @media (max-width: 600px) {
+    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .admin-upload-checkbox {
@@ -15,6 +23,12 @@
   padding: 0 0 16px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--color-border);
+}
+
+// Section rules mark group boundaries only: the last group hands off to the
+// pinned action bar, so it drops its rule instead of bracketing the button row.
+.media-form-section:has(+ .media-form-footer) {
+  border-bottom: none;
 }
 
 .media-form-section-title {
@@ -35,26 +49,39 @@
 }
 
 // Pinned footer keeps the primary action and its outcome bands in view while
-// the grouped form scrolls.
+// the grouped form scrolls. It is opaque and owns a top rule plus an upward
+// shadow so scrolling content never bleeds through the action row, and its
+// bottom padding clears a home indicator.
 .media-form-footer {
   position: sticky;
   bottom: 0;
   z-index: 2;
-  padding-top: 8px;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -1px 2px rgba(15, 23, 42, 0.05), 0 -12px 20px -16px rgba(15, 23, 42, 0.35);
 }
 
 .media-drop-zone {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 20px;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 20px;
   margin-bottom: 16px;
-  border: 1px dashed var(--color-border);
+  border: 1px dashed color-mix(in srgb, var(--color-ink-2) 55%, transparent);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
   color: var(--color-ink);
+  text-align: center;
   cursor: pointer;
+}
+
+.media-drop-zone-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+  color: var(--color-ink-2);
 }
 
 .media-drop-zone-title {
@@ -65,6 +92,12 @@
 .media-file-name {
   font-size: 0.8rem;
   color: var(--color-ink-2);
+}
+
+.media-drop-zone-hint {
+  max-width: 32ch;
+  line-height: 1.4;
+  text-wrap: balance;
 }
 
 .media-file-name {
@@ -137,6 +170,11 @@
 .media-thumbnail-range {
   width: 100%;
   max-width: 320px;
+  // Native range renders 16px tall; pad the box past the 24px touch floor
+  // without scaling the slider itself (border-box keeps the box at 24px).
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 4px 0;
 }
 
 .admin-upload-progress {

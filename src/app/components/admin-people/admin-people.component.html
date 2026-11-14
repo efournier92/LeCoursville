@@ -14,10 +14,11 @@
         type="button"
         class="people-view-option"
         data-testid="people-view-import"
+        aria-label="Import CSV"
         [class.is-active]="view === 'import'"
         [attr.aria-pressed]="view === 'import'"
         (click)="setView('import')"
-        >Import CSV</button
+        >Import</button
       >
     </div>
   </app-page-toolbar>
@@ -103,45 +104,50 @@
           />
       } @else {
         <mat-card class="admin-surface people-table-card">
-          <table class="admin-table people-browser-table" data-testid="admin-people-table">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Family</th>
-                <th scope="col">Generation</th>
-                <th scope="col">Born</th>
-                <th scope="col">Died</th>
-                <th scope="col">Anniversary</th>
-                <th scope="col">Spouse</th>
-                <th scope="col">Contact</th>
-                <th scope="col">Address</th>
-                <th scope="col">Living</th>
-                <th scope="col">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (person of displayedPeople; track person.id) {
-                <tr
-                  tabindex="0"
-                  [attr.aria-label]="'View ' + personName(person)"
-                  (click)="openPerson(person)"
-                  (keydown.enter)="openPerson(person)"
-                  >
-                  <td data-label="Name" [title]="personName(person)">{{ personName(person) }}</td>
-                  <td data-label="Family" [title]="personFamily(person)">{{ personFamily(person) }}</td>
-                  <td data-label="Generation">{{ person.generationNumber ?? '—' }}</td>
-                  <td data-label="Born" [title]="personBornFull(person)">{{ personBorn(person) }}</td>
-                  <td data-label="Died" [title]="personDiedFull(person)">{{ personDied(person) }}</td>
-                  <td data-label="Anniversary" [title]="personAnniversaryFull(person)">{{ personAnniversary(person) }}</td>
-                  <td data-label="Spouse" [title]="personSpouse(person)">{{ personSpouse(person) }}</td>
-                  <td data-label="Contact" [title]="personContact(person)">{{ personContact(person) }}</td>
-                  <td data-label="Address" [title]="personAddress(person)">{{ personAddress(person) }}</td>
-                  <td data-label="Living">{{ personLiving(person) }}</td>
-                  <td data-label="Updated">{{ personUpdated(person) }}</td>
+          <div class="admin-table-scroll">
+            <table class="admin-table people-browser-table" data-testid="admin-people-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Family</th>
+                  <th scope="col">Generation</th>
+                  <th scope="col">Born</th>
+                  <th scope="col">Died</th>
+                  <th scope="col">Anniversary</th>
+                  <th scope="col">Spouse</th>
+                  <th scope="col">Contact</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Living</th>
+                  <th scope="col">Updated</th>
                 </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (person of displayedPeople; track person.id) {
+                  <tr
+                    tabindex="0"
+                    [attr.aria-label]="'View ' + personName(person)"
+                    (click)="openPerson(person)"
+                    (keydown.enter)="openPerson(person)"
+                    >
+                    <td data-label="Name" [title]="personName(person)">{{ personName(person) }}</td>
+                    <td data-label="Family" [title]="personFamily(person)">{{ personFamily(person) }}</td>
+                    <td data-label="Generation">{{ person.generationNumber ?? '—' }}</td>
+                    <td data-label="Born" [title]="personBornFull(person)">{{ personBorn(person) }}</td>
+                    <td data-label="Died" [title]="personDiedFull(person)">{{ personDied(person) }}</td>
+                    <td data-label="Anniversary" [title]="personAnniversaryFull(person)">{{ personAnniversary(person) }}</td>
+                    <td data-label="Spouse" [title]="personSpouse(person)">{{ personSpouse(person) }}</td>
+                    <td data-label="Contact" [title]="personContact(person)">{{ personContact(person) }}</td>
+                    <td data-label="Address" [title]="personAddress(person)">{{ personAddress(person) }}</td>
+                    <td data-label="Living">{{ personLiving(person) }}</td>
+                    <td data-label="Updated">
+                      {{ personUpdated(person) }}
+                      <mat-icon class="people-card-chevron" aria-hidden="true">chevron_right</mat-icon>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
 
           <div class="admin-pagination people-pagination">
             <span>{{ showingRange }}</span>

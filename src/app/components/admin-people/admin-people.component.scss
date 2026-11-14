@@ -75,6 +75,41 @@
   }
 }
 
+// The row itself opens the record, so the phone card only needs a chevron to
+// look tappable. Hidden while the table still renders columns.
+.people-browser-table .people-card-chevron {
+  display: none;
+  flex: 0 0 auto;
+  color: var(--color-ink-2);
+}
+
+// Tablet and landscape phone: eleven fixed-share columns break headers
+// mid-word, so the table pans inside its card instead. Auto layout plus a
+// minimum width keeps every header on one line.
+@media (min-width: 601px) and (max-width: 900px) {
+  .people-browser-table {
+    table-layout: auto;
+    min-width: 880px;
+
+    th,
+    td {
+      min-width: 72px;
+    }
+
+    // Headers stay on one line; values may wrap, which keeps the table near
+    // its minimum width instead of stretching to the longest address.
+    td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    thead th {
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+  }
+}
+
 .people-pagination {
   padding: 12px;
 }
@@ -101,5 +136,54 @@
     text-overflow: clip;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  // Phone cards: name and the wide fields span the card, while the four
+  // compact dates sit two-up so one record no longer fills the screen.
+  .admin-table.people-browser-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .admin-table.people-browser-table tbody td {
+    min-width: 0;
+  }
+
+  .admin-table.people-browser-table tbody td[data-label='Name'],
+  .admin-table.people-browser-table tbody td[data-label='Family'],
+  .admin-table.people-browser-table tbody td[data-label='Spouse'],
+  .admin-table.people-browser-table tbody td[data-label='Contact'],
+  .admin-table.people-browser-table tbody td[data-label='Address'],
+  .admin-table.people-browser-table tbody td[data-label='Living'],
+  .admin-table.people-browser-table tbody td[data-label='Updated'] {
+    grid-column: 1 / -1;
+  }
+
+  // Half a card is not enough for an inline label, so the compact dates put
+  // the label above the value and drop the fixed row height.
+  .admin-table.people-browser-table tbody td[data-label='Generation'],
+  .admin-table.people-browser-table tbody td[data-label='Born'],
+  .admin-table.people-browser-table tbody td[data-label='Died'],
+  .admin-table.people-browser-table tbody td[data-label='Anniversary'] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-height: 0;
+
+    &::before {
+      min-width: 0;
+    }
+  }
+
+  // A narrower label column leaves the value column the width it needs.
+  .admin-table.people-browser-table tbody td::before {
+    min-width: 68px;
+  }
+
+  .admin-table.people-browser-table .people-card-chevron {
+    display: inline-flex;
+    align-self: center;
+    margin-left: auto;
   }
 }

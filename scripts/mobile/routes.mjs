@@ -81,7 +81,7 @@ const userSet = [
 const chatSet = [{ role: 'user', path: '/chat', slug: 'chat', ready: '.chat-component' }];
 
 const adminSet = [
-  { role: 'admin', path: '/admin', slug: 'admin', ready: '[data-testid="admin-nav"]' },
+  { role: 'admin', path: '/admin', slug: 'admin', ready: '.admin-content' },
   { role: 'admin', path: '/admin/families', slug: 'admin-families', ready: '.families-card .upload-area' },
   { role: 'admin', path: '/admin/people', slug: 'admin-people', ready: '[data-testid="admin-people-table"]' },
   {
@@ -127,7 +127,7 @@ const adminSet = [
   },
   { role: 'admin', path: '/admin/photo-albums', slug: 'admin-photo-albums', ready: '.admin-album-grid' },
   // role staff, same surfaces minus the super-admin only pages
-  { role: 'staff', path: '/admin', slug: 'staff-admin', ready: '[data-testid="admin-nav"]' },
+  { role: 'staff', path: '/admin', slug: 'staff-admin', ready: '.admin-content' },
   { role: 'staff', path: '/admin/families', slug: 'staff-families', ready: '.families-card .upload-area' },
   { role: 'staff', path: '/admin/people', slug: 'staff-people', ready: '[data-testid="admin-people-table"]' },
   { role: 'staff', path: '/admin/media', slug: 'staff-media', ready: '[data-testid="media-section-video"]' },

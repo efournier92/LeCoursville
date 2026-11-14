@@ -121,7 +121,13 @@ async function main() {
     roles.get(entry.role).push(entry);
   }
 
-  const browser = await ENGINES[engineName].launch({ headless: true });
+  const browser = await ENGINES[engineName].launch({
+    headless: true,
+    // Classic Chromium scrollbars steal 10px from the layout viewport, which
+    // makes phone captures narrower than WebKit/Firefox. Real iOS and Android
+    // browsers use overlay scrollbars, so hide them for parity.
+    args: engineName === 'chromium' ? ['--hide-scrollbars'] : [],
+  });
   const capturesFile = path.join(ARTIFACT_ROOT, engineName, `captures-${routeSet}.json`);
   const records = await loadCaptures(capturesFile);
   const index = new Map(records.map((r) => [CAPTURE_KEY(r.viewport, r.slug), r]));

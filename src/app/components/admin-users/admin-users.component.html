@@ -93,55 +93,59 @@
         />
     } @else {
       <mat-card class="admin-surface users-table-card">
-        <table class="admin-table" data-testid="admin-users-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Last Active</th>
-              <th>Registered</th>
-              <th>Roles</th>
-              <th aria-label="Actions"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (rowUser of displayedUsers; track rowUser.id) {
+        <div class="admin-table-scroll">
+          <table class="admin-table" data-testid="admin-users-table">
+            <thead>
               <tr>
-                <td data-label="Name">{{ rowUser.name || '—' }}</td>
-                <td data-label="Email">{{ rowUser.email }}</td>
-                <td data-label="Last Active">{{ rowUser.dateLastActive | date:'yyyy-MM-dd' }}</td>
-                <td data-label="Registered">{{ rowUser.dateRegistered | date:'yyyy-MM-dd' }}</td>
-                <td data-label="Roles">
-                  @for (role of rolesFor(rowUser); track role) {
-                    <span class="role-badge" [class]="'role-badge role-badge-' + roleClass(role)">{{ role }}</span>
-                  } @empty {
-                    <span class="admin-muted">—</span>
-                  }
-                </td>
-                <td data-label="" class="user-actions">
-                  <button
-                    mat-icon-button
-                    [attr.aria-label]="'Edit ' + rowName(rowUser)"
-                    (click)="openEditor(rowUser)"
-                    >
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    [attr.aria-label]="'Delete ' + rowName(rowUser)"
-                    (click)="deleteUser(rowUser)"
-                    >
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                  @if (deleteErrors[rowUser.id]) {
-                    <div class="row-error" role="alert">{{ deleteErrors[rowUser.id] }}</div>
-                  }
-                </td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Last Active</th>
+                <th>Registered</th>
+                <th>Roles</th>
+                <th aria-label="Actions"></th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (rowUser of displayedUsers; track rowUser.id) {
+                <tr>
+                  <td data-label="Name">{{ rowUser.name || '—' }}</td>
+                  <td data-label="Email">{{ rowUser.email }}</td>
+                  <td data-label="Last Active">{{ rowUser.dateLastActive | date:'yyyy-MM-dd' }}</td>
+                  <td data-label="Registered">{{ rowUser.dateRegistered | date:'yyyy-MM-dd' }}</td>
+                  <td data-label="Roles">
+                    <span class="role-badges">
+                      @for (role of rolesFor(rowUser); track role) {
+                        <span class="role-badge" [class]="'role-badge role-badge-' + roleClass(role)">{{ role }}</span>
+                      } @empty {
+                        <span class="admin-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                  <td data-label="" class="user-actions">
+                    <button
+                      mat-icon-button
+                      [attr.aria-label]="'Edit ' + rowName(rowUser)"
+                      (click)="openEditor(rowUser)"
+                      >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      [attr.aria-label]="'Delete ' + rowName(rowUser)"
+                      (click)="deleteUser(rowUser)"
+                      >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                    @if (deleteErrors[rowUser.id]) {
+                      <div class="row-error" role="alert">{{ deleteErrors[rowUser.id] }}</div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
         <div class="admin-pagination users-pagination">
           <span>{{ showingRange }}</span>
@@ -181,26 +185,28 @@
         <p class="role-history-empty" data-testid="admin-role-history-empty">No role changes yet.</p>
       } @else {
         <p class="role-history-limit">Most recent 20 changes</p>
-        <table class="admin-table role-history-table" data-testid="admin-role-history">
-          <thead>
-            <tr>
-              <th>When</th>
-              <th>Actor</th>
-              <th>Target</th>
-              <th>Roles</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (entry of roleHistory; track $index) {
+        <div class="admin-table-scroll">
+          <table class="admin-table role-history-table" data-testid="admin-role-history">
+            <thead>
               <tr>
-                <td data-label="When">{{ entry.at | date:'yyyy-MM-dd HH:mm' }}</td>
-                <td data-label="Actor">{{ actorName(entry) }}</td>
-                <td data-label="Target">{{ entry.targetEmail }}</td>
-                <td data-label="Roles">{{ roleSummary(entry.before) }} &rarr; {{ roleSummary(entry.after) }}</td>
+                <th>When</th>
+                <th>Actor</th>
+                <th>Target</th>
+                <th>Roles</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (entry of roleHistory; track $index) {
+                <tr>
+                  <td data-label="When">{{ entry.at | date:'yyyy-MM-dd HH:mm' }}</td>
+                  <td data-label="Actor">{{ actorName(entry) }}</td>
+                  <td data-label="Target">{{ entry.targetEmail }}</td>
+                  <td data-label="Roles">{{ roleSummary(entry.before) }} &rarr; {{ roleSummary(entry.after) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     </mat-card>
   }

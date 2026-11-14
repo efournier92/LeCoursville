@@ -21,20 +21,22 @@
     type="button"
     class="admin-media-section-option"
     data-testid="media-section-audio"
+    aria-label="Audio Album"
     [class.is-active]="section === 'audio'"
     [attr.aria-pressed]="section === 'audio'"
     (click)="setSection('audio')"
-    >Audio Album</button
+    >Audio</button
   >
   @if (photoAlbumsEnabled) {
     <button
       type="button"
       class="admin-media-section-option"
       data-testid="media-section-photo-albums"
+      aria-label="Photo Albums"
       [class.is-active]="section === 'photo-albums'"
       [attr.aria-pressed]="section === 'photo-albums'"
       (click)="setSection('photo-albums')"
-      >Photo Albums</button
+      >Photos</button
     >
   }
 </div>

@@ -30,10 +30,9 @@ describe('AdminMediaComponent', () => {
 
   it('renders both section switches', () => {
     const el: HTMLElement = fixture.nativeElement;
-    const labels = Array.from(el.querySelectorAll('[data-testid^="media-section-"]')).map(
-      button => button.textContent.trim(),
-    );
-    expect(labels).toEqual(['Video', 'Audio Album']);
+    const buttons = Array.from(el.querySelectorAll<HTMLElement>('[data-testid^="media-section-"]'));
+    expect(buttons.map(button => button.textContent.trim())).toEqual(['Video', 'Audio']);
+    expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual([null, 'Audio Album']);
     expect(el.textContent).not.toContain('TODO');
   });
 
