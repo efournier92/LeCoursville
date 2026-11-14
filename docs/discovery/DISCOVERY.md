@@ -5,6 +5,16 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261114-05 | 2026-11-14 | [outcome] | admin/ui | Mobile overnight loop converged user and admin routes: per-engine audit 210 pass user, 216 pass admin on chromium, gate 548 per browser, unit 941 | docs/critique/2026-11-14_MobileOvernight.md
+
+- D-20261114-04 | 2026-11-14 | [trap] | build/perf | The sparse seed account still sees global seeded contacts, people, and photos, so it cannot prove empty states; empty-state review needs a data-less family in the seed | scripts/e2e/seed.mjs
+
+- D-20261114-03 | 2026-11-14 | [trap] | admin/ui | WebKit stretches a column flex item with percentage flex-basis to its max-content width, which widened page toolbars 28px; set width and max-width 100 percent | src/app/components/shared/page-toolbar/page-toolbar.component.scss
+
+- D-20261114-02 | 2026-11-14 | [decision] | calendar/print | Narrow-phone calendar uses a fluid seven-column track; the 44px-column pan contract is superseded because hidden weekend dates are the worse defect | e2e/specs/calendar.spec.ts:550
+
+- D-20261114-01 | 2026-11-14 | [trap] | admin/ui | Headless Chromium reserves a 10px classic scrollbar, so its layout viewport is narrower than WebKit and Firefox; launch the capture harness with --hide-scrollbars for parity | scripts/mobile/audit.mjs
+
 - D-20261113-03 | 2026-11-13 | [decision] | admin/ui | Data rights footer is a slim pinned "Data Privacy" bar. The information and request form live in a MatDialog, and print hides the footer host | src/app/components/site-footer/site-footer.component.html:1
 
 - D-20261113-02 | 2026-11-13 | [trap] | calendar/print | A zero-height block (the footer host) landing exactly on a print page boundary makes Chromium emit a blank trailing PDF sheet | src/app/components/site-footer/site-footer.component.scss:37
