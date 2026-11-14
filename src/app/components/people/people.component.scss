@@ -112,23 +112,32 @@
   padding: 10px 16px 8px 0;
   color: var(--color-ink);
 
-  // One flex item per person (plus spouse and trailing dot) so a separator can
-  // never be laid out alone on its own flex line.
+  // One entry per person (plus spouse and trailing dot). The entry keeps the
+  // 24px row so name rows stay on the same rhythm they had with the old 24px
+  // inline-flex name box.
   .first-gen-entry {
     display: block;
     min-width: 0;
+    min-height: 24px;
   }
 
   .first-gen-person {
-    // The name is the tap target: a 24px inline box keeps it above the touch
-    // floor while the separator stays glued to the preceding name.
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
+    // Plain inline, not inline-flex: an atomic inline box takes the whole line
+    // width, which pushed the trailing dot onto a line of its own. In normal
+    // inline flow the name and the dot after it share one formatting context
+    // with no whitespace between them, so no soft-wrap can split the last word
+    // from the dot. Block padding keeps the tap target above the 24px floor
+    // without adding an atomic box.
+    display: inline;
+    padding-block: 4px;
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.01em;
     cursor: pointer;
+    // Hyphenate a broken surname so the wrap point is visible; anywhere stays
+    // as the fallback for names no dictionary can split.
+    -webkit-hyphens: auto;
+    hyphens: auto;
     overflow-wrap: anywhere;
     transition: color 0.15s;
 
@@ -145,14 +154,22 @@
     }&.deceased {
       color: var(--color-ink-2);
       font-style: italic;
-    }  }.spouse-separator {
+    }  }
+
+  .spouse-separator {
     color: var(--color-ink-2);
     margin: 0 8px;
   }.person-separator {
+    // Rhythm, not punctuation: smaller and at 45% of the surrounding ink. It is
+    // an inline sibling of the name with no whitespace between them, so it
+    // always rides with the preceding name.
     color: var(--color-ink-2);
+    font-size: 0.75em;
     font-weight: 400;
     line-height: 1;
     margin-left: 4px;
+    opacity: 0.45;
+    white-space: nowrap;
   }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
@@ -242,5 +259,13 @@
   // stay on the plain ink scale.
   .first-generation-row .first-gen-person:not(.deceased):not(:hover) {
     color: var(--color-link);
+  }
+}
+
+// Phone fold: two fewer pixels between name rows clears one more line. Only the
+// flex row gap moves; the 24px min-height that makes each name a tap box stays.
+@media (max-width: 360px) {
+  .first-generation-row {
+    row-gap: 2px;
   }
 }

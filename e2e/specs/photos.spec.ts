@@ -99,11 +99,11 @@ test.describe('photos', () => {
     await page.goto('/photos/album-1/slideshow');
     await expect(page.locator('.slideshow-image')).toBeVisible();
     const counter = page.locator('.slideshow-counter');
-    await expect(counter).toContainText('/ 2');
+    await expect(counter).toContainText('/2');
     await page.locator('button[matTooltip="Next"]').click();
-    await expect(counter).toContainText('2 / 2');
+    await expect(counter).toContainText('2/2');
     await page.locator('button[matTooltip="Previous"]').click();
-    await expect(counter).toContainText('1 / 2');
+    await expect(counter).toContainText('1/2');
   });
 
   test('upload photo: admin uploads a folder with one PNG and the album appears', async ({ page }) => {
@@ -143,6 +143,7 @@ test.describe('control standard geometry (gallery)', () => {
     });
     expect(btnStyle.height).toBe('44px');
     expect(btnStyle.radius).toBe('999px');
+    await expect(slideshow.locator('mat-icon')).toHaveText('photo_library');
   });
 });
 
@@ -183,5 +184,19 @@ test.describe('mobile convergence', () => {
     const columns = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
     const tracks = columns.split(/\s+/).filter((part) => part.length > 0);
     expect(tracks).toHaveLength(2);
+  });
+
+  test('album detail breaks a short album to three columns at 768 and keeps two at 320', async ({ page }) => {
+    await login(page, 'user');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto('/photos/album-1');
+    const grid = page.locator('.photo-grid');
+    await expect(grid).toBeVisible();
+    const wide = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    expect(wide.split(/\s+/).filter(Boolean)).toHaveLength(3);
+
+    await page.setViewportSize({ width: 320, height: 568 });
+    const narrow = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    expect(narrow.split(/\s+/).filter(Boolean)).toHaveLength(2);
   });
 });

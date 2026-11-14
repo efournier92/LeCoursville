@@ -1,6 +1,6 @@
 <div class="media-explorer-component page-ground page-content">
-  <app-page-toolbar [title]="title">
-    @if (!selectedMedia?.id) {
+  @if (!selectedMedia?.id) {
+    <app-page-toolbar [title]="title">
       <mat-form-field class="media-list-filters-input" appearance="outline">
         <mat-label>Filter</mat-label>
         <input
@@ -10,8 +10,8 @@
           [(ngModel)]="searchQuery"
           />
       </mat-form-field>
-    }
-  </app-page-toolbar>
+    </app-page-toolbar>
+  }
 
   <div class="row">
     @if (selectedMedia?.id) {
@@ -19,14 +19,21 @@
         class="media-explorer-player-container col-lg-7 justify-content-center"
         >
         <div class="media-explorer-heading">
+          <a class="media-explorer-back" routerLink="/media/explorer">
+            <mat-icon aria-hidden="true">chevron_left</mat-icon>
+            <span>{{ title }}</span>
+          </a>
           <h1 class="media-explorer-title">{{ selectedMedia.title }}</h1>
           @if (selectedMedia.date || selectedMedia.duration) {
             <p class="media-explorer-meta">
               @if (selectedMedia.date) {
                 <span class="media-explorer-meta-date">{{ selectedMedia.date }}</span>
               }
+              @if (selectedMedia.date && selectedMedia.duration) {
+                <span class="media-explorer-meta-sep" aria-hidden="true">·</span>
+              }
               @if (selectedMedia.duration) {
-                <span class="media-explorer-meta-duration">{{ selectedMedia.duration }}</span>
+                <span class="media-explorer-meta-duration">{{ formatDuration(selectedMedia.duration) }}</span>
               }
             </p>
           }
@@ -103,7 +110,7 @@
           @if (shouldShowDownloadButton()) {
             <button
               mat-stroked-button
-              class="media-explorer-action-button"
+              class="media-explorer-action-button media-explorer-action-button-primary"
               matTooltip="Downloads the selected media to a file"
               (click)="downloadSelectedMedia()"
               >
@@ -148,6 +155,7 @@
           [mediaTypesToShow]="mediaTypesToShow"
           [isAdminMode]="false"
           [compact]="!!selectedMedia?.id"
+          [referenceDate]="selectedMedia?.date || ''"
           [searchQuery]="searchQuery"
           (mediaClickEvent)="onMediaSelect($event)"
         ></app-media-list>

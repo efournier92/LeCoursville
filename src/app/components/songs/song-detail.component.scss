@@ -1,5 +1,12 @@
 .song-detail {
   min-width: 0;
+  // The routed page is the scroll tail before the site footer, so its bottom
+  // container clears the phone home-indicator inset.
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+
+  @media (max-width: 600px) {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .song-sheet {
@@ -175,8 +182,26 @@
 }
 
 .transpose-reset {
+  // It reads as a control, not dead text: the stepper pill's hairline box.
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
   // M3 text buttons colour their label from the token, not the host color.
   --mat-button-text-label-text-color: var(--color-ink-2);
+  --mat-button-text-disabled-label-text-color: var(--color-ink-3);
+  --mat-button-text-container-height: 36px;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-brand-primary-hover);
+  }
+
+  // At offset 0 there is nothing to reset: keep the bordered box but mute it.
+  &:disabled {
+    border-color: var(--color-border);
+    color: var(--color-ink-3);
+    opacity: 1;
+  }
 }
 
 .song-tools {
@@ -201,6 +226,51 @@
       --mat-button-outlined-icon-spacing: 4px;
       --mat-button-outlined-label-text-size: 0.8rem;
     }
+  }
+}
+
+// Landscape phones: a ~390px viewport height leaves no room for a stacked
+// header, so the meta block collapses to one line and a tighter rhythm to
+// lift the first chord + lyric above the fold.
+@media (max-height: 500px) {
+  .song-sheet {
+    padding-top: 4px;
+  }
+
+  .song-header {
+    gap: 2px;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+
+  .song-title {
+    font-size: 1.1rem;
+    line-height: 1.15;
+  }
+
+  .song-meta {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .song-leaders {
+    margin-top: 0;
+  }
+
+  .song-leaders-label {
+    line-height: 30px;
+  }
+
+  .leader-chip {
+    min-height: 30px;
+  }
+
+  .transpose-controls {
+    margin-bottom: 2px;
+  }
+
+  .song-tools {
+    margin-bottom: 2px;
   }
 }
 
@@ -253,8 +323,20 @@
     font-size: 0.875rem;
   }
 
+  // 320px phones: one more step so "Amazing grace how sweet the sound" stays
+  // a whole line instead of orphaning its last word.
+  @media (max-width: 340px) {
+    font-size: 13px;
+  }
+
   @media (min-width: 900px) {
     font-size: 1.2rem;
+  }
+
+  // Tablet portrait: 72ch runs the full card (~700px), so tighten the measure
+  // to 60ch. Desktop keeps 72ch.
+  @media (min-width: 601px) and (max-width: 1024px) {
+    max-width: 60ch;
   }
 }
 
@@ -309,8 +391,8 @@
   }
 }
 
-// 44px mobile hit areas: the transpose trio.
-@media (max-width: 600px) {
+// 44px hit areas: the transpose trio shares the action pills' height.
+@media (max-width: 1024px) {
   .transpose-pill {
     height: 44px;
 

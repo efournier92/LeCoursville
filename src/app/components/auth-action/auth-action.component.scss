@@ -136,3 +136,76 @@
   height: 44px;
   margin-bottom: 8px;
 }
+
+// Narrow phones: a 56px brand tile plus its padding ate the top of the card.
+// Shrink it (and its surround) so the title, banner, and primary action stay
+// in the upper half of a 320x568 screen.
+@media (max-width: 360px) {
+  .auth-action-card {
+    padding: 24px 20px 20px;
+  }
+
+  .auth-action-logo {
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    padding: 6px;
+  }
+
+  .auth-action-title {
+    margin-bottom: 6px;
+  }
+
+  .auth-action-text {
+    margin-bottom: 12px;
+  }
+
+  .auth-action-banner {
+    margin: 2px 0 12px;
+  }
+}
+
+// Landscape phones (844x390 and similar): the 700px block still top-anchors
+// the page, so the card ran flush to the bottom edge with the Back link at the
+// extreme edge. Measure the page against the space below the header, center
+// the card there, and keep 16px clear on both ends while compressing the card.
+@media (max-height: 500px) {
+  .auth-action-page {
+    align-items: center;
+    min-height: calc(100dvh - var(--header-height));
+    padding: 16px;
+  }
+
+  .auth-action-card {
+    padding: 20px 24px 18px;
+  }
+
+  .auth-action-logo {
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    padding: 6px;
+  }
+
+  .auth-action-title {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+  }
+
+  .auth-action-text {
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .auth-action-banner {
+    margin: 2px 0 10px;
+    padding: 8px 10px;
+  }
+
+  .auth-action-actions {
+    gap: 4px;
+  }
+}

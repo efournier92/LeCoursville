@@ -917,6 +917,15 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
   border-bottom-color: var(--color-border);
 }
 
+/* On touch layouts the calendar page ends at the agenda, so the footer's auto
+   top margin would strand the Privacy link below a short page (about 250px of
+   dead space on an iPad mini). Scoped to the calendar route only. */
+@media (max-width: 1023px) {
+  .app-container:has(app-calendar) app-site-footer {
+    margin-top: 0;
+  }
+}
+
 app-calendar-cell {
   font-size: 0.95em;
 }
@@ -1129,5 +1138,17 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   .mat-mdc-slide-toggle .mdc-switch__handle-track,
   .mat-mdc-slide-toggle .mdc-switch__handle {
     transition: none;
+  }
+}
+
+// Material icon buttons ship a 40px layout box. On touch widths the minimum
+// comfortable target is 44px, so the box moves with the state-layer token.
+@media (max-width: 1024px) {
+  .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }

@@ -210,6 +210,8 @@ const PAGE_AUDIT = (zoom) => {
     // Inline boxes report clientWidth 0 and scrollWidth as the text run, which
     // reads as clipped on every engine. Text clipping only applies to boxes.
     if (cs(el).display === 'inline') continue;
+    // Icon ligatures (mat-icon) clip their own glyph text by design.
+    if (el.matches('mat-icon, .material-icons, .material-symbols-outlined')) continue;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     if (!text || el.scrollWidth <= el.clientWidth + 2) continue;
     if (cs(el).textOverflow === 'ellipsis' || el.hasAttribute('title') || el.hasAttribute('aria-label')) continue;

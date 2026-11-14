@@ -326,6 +326,82 @@
   }
 }
 
+// Narrow phones: the full-width Print row costs a whole month row. Lift the
+// compact outlined Print onto the toolbar's title row, keep the filter grid's
+// two rows, and unclip every toggle label from the card edge.
+@media (max-width: 360px) {
+  .calendar-toolbar-row {
+    position: relative;
+  }
+
+  .calendar-toolbar-actions {
+    position: absolute;
+    top: -36px;
+    right: 0;
+    width: auto;
+  }
+
+  .calendar-toolbar-filters {
+    // Symmetric inset so no label can reach the card edge.
+    padding-inline: 4px;
+    column-gap: 8px;
+  }
+
+  .calendar-checkbox {
+    width: 100%;
+    min-width: 0;
+  }
+
+  // Cap the label column: a long label ellipsizes instead of overflowing into
+  // the card's right padding.
+  :host ::ng-deep .calendar-checkbox .mdc-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar-print-button {
+    --mdc-filled-button-container-color: transparent;
+    --mdc-filled-button-label-text-color: var(--color-brand-primary);
+    width: auto;
+    height: 36px;
+    min-width: 44px;
+    padding: 0 12px;
+    font-size: 0.8rem;
+    background: transparent;
+    color: var(--color-brand-primary);
+    border: 1px solid var(--color-brand-primary);
+    border-radius: var(--radius-control);
+    position: relative;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+
+    // 36px painted pill, 44px tap box without growing the layout row.
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -4px 0;
+    }
+  }
+
+  .calendar-print-button:hover {
+    background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+    color: var(--color-brand-primary);
+  }
+
+  .calendar-print-button:active {
+    background: color-mix(in srgb, var(--color-brand-primary) 16%, transparent);
+    color: var(--color-brand-primary);
+    transform: none;
+  }
+}
+
 // Filters stay a wrapping row; Print needs the full row below once it no
 // longer fits beside them.
 @media (min-width: 601px) and (max-width: 720px) {

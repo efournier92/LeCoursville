@@ -50,7 +50,9 @@
 }
 
 .day-agenda-title {
-  flex: 1;
+  // Size to the names so the type sits immediately after them and the right
+  // edge of the row stays free.
+  flex: 0 1 auto;
   min-width: 0;
   color: var(--color-ink);
   font-weight: 500;

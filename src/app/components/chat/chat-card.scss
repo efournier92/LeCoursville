@@ -1,0 +1,76 @@
+// Shared chat message-card layout. The base message card reserves a stacked
+// 155px tool rail on the left, which squeezes the text column and drives card
+// height; chat cards are one full-width column with a horizontal action row
+// under the body instead.
+
+.message-card-content-container.message-card-content-chat {
+  min-height: 0;
+}
+
+.message-card-content-chat .message-view-container,
+.message-card-content-chat .message-edit-message-form-container {
+  margin-left: 0;
+}
+
+// Trim the padding Material reserves under the last card-content block so
+// cards hug their content. Matched at Material's own `:last-child` specificity.
+.message-card-content-chat mat-card-content:last-child {
+  padding-bottom: 8px;
+}
+
+// Attachments used to be separated from the body by a <br>; the margin does the
+// same job without the blank line under short messages.
+.message-card-content-chat .massage-attachment-image,
+.message-card-content-chat .message-view-attachment-button {
+  margin-top: 8px;
+}
+
+.message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 4px;
+  margin-top: 4px;
+}
+
+// Icon + label action, one 44px touch target per control. Plain buttons keep
+// the existing inline highlight colors and the existing click handlers.
+.message-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: var(--height-control);
+  min-height: var(--height-control);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink-2);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+
+  .message-button-label {
+    margin-right: 0;
+  }
+
+  // The like count badge is absolutely positioned past the icon's right edge;
+  // keep it clear of the label that now sits beside it.
+  .message-like-icon {
+    margin-right: 8px;
+  }
+}
+
+// The Sticky control is a switch, not a button, but it shares the row height.
+.message-sticky-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--height-control);
+}
+
+// "11/13 3:08 AM" fits one line at 320px; the value and pipe are unchanged.
+.message-timestamp-compact {
+  white-space: nowrap;
+}

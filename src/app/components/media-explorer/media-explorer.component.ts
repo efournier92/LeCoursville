@@ -200,6 +200,12 @@ export class MediaExplorerComponent implements OnInit {
     return !!this.user?.id;
   }
 
+  /** Stored durations are zero-padded (`00:30`); the meta line reads `0:30`. */
+  formatDuration(duration: string): string {
+    const match = duration?.trim().match(/^(\d+):(\d{2})$/);
+    return match ? `${Number(match[1])}:${match[2]}` : duration;
+  }
+
   isVideo(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.VIDEO.id;
   }

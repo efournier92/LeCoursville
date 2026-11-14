@@ -4,10 +4,12 @@
   // A narrow single-action sheet, so the form does not become the widest card on the site.
   max-width: 680px;
   margin: 24px auto;
-  padding: 24px;
+  // Bottom padding runs a little deeper than the top so the folder strip does
+  // not crowd the card edge.
+  padding: 24px 24px 32px;
 
   @media (max-width: 600px) {
-    padding: 16px;
+    padding: 16px 16px 20px;
   }
 }
 
@@ -88,21 +90,35 @@ h1 {
 .btn-folder-link {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   width: 100%;
   min-height: 44px;
   padding: 8px 12px;
-  background: none;
+  background: var(--color-surface-muted);
   border: none;
+  border-radius: var(--radius-sm);
   color: var(--color-ink-2);
   cursor: pointer;
   font-size: 14px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-align: left;
 
   &:hover {
     color: var(--color-brand-primary);
+    background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-surface-muted));
   }
+}
+
+.folder-glyph,
+.folder-chevron {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: var(--color-ink-3);
+}
+
+// Push the chevron to the far edge so the strip spans the card's inner width.
+.folder-chevron {
+  margin-left: auto;
 }
 
 .drop-zone .hint {
@@ -172,6 +188,45 @@ h1 {
 
   .drop-icon {
     margin-bottom: 12px;
+  }
+}
+
+// Short viewports (landscape phones): compress the head of the card so at least
+// the upper half of the drop target clears the fold on load.
+@media (max-height: 500px) {
+  .upload-container {
+    margin: 12px auto;
+    padding: 14px 20px 22px;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    margin-bottom: 12px;
+  }
+
+  .name-input,
+  .event-input {
+    margin-bottom: 10px;
+
+    label {
+      margin-bottom: 4px;
+    }
+
+    input {
+      padding: 8px 12px;
+    }
+  }
+
+  .drop-zone {
+    padding: 28px 24px;
+  }
+
+  .drop-icon {
+    margin-bottom: 10px;
   }
 }
 

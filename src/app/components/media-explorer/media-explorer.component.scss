@@ -11,6 +11,31 @@
   margin-bottom: 12px;
 }
 
+.media-explorer-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 24px;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-ink);
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+  }
+}
+
 .media-explorer-title {
   margin: 0;
   font-size: 1.25rem;
@@ -29,6 +54,10 @@
   color: var(--color-ink-2);
 }
 
+.media-explorer-meta-sep {
+  color: var(--color-ink-3);
+}
+
 .media-component-container {
   padding: 0;
 }
@@ -40,6 +69,39 @@
 
 .media-explorer-player-container {
   padding: 16px;
+}
+
+// Landscape phones (e.g. 844x390): the eyebrow, title, and meta must leave the
+// player's top edge on the first screen.
+@media (max-height: 500px) {
+  .media-explorer-back {
+    margin-bottom: 0;
+  }
+
+  .media-explorer-heading {
+    margin-bottom: 6px;
+  }
+
+  .media-explorer-title {
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  .media-explorer-meta {
+    gap: 4px;
+    margin-top: 2px;
+    font-size: 0.75rem;
+  }
+
+  .media-explorer-player-container {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .media-explorer-actions-container {
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
 }
 
 .video-error {
@@ -59,13 +121,16 @@
 .media-explorer-action-button {
   border-radius: var(--radius-control);
   background: transparent;
-  color: var(--color-ink-2);
+  color: var(--color-ink);
   min-width: 44px;
   min-height: 44px;
   height: auto;
   padding: 0 12px;
   font-size: 0.875rem;
   border: 1px solid var(--color-border);
+  // MDC paints the label through a token, which beats the host color.
+  --mat-button-outlined-label-text-color: var(--color-ink);
+  --mat-button-outlined-label-text-hover-color: var(--color-ink);
 
   &:hover {
     background: var(--color-surface-muted);
@@ -76,6 +141,25 @@
   &:active {
     background: var(--color-border);
     transform: scale(0.98);
+  }
+
+  &-primary {
+    background: var(--color-brand-solid);
+    border-color: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
+    --mat-button-outlined-label-text-color: var(--color-on-brand-solid);
+    --mat-button-outlined-label-text-hover-color: var(--color-on-brand-solid);
+
+    &:hover {
+      background: var(--color-brand-solid-hover);
+      border-color: var(--color-brand-solid-hover);
+      color: var(--color-on-brand-solid);
+    }
+
+    &:active {
+      background: var(--color-brand-solid-hover);
+      border-color: var(--color-brand-solid-hover);
+    }
   }
 
   .mat-icon {

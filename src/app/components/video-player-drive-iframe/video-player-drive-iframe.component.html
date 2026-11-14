@@ -1,5 +1,8 @@
 <div class="d-flex justify-content-center">
-  <div class="video-iframe-container w-100">
+  <div
+    class="video-iframe-container w-100"
+    [class.video-iframe-container-fallback]="showFallback"
+  >
     @if (showFallback) {
       <div class="video-fallback">
         <p class="video-error" role="alert">{{ videoErrorMessage }}</p>

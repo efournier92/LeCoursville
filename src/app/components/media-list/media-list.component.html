@@ -80,7 +80,7 @@
             @if (compact) {
               <div class="media-details media-details-compact">
                 <div class="media-details-name">{{ media.title }}</div>
-                @if (formatYear(media.date)) {
+                @if (shouldShowYear(media)) {
                   <span class="media-details-year">{{ formatYear(media.date) }}</span>
                 }
               </div>

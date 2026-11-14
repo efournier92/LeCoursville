@@ -22,9 +22,10 @@
     <button class="gallery-segmented-btn" [class.active]="sortType === 'title'" (click)="sortType = 'title'">A–Z</button>
   </div>
   @if (showUploadCta) {
-    <a class="gallery-primary-btn gallery-upload-cta" routerLink="/upload">
+    <a class="gallery-primary-btn gallery-upload-cta" routerLink="/upload" aria-label="Upload photos">
       <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
-      Upload photos
+      <span class="gallery-upload-cta-label--full">Upload photos</span>
+      <span class="gallery-upload-cta-label--short">Upload</span>
     </a>
   }
 </app-page-toolbar>
@@ -57,7 +58,6 @@
         } @else {
           <div class="album-tile-placeholder">
             <mat-icon aria-hidden="true">photo_library</mat-icon>
-            <span class="album-tile-initial">{{ album.title.charAt(0) }}</span>
           </div>
         }
         <div class="album-tile-scrim">

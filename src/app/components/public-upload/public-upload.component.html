@@ -4,7 +4,7 @@
       <h1>Upload Files</h1>
     }
     @if (!isComplete && !hasError) {
-      <p class="subtitle">Share With The Family</p>
+      <p class="subtitle">Share with the family</p>
     }
 
     @if (!isComplete && !hasError) {
@@ -36,7 +36,11 @@
         </div>
         <div class="folder-upload-link">
           <input #folderInput type="file" webkitDirectory (change)="onFolderSelect($event)" hidden>
-          <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">Or Upload A Whole Folder</button>
+          <button type="button" class="btn-folder-link" (click)="openFolderPicker(folderInput, $event)">
+            <mat-icon class="folder-glyph" aria-hidden="true">folder_open</mat-icon>
+            <span>Or upload a whole folder</span>
+            <mat-icon class="folder-chevron" aria-hidden="true">chevron_right</mat-icon>
+          </button>
         </div>
         @if (uploadItems.length > 0 && !isComplete && !hasError) {
           <div class="file-list">

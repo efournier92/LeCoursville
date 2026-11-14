@@ -51,6 +51,15 @@
 }
 
 .toolbar-icon {
+  // The logo asset is portrait (520x640); at the old 80% height hint the
+  // glyph overran the bar on phones and bled onto the page ground. Clamp it to
+  // 60% of the header height and let .toolbar-logo's flex centring hold it in
+  // the green bar. The 44x44 button box is untouched.
+  display: block;
+  height: 60%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
   cursor: pointer;
 }
 
@@ -147,11 +156,15 @@
   background: transparent;
   color: var(--color-on-brand);
   // On-brand pill tinting so both options read against the green toolbar.
+  // The inactive glyph keeps >= 3:1 on the translucent track, and the active
+  // glyph is the invariant brand solid (5.7:1) on a white disc. The button is
+  // no longer dimmed as a whole: at 0.7 opacity both halves washed out on the
+  // green bar and the active glyph vanished into its own disc.
   --theme-pill-track: color-mix(in srgb, var(--color-on-brand) 20%, transparent);
-  --theme-pill-icon: color-mix(in srgb, var(--color-on-brand) 72%, transparent);
+  --theme-pill-icon: color-mix(in srgb, var(--color-on-brand) 90%, transparent);
   --theme-pill-active-bg: var(--color-on-brand);
   --theme-pill-active-ink: var(--color-brand-solid);
-  opacity: 0.7;
+  opacity: 1;
   cursor: pointer;
   transition: opacity 0.15s ease;
   -webkit-tap-highlight-color: transparent;

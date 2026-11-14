@@ -65,6 +65,16 @@
   }
 }
 
+// Phones: the fixed-width pill left a dead strip between the gutter and the
+// field, so let it span the masthead gutter to gutter under the title block.
+// The fixed top-right pill returns at 768px and up, where it sits flush.
+@media (max-width: 767px) {
+  .topbar-filter {
+    flex: 1 0 100%;
+    margin-left: 0;
+  }
+}
+
 .topbar-icon-chip {
   flex: none;
   display: grid;
@@ -192,6 +202,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 12px 16px 32px;
+
+  // Below desktop the content column is capped at 640 and centered, so the
+  // footer must share that measure or the paragraph detaches from the cards.
+  @media (max-width: 1023px) {
+    max-width: 640px;
+  }
 
   p {
     margin: 0;

@@ -93,7 +93,11 @@
   gap: 12px;
   max-width: calc(100vw - 24px);
   padding: 8px 16px;
-  background: color-mix(in srgb, var(--color-media-backdrop) 50%, transparent);
+  // Deep near-black plus a hairline edge keeps the pill off deep-red photo
+  // fields (50% black over red read maroon). Both tokens are theme-invariant.
+  background: color-mix(in srgb, var(--color-media-backdrop) 72%, transparent);
+  border: 1px solid var(--color-overlay-white-08);
+  box-sizing: border-box;
   border-radius: var(--radius-card);
   color: var(--color-on-brand);
 
@@ -102,9 +106,12 @@
 
 .slideshow-counter {
   font-variant-numeric: tabular-nums;
-  font-size: 14px;
-  min-width: 60px;
+  font-size: 16px;
+  font-weight: 500;
+  // Reserve the widest two-digit pair so the pill stays put from 1/2 to 10/12.
+  min-width: 5ch;
   text-align: center;
+  white-space: nowrap;
 }
 
 // Phones: an uncapped pill stretched to ~10px side margins and read like a
@@ -120,12 +127,6 @@
     .mat-mdc-icon-button {
       --mat-icon-button-state-layer-size: 44px;
     }
-  }
-
-  .slideshow-counter {
-    min-width: 0;
-    font-size: 13px;
-    white-space: nowrap;
   }
 }
 

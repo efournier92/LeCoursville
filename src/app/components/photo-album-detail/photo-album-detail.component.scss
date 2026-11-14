@@ -62,12 +62,13 @@
   gap: 8px;
 }
 
-// Tablet widths fit three or four columns. auto-fit collapses the unused
-// tracks, so a short album fills the row instead of stacking flush left.
+// Tablet widths hold tiles at ~220-240px, so 768 breaks to three columns
+// instead of stretching a two-photo album into two posters. auto-fill keeps
+// that track width for short albums; auto-fit would blow the tiles up again.
 @media (max-width: 1024px) {
   .photo-grid,
   .photos-skeleton-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
   }
 }
 

@@ -1,24 +1,104 @@
 <div
-  class="row mb-4 message-card-content-container"
+  class="message-card-content-container message-card-content-chat"
   [style.--reply-depth]="message.replyLevel"
   >
-  <div class="col-2 col-md-1 message-tools-container">
-    <div class="mb-3 message-button">
-      <div class="d-flex justify-content-center mt-2">
-        <span
-          class="message-like-icon"
-          (click)="likeMessage()"
-          (mouseover)="highlightElement('like', true)"
-          (mouseleave)="highlightElement('like', false)"
+  <div class="message-view-container">
+    @if (message.isDeleted) {
+      <mat-card-content
+        class="message-view-deleted-container"
+        >
+        <mat-card-title>
+          <mat-card-subtitle class="chat-message-author-name">
+            <i>This message was deleted.</i>
+          </mat-card-subtitle>
+        </mat-card-title>
+      </mat-card-content>
+    }
+    @if (!message.isDeleted) {
+      <mat-card-content>
+        <mat-card-title>
+          @if (!message.isReply) {
+            <div
+              class="message-title"
+              >
+              {{ message.title }}
+            </div>
+          }
+          <mat-card-subtitle class="chat-message-author-name">
+            {{ message.authorName }}
+          </mat-card-subtitle>
+          <mat-card-subtitle class="message-timestamp message-timestamp-compact">
+            {{ message.dateSent | date : "M/d h:mm a" }}
+          </mat-card-subtitle>
+        </mat-card-title>
+        <div
+          class="message-body"
+          [innerHTML]="message.body"
           >
-          <mat-icon
-            [matMenuTriggerFor]="menu"
-            class="unselectable"
-            aria-hidden="true"
-            [ngStyle]="{
-              color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
-            }"
-          >favorite_border</mat-icon>
+          <!-- {{ message.body }} -->
+        </div>
+        @if (getAttachmentType(message) === 'photo') {
+          <img
+            mat-card-image
+            src="{{ message.attachmentUrl }}"
+            class="massage-attachment-image"
+            />
+        }
+        @if (getAttachmentType(message) === 'document') {
+          <a
+            mat-button
+            [href]="message.attachmentUrl"
+            class="message-view-attachment-button"
+            target="_blank"
+            >View Attachment</a
+            >
+        }
+        @if (getAttachmentType(message) === 'other') {
+          <a
+            mat-button
+            [href]="message.attachmentUrl"
+            class="message-view-attachment-button"
+            download
+            >Download Attachment</a
+            >
+        }
+        <div class="message-actions">
+          <button
+            type="button"
+            class="message-button message-action-button"
+            aria-label="Like"
+            (mouseover)="highlightElement('like', true)"
+            (mouseleave)="highlightElement('like', false)"
+            (click)="likeMessage()"
+            >
+            <span class="message-like-icon">
+              <mat-icon
+                [matMenuTriggerFor]="menu"
+                class="unselectable"
+                aria-hidden="true"
+                [ngStyle]="{
+                  color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
+                }"
+              >favorite_border</mat-icon>
+              @if (getLikes() !== 0) {
+                <strong
+                  class="unselectable message-likes-container"
+                  [ngStyle]="{
+                    color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
+                  }"
+                  >
+                  {{ getLikes() }}
+                </strong>
+              }
+            </span>
+            <span
+              class="message-button-label"
+              [ngStyle]="{
+                color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
+              }"
+              >Like</span
+              >
+          </button>
           <mat-menu #menu="matMenu">
             @for (liker of likers; track liker) {
               <div>
@@ -34,151 +114,58 @@
               </div>
             }
           </mat-menu>
-          @if (getLikes() !== 0) {
-            <strong
-              class="unselectable message-likes-container"
-            [ngStyle]="{
-              color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)'
-            }"
-              >
-              {{ getLikes() }}
-            </strong>
-          }
-        </span>
-      </div>
-      <span
-        class="message-button-label d-flex justify-content-center"
-        [ngStyle]="{ color: highlights.like === true ? 'var(--color-accent)' : 'var(--color-error)' }"
-        >Like</span
-        >
-      </div>
-      <div
-        class="mb-3 message-button"
-        [ngStyle]="{ color: highlights.reply === true ? 'var(--color-accent)' : 'var(--color-error)' }"
-        >
-        <div
-          class="d-flex flex-row justify-content-center"
-          (mouseover)="highlightElement('reply', true)"
-          (mouseleave)="highlightElement('reply', false)"
-          (click)="replyMessage()"
-          >
-          <mat-icon class="message-tool-icon" aria-hidden="true">reply_all</mat-icon>
-        </div>
-        <span class="message-button-label d-flex justify-content-center"
-          >Reply</span
-          >
-        </div>
-        @if (
-          message.authorId === user.id || (user && user.roles && user.roles.admin)
-          ) {
-          <div
-            class="message-button"
-            [ngStyle]="{ color: highlights.edit === true ? 'var(--color-accent)' : 'var(--color-error)' }"
+          <button
+            type="button"
+            class="message-button message-action-button"
+            aria-label="Reply"
+            [ngStyle]="{ color: highlights.reply === true ? 'var(--color-accent)' : 'var(--color-error)' }"
+            (mouseover)="highlightElement('reply', true)"
+            (mouseleave)="highlightElement('reply', false)"
+            (click)="replyMessage()"
             >
-            <div
-              class="d-flex flex-row justify-content-center"
+            <mat-icon class="message-tool-icon" aria-hidden="true">reply_all</mat-icon>
+            <span class="message-button-label">Reply</span>
+          </button>
+          @if (
+            message.authorId === user.id || (user && user.roles && user.roles.admin)
+            ) {
+            <button
+              type="button"
+              class="message-button message-action-button"
+              aria-label="Edit"
+              [ngStyle]="{ color: highlights.edit === true ? 'var(--color-accent)' : 'var(--color-error)' }"
               (mouseover)="highlightElement('edit', true)"
               (mouseleave)="highlightElement('edit', false)"
               (click)="editMessage()"
               >
               <mat-icon class="message-tool-icon" aria-hidden="true">edit</mat-icon>
-            </div>
-            <span class="message-button-label d-flex justify-content-center"
-              >Edit</span
-              >
-            </div>
+              <span class="message-button-label">Edit</span>
+            </button>
           }
         </div>
-        <mat-divider
-          class="message-controls-divider-vertical"
-          [vertical]="true"
-        ></mat-divider>
-        <div
-          class="message-view-container message-view-container col-7 col-sm-8 col-lg-10"
-          >
-          @if (message.isDeleted) {
-            <mat-card-content
-              class="message-view-deleted-container col-9"
-              >
-              <mat-card-title>
-                <mat-card-subtitle class="chat-message-author-name">
-                  <i>This message was deleted.</i>
-                </mat-card-subtitle>
-              </mat-card-title>
-            </mat-card-content>
-          }
-          @if (!message.isDeleted) {
-            <mat-card-content>
-              <mat-card-title>
-                @if (!message.isReply) {
-                  <div
-                    class="message-title"
-                    >
-                    {{ message.title }}
-                  </div>
-                }
-                <mat-card-subtitle class="chat-message-author-name">
-                  {{ message.authorName }}
-                </mat-card-subtitle>
-                <mat-card-subtitle class="message-timestamp">
-                  {{ message.dateSent | date : "short" }}
-                </mat-card-subtitle>
-              </mat-card-title>
-              <div
-                class="message-body"
-                [innerHTML]="message.body"
-                >
-                <!-- {{ message.body }} -->
-              </div>
-              <br />
-              @if (getAttachmentType(message) === 'photo') {
-                <img
-                  mat-card-image
-                  src="{{ message.attachmentUrl }}"
-                  class="massage-attachment-image"
-                  />
-              }
-              @if (getAttachmentType(message) === 'document') {
-                <a
-                  mat-button
-                  [href]="message.attachmentUrl"
-                  class="message-view-attachment-button"
-                  target="_blank"
-                  >View Attachment</a
-                  >
-                }
-                @if (getAttachmentType(message) === 'other') {
-                  <a
-                    mat-button
-                    [href]="message.attachmentUrl"
-                    class="message-view-attachment-button"
-                    download
-                    >Download Attachment</a
-                    >
-                  }
-                </mat-card-content>
-              }
-            </div>
-          </div>
-          @for (reply of message.replies; track reply) {
-            <mat-card-content>
-              @if (!reply.isEditable) {
-                <app-chat-view
-                  [message]="reply"
-                  [parent]="message"
-                  [rootId]="rootId"
-                  (updateParentEvent)="updateParent()"
-                  >
-                </app-chat-view>
-              }
-              @if (reply.isEditable) {
-                <app-chat-edit
-                  [message]="reply"
-                  [parent]="message"
-                  [rootId]="rootId"
-                  (updateParentEvent)="updateParent()"
-                  >
-                </app-chat-edit>
-              }
-            </mat-card-content>
-          }
+      </mat-card-content>
+    }
+  </div>
+</div>
+@for (reply of message.replies; track reply) {
+  <mat-card-content>
+    @if (!reply.isEditable) {
+      <app-chat-view
+        [message]="reply"
+        [parent]="message"
+        [rootId]="rootId"
+        (updateParentEvent)="updateParent()"
+        >
+      </app-chat-view>
+    }
+    @if (reply.isEditable) {
+      <app-chat-edit
+        [message]="reply"
+        [parent]="message"
+        [rootId]="rootId"
+        (updateParentEvent)="updateParent()"
+        >
+      </app-chat-edit>
+    }
+  </mat-card-content>
+}

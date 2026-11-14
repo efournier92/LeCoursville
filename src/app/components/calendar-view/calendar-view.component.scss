@@ -52,6 +52,10 @@
   display: none;
 }
 
+.cal-dot-legend {
+  display: none;
+}
+
 @media (max-width: 1023px) {
   .cal-day-control {
     position: relative;
@@ -88,6 +92,25 @@
   .calendar-day-agenda {
     display: block;
     margin-top: 8px;
+  }
+
+  // Explains the month-cell dots without competing with the grid: quiet 12px
+  // muted key, on one line, between the grid and the agenda card.
+  .cal-dot-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-ink-2);
+  }
+
+  .cal-dot-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
   }
 }
 

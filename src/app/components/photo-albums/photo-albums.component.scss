@@ -47,6 +47,18 @@
     aspect-ratio: 1 / 1;
     max-height: 200px;
   }
+
+  // Screens this narrow fit about ten characters on one line, which makes
+  // distinct album names read alike. Give the title a second line instead.
+  .album-tile-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: clip;
+    line-height: 1.25;
+  }
 }
 
 @keyframes pulse {
@@ -98,14 +110,6 @@
   }
 }
 
-.album-tile-initial {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--color-ink-2);
-  text-transform: uppercase;
-}
-
 .album-tile-scrim {
   position: absolute;
   left: 0;
@@ -128,6 +132,43 @@
 .album-tile-count {
   font-size: 0.8rem;
   opacity: 0.85;
+}
+
+// Placeholder tiles are a light fill, so a dark scrim under white ink has no
+// contrast budget. Flip the caption to primary ink over a wash that matches the
+// placeholder fill (theme tokens keep it correct in dark mode too).
+.album-tile:has(.album-tile-placeholder) {
+  .album-tile-scrim {
+    background: linear-gradient(180deg, transparent, var(--color-surface-muted));
+    color: var(--color-ink);
+  }
+
+  .album-tile-title {
+    text-shadow: none;
+  }
+}
+
+// "Upload photos" wraps once the toolbar row gets tight. Below 360px show the
+// short label (aria-label on the anchor keeps the accessible name intact);
+// the 44px control box is unchanged.
+.gallery-upload-cta {
+  white-space: nowrap;
+}
+
+.gallery-upload-cta-label--short {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .gallery-upload-cta {
+    .gallery-upload-cta-label--full {
+      display: none;
+    }
+
+    .gallery-upload-cta-label--short {
+      display: inline;
+    }
+  }
 }
 
 // Phone toolbar: fold the count onto the title row and put the sort control

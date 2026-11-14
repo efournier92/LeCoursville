@@ -500,19 +500,40 @@ test.describe('media', () => {
       await expect(fallback.locator('.video-error')).toHaveAttribute('role', 'alert');
       await expect(fallback.getByRole('button', { name: 'Try again' })).toBeVisible();
       await expect(page.locator('iframe.video-iframe')).toHaveCount(0);
+
+      // The fallback sizes to its content: no reserved 16:9 player box.
+      const fallbackBox = await page.locator('.video-iframe-container').boundingBox();
+      expect(fallbackBox!.height).toBeLessThan(260);
     } finally {
       await deleteDb(`media/${id}`);
     }
   });
 
-  test('video: detail shows the title, date, and duration above the player', async ({ page }) => {
+  test('video: detail shows a back link, title, date, and duration', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video');
 
+    const back = page.locator('.media-explorer-back');
+    await expect(back).toBeVisible();
+    await expect(back).toHaveAccessibleName('Media');
+    await expect(back).toHaveAttribute('href', '/media/explorer');
     await expect(page.locator('.media-explorer-title')).toHaveText('E2E Video');
     await expect(page.locator('.media-explorer-meta')).toContainText('2026');
-    await expect(page.locator('.media-explorer-meta')).toContainText('00:30');
+    await expect(page.locator('.media-explorer-meta')).toContainText('0:30');
+    await expect(page.locator('.media-explorer-meta')).not.toContainText('00:30');
+    await expect(page.locator('.media-explorer-meta-sep')).toHaveText('·');
     await expect(page.locator('input[name="media-explorer-filter"]')).toHaveCount(0);
+  });
+
+  test('video: player top edge is on the first screen at 844x390', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+
+    const player = page.getByTestId('native-video-player');
+    await expect(player).toBeVisible();
+    const box = await player.boundingBox();
+    expect(box!.y).toBeLessThan(320);
   });
 
   test('list route keeps the filter field', async ({ page }) => {
@@ -522,30 +543,59 @@ test.describe('media', () => {
     await expect(page.locator('input[name="media-explorer-filter"]')).toBeVisible();
   });
 
-  test('detail: related rows are one line with the year right aligned', async ({ page }) => {
+  test('detail: related rows drop the year that matches the open item', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video');
 
     const row = mediaRow(page, 'E2E S3 Video');
-    await expect(row.locator('.media-details-year')).toHaveText('2026');
+    await expect(row.locator('.media-details-year')).toHaveCount(0);
     await expect(row.locator('.media-details-artist')).toHaveCount(0);
     await expect(row.locator('.media-details-location')).toHaveCount(0);
     await expect(row).toHaveAccessibleName(/E2E S3 Video/);
 
     const layout = await row.evaluate((el) => {
       const details = el.querySelector('.media-details-compact') as HTMLElement;
-      const year = el.querySelector('.media-details-year') as HTMLElement;
-      const detailsBox = details.getBoundingClientRect();
-      const yearBox = year.getBoundingClientRect();
       return {
         display: getComputedStyle(details).display,
         flexWrap: getComputedStyle(el).flexWrap,
-        yearRightGap: detailsBox.right - yearBox.right,
       };
     });
     expect(layout.display).toBe('flex');
     expect(layout.flexWrap).toBe('nowrap');
-    expect(layout.yearRightGap).toBeCloseTo(0, 0);
+  });
+
+  test('detail: related rows keep a year that differs from the open item', async ({ page }) => {
+    const id = 'media-video-2019';
+    await writeDb(`media/${id}`, {
+      id,
+      title: 'E2E Older Video',
+      artist: '',
+      date: '2019',
+      folderName: 'E2E',
+      fileName: 'fixture.mp4',
+      isSticky: false,
+      isHidden: false,
+      listing: [],
+      urls: {
+        download: 'http://localhost:5000/assets/e2e-fixtures/fixture.mp4',
+        icon: '',
+      },
+      type: 'video',
+      format: 'video/mp4',
+      dateUpdated: new Date().toISOString(),
+      duration: '00:10',
+    });
+
+    try {
+      await login(page, 'admin');
+      await page.goto('/media/explorer?id=media-video');
+
+      await expect(
+        mediaRow(page, 'E2E Older Video').locator('.media-details-year'),
+      ).toHaveText('2019');
+    } finally {
+      await deleteDb(`media/${id}`);
+    }
   });
 
   test('video: actions render below the player, left aligned', async ({ page }) => {
@@ -574,6 +624,9 @@ test.describe('media', () => {
       const downloadEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
         button.textContent?.includes('Download'),
       )!;
+      const shareEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Share'),
+      )!;
       const p = playerEl.getBoundingClientRect();
       const a = actionsEl.getBoundingClientRect();
       const d = downloadEl.getBoundingClientRect();
@@ -586,6 +639,8 @@ test.describe('media', () => {
         downloadHeight: d.height,
         downloadMinWidth: dStyle.minWidth,
         downloadMinHeight: dStyle.minHeight,
+        downloadBackground: dStyle.backgroundColor,
+        shareColor: getComputedStyle(shareEl).color,
       };
     });
     expect(layout.afterPlayer).toBe(true);
@@ -595,6 +650,9 @@ test.describe('media', () => {
     expect(layout.downloadMinHeight).toBe('44px');
     expect(layout.downloadWidth).toBeGreaterThanOrEqual(44);
     expect(layout.downloadHeight).toBeGreaterThanOrEqual(44);
+    // Primary action is filled brand; the secondary label is near-black ink.
+    expect(layout.downloadBackground).toBe('rgb(39, 116, 74)');
+    expect(layout.shareColor).toBe('rgb(35, 42, 50)');
   });
 
   test('doc: actions render below the document viewer, left aligned', async ({ page }) => {

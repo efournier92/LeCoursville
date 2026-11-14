@@ -451,3 +451,97 @@
     padding-top: 10px;
   }
 }
+
+// Landscape phones (844x390 and similar): the 700px block still lets the fold
+// slice the Password row. Tighten the header block and field rhythm again so
+// the Password row lands fully above (or fully below) the fold.
+@media (max-height: 500px) {
+  .auth-page {
+    padding-top: 8px;
+    padding-bottom: 16px;
+  }
+
+  .auth-card--login {
+    padding-top: 12px;
+    padding-bottom: 14px;
+  }
+
+  .auth-card--login .auth-logo {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+    padding: 4px;
+  }
+
+  .auth-card--login .auth-title {
+    font-size: 1.25rem;
+    line-height: 1.15;
+  }
+
+  .auth-card--login .auth-subtitle {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+  }
+
+  .auth-card--login .auth-mode-switch {
+    margin-bottom: 6px;
+  }
+
+  .auth-card--login .auth-field + .auth-field {
+    margin-top: 0;
+  }
+
+  .auth-card--login .auth-submit {
+    margin-top: 10px;
+  }
+
+  // Account page: the identity block ate the whole band, pushing Edit profile
+  // and Sign Out below the fold. Shrink the avatar and leading so the 44px
+  // action row enters the first screen. user-view is a child component, so
+  // reach it the same way the account card already flattens its mat-card.
+  .auth-card--account {
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    ::ng-deep app-user-view {
+      .account-profile {
+        padding: 0;
+      }
+
+      .account-avatar {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 6px;
+        font-size: 1rem;
+      }
+
+      .account-name {
+        font-size: 1.2rem;
+        line-height: 1.1;
+      }
+
+      .account-email {
+        margin-top: 2px;
+        font-size: 0.85rem;
+      }
+
+      .account-roles {
+        margin-top: 6px;
+      }
+
+      .account-meta {
+        margin-top: 8px;
+        gap: 6px;
+      }
+
+      .account-meta-row {
+        padding: 4px 10px;
+      }
+    }
+
+    .account-action-bar {
+      margin-top: 8px;
+      padding-top: 8px;
+    }
+  }
+}
