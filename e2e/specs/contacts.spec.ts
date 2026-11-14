@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 // The contacts page is a people-derived directory (people + families in RTDB).
 // The legacy `contacts` node and its admin fixup surface are retired.
@@ -86,5 +87,16 @@ test.describe('contacts', () => {
     await aliceCard.locator('.clickable-name').first().click();
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
     await expect(page.locator('app-person-detail-modal')).toContainText('Alder');
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('contact list fits 320px with 24px email targets', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/contacts');
+    await expect(page.locator('.contacts-grid')).toBeVisible();
+    await expectNoHorizontalOverflow(page.locator('.app-container'));
+    await expectMinTouchTarget(page, '.email-value');
   });
 });

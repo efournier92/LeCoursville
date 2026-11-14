@@ -33,6 +33,7 @@
 
 .clickable-name {
   cursor: pointer;
+  overflow-wrap: anywhere;
 
   &:hover {
     text-decoration: underline;

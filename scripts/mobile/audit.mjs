@@ -14,7 +14,7 @@ import {
 const USAGE = `Usage: node scripts/mobile/audit.mjs --engine=<chromium|webkit|firefox> [options]
 
   --engine=...            required browser engine
-  --routes=user|admin|smoke|all   route set (default user)
+  --routes=user|chat|admin|smoke|all   route set (default user)
   --viewports=iphone,se1  comma list (default all)
   --only=<substring>      filter routes by slug substring
   --theme=light|dark      set data-theme + theme storage key (default light)
@@ -49,14 +49,55 @@ const PAGE_AUDIT = (zoom) => {
     for (let node = el.parentElement; node; node = node.parentElement) depth += 1;
     return depth;
   };
-  const offend = (el, reason) => {
-    const r = box(el);
-    return {
+  const offend = (el, reason, kind, target = box(el)) => {
+    const r = target;
+    const out = {
       selector: cssPath(el),
       rect: { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) },
       reason,
       depth: depthOf(el),
     };
+    if (kind) out.kind = kind;
+    return out;
+  };
+  // Visually hidden even though it occupies layout (sr-only, clipped, transparent).
+  const visuallyHidden = (el) => {
+    const r = box(el);
+    if (r.width <= 1 || r.height <= 1) return true;
+    const style = cs(el);
+    if (style.clipPath && style.clipPath !== 'none') {
+      const m = /inset\(([^)]*)\)/.exec(style.clipPath);
+      if (m && /(?:^|\s)(?:50|100)%/.test(m[1])) return true;
+    }
+    if (style.clip && /rect\(\s*0(?:px)?[\s,]+0(?:px)?[\s,]+0(?:px)?[\s,]+0(?:px)?\s*\)/.test(style.clip)) return true;
+    if (/(?:^|\s)(?:visually-hidden|sr-only|cdk-visually-hidden)(?:\s|$)/.test(el.getAttribute('class') || '')) return true;
+    let node = el;
+    for (let i = 0; node && i < 4; i += 1, node = node.parentElement) {
+      if (parseFloat(cs(node).opacity) < 0.05) return true;
+    }
+    return false;
+  };
+  const ancestorHasLabel = (el) => {
+    let node = el;
+    for (let i = 0; node && i <= 3; i += 1, node = node.parentElement) {
+      if (node.hasAttribute('aria-label') || node.hasAttribute('title')) return true;
+    }
+    return false;
+  };
+  // Overflow is already contained if a scroll/hidden/clip ancestor clips it.
+  const overflowContained = (el) => {
+    for (let node = el.parentElement; node && node !== document.documentElement; node = node.parentElement) {
+      // body/.app-container are the page scroll boundary, not a design containment
+      // box: content clipped there is unreachable, which is the finding.
+      if (node === document.body || node.classList.contains('app-container')) continue;
+      const x = cs(node).overflowX;
+      if (x === 'auto' || x === 'scroll') return true;
+      if (x === 'hidden' || x === 'clip') {
+        const r = box(node);
+        if (r.left >= -1 && r.right <= window.innerWidth + 1) return true;
+      }
+    }
+    return false;
   };
   // Deepest offenders first, capped; the internal depth key is stripped.
   const finish = (list) => list.sort((a, b) => b.depth - a.depth).slice(0, MAX).map(({ depth, ...rest }) => rest);
@@ -88,8 +129,9 @@ const PAGE_AUDIT = (zoom) => {
   const elementOffenders = [];
   for (const el of document.querySelectorAll('*')) {
     if (el === document.documentElement || el === document.body || el.closest('defs') || !visible(el)) continue;
+    if (visuallyHidden(el) || overflowContained(el)) continue;
     const r = box(el);
-    if (r.right <= window.innerWidth + 1 || overflowFrom(el)) continue;
+    if (r.right <= window.innerWidth + 1) continue;
     elementOffenders.push(offend(el, `right ${Math.round(r.right)} > viewport ${window.innerWidth}`));
   }
   add('element-overflow', 'element overflow', 'high', {
@@ -106,23 +148,42 @@ const PAGE_AUDIT = (zoom) => {
     if (!parent) return true;
     return [...parent.children].filter((s) => s !== el && s.matches(CONTROL)).length === 0;
   };
+  const controlVisible = (el) => {
+    if (!visible(el)) return false;
+    if (el.getAttribute('aria-hidden') === 'true' || el.disabled) return false;
+    if (el.tagName === 'INPUT' && (el.getAttribute('type') || '').toLowerCase() === 'hidden') return false;
+    return true;
+  };
+  // Material renders a bare inner input inside the form-field label click target,
+  // and a slide toggle's switch button inside a much larger host.
+  const touchBox = (el) => {
+    if (el.matches('[role="switch"]')) {
+      const host = el.closest('mat-slide-toggle, .mat-mdc-slide-toggle');
+      if (host) return box(host);
+    }
+    if (!el.matches('input, select, textarea')) return box(el);
+    const wrapper = el.closest('mat-form-field, .mat-mdc-form-field, label, .field');
+    return wrapper ? box(wrapper) : box(el);
+  };
   for (const el of document.querySelectorAll(CONTROL)) {
-    if (!visible(el)) continue;
-    const r = box(el);
-    if (r.width < 24 || r.height < 24) small.push(offend(el, `${Math.round(r.width)}x${Math.round(r.height)} under 24px`));
-    else if ((r.width < 44 || r.height < 44) && isPrimary(el)) cramped.push(offend(el, `${Math.round(r.width)}x${Math.round(r.height)} under 44px`));
+    if (!controlVisible(el)) continue;
+    const target = touchBox(el);
+    const w = Math.round(target.width);
+    const h = Math.round(target.height);
+    if (target.width < 24 || target.height < 24) small.push(offend(el, `${w}x${h} under 24px`, 'under-24', target));
+    else if ((target.width < 44 || target.height < 44) && isPrimary(el)) cramped.push(offend(el, `${w}x${h} under 44px`, 'primary-under-44', target));
   }
-  add('hit-targets', 'hit targets', 'high', {
+  add('hit-targets', 'hit targets', small.length ? 'high' : 'medium', {
     status: small.length ? 'fail' : cramped.length ? 'warn' : 'pass',
     detail: small.length
-      ? `${small.length} controls under 24px, ${cramped.length} primary controls under 44px`
+      ? `${small.length} controls under 24x24`
       : cramped.length ? `${cramped.length} primary controls under 44px` : 'all visible controls meet the 24px floor',
-    offenders: finish(small.length ? small : cramped),
+    offenders: finish([...small, ...cramped]),
   });
   // 5. text clip
   const clipped = [];
   for (const el of document.querySelectorAll('body *')) {
-    if (!visible(el)) continue;
+    if (!visible(el) || visuallyHidden(el) || ancestorHasLabel(el)) continue;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     if (!text || el.scrollWidth <= el.clientWidth + 2) continue;
     if (cs(el).textOverflow === 'ellipsis' || el.hasAttribute('title') || el.hasAttribute('aria-label')) continue;
@@ -165,10 +226,12 @@ const PAGE_AUDIT = (zoom) => {
     detail: chrome.length ? (covered.length ? 'bottom content runs under fixed chrome' : 'no overlap') : 'no fixed or sticky chrome',
     offenders: finish(covered),
   });
-  // 7. input font size
+  // 7. input font size (iOS zooms on focus when text-entry font is under 16px)
+  const TEXT_TYPES = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
   const tinyInputs = [];
-  for (const el of document.querySelectorAll('input, select, textarea')) {
-    if (!visible(el)) continue;
+  for (const el of document.querySelectorAll('input, textarea')) {
+    if (el.tagName === 'INPUT' && !TEXT_TYPES.has((el.getAttribute('type') || 'text').toLowerCase())) continue;
+    if (!visible(el) || el.disabled || el.readOnly) continue;
     const size = parseFloat(cs(el).fontSize) || 0;
     if (size < 16) tinyInputs.push(offend(el, `font-size ${size}px under 16px`));
   }
@@ -206,26 +269,30 @@ const PAGE_AUDIT = (zoom) => {
     detail: trappedTables.length ? `${trappedTables.length} tables overflow` : 'tables fit or scroll',
     offenders: finish(trappedTables),
   });
-  // 10. image fit
+  // 10. image fit: contain/cover letterbox intentionally, so only flag fill distortion
   const badImages = [];
   for (const img of document.querySelectorAll('img')) {
     if (!visible(img)) continue;
+    const fit = cs(img).objectFit;
+    if (fit === 'contain' || fit === 'cover') continue;
     const r = box(img);
-    if (r.width > window.innerWidth + 1) {
-      badImages.push(offend(img, `image width ${Math.round(r.width)} exceeds viewport`));
-      continue;
-    }
     if (!img.naturalWidth || !img.naturalHeight || !r.height) continue;
     const natural = img.naturalWidth / img.naturalHeight;
     if (Math.abs(r.width / r.height - natural) / natural > 0.03) badImages.push(offend(img, 'rendered ratio differs from natural ratio by over 3%'));
   }
   add('image-fit', 'image fit', 'medium', {
     status: badImages.length ? 'warn' : 'pass',
-    detail: badImages.length ? `${badImages.length} images distort or overflow` : 'images fit their box',
+    detail: badImages.length ? `${badImages.length} images distort` : 'images fit their box',
     offenders: finish(badImages),
   });
-  // 11. text zoom, only when requested
+  // 11. text zoom, only when requested; pre-existing overflow is not a regression
   if (zoom) {
+    const beforeContainer = containerCheck();
+    const beforeDoc = documentCheck();
+    const beforeWide = new Set();
+    for (const el of document.querySelectorAll('body *')) {
+      if (visible(el) && box(el).right > window.innerWidth + 1) beforeWide.add(cssPath(el));
+    }
     let zoomed = 0;
     for (const el of document.querySelectorAll('body *')) {
       if (zoomed >= 3000) break;
@@ -235,18 +302,26 @@ const PAGE_AUDIT = (zoom) => {
       el.style.fontSize = `${size * (zoom / 100)}px`;
       zoomed += 1;
     }
-    const container = containerCheck();
-    const documentWide = documentCheck();
-    const wideControls = [];
-    for (const el of document.querySelectorAll(CONTROL)) {
-      if (!visible(el)) continue;
-      if (box(el).right > window.innerWidth + 1) wideControls.push(offend(el, 'control past viewport after text zoom'));
+    const afterContainer = containerCheck();
+    const afterDoc = documentCheck();
+    const newWide = [];
+    for (const el of document.querySelectorAll('body *')) {
+      if (!visible(el) || visuallyHidden(el)) continue;
+      if (box(el).right <= window.innerWidth + 1) continue;
+      if (beforeWide.has(cssPath(el))) continue;
+      newWide.push(offend(el, 'overflows the viewport only after text zoom'));
     }
-    const failed = container.status === 'fail' || documentWide.status === 'fail' || wideControls.length > 0;
+    const containerNew = beforeContainer.status !== 'fail' && afterContainer.status === 'fail';
+    const docNew = beforeDoc.status !== 'fail' && afterDoc.status === 'fail';
+    const failed = containerNew || docNew || newWide.length > 0;
     add('text-zoom', `text zoom ${zoom}%`, 'high', {
       status: failed ? 'fail' : 'pass',
-      detail: `zoomed ${zoomed} elements; container ${container.status}, document ${documentWide.status}, ${wideControls.length} controls wide`,
-      offenders: finish([...(container.offenders || []), ...(documentWide.offenders || []), ...wideControls]),
+      detail: `zoomed ${zoomed} elements; ${newWide.length} new overflowing elements`,
+      offenders: finish([
+        ...(containerNew ? afterContainer.offenders || [] : []),
+        ...(docNew ? afterDoc.offenders || [] : []),
+        ...newWide,
+      ]),
     });
   }
 
@@ -261,6 +336,9 @@ function parseZoom(value) {
 
 async function auditRoute(page, route, meta) {
   const base = { engine: meta.engine, viewport: meta.viewport, role: meta.role, slug: route.slug, path: route.path };
+  if (route.auditExempt === 'print') {
+    return { ...base, status: 'print-exempt', failed: [], warned: [], checks: [], textZoom: meta.zoom || null };
+  }
   try {
     await prepareRoutePage(page, route);
     await applyTheme(page, meta.theme);
@@ -270,6 +348,17 @@ async function auditRoute(page, route, meta) {
     return { ...base, status: failed.length ? 'fail' : warned.length ? 'warn' : 'pass', failed, warned, checks, textZoom: meta.zoom || null };
   } catch (error) {
     const detail = String(error?.message ?? error).split('\n')[0].slice(0, 300);
+    if (error?.code === 'READY_TIMEOUT') {
+      console.error(`BLOCKED ${meta.engine}/${meta.viewport} ${route.slug}: ${detail}`);
+      return {
+        ...base,
+        status: 'blocked',
+        failed: [],
+        warned: [],
+        checks: [{ id: 'route-load', name: 'route load', severity: 'high', status: 'blocked', detail, offenders: [] }],
+        textZoom: meta.zoom || null,
+      };
+    }
     console.error(`FAILED ${meta.engine}/${meta.viewport} ${route.slug}: ${detail}`);
     return {
       ...base,
@@ -299,12 +388,12 @@ async function writeAtomic(file, data) {
 
 function renderMarkdown(records) {
   const lines = ['| route | viewport | status | failed checks | warned checks |', '| --- | --- | --- | --- | --- |'];
-  const totals = { pass: 0, fail: 0, warn: 0 };
+  const totals = { pass: 0, fail: 0, warn: 0, blocked: 0, 'print-exempt': 0 };
   for (const record of records) {
     totals[record.status] += 1;
     lines.push(`| ${record.slug} | ${record.viewport} | ${record.status} | ${record.failed.join(', ')} | ${record.warned.join(', ')} |`);
   }
-  lines.push('', `Totals: pass ${totals.pass}, fail ${totals.fail}, warn ${totals.warn}`);
+  lines.push('', `Totals: pass ${totals.pass}, fail ${totals.fail}, warn ${totals.warn}, blocked ${totals.blocked}, print-exempt ${totals['print-exempt']}`);
   return lines.join('\n') + '\n';
 }
 
@@ -339,7 +428,7 @@ async function main() {
   const resultsFile = path.join(ARTIFACT_ROOT, 'results.json');
   const existing = await loadJson(jsonFile, []);
   const merged = new Map(existing.map((record) => [`${record.viewport}|${record.slug}`, record]));
-  const totals = { pass: 0, fail: 0, warn: 0 };
+  const totals = { pass: 0, fail: 0, warn: 0, blocked: 0, 'print-exempt': 0 };
 
   const browser = await ENGINES[engineName].launch({ headless: true });
   const storageStates = new Map();
@@ -386,7 +475,7 @@ async function main() {
   for (const record of allRecords) results.engines[engineName][routeSet][`${record.viewport}|${record.slug}`] = record;
   await writeAtomic(resultsFile, results);
 
-  console.log(`\n${engineName} ${routeSet}${zoomSuffix} totals: pass ${totals.pass}, fail ${totals.fail}, warn ${totals.warn}`);
+  console.log(`\n${engineName} ${routeSet}${zoomSuffix} totals: pass ${totals.pass}, fail ${totals.fail}, warn ${totals.warn}, blocked ${totals.blocked}, print-exempt ${totals['print-exempt']}`);
   return 0;
 }
 

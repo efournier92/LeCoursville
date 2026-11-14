@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectInputFontSize, expectMinTouchTarget } from '../helpers/touch';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -142,5 +143,21 @@ test.describe('control standard geometry (gallery)', () => {
     });
     expect(btnStyle.height).toBe('44px');
     expect(btnStyle.radius).toBe('999px');
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('gallery search clears 24px and 16px text on albums and album detail', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    await expect(page.locator('.album-grid')).toBeVisible();
+    await expectMinTouchTarget(page, 'input.gallery-search-input');
+    await expectInputFontSize(page, 'input.gallery-search-input', 16);
+
+    await page.goto('/photos/album-1');
+    await expect(page.locator('input.gallery-search-input')).toBeVisible();
+    await expectMinTouchTarget(page, 'input.gallery-search-input');
+    await expectInputFontSize(page, 'input.gallery-search-input', 16);
   });
 });

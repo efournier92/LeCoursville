@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
+import { expectMinTouchTarget } from '../helpers/touch';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import zlib from 'node:zlib';
 import { readFileSync } from 'node:fs';
@@ -1568,5 +1569,15 @@ test.describe('songs', () => {
       expect(geometry.chipRight).toBeLessThanOrEqual(geometry.cellRight + 1);
       expect(geometry.chipColor).toBe(geometry.linkToken);
     });
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('song title links clear the 24px target at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/songs');
+    await expect(page.getByTestId('song-card').first()).toBeVisible();
+    await expectMinTouchTarget(page, 'a.song-title');
   });
 });

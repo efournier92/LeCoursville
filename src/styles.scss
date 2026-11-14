@@ -468,6 +468,15 @@ html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
   }
 }
 
+/* 16px text fields on phones: below that iOS zooms the viewport on focus. */
+@media (max-width: 600px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* White nav controls on the green toolbar (nav links + menu toggle) */
 
 /* Nav loading skeleton: one ghost button standing in for the white

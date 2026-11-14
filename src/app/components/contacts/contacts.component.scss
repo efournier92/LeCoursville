@@ -25,7 +25,11 @@
   }
 
   @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+
+    > app-contact-card {
+      min-width: 0;
+    }
   }
 }
 
@@ -50,7 +54,7 @@
   }
 
   @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

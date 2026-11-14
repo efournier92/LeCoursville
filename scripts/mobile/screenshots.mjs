@@ -23,7 +23,7 @@ import {
 const USAGE = `Usage: node scripts/mobile/screenshots.mjs --engine=<chromium|webkit|firefox> [options]
 
   --engine=...            required browser engine
-  --routes=user|admin|smoke|all   route set (default user)
+  --routes=user|chat|admin|smoke|all   route set (default user)
   --viewports=iphone,se1  comma list (default all)
   --only=<substring>      filter routes by slug substring
   --theme=light|dark      set data-theme + theme storage key (default light)
@@ -51,7 +51,7 @@ async function captureSet(page, { engine, viewport, role, route, timeout, theme 
   const base = { engine, viewport, role, path: route.path, slug: route.slug, full, fold };
 
   try {
-    await prepareRoutePage(page, route);
+    const readiness = await prepareRoutePage(page, route, { tolerateReadyTimeout: true });
     await applyTheme(page, theme);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.addStyleTag({ content: DISABLE_ANIMATIONS });
@@ -71,7 +71,7 @@ async function captureSet(page, { engine, viewport, role, route, timeout, theme 
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: fold, fullPage: false });
 
-    return { ...base, captureLimited, reason, ok: true, error: null };
+    return { ...base, readyTimedOut: readiness.readyTimedOut, readySelector: readiness.readySelector, captureLimited, reason, ok: true, error: null };
   } catch (error) {
     const message = String(error?.message ?? error).split('\n')[0].slice(0, 300);
     console.error(`FAILED ${engine}/${viewport} ${role} ${route.slug}: ${message}`);

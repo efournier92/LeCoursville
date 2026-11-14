@@ -104,3 +104,13 @@ app-person-tree {
     padding: 8px 0;
   }
 }
+
+@media (max-width: 600px) {
+  app-person-tree {
+    .person-name.clickable {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+    }
+  }
+}

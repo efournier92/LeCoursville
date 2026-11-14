@@ -86,6 +86,10 @@
     color: var(--color-brand-primary-hover);
     text-decoration: underline;
   }
+
+  @media (max-width: 600px) {
+    min-height: 24px;
+  }
 }
 
 .song-source {

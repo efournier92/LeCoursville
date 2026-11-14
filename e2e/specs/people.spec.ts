@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 test.describe('people', () => {
   test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
@@ -151,5 +152,15 @@ test.describe('people', () => {
     await expect(modal.getByText('Contact', { exact: true })).toHaveCount(0);
     await expect(modal.getByText('Died', { exact: true })).toBeVisible();
     await expect(modal).toContainText('June 15, 2015');
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('clickable person names clear the 24px target at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/people');
+    await expect(page.locator('.people-container')).toBeVisible();
+    await expectMinTouchTarget(page, '.person-name.clickable');
   });
 });

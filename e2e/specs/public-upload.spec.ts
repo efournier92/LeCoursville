@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, deleteDb } from '../helpers/admin-db';
+import { expectInputFontSize, expectMinTouchTarget } from '../helpers/touch';
 
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
@@ -179,5 +180,17 @@ test.describe('public upload', () => {
         await fetch(storageObjectUrl(created.path), { method: 'DELETE' }).catch(() => undefined);
       }
     }
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('folder button and upload fields clear their mobile minimums at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/upload');
+    await expect(page.locator('.upload-container.surface-card')).toBeVisible();
+    await expectMinTouchTarget(page, 'button.btn-folder-link');
+    await expectInputFontSize(page, 'input#uploaderName', 16);
+    await expectInputFontSize(page, 'input#eventName', 16);
   });
 });

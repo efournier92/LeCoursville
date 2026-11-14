@@ -54,6 +54,13 @@
   }
 }
 
+// 16px on phones so iOS does not zoom the viewport when the filter is focused.
+@media (max-width: 600px) {
+  .topbar-filter {
+    font-size: 16px;
+  }
+}
+
 .topbar-icon-chip {
   flex: none;
   display: grid;
@@ -173,6 +180,12 @@
     outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
+  }
+
+  @media (max-width: 600px) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
   }
 }
 

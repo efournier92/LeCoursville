@@ -1,4 +1,5 @@
 import { test, expect } from '../helpers/fixture';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 /**
  * The explorer is a public, chrome-free page. Every test here is signed out on
@@ -212,5 +213,14 @@ test.describe('family explorer', () => {
     await expect(page.getByTestId('family-chart')).toHaveCount(0);
     await expect(page.getByTestId('family-skeleton')).toHaveCount(0);
     await expect(page.locator('mat-toolbar')).toHaveCount(0);
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('removal request link clears the 24px target at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/family-explorer/archive-1');
+    await expect(page.getByTestId('family-chart')).toBeVisible();
+    await expectMinTouchTarget(page, 'a.removal-link');
   });
 });

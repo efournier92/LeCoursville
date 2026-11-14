@@ -68,6 +68,8 @@
   color: var(--color-link);
   cursor: pointer;
   text-decoration: none;
+  min-width: 0;
+  overflow-wrap: anywhere;
 
   &:hover {
     color: var(--color-brand-primary-hover);

@@ -73,6 +73,12 @@ h1 {
   &:hover {
     color: var(--color-brand-primary);
   }
+
+  @media (max-width: 600px) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
 }
 
 .drop-zone .hint {
@@ -111,6 +117,13 @@ h1 {
       outline: none;
       border-color: var(--color-brand-primary);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
+    }
+  }
+
+  // 16px on phones so iOS does not zoom the viewport when the field is focused.
+  @media (max-width: 600px) {
+    input {
+      font-size: 16px;
     }
   }
 }

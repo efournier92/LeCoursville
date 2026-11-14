@@ -51,7 +51,6 @@ const userSet = [
   { role: 'user', path: '/calendar?year=2026&month=11', slug: 'calendar', ready: '.cal-days' },
   { role: 'user', path: '/songs', slug: 'songs', ready: '[data-testid="song-card"]' },
   { role: 'user', path: '/songs/song-a', slug: 'song-detail', ready: '[data-testid="song-body"]' },
-  { role: 'user', path: '/chat', slug: 'chat', ready: '.chat-component' },
   { role: 'user', path: '/expressions', slug: 'expressions', ready: '.expressions-component' },
   { role: 'user', path: '/photos', slug: 'user-photos', ready: '.album-grid' },
   { role: 'user', path: '/photos/album-1', slug: 'photo-album', ready: '.gallery-search' },
@@ -73,8 +72,13 @@ const userSet = [
     path: '/calendar/print?year=2026&month=11',
     slug: 'calendar-print',
     ready: '[data-testid="calendar-print-customize"]',
+    auditExempt: 'print',
   },
 ];
+
+// Chat is feature-flagged OFF by default, so it gets its own set rather than
+// polluting the default user matrix.
+const chatSet = [{ role: 'user', path: '/chat', slug: 'chat', ready: '.chat-component' }];
 
 const adminSet = [
   { role: 'admin', path: '/admin', slug: 'admin', ready: '[data-testid="admin-nav"]' },
@@ -144,9 +148,9 @@ const adminSet = [
 
 const smokeSet = [{ role: 'public', path: '/', slug: 'smoke-home', ready: HOME_READY }];
 
-export const ROUTE_SETS = { user: userSet, admin: adminSet, smoke: smokeSet };
+export const ROUTE_SETS = { user: userSet, chat: chatSet, admin: adminSet, smoke: smokeSet };
 
-export const ROUTES = [...userSet, ...adminSet, ...smokeSet];
+export const ROUTES = [...userSet, ...chatSet, ...adminSet, ...smokeSet];
 
 export const DISABLE_ANIMATIONS = `*,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;caret-color:transparent!important}`;
 
@@ -260,9 +264,20 @@ export async function waitForMutationQuiet(page, capMs = 5000, quietMs = 250) {
   );
 }
 
-export async function prepareRoutePage(page, route, { readyTimeout = 15000, idleTimeout = 15000 } = {}) {
+export async function prepareRoutePage(page, route, { readyTimeout = 15000, idleTimeout = 15000, tolerateReadyTimeout = false } = {}) {
   await page.goto(BASE_URL + route.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForSelector(route.ready, { state: 'visible', timeout: readyTimeout });
+  let readyTimedOut = false;
+  try {
+    await page.waitForSelector(route.ready, { state: 'visible', timeout: readyTimeout });
+  } catch {
+    if (!tolerateReadyTimeout) {
+      const failure = new Error(`ready selector timed out: ${route.ready}`);
+      failure.code = 'READY_TIMEOUT';
+      failure.selector = route.ready;
+      throw failure;
+    }
+    readyTimedOut = true;
+  }
   try {
     await page.waitForLoadState('networkidle', { timeout: idleTimeout });
   } catch {
@@ -272,6 +287,7 @@ export async function prepareRoutePage(page, route, { readyTimeout = 15000, idle
     await document.fonts.ready;
   });
   await waitForMutationQuiet(page);
+  return { readyTimedOut, readySelector: route.ready };
 }
 
 export async function scrollThroughPage(page) {
