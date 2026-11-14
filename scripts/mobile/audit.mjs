@@ -183,7 +183,9 @@ const PAGE_AUDIT = (zoom) => {
     if (target.width < 24 || target.height < 24) small.push(offend(el, `${w}x${h} under 24px`, 'under-24', target));
     else if ((target.width < 44 || target.height < 44) && isPrimary(el)) cramped.push(offend(el, `${w}x${h} under 44px`, 'primary-under-44', target));
   }
-  add('hit-targets', 'hit targets', small.length ? 'high' : 'medium', {
+  // A 40px Material icon button clears the 24px inline floor and is the
+  // platform default; the 44px guideline is tracked as a low note, not a fail.
+  add('hit-targets', 'hit targets', small.length ? 'high' : 'low', {
     status: small.length ? 'fail' : cramped.length ? 'warn' : 'pass',
     detail: small.length
       ? `${small.length} controls under 24x24`
@@ -194,6 +196,9 @@ const PAGE_AUDIT = (zoom) => {
   const clipped = [];
   for (const el of document.querySelectorAll('body *')) {
     if (!visible(el) || visuallyHidden(el) || ancestorHasLabel(el)) continue;
+    // Inline boxes report clientWidth 0 and scrollWidth as the text run, which
+    // reads as clipped on every engine. Text clipping only applies to boxes.
+    if (cs(el).display === 'inline') continue;
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     if (!text || el.scrollWidth <= el.clientWidth + 2) continue;
     if (cs(el).textOverflow === 'ellipsis' || el.hasAttribute('title') || el.hasAttribute('aria-label')) continue;

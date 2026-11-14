@@ -130,6 +130,10 @@
   // Tools drop below the title and wrap from the left instead of the right.
   .page-toolbar-content:has(> *) {
     flex: 1 1 100%;
+    // WebKit stretches a column flex item to its max-content width when the
+    // basis is a percentage, which lets a search field widen the whole bar.
+    width: 100%;
+    max-width: 100%;
     justify-content: flex-start;
     margin-left: 0;
   }

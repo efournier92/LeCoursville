@@ -160,4 +160,15 @@ test.describe('mobile touch targets', () => {
     await expectMinTouchTarget(page, 'input.gallery-search-input');
     await expectInputFontSize(page, 'input.gallery-search-input', 16);
   });
+
+  test('toolbar tools stay inside the bar at 320px', async ({ page }) => {
+    // WebKit stretched the column flex slot to its max-content width, so the
+    // search field pushed the whole toolbar 28px past the viewport.
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    await expect(page.locator('.album-grid')).toBeVisible();
+    await expectNoHorizontalOverflow(page.locator('.page-toolbar'));
+    await expectNoHorizontalOverflow(page.locator('.app-container'));
+  });
 });
