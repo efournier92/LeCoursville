@@ -52,7 +52,7 @@
   display: none;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 1023px) {
   .cal-day-control {
     position: relative;
     cursor: pointer;
@@ -223,7 +223,7 @@
   max-width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
     // Seven 44px columns plus the grid borders: below this the shared scroll

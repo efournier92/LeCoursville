@@ -70,7 +70,9 @@
   font-size: 1em;
   font-family: inherit;
   transition: color 0.15s ease;
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
   width: 100%;
   padding: 1px 4px;
   text-indent: 0;

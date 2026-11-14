@@ -183,13 +183,13 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1024px) {
   .gallery-search {
     height: 44px;
   }
 
   .gallery-search-input {
-    min-height: 32px;
+    min-height: 44px;
     font-size: 16px;
   }
 
@@ -210,5 +210,14 @@
   .gallery-primary-btn,
   .gallery-slideshow-btn {
     height: 44px;
+  }
+}
+
+// Fold-width phones: the search's fixed min-width plus its icon/gap/padding
+// chrome can exceed the toolbar's content box. Let the field shrink to the line.
+@media (max-width: 600px) {
+  .gallery-search {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 }

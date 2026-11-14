@@ -248,7 +248,15 @@
   }
 }
 
-// 44px mobile hit areas: the transpose trio and the toolbar back button.
+// 44px touch target: the toolbar back button ships 40px.
+@media (max-width: 1024px) {
+  .song-back {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+// 44px mobile hit areas: the transpose trio.
 @media (max-width: 600px) {
   .transpose-pill {
     height: 44px;
@@ -267,11 +275,6 @@
   .transpose-reset {
     --mat-button-text-container-height: 44px;
     min-height: 44px;
-  }
-
-  .song-back {
-    width: 44px;
-    height: 44px;
   }
 }
 

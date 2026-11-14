@@ -74,7 +74,7 @@ h1 {
     color: var(--color-brand-primary);
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 1024px) {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
@@ -120,8 +120,8 @@ h1 {
     }
   }
 
-  // 16px on phones so iOS does not zoom the viewport when the field is focused.
-  @media (max-width: 600px) {
+  // 16px up to tablet widths so iOS does not zoom the viewport when the field is focused.
+  @media (max-width: 1024px) {
     input {
       font-size: 16px;
     }

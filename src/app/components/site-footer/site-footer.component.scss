@@ -41,6 +41,13 @@
   }
 }
 
+// Touch widths: the short label leaves the link under the 44px width minimum.
+@media (max-width: 1024px) {
+  .privacy-link {
+    min-width: 44px;
+  }
+}
+
 @media print {
   // A zero-height host box landing on a page boundary makes Chromium emit a blank trailing sheet.
   :host {

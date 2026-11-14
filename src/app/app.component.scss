@@ -103,6 +103,17 @@
   align-items: center;
 }
 
+// Primary nav actions in the app header: raise the 40px Material touch box to
+// the 44px minimum. The token drives the state layer; min-* is what moves the
+// layout box, which the token alone did not.
+@media (max-width: 1024px) {
+  :host ::ng-deep mat-toolbar .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 .theme-switch {
   display: inline-flex;
   align-items: center;

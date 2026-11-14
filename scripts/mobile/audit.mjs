@@ -27,7 +27,7 @@ const ENGINES = { chromium, webkit, firefox };
 const PAGE_AUDIT = (zoom) => {
   const MAX = 8;
   const CONTROL = 'a, button, [role=button], [role=switch], [role=tab], input, select, textarea';
-  const PRIMARY = 'mat-flat-button, mat-raised-button, mat-fab, button.primary, [data-primary], .btn-primary, .cta';
+  const PRIMARY = 'mat-flat-button, mat-raised-button, mat-fab, mat-icon-button, button.primary, [data-primary], .btn-primary, .cta, .mdc-button, .mdc-icon-button, input[type="submit"]';
   const cs = (el) => getComputedStyle(el);
   const box = (el) => el.getBoundingClientRect();
 
@@ -112,7 +112,20 @@ const PAGE_AUDIT = (zoom) => {
   const containerCheck = () => {
     const c = document.querySelector('.app-container');
     if (!c) return { status: 'pass', detail: 'no .app-container' };
-    if (c.scrollWidth <= c.clientWidth) return { status: 'pass', detail: `scrollWidth ${c.scrollWidth} <= clientWidth ${c.clientWidth}` };
+    // A classic vertical scrollbar shrinks clientWidth without shrinking the
+    // layout viewport, so content that reaches the viewport edge is not
+    // horizontal overflow. Only the surplus past the scrollbar gutter counts.
+    const style = getComputedStyle(c);
+    const chromeW =
+      parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
+      parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+    const gutter = Math.max(0, c.offsetWidth - chromeW - c.clientWidth);
+    if (c.scrollWidth <= c.clientWidth + gutter) {
+      return {
+        status: 'pass',
+        detail: `scrollWidth ${c.scrollWidth} <= clientWidth ${c.clientWidth} + gutter ${gutter}`,
+      };
+    }
     return { status: 'fail', detail: `scrollWidth ${c.scrollWidth} > clientWidth ${c.clientWidth}`, offenders: finish([offend(c, 'app-container wider than its client box')]) };
   };
   const documentCheck = () => {
@@ -142,12 +155,9 @@ const PAGE_AUDIT = (zoom) => {
   // 4. hit targets
   const small = [];
   const cramped = [];
-  const isPrimary = (el) => {
-    if (el.matches(PRIMARY)) return true;
-    const parent = el.parentElement;
-    if (!parent) return true;
-    return [...parent.children].filter((s) => s !== el && s.matches(CONTROL)).length === 0;
-  };
+  // Primary means a button-class action. Inline text controls (row links,
+  // chips, clickable names) fall under the 24px inline floor instead.
+  const isPrimary = (el) => el.matches(PRIMARY);
   const controlVisible = (el) => {
     if (!visible(el)) return false;
     if (el.getAttribute('aria-hidden') === 'true' || el.disabled) return false;

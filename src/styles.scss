@@ -555,6 +555,17 @@ mat-toolbar {
   --mdc-protected-button-container-shape: var(--radius-control);
 }
 
+// Touch widths: Material text, filled (unelevated), and outlined buttons render
+// a 40px box. min-height beats MDC's fixed container height for both the
+// <button> and <a> variants, which is what the icon/fab tokens do not do.
+@media (max-width: 1024px) {
+  .mat-mdc-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-outlined-button {
+    min-height: 44px;
+  }
+}
+
 // ── Base ──────────────────────────────────────────────────────────────────────
 html,
 body {
@@ -838,7 +849,7 @@ app-page-toolbar + app-admin-filter-bar .admin-filter-bar.admin-filter-bar {
   min-height: 120px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   // Fluid seven columns: the header and body share one width by construction.
   // Below 7 x 44px the columns stop shrinking and the shared scroll container
   // pans instead of dropping a column or clipping a target.

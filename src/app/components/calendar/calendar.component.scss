@@ -338,6 +338,13 @@
   }
 }
 
+// Touch widths: the pill renders 40px tall, under the 44px minimum.
+@media (max-width: 1024px) {
+  .calendar-month-year-pill {
+    min-height: 44px;
+  }
+}
+
 .calendar-skeleton {
   display: flex;
   flex-direction: column;

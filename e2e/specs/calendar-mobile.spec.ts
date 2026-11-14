@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 const MOBILE = { width: 390, height: 844 };
 
@@ -60,6 +61,29 @@ test.describe('calendar mobile month', () => {
 
   test('month grid has no horizontal overflow at 390px', async ({ page }) => {
     await gotoNovember(page);
+    await expectNoHorizontalOverflow(page.locator('.calendar-scroll-container'));
+  });
+});
+
+test.describe('calendar landscape and tablet', () => {
+  test('844x390 landscape keeps compact dots with no horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await login(page, 'user');
+    await page.goto('/calendar?year=2026&month=11');
+    await expect(page.locator('.cal-days')).toBeVisible();
+    await expectNoHorizontalOverflow(page.locator('.calendar-scroll-container'));
+    await expectNoHorizontalOverflow(page.locator('.app-container'));
+    await expect(page.locator('.day-dot').first()).toBeVisible();
+    await expect(page.locator('.cal-events-desktop').first()).toHaveCSS('opacity', '0');
+  });
+
+  test('1024x768 keeps full chips at a 24px touch height', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await login(page, 'user');
+    await page.goto('/calendar?year=2026&month=11');
+    await expect(page.locator('.cal-days')).toBeVisible();
+    await expect(page.locator('.event-title-link').first()).toBeVisible();
+    await expectMinTouchTarget(page, '.event-title-link');
     await expectNoHorizontalOverflow(page.locator('.calendar-scroll-container'));
   });
 });

@@ -105,7 +105,7 @@ app-person-tree {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1024px) {
   app-person-tree {
     .person-name.clickable {
       display: inline-flex;
