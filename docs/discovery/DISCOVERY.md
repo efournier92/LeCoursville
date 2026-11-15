@@ -5,6 +5,12 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261114-08 | 2026-11-14 | [outcome] | calendar/print | Mobile calendar redteam converged on a compact Timeline preview above the month grid with a full-height Expand sheet; gate 552 across the matrix, unit 950, theme clean | docs/critique/2026-11-14_MobileCalendarOrdering.md
+
+- D-20261114-07 | 2026-11-14 | [trap] | admin/ui | A CSS-hidden mobile-only component still renders duplicate event tags in the desktop DOM and wins `.first()` locators; gate it structurally with BreakpointObserver, not only `display:none` | src/app/components/calendar-view/calendar-view.component.html:98
+
+- D-20261114-06 | 2026-11-14 | [decision] | calendar/print | Mobile calendar shows a 3-day Timeline preview above the inline month grid; the full rolling agenda lives in a 100vh sheet opened from the preview Expand control. This beats a naive hoist that pushed the grid off-screen | src/app/components/calendar-view/calendar-view.component.html:98
+
 - D-20261114-05 | 2026-11-14 | [outcome] | admin/ui | Mobile overnight loop converged user and admin routes: per-engine audit 210 pass user, 216 pass admin on chromium, gate 548 per browser, unit 941 | docs/critique/2026-11-14_MobileOvernight.md
 
 - D-20261114-04 | 2026-11-14 | [trap] | build/perf | The sparse seed account still sees global seeded contacts, people, and photos, so it cannot prove empty states; empty-state review needs a data-less family in the seed | scripts/e2e/seed.mjs
