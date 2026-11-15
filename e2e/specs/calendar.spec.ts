@@ -316,7 +316,7 @@ test.describe('calendar', () => {
     expect(mobileMargins.top).toBe(mobileMargins.bottom);
   });
 
-  test('mobile toolbar lays filters in a 2x2 grid and stretches Print to the card width', async ({ page }) => {
+  test('mobile toolbar lays filters in a 2x2 grid and shows the filled Print Calendar action', async ({ page }) => {
     await login(page, 'admin');
     const original = page.viewportSize()!;
     await page.setViewportSize({ width: 390, height: 844 });
@@ -327,14 +327,14 @@ test.describe('calendar', () => {
         getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
       expect(columns).toBe(2);
 
-      const print = page.locator('.calendar-print-button');
+      await expect(page.locator('.calendar-print-button')).toBeHidden();
+      const print = page.locator('.calendar-print-button-mobile');
       await expect(print).toBeVisible();
-      const actions = page.locator('.calendar-toolbar-actions');
+      await expect(print).toHaveText(/Print Calendar/);
+      await expect(print).toHaveCSS('background-color', 'rgb(39, 116, 74)');
       const printBox = await print.boundingBox();
-      const actionsBox = await actions.boundingBox();
       expect(printBox).not.toBeNull();
-      expect(actionsBox).not.toBeNull();
-      expect(Math.abs(printBox!.width - actionsBox!.width)).toBeLessThanOrEqual(2);
+      expect(printBox!.height).toBeGreaterThanOrEqual(44);
       expect(printBox!.width).toBeGreaterThanOrEqual(200);
 
       const clips = await filters.locator('mat-slide-toggle').evaluateAll((toggles) =>
@@ -513,35 +513,19 @@ test.describe('calendar', () => {
     }
   });
 
-  test('mobile tags keep the name readable and meet the touch-target floor', async ({ page }) => {
+  test('mobile grid hides the desktop chip layer and keeps dots and 64px cells', async ({ page }) => {
     await login(page, 'admin');
     const original = page.viewportSize()!;
     await page.setViewportSize({ width: 390, height: 844 });
     try {
       await page.goto('/calendar?year=2026&month=3');
-      const tag = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
-        .locator('.calendar-cell-event-container');
-      const name = tag.locator('.event-title-link');
-      await expect(name).toBeVisible();
-      const nameBox = await name.boundingBox();
-      expect(nameBox).not.toBeNull();
-      // The years-since token must not collapse the name container.
-      expect(nameBox!.width).toBeGreaterThan(20);
-      const tagBox = await tag.boundingBox();
-      expect(tagBox!.height).toBeGreaterThanOrEqual(44);
-
-      // Dense July day: the +N more control is a real 44px-tall button.
-      await page.goto('/calendar?year=2026&month=7');
-      const more = page.locator('.cal-events-overflow').first();
-      await expect(more).toBeVisible();
-      const moreBox = await more.boundingBox();
-      expect(moreBox!.height).toBeGreaterThanOrEqual(44);
-      const eventButtonBox = await page.locator('.event-title-link').first().boundingBox();
-      expect(eventButtonBox!.height).toBeGreaterThanOrEqual(44);
+      await expect(page.locator('.cal-events-desktop').first()).toBeHidden();
+      await expect(page.locator('.day-dot').first()).toBeVisible();
 
       // Every day cell keeps UI-018's 64px minimum height.
       const cellBox = await page.locator('.cal-days .cal-day-cell').first().boundingBox();
       expect(cellBox!.height).toBeGreaterThanOrEqual(64);
+      await expectNoHorizontalOverflow(page.locator('.calendar-scroll-container'));
     } finally {
       await page.setViewportSize(original);
     }

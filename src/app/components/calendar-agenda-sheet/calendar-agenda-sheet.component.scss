@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  background: var(--color-surface);
+  padding: max(8px, env(safe-area-inset-top)) 16px max(8px, env(safe-area-inset-bottom));
+}
+
+.calendar-agenda-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendar-agenda-sheet-header h2 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--color-ink);
+}

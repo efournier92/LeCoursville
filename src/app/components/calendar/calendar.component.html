@@ -90,6 +90,14 @@
         </div>
       }
     </div>
+    <button
+      mat-flat-button
+      color="primary"
+      class="calendar-print-button-mobile"
+      [disabled]="!printFlagsReady"
+      (click)="printPdf()">
+      <mat-icon aria-hidden="true">print</mat-icon>Print Calendar
+    </button>
     @if (selectedPersonId) {
       <app-person-detail-modal [personId]="selectedPersonId" (closeModal)="closeModal()" (openPerson)="openPersonModal($event)"></app-person-detail-modal>
     }

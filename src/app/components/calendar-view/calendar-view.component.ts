@@ -1,5 +1,9 @@
-import { Component, OnInit, OnDestroy, OnChanges, Input, Output, EventEmitter, Inject, AfterViewInit, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy, OnChanges, Input, Output, EventEmitter,
+  Inject, DOCUMENT, ChangeDetectionStrategy, SimpleChanges,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
@@ -9,6 +13,7 @@ import { User } from 'src/app/models/user';
 import { AppSettings } from 'src/app/config/app-settings';
 
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { CalendarAgendaSheetComponent } from 'src/app/components/calendar-agenda-sheet/calendar-agenda-sheet.component';
 
 @Component({
     selector: 'app-calendar-view',
@@ -17,7 +22,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class CalendarViewComponent implements OnInit, OnChanges, OnDestroy {
   @Input() viewDate: Date;
   @Input() selectedYear: number;
   @Input() events: RecurringEvent[];
@@ -30,6 +35,8 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
   view: string = CalendarView.Month;
   activeDay: Date = new Date();
   selectedDay: Date = new Date();
+  agendaAnchor: Date = new Date();
+  isMobile = false;
   expandedDays: { [key: string]: boolean } = {};
   maxEventsPerCell = 4;
   readonly maxMobileDots = 3;
@@ -41,6 +48,7 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
     public dialog: MatDialog,
     private authService: AuthService,
     private analyticsService: AnalyticsService,
+    private breakpointObserver: BreakpointObserver,
     @Inject(DOCUMENT) private document: Document
   ) { }
 
@@ -48,17 +56,19 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
 
   ngOnInit(): void {
     this.subscribeToUserObservable();
+    this.breakpointObserver.observe('(max-width: 1023px)').pipe(
+      takeUntil(this.destroy$),
+    ).subscribe(result => this.isMobile = result.matches);
     this.selectDefaultDay();
     this.analyticsService.logEvent('component_load_calendar_view', {
       date: this.viewDate.toString(),
     });
   }
 
-  ngOnChanges(): void {
-    this.selectDefaultDay();
-  }
-
-  ngAfterViewInit(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['viewDate'] || changes['selectedYear']) {
+      this.selectDefaultDay();
+    }
   }
 
   ngOnDestroy(): void {
@@ -92,6 +102,28 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
 
   onDaySelect(day: any): void {
     this.selectedDay = new Date(day.date);
+    this.agendaAnchor = this.midnight(this.selectedDay);
+  }
+
+  onPreviewDaySelect(date: Date): void {
+    this.selectedDay = new Date(date);
+  }
+
+  openFullAgenda(): void {
+    this.dialog.open(CalendarAgendaSheetComponent, {
+      data: {
+        events: this.events,
+        anchorDate: this.agendaAnchor,
+        selectedDay: this.selectedDay,
+      },
+      panelClass: 'calendar-agenda-sheet',
+      width: '100vw',
+      maxWidth: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      autoFocus: 'dialog',
+      disableClose: true,
+    });
   }
 
   onDayKeydown(event: KeyboardEvent, day: any): void {
@@ -107,13 +139,6 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
 
   getVisibleDayEvents(day: any): RecurringEvent[] {
     return (day.events || []).filter(event => this.isEventInActiveMonth(event) && this.isDisplayable(event));
-  }
-
-  getSelectedDayEvents(): RecurringEvent[] {
-    if (!this.selectedDay) return [];
-    return (this.events || []).filter(event =>
-      this.isDisplayable(event) && this.sameCalendarDay(event.start, this.selectedDay)
-    );
   }
 
   getDayAriaLabel(day: any): string {
@@ -155,6 +180,11 @@ export class CalendarViewComponent implements OnInit, OnChanges, AfterViewInit, 
       this.viewDate.getMonth(),
       sameMonth ? today.getDate() : 1
     );
+    this.agendaAnchor = this.midnight(this.selectedDay);
+  }
+
+  private midnight(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   private sameCalendarDay(a: Date, b: Date): boolean {

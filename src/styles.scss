@@ -439,6 +439,17 @@ html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
   }
 }
 
+// The agenda sheet owns the whole viewport: no dialog rounded corners, margin,
+// or surface padding may frame it.
+.calendar-agenda-sheet {
+  border-radius: 0 !important;
+
+  .mat-mdc-dialog-surface {
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+}
+
 // The draft dialog becomes a bottom-anchored full-height sheet on phones: no
 // dimmed page strip peeks below it and the actions sit on the sheet's bottom
 // edge. Material writes width/max-height inline from the dialog config, so the

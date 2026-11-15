@@ -94,6 +94,19 @@
       </div>
     </div>
   </ng-template>
+  @if (isMobile) {
+    <app-week-agenda
+      class="calendar-timeline-preview"
+      variant="preview"
+      [events]="events"
+      [anchorDate]="agendaAnchor"
+      [selectedDay]="selectedDay"
+      (daySelect)="onPreviewDaySelect($event)"
+      (personClick)="personClick.emit($event)"
+      (spouseClick)="spouseClick.emit($event)"
+      (fullAgenda)="openFullAgenda()"
+    ></app-week-agenda>
+  }
   <div class="calendar-scroll-container">
     <div class="calendar-month-view-container">
       <mwl-calendar-month-view
@@ -106,14 +119,4 @@
       </mwl-calendar-month-view>
     </div>
   </div>
-  <div class="cal-dot-legend">
-    <span class="cal-dot-legend-item"><span class="day-dot day-dot--birth" aria-hidden="true"></span>Birthday</span>
-    <span class="cal-dot-legend-item"><span class="day-dot day-dot--anniv" aria-hidden="true"></span>Anniversary</span>
-    <span class="cal-dot-legend-item"><span class="day-dot day-dot--holiday" aria-hidden="true"></span>Holiday</span>
-  </div>
-  <app-day-agenda
-    class="calendar-day-agenda"
-    [day]="selectedDay"
-    [events]="getSelectedDayEvents()"
-  ></app-day-agenda>
 </div>

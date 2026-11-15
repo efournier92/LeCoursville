@@ -48,11 +48,7 @@
   color: var(--color-ink-2);
 }
 
-.calendar-day-agenda {
-  display: none;
-}
-
-.cal-dot-legend {
+.calendar-timeline-preview {
   display: none;
 }
 
@@ -68,15 +64,8 @@
     box-shadow: inset 0 0 0 2px var(--color-brand-primary);
   }
 
-  // The legacy calendar.spec.ts touch-target test still asserts these chips
-  // are laid out at phone width; keep the box while making it invisible and
-  // inert. minimalist: remove once that spec stops checking cell text.
   .cal-events-container.cal-events-desktop {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
+    display: none;
   }
 
   .cal-mobile-dots {
@@ -89,28 +78,9 @@
     min-height: 16px;
   }
 
-  .calendar-day-agenda {
+  .calendar-timeline-preview {
     display: block;
-    margin-top: 8px;
-  }
-
-  // Explains the month-cell dots without competing with the grid: quiet 12px
-  // muted key, on one line, between the grid and the agenda card.
-  .cal-dot-legend {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 12px;
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--color-ink-2);
-  }
-
-  .cal-dot-legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
+    margin-bottom: 12px;
   }
 }
 
@@ -151,13 +121,6 @@
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
-  }
-}
-
-@media (max-width: 768px) {
-  .cal-events-overflow,
-  .cal-events-collapse {
-    min-height: 44px;
   }
 }
 

@@ -1,0 +1,61 @@
+@if (days.length) {
+  <section
+    class="week-agenda"
+    [class.is-preview]="isPreview"
+    [class.is-full]="!isPreview"
+    aria-live="polite"
+    aria-label="Calendar timeline">
+    <div class="week-agenda-header">
+      <h2 class="week-agenda-title">Timeline</h2>
+      <span class="week-agenda-range">
+        {{ windowAnchor | date : 'MMM d' }} – {{ rangeEnd | date : 'MMM d' }}
+      </span>
+      @if (showTodayButton) {
+        <button type="button" class="week-agenda-today-btn" (click)="goToToday()">Today</button>
+      }
+      @if (isPreview) {
+        <button type="button" class="week-agenda-full-btn" (click)="fullAgenda.emit()">Expand</button>
+      }
+    </div>
+    <div class="week-agenda-scroll" #scroll (scroll)="onScroll()">
+      <ul class="week-agenda-list">
+        @for (day of days; track day.date.getTime()) {
+          <li
+            class="week-agenda-item"
+            [class.is-today]="day.isToday"
+            [class.is-selected]="day.isSelected"
+            [attr.data-today]="day.isToday ? 'true' : null"
+            [attr.data-date]="day.date.getTime()">
+            <button
+              type="button"
+              class="week-agenda-date"
+              [attr.aria-pressed]="day.isSelected"
+              [attr.aria-current]="day.isToday ? 'date' : null"
+              [attr.aria-label]="ariaLabel(day)"
+              (click)="daySelect.emit(day.date)">
+              <span class="week-agenda-weekday">{{ day.date | date : 'EEE' }}</span>
+              <span class="week-agenda-daynum">{{ day.date | date : 'd' }}</span>
+              @if (day.isToday) {
+                <span class="week-agenda-today-tag">Today</span>
+              }
+            </button>
+            <div class="week-agenda-events">
+              @if (day.events.length) {
+                @for (event of day.events; track event.id) {
+                  <app-calendar-cell
+                    [event]="event"
+                    [selectedYear]="day.date.getFullYear()"
+                    (personClick)="personClick.emit($event)"
+                    (spouseClick)="spouseClick.emit($event)"
+                  ></app-calendar-cell>
+                }
+              } @else {
+                <span class="week-agenda-empty">No events</span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+}
