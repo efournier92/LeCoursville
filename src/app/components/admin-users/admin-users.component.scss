@@ -15,12 +15,34 @@
 .user-actions {
   white-space: nowrap;
   text-align: right;
+
+  // Row actions read as buttons, not bare glyphs: a 44px hit box at every
+  // width, with the delete glyph on the danger token next to a neutral edit.
+  .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+  }
+
+  .mat-mdc-icon-button.mat-warn {
+    --mat-icon-button-icon-color: var(--color-error);
+    --mat-icon-button-state-layer-color: var(--color-error);
+    --mat-icon-button-ripple-color: var(--color-error);
+  }
+}
+
+// The pill row wraps inside its cell instead of bleeding past the card edge.
+.role-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .role-badge {
   display: inline-block;
   margin-right: 4px;
   padding: 1px 8px;
+  max-width: 100%;
   border-radius: var(--radius-sm); // role badges: spec section 4 locks radius-sm
   background-color: var(--role-member-bg);
   color: var(--role-member-fg);
@@ -71,6 +93,35 @@
 
 .role-history-limit {
   margin-bottom: 8px;
+}
+
+// Tablet and up: fixed layout keeps both date cells on one line and hands the
+// surplus to name/roles, so a long email ellipsizes instead of the table
+// growing past the card.
+@media (min-width: 601px) {
+  .users-table-card .admin-table {
+    table-layout: fixed;
+
+    th:nth-child(3),
+    th:nth-child(4) {
+      width: 104px;
+    }
+
+    th:nth-child(6) {
+      width: 92px;
+    }
+
+    td[data-label='Last Active'],
+    td[data-label='Registered'] {
+      white-space: nowrap;
+    }
+
+    td[data-label='Email'] {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 @media (max-width: 600px) {

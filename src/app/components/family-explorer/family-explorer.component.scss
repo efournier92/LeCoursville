@@ -26,8 +26,12 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
+  max-width: 1200px;
   min-height: 76px;
-  padding: 14px 24px;
+  margin: 0 auto;
+  // Same 16px gutter as .page-content, so the filter's right edge lands on the
+  // card edge instead of floating short of it.
+  padding: 14px 16px;
 }
 
 // Search on the green bar: frosted white-on-green field.
@@ -51,6 +55,23 @@
   &:focus-visible {
     outline: 2px solid var(--color-surface);
     outline-offset: 1px;
+  }
+}
+
+// 16px up to tablet widths so iOS does not zoom the viewport when the filter is focused.
+@media (max-width: 1024px) {
+  .topbar-filter {
+    font-size: 16px;
+  }
+}
+
+// Phones: the fixed-width pill left a dead strip between the gutter and the
+// field, so let it span the masthead gutter to gutter under the title block.
+// The fixed top-right pill returns at 768px and up, where it sits flush.
+@media (max-width: 767px) {
+  .topbar-filter {
+    flex: 1 0 100%;
+    margin-left: 0;
   }
 }
 
@@ -98,13 +119,23 @@
 // Roots strip below the masthead: every member of the founding couple, as a
 // name-plus-years button; no couple-size gate so single founders still show.
 .roots-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: baseline;
-  flex-wrap: wrap;
   gap: 8px 16px;
   margin: 0 0 20px;
   padding: 10px 0;
   border-bottom: 1px solid var(--color-border);
+}
+
+// Names wrap inside their own column, so a second line hangs under the first
+// name instead of falling back to the label gutter.
+.roots-names {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  min-width: 0;
 }
 
 .roots-label {
@@ -152,10 +183,31 @@
   min-width: 0;
 }
 
+// Below the desktop drawer breakpoint the chart is a single column, so the full
+// page column would leave the branch title and the member pill stranded at
+// opposite ends. Cap the column and center it, including the masthead content,
+// so both share one 640px measure.
+@media (max-width: 1023px) {
+  .topbar-inner {
+    max-width: 640px;
+  }
+
+  .explorer-body {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}
+
 .explorer-footer {
   max-width: 1200px;
   margin: 0 auto;
   padding: 12px 16px 32px;
+
+  // Below desktop the content column is capped at 640 and centered, so the
+  // footer must share that measure or the paragraph detaches from the cards.
+  @media (max-width: 1023px) {
+    max-width: 640px;
+  }
 
   p {
     margin: 0;
@@ -173,6 +225,12 @@
     outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
+  }
+
+  @media (max-width: 1024px) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
   }
 }
 

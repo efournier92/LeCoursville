@@ -15,8 +15,8 @@ async function openChatAs(page: Page, who: 'admin' | 'user' | 'other') {
     return;
   }
   // Sign out only from the Account page; reach it through the SPA link.
-  await page.getByRole('button', { name: 'Account' }).click();
-  await expect(page).toHaveURL('/');
+  await page.getByRole('link', { name: 'Account' }).click();
+  await expect(page).toHaveURL('/account');
   await logout(page);
   await login(page, who);
 }
@@ -96,11 +96,37 @@ test.describe('chat', () => {
     await page.locator('.message-button', { hasText: 'Delete' }).first().locator('mat-icon').click();
     const dialog = page.locator('mat-dialog-container');
     await expect(dialog.getByRole('heading', { name: 'Are You Sure?' })).toBeVisible();
-    const yes = dialog.getByRole('button', { name: 'Yes', exact: true });
-    await expect(yes).toHaveCSS('background-color', 'rgb(179, 38, 30)');
-    await expect(yes).toHaveCSS('color', 'rgb(255, 255, 255)');
-    await expect(yes.locator('mat-icon')).toBeVisible();
-    await dialog.getByRole('button', { name: 'No', exact: true }).click();
+    const deleteButton = dialog.getByRole('button', { name: 'Delete', exact: true });
+    await expect(deleteButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(deleteButton).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(deleteButton.locator('mat-icon')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  });
+
+  test('edit message: sticky switch persists the flag', async ({ page }) => {
+    await openChatAs(page, 'admin');
+    await page.goto('/chat');
+    const card = page.locator('.message-card-container', { hasText: 'Author Editable' }).first();
+    await card.locator('.message-button', { hasText: 'Edit' }).locator('mat-icon').click();
+
+    const sticky = page.getByRole('switch', { name: 'Sticky' });
+    await expect(sticky).toHaveAttribute('aria-checked', 'false');
+    await sticky.click();
+    await expect(sticky).toHaveAttribute('aria-checked', 'true');
+
+    // The visible Sticky label is associated with the switch.
+    const stickyLabel = page.locator('.message-button-label[for="chat-edit-sticky-button"]');
+    await expect(stickyLabel).toHaveText('Sticky');
+    await stickyLabel.click();
+    await expect(sticky).toHaveAttribute('aria-checked', 'false');
+    await sticky.click();
+    await expect(sticky).toHaveAttribute('aria-checked', 'true');
+
+    await page.getByTestId('chat-send').click();
+    await page.getByRole('button', { name: 'Yes' }).click();
+    await expect
+      .poll(async () => (await readDb<Record<string, any>>('messages/msg-4'))?.isSticky)
+      .toBe(true);
   });
 
   test('author self-edit: user edits the seeded msg-4 and it persists', async ({ page }) => {

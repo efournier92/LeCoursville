@@ -1,0 +1,194 @@
+@use 'src/app/styles/admin-data' as *;
+
+.people-view-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.people-view-option {
+  min-height: 36px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink-2);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.is-active {
+    border-color: var(--color-brand-solid);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
+    box-shadow: var(--shadow-card);
+  }
+
+  &:hover:not(.is-active) {
+    background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+    color: var(--color-brand-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Dense browser: fixed layout keeps eleven columns on one row and ellipsis
+// carries any overflow, so no cell is clipped by the shell.
+.people-browser-table {
+  table-layout: fixed;
+
+  tbody tr {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-brand-primary);
+      outline-offset: -2px;
+    }
+  }
+
+  th,
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Laptop widths: eleven columns need explicit shares so a long header or
+  // name is not squeezed to an ellipsis by the fixed layout.
+  th:nth-child(1) { width: 14%; }
+  th:nth-child(2) { width: 7%; }
+  th:nth-child(3) { width: 10%; }
+  th:nth-child(4) { width: 7%; }
+  th:nth-child(5) { width: 7%; }
+  th:nth-child(6) { width: 11%; }
+  th:nth-child(7) { width: 9%; }
+  th:nth-child(8) { width: 11%; }
+  th:nth-child(9) { width: 10%; }
+  th:nth-child(10) { width: 7%; }
+  th:nth-child(11) { width: 7%; }
+
+  thead th {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
+// The row itself opens the record, so the phone card only needs a chevron to
+// look tappable. Hidden while the table still renders columns.
+.people-browser-table .people-card-chevron {
+  display: none;
+  flex: 0 0 auto;
+  color: var(--color-ink-2);
+}
+
+// Tablet and landscape phone: eleven fixed-share columns break headers
+// mid-word, so the table pans inside its card instead. Auto layout plus a
+// minimum width keeps every header on one line.
+@media (min-width: 601px) and (max-width: 900px) {
+  .people-browser-table {
+    table-layout: auto;
+    min-width: 880px;
+
+    th,
+    td {
+      min-width: 72px;
+    }
+
+    // Headers stay on one line; values may wrap, which keeps the table near
+    // its minimum width instead of stretching to the longest address.
+    td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    thead th {
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+  }
+}
+
+.people-pagination {
+  padding: 12px;
+}
+
+@media (max-width: 600px) {
+  .people-view-switch {
+    display: flex;
+    width: 100%;
+  }
+
+  .people-view-option {
+    flex: 1 1 0;
+  }
+
+  // Phone: let columns size to content and wrap long values instead of
+  // clipping them inside fixed shares.
+  .people-browser-table {
+    table-layout: auto;
+  }
+
+  .people-browser-table th,
+  .people-browser-table td {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  // Phone cards: name and the wide fields span the card, while the four
+  // compact dates sit two-up so one record no longer fills the screen.
+  .admin-table.people-browser-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .admin-table.people-browser-table tbody td {
+    min-width: 0;
+  }
+
+  .admin-table.people-browser-table tbody td[data-label='Name'],
+  .admin-table.people-browser-table tbody td[data-label='Family'],
+  .admin-table.people-browser-table tbody td[data-label='Spouse'],
+  .admin-table.people-browser-table tbody td[data-label='Contact'],
+  .admin-table.people-browser-table tbody td[data-label='Address'],
+  .admin-table.people-browser-table tbody td[data-label='Living'],
+  .admin-table.people-browser-table tbody td[data-label='Updated'] {
+    grid-column: 1 / -1;
+  }
+
+  // Half a card is not enough for an inline label, so the compact dates put
+  // the label above the value and drop the fixed row height.
+  .admin-table.people-browser-table tbody td[data-label='Generation'],
+  .admin-table.people-browser-table tbody td[data-label='Born'],
+  .admin-table.people-browser-table tbody td[data-label='Died'],
+  .admin-table.people-browser-table tbody td[data-label='Anniversary'] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-height: 0;
+
+    &::before {
+      min-width: 0;
+    }
+  }
+
+  // A narrower label column leaves the value column the width it needs.
+  .admin-table.people-browser-table tbody td::before {
+    min-width: 68px;
+  }
+
+  .admin-table.people-browser-table .people-card-chevron {
+    display: inline-flex;
+    align-self: center;
+    margin-left: auto;
+  }
+}

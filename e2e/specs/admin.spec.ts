@@ -3,6 +3,10 @@ import { login, E2E_USERS } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const PACKAGE_VERSION = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')).version;
 
 test.afterEach(async ({ collector }) => collector.assertClean());
 
@@ -43,6 +47,18 @@ test.describe('admin', () => {
     await expect(logo).toHaveAttribute('aria-label', 'Admin');
     await logo.click();
     await expect(page).toHaveURL(/\/admin\/families$/);
+  });
+
+  test('clicking the logo from a stale admin URL lands on /admin/families', async ({ page }) => {
+    await login(page, 'admin');
+    for (const path of ['/administrator', '/admin/unknown']) {
+      await page.goto(path);
+      const logo = page.locator('.toolbar-logo');
+      await expect(logo).toBeVisible();
+      await logo.click();
+      await expect(page).toHaveURL(/\/admin\/families$/);
+      await expect(page).not.toHaveURL(/\/calendar$/);
+    }
   });
 
   test('clicking the logo as a staff admin lands on the promoted route', async ({ page }) => {
@@ -90,7 +106,7 @@ test.describe('admin', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
-      await editor.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
+      await editor.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
       const dialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
       await expect(dialog).toContainText('Give Regular User content admin access?');
@@ -110,19 +126,18 @@ test.describe('admin', () => {
     const nav = page.getByTestId('admin-nav');
     await expect(nav).toBeVisible();
     const links = [
+      { name: 'Features', path: '/admin/features' },
+      { name: 'Analytics', path: '/admin/analytics' },
       { name: 'Users', path: '/admin/users' },
+      { name: 'Recovery', path: '/admin/recovery' },
+      { name: 'Data Requests', path: '/admin/data-requests' },
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
-      { name: 'Contacts', path: '/admin/contacts' },
-      { name: 'Family Explorer', path: '/admin/family-explorer' },
+      { name: 'Uploads', path: '/admin/uploads' },
       { name: 'Media', path: '/admin/media' },
       { name: 'Expressions', path: '/admin/expressions' },
-      { name: 'Photo Albums', path: '/admin/photo-albums' },
       { name: 'Songs', path: '/admin/songs' },
-      { name: 'Uploads', path: '/admin/uploads' },
-      { name: 'Recovery', path: '/admin/recovery' },
-      { name: 'Analytics', path: '/admin/analytics' },
-      { name: 'Features', path: '/admin/features' },
+      { name: 'Family Explorer', path: '/admin/family-explorer' },
     ];
     const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
     await expect(navItems).toHaveCount(links.length);
@@ -134,6 +149,19 @@ test.describe('admin', () => {
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.locator('app-page-toolbar').first()).toBeVisible();
     }
+  });
+
+  test('the retired admin Contacts route and nav item are gone', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+    await expect(nav.getByTestId('admin-nav-link-contacts')).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Contacts', exact: true })).toHaveCount(0);
+
+    await page.goto('/admin/contacts');
+    await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+    await expect(page.getByTestId('admin-nav')).toHaveCount(0);
   });
 
   test('the sidebar brand is not a page heading; admin pages keep their h1', async ({ page }) => {
@@ -151,9 +179,9 @@ test.describe('admin', () => {
     await expect(page.locator('.sidebar-header .logo-link')).toHaveAttribute('href', '/admin');
   });
 
-  test('admin nav badges count pending uploads and open recovery requests', async ({ page }) => {
+  test('admin nav badges count pending uploads and outstanding recovery requests', async ({ page }) => {
     const uploadKey = `badge-upload-${Date.now()}`;
-    const recoveryKey = `badge-recovery-${Date.now()}`;
+    const pendingRecoveryKey = `badge-recovery-pending-${Date.now()}`;
     await writeDb(`userUploads/${uploadKey}`, {
       id: uploadKey,
       path: `userUploads/e2e/${uploadKey}.png`,
@@ -162,10 +190,12 @@ test.describe('admin', () => {
       dateAdded: Date.now(),
       uploader: { name: 'Regular User', email: 'user@e2e.local' },
     });
-    await writeDb(`recoveryRequests/${recoveryKey}`, {
-      id: recoveryKey,
-      email: `${recoveryKey}@e2e.local`,
-      status: 'open',
+    // The seed already carries one open request and one closed request; add a
+    // pending one so the badge proves it sums both outstanding statuses.
+    await writeDb(`recoveryRequests/${pendingRecoveryKey}`, {
+      id: pendingRecoveryKey,
+      email: `${pendingRecoveryKey}@e2e.local`,
+      status: 'pending',
       createdAt: Date.now(),
     });
 
@@ -179,7 +209,7 @@ test.describe('admin', () => {
       await expect(uploadsBadge.locator('[aria-hidden="true"]')).toHaveText('2');
       await expect(uploadsBadge).toContainText('2 pending');
       await expect(recoveryBadge).toBeVisible();
-      await expect(recoveryBadge).toContainText('1 open');
+      await expect(recoveryBadge).toContainText('2 outstanding');
 
       await page.setViewportSize({ width: 390, height: 844 });
       await expect(nav).not.toBeVisible();
@@ -190,14 +220,24 @@ test.describe('admin', () => {
       await page.keyboard.press('Escape');
 
       await deleteDb(`userUploads/${uploadKey}`);
-      await deleteDb(`recoveryRequests/${recoveryKey}`);
-      // The seeded pending upload keeps the uploads badge at one.
+      await deleteDb(`recoveryRequests/${pendingRecoveryKey}`);
+      // The seeded pending upload and open recovery request remain.
       await expect(uploadsBadge).toContainText('1 pending');
-      await expect(recoveryBadge).toHaveCount(0);
+      await expect(recoveryBadge).toContainText('1 outstanding');
     } finally {
       await deleteDb(`userUploads/${uploadKey}`);
-      await deleteDb(`recoveryRequests/${recoveryKey}`);
+      await deleteDb(`recoveryRequests/${pendingRecoveryKey}`);
     }
+  });
+
+  test('recovery list shows the seeded outstanding and closed requests', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/recovery');
+    const list = page.getByTestId('admin-recovery-list');
+    await expect(list.locator('.recovery-row').filter({ hasText: 'recovery-open@e2e.local' })).toBeVisible();
+    const closed = list.locator('.recovery-row').filter({ hasText: 'recovery-closed@e2e.local' });
+    await expect(closed).toBeVisible();
+    await expect(closed.getByTestId('admin-recovery-status')).toHaveText('closed');
   });
 
   test('admin nav hides the system badges from a content admin', async ({ page }) => {
@@ -220,7 +260,21 @@ test.describe('admin', () => {
     const nav = page.getByTestId('admin-nav');
     await expect(nav).toBeVisible();
     await expect(page.getByTestId('nav-menu-toggle')).toBeHidden();
-    await expect(page.locator('.sidebar-footer .version')).toHaveText(/^v\d+\.\d+\.\d+/);
+    const footer = page.locator('.sidebar-footer');
+    const version = footer.locator('.version');
+    await expect(version).toHaveText(`v${PACKAGE_VERSION}`);
+    await expect(footer).toHaveCSS('display', 'flex');
+    await expect(footer).toHaveCSS('justify-content', 'flex-end');
+    const rightGap = await version.evaluate((el) => {
+      const parent = el.parentElement!;
+      const styles = getComputedStyle(parent);
+      return Math.round(
+        parent.getBoundingClientRect().right
+        - parseFloat(styles.paddingRight)
+        - el.getBoundingClientRect().right,
+      );
+    });
+    expect(Math.abs(rightGap)).toBeLessThanOrEqual(1);
     const overflow = await page.locator('.app-container').evaluate((el) => ({
       scrollHeight: el.scrollHeight,
       clientHeight: el.clientHeight,
@@ -251,7 +305,7 @@ test.describe('admin', () => {
     await expect(toggle).toBeVisible();
     await toggle.click();
     await expect(nav).toBeVisible();
-    await expect(page.getByTestId('admin-nav-link-families')).toBeFocused();
+    await expect(page.getByTestId('admin-nav-link-features')).toBeFocused();
     // The page behind the scrim is inert, not just Tab-trapped: a screen
     // reader's touch exploration must not reach the toolbar or the routed page.
     await expect(page.locator('#admin-content')).toHaveJSProperty('inert', true);
@@ -261,9 +315,9 @@ test.describe('admin', () => {
     // the next wraps to the last item.
     await page.keyboard.press('Shift+Tab');
     await expect(page.locator('.sidebar-header .logo-link')).toBeFocused();
-    // Analytics is the last sidebar item, so the second Shift+Tab wraps there.
+    // Family Explorer is the last sidebar item, so the second Shift+Tab wraps there.
     await page.keyboard.press('Shift+Tab');
-    await expect(page.getByTestId('admin-nav-link-analytics')).toBeFocused();
+    await expect(page.getByTestId('admin-nav-link-familyExplorer')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(nav).not.toBeVisible();
     await expect(toggle).toBeFocused();
@@ -309,27 +363,23 @@ test.describe('admin', () => {
     await expect(page.locator('#admin-content')).toHaveJSProperty('inert', false);
   });
 
-  test('photo albums nav follows its feature flag', async ({ page }) => {
+  test('photo albums live in Media and follow their feature flag', async ({ page }) => {
     await login(page, 'admin');
     await setFeatureFlag(page, 'enablePhotoAlbums', false);
     try {
       await page.goto('/admin');
       const nav = page.getByTestId('admin-nav');
-      const navItems = nav.locator('[data-testid^="admin-nav-link-"]');
-      await expect(nav.getByRole('link', { name: 'Photo Albums', exact: true })).toHaveCount(0);
-      await expect(navItems).toHaveCount(12);
-      for (const name of ['Users', 'Families', 'People', 'Contacts', 'Family Explorer', 'Media', 'Songs', 'Expressions', 'Uploads', 'Recovery', 'Analytics', 'Features']) {
-        await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
-      }
+      await expect(nav.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
+      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(12);
+      await page.goto('/admin/media');
+      await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
     } finally {
       await setFeatureFlag(page, 'enablePhotoAlbums', true);
     }
-    await page.goto('/admin');
-    await expect(
-      page
-        .getByTestId('admin-nav')
-        .getByRole('link', { name: 'Photo Albums', exact: true }),
-    ).toBeVisible();
+    await page.goto('/admin/media');
+    await expect(page.getByTestId('media-section-photo-albums')).toBeVisible();
+    await page.goto('/admin/photo-albums');
+    await expect(page.getByText('E2E Album One')).toBeVisible();
   });
 
   test('calendars nav item appears when the legacy PDF flag is on and navigates', async ({ page }) => {

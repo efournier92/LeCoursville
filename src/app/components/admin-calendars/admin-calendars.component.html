@@ -53,18 +53,34 @@
             <tr>
               <td data-label="Year" class="calendar-year">{{ calendar.year }}</td>
               <td data-label="URL" class="calendar-url-cell calendar-url">
-                <a
-                  [href]="calendar.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="calendar-url-link"
-                  [matTooltip]="calendar.url">{{ calendar.url }}</a>
+                <div class="calendar-url-row">
+                  <a
+                    [href]="calendar.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="calendar-url-link"
+                    [matTooltip]="calendar.url">{{ calendar.url }}</a>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="calendar-copy"
+                    [attr.aria-label]="'Copy URL for ' + calendar.year"
+                    matTooltip="Copy URL"
+                    (click)="copyUrl(calendar)">
+                    <mat-icon>{{ copiedId === calendar.id ? 'check' : 'content_copy' }}</mat-icon>
+                  </button>
+                  @if (copiedId === calendar.id) {
+                    <span class="calendar-copy-status" role="status">Copied</span>
+                  } @else if (copyErrorId === calendar.id) {
+                    <span class="calendar-copy-status calendar-copy-status-error" role="alert">Copy failed</span>
+                  }
+                </div>
               </td>
               <td data-label="" class="calendar-actions">
                 <button mat-icon-button color="primary" [attr.aria-label]="'Edit ' + calendar.year" matTooltip="Edit" (click)="onEdit(calendar)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" [attr.aria-label]="'Delete ' + calendar.year" matTooltip="Delete" (click)="onDelete(calendar)">
+                <button mat-icon-button class="calendar-delete" [attr.aria-label]="'Delete ' + calendar.year" matTooltip="Delete" (click)="onDelete(calendar)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>

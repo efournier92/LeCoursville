@@ -14,7 +14,7 @@ const CONTENT_ROUTES: AdminRoute[] = [
   },
   {
     path: '/admin/people',
-    ready: (page) => expect(page.locator('.import-card .upload-area')).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('admin-people-table')).toBeVisible(),
   },
   {
     path: '/admin/calendars',
@@ -111,7 +111,11 @@ test.describe('admin roles', () => {
     await login(page, 'staff');
     for (const route of CONTENT_ROUTES) {
       await page.goto(route.path);
-      await expect(page).toHaveURL(new RegExp(`${route.path}$`));
+      // Legacy photo-albums links redirect to the matching Media tab.
+      const expected = route.path === '/admin/photo-albums'
+        ? /\/admin\/media\?section=photo-albums$/
+        : new RegExp(`${route.path}$`);
+      await expect(page).toHaveURL(expected);
       await route.ready(page);
     }
   });
@@ -137,13 +141,45 @@ test.describe('admin roles', () => {
 
   test('content admin sees the Content Admin badge and not the Super badge', async ({ page }) => {
     await login(page, 'staff');
-    await page.getByRole('button', { name: 'Account' }).click();
-    await expect(page.locator('.account-role')).toHaveText(['User', 'Content Admin']);
+    await page.getByRole('link', { name: 'Account' }).click();
+    await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin']);
+  });
+
+  test('role badges use the brand-family tokens', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/users');
+    await expect(page.getByTestId('admin-users-table')).toBeVisible();
+
+    const superBadge = page.locator('.role-badge-super').first();
+    const adminBadge = page.locator('.role-badge-admin').first();
+    const memberBadge = page
+      .locator('.role-badge:not(.role-badge-admin):not(.role-badge-super)')
+      .first();
+    const navBadge = page.getByTestId('admin-nav-badge-uploads');
+
+    await expect(superBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(adminBadge).toHaveCSS('background-color', 'rgb(220, 239, 227)');
+    await expect(memberBadge).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+    await expect(navBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+
+    try {
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+      await expect(superBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+      await expect(adminBadge).toHaveCSS('background-color', 'rgb(28, 58, 42)');
+      await expect(memberBadge).toHaveCSS('background-color', 'rgb(46, 52, 56)');
+      await expect(navBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    } finally {
+      if ((await page.locator('html').getAttribute('data-theme')) === 'dark') {
+        await page.getByTestId('theme-toggle').click();
+      }
+    }
   });
 
   test('member sees no role badges', async ({ page }) => {
     await login(page, 'user');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await expect(page.locator('.account-roles')).toHaveCount(0);
     await expect(page.getByText('Content Admin')).toHaveCount(0);
     await expect(page.getByText('Super')).toHaveCount(0);
@@ -151,8 +187,8 @@ test.describe('admin roles', () => {
 
   test('super sees the Content Admin and Super badges', async ({ page }) => {
     await login(page, 'admin');
-    await page.getByRole('button', { name: 'Account' }).click();
-    await expect(page.locator('.account-role')).toHaveText(['User', 'Content Admin', 'Super']);
+    await page.getByRole('link', { name: 'Account' }).click();
+    await expect(page.locator('.account-role')).toHaveText(['Member', 'Content Admin', 'Super']);
   });
 
   test('super reaches every system admin page', async ({ page }) => {

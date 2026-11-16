@@ -23,6 +23,17 @@ export class PeopleService {
   loadError$: Observable<string | null> = this.loadErrorSource.asObservable();
 
   constructor(private rtdb: RtdbService) {
+    this.subscribeToPeople();
+  }
+
+  /** Re-opens the people listener after an error terminated it. */
+  retryPeople(): void {
+    this.loadedSource.next(false);
+    this.loadErrorSource.next(null);
+    this.subscribeToPeople();
+  }
+
+  private subscribeToPeople(): void {
     this.getPeople().valueChanges().subscribe({
       next: (people: Person[]) => {
         this.peopleSource.next(people);

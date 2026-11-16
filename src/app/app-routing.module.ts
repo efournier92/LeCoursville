@@ -24,6 +24,11 @@ const routes: Routes =
       component: AuthComponent,
     },
     {
+      path: 'account',
+      component: AuthComponent,
+      data: { account: true },
+    },
+    {
       path: 'contacts',
       component: ContactsComponent,
       canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
@@ -37,20 +42,20 @@ const routes: Routes =
     },
     {
       path: 'songs',
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'songs' },
       loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
     },
     {
       path: 'songs/:id',
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'songs' },
       loadChildren: () => import('./components/songs/songs.module').then(m => m.SongsFeatureModule),
     },
     {
       path: 'chat',
       component: ChatComponent,
-      canActivate: [AuthGuardService, FeatureFlagGuard],
+      canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
       data: { featureId: 'chat' },
     },
     {
@@ -97,6 +102,12 @@ const routes: Routes =
       canActivate: [AuthGuardService, ApprovedGuardService, FeatureFlagGuard],
     },
     // MEDIA
+    {
+      path: 'media',
+      pathMatch: 'full',
+      component: AuthComponent,
+      data: { notFound: true },
+    },
     {
       path: 'media',
       loadChildren: () => import('./components/media/media.module').then(m => m.MediaFeatureModule),

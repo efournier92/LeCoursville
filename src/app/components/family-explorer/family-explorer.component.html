@@ -36,17 +36,19 @@
       <div class="explorer-body page-content">
         <div class="roots-row" data-testid="family-roots">
           <span class="roots-label">Roots</span>
-          @for (root of couple; track root.id) {
-            <button
-              type="button"
-              class="root-btn"
-              [attr.data-testid]="'family-root-' + root.id"
-              [attr.aria-pressed]="selectedId === root.id"
-              (click)="select(root.id)">
-              <span class="root-name">{{ personName(root) }}</span>
-              <span class="root-years">{{ yearsOf(root) }}</span>
-            </button>
-          }
+          <span class="roots-names">
+            @for (root of couple; track root.id) {
+              <button
+                type="button"
+                class="root-btn"
+                [attr.data-testid]="'family-root-' + root.id"
+                [attr.aria-pressed]="selectedId === root.id"
+                (click)="select(root.id)">
+                <span class="root-name">{{ personName(root) }}</span>
+                <span class="root-years">{{ yearsOf(root) }}</span>
+              </button>
+            }
+          </span>
         </div>
         <app-family-chart
           [people]="people"

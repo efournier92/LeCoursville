@@ -217,6 +217,144 @@
   display: inline;
 }
 
+// Explorer sidebar: dense list rows, not cover tiles. A thumbnail, a two-line
+// text block, and a right-aligned year keep more items on screen while still
+// carrying the artist and date that identify a recording.
+.media-list-container.media-list-dense {
+  gap: 0;
+  padding: 4px 0;
+}
+
+.media-list-container.media-list-dense .media-list-row {
+  gap: 0;
+}
+
+.media-list-item.media-list-item-compact {
+  flex-wrap: nowrap;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  &:hover,
+  &:active {
+    background: var(--color-surface-muted);
+    box-shadow: none;
+    transform: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+
+  // The open item stays marked in the rail: tinted row plus a brand edge.
+  &.media-list-item-selected {
+    background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--color-brand-primary);
+
+    &:hover,
+    &:active {
+      background: color-mix(in srgb, var(--color-brand-primary) 16%, transparent);
+    }
+
+    .media-details-name {
+      font-weight: 600;
+    }
+  }
+
+  .imageContainer {
+    width: 40px;
+    height: 40px;
+  }
+
+  .imageCenterer img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .media-list-placeholder-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .media-details-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-left: 0;
+    min-width: 0;
+  }
+
+  .media-details-compact-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .media-details-name {
+    margin-bottom: 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .media-details-artist {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .media-details-year {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--color-ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Touch widths: the dense rail rows are the tap targets, so give each one a
+// comfortable 56px height and a larger thumbnail instead of pointer density.
+@media (max-width: 991.98px) {
+  .media-list-item.media-list-item-compact {
+    min-height: 64px;
+    padding: 10px 12px;
+
+    .imageContainer {
+      width: 48px;
+      height: 48px;
+    }
+
+    .imageCenterer img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .media-list-placeholder-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 26px;
+    }
+
+    .media-details-name {
+      font-size: 14px;
+    }
+
+    .media-details-artist {
+      font-size: 12px;
+    }
+
+    .media-details-year {
+      font-size: 12px;
+    }
+  }
+}
+
 .media-skeleton-list {
   display: flex;
   flex-direction: column;

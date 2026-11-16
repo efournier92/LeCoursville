@@ -19,6 +19,22 @@ test.describe('expressions', () => {
     await expect(page.getByText('Make it so')).toBeVisible();
   });
 
+  test('expression with author matching attribution shows each once', async ({ page }) => {
+    const seeded = await readDb<Record<string, any>>('messages/expr-1');
+    try {
+      await writeDb('messages/expr-1', { ...seeded, authorName: 'E2E Family' });
+      await login(page, 'admin');
+      await page.goto('/expressions');
+      const card = page.locator('.expression-card-wrapper', { hasText: 'Live long and prosper' }).first();
+      await expect(card.locator('.expression-attribution')).toHaveText('E2E Family');
+      await expect(card.locator('.expression-author')).toContainText('2000');
+    } finally {
+      if (seeded) {
+        await writeDb('messages/expr-1', seeded);
+      }
+    }
+  });
+
   test('create expression: admin creates one via the edit card', async ({ page }) => {
     try {
       await login(page, 'admin');
@@ -77,6 +93,21 @@ test.describe('expressions', () => {
     ).toBeVisible();
   });
 
+  test('empty state: cold zero expressions shows the empty message, never the skeleton', async ({ page }) => {
+    const messages = await readDb('messages');
+    try {
+      // Delete before the first visit so the component takes the cold read
+      // path: no seeded card is loaded first, so a stale loading flag shows.
+      await deleteDb('messages');
+      await login(page, 'admin');
+      await page.goto('/expressions');
+      await expect(page.getByText("We couldn't find any expressions.")).toBeVisible();
+      await expect(page.locator('.expressions-skeleton')).toHaveCount(0);
+    } finally {
+      await writeDb('messages', messages);
+    }
+  });
+
   test('member read-only: no Create button, no inline edit, no edit action', async ({ page }) => {
     await login(page, 'user');
     await page.goto('/expressions');
@@ -97,5 +128,14 @@ test.describe('expressions', () => {
     await page.goto('/admin/expressions');
     await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
     await expect(page.locator('.expression-actions').first()).toBeVisible();
+  });
+
+  test('create expression button uses the theme-invariant brand fill', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/expressions');
+    const button = page.getByRole('button', { name: 'Create Expression' });
+    await expect(button).toBeVisible();
+    await expect(button).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(button).toHaveCSS('color', 'rgb(255, 255, 255)');
   });
 });

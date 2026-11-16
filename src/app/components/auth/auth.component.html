@@ -29,26 +29,50 @@
         src="./assets/img/logo/L.png"
         alt="LeCoursville"
       />
-      <h1 class="auth-title">Sign in</h1>
-      <p class="auth-subtitle">Welcome back to LeCoursville</p>
-      <form (ngSubmit)="onSignIn()" novalidate>
-        <button mat-stroked-button type="button" class="auth-google"
-          (click)="onGoogleSignIn()" [disabled]="loading" data-testid="auth-google">
-          Continue with Google
-        </button>
-        <div class="auth-divider" aria-hidden="true"><span>or</span></div>
+      <h1 class="auth-title">{{ isCreateAccount ? 'Create Account' : 'Sign In' }}</h1>
+      <p class="auth-subtitle">Welcome to LeCoursville</p>
+      <div class="auth-mode-switch" role="tablist" aria-label="Sign in or create an account">
+        <button type="button" role="tab" class="auth-mode-tab" id="auth-tab-signin"
+          aria-controls="auth-tabpanel"
+          [class.is-active]="!isCreateAccount" [attr.aria-selected]="!isCreateAccount"
+          [attr.tabindex]="!isCreateAccount ? 0 : -1" [disabled]="loading"
+          (keydown)="onModeKeydown($event, 'signin')"
+          (click)="setMode('signin')" data-testid="auth-mode-signin">Sign In</button>
+        <button type="button" role="tab" class="auth-mode-tab" id="auth-tab-create"
+          aria-controls="auth-tabpanel"
+          [class.is-active]="isCreateAccount" [attr.aria-selected]="isCreateAccount"
+          [attr.tabindex]="isCreateAccount ? 0 : -1" [disabled]="loading"
+          (keydown)="onModeKeydown($event, 'create')"
+          (click)="setMode('create')" data-testid="auth-mode-create">Create Account</button>
+      </div>
+      <form (ngSubmit)="onSubmit()" novalidate role="tabpanel" id="auth-tabpanel"
+        [attr.aria-labelledby]="isCreateAccount ? 'auth-tab-create' : 'auth-tab-signin'">
+        @if (isCreateAccount) {
+          <mat-form-field appearance="outline" class="auth-field">
+            <mat-icon matPrefix aria-hidden="true">badge</mat-icon>
+            <mat-label>Name</mat-label>
+            <input matInput type="text" name="name" [(ngModel)]="name"
+              autocomplete="name" required data-testid="auth-name"
+              [attr.aria-invalid]="errorField === 'name'"
+              [attr.aria-describedby]="errorField === 'name' ? 'auth-error-message' : null" />
+          </mat-form-field>
+        }
         <mat-form-field appearance="outline" class="auth-field">
-          <mat-icon matPrefix aria-hidden="true">person</mat-icon>
+          <mat-icon matPrefix aria-hidden="true">email</mat-icon>
           <mat-label>Email</mat-label>
           <input matInput type="email" name="email" [(ngModel)]="email"
-            autocomplete="email" required data-testid="auth-email" />
+            autocomplete="email" required data-testid="auth-email"
+            [attr.aria-invalid]="errorField === 'email'"
+            [attr.aria-describedby]="errorField === 'email' ? 'auth-error-message' : null" />
         </mat-form-field>
         <mat-form-field appearance="outline" class="auth-field">
           <mat-icon matPrefix aria-hidden="true">lock</mat-icon>
           <mat-label>Password</mat-label>
           <input matInput [type]="showPassword ? 'text' : 'password'" name="password"
-            [(ngModel)]="password" autocomplete="current-password" required
-            data-testid="auth-password" />
+            [(ngModel)]="password" [attr.autocomplete]="isCreateAccount ? 'new-password' : 'current-password'"
+            required data-testid="auth-password"
+            [attr.aria-invalid]="errorField === 'password'"
+            [attr.aria-describedby]="errorField === 'password' ? 'auth-error-message' : null" />
           <button mat-icon-button matSuffix type="button" class="auth-toggle"
             (click)="togglePasswordVisibility()"
             [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
@@ -56,8 +80,25 @@
             <mat-icon aria-hidden="true">{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
         </mat-form-field>
+        @if (isCreateAccount) {
+          <mat-form-field appearance="outline" class="auth-field">
+            <mat-icon matPrefix aria-hidden="true">lock</mat-icon>
+            <mat-label>Confirm Password</mat-label>
+            <input matInput [type]="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
+              [(ngModel)]="confirmPassword" autocomplete="new-password" required
+              data-testid="auth-confirm-password"
+              [attr.aria-invalid]="errorField === 'confirmPassword'"
+              [attr.aria-describedby]="errorField === 'confirmPassword' ? 'auth-error-message' : null" />
+            <button mat-icon-button matSuffix type="button" class="auth-toggle"
+              (click)="toggleConfirmPasswordVisibility()"
+              [attr.aria-label]="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+              data-testid="auth-confirm-password-toggle">
+              <mat-icon aria-hidden="true">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+        }
         @if (error) {
-          <div class="auth-banner auth-banner--error" role="alert" data-testid="auth-error">
+          <div class="auth-banner auth-banner--error" role="alert" id="auth-error-message" data-testid="auth-error">
             <mat-icon aria-hidden="true">error_outline</mat-icon>
             <span>{{ error }}</span>
           </div>
@@ -68,9 +109,14 @@
             <span>{{ info }}</span>
           </div>
         }
+        @if (isCreateAccount) {
+          <p class="auth-pending-note" role="note" data-testid="auth-pending-notice">
+            New accounts stay pending until an admin approves them. You can browse Media and Photos while you wait.
+          </p>
+        }
         <button mat-flat-button color="primary" type="submit"
           class="auth-submit" [disabled]="loading" data-testid="auth-submit">
-          {{ loading ? 'Signing in…' : 'Sign in' }}
+          {{ submitLabel }}
         </button>
         <div class="auth-help">
           <button mat-button type="button" class="auth-forgot"
@@ -86,6 +132,11 @@
             Get help signing in
           </button>
         </div>
+        <div class="auth-divider" aria-hidden="true"><span>or</span></div>
+        <button mat-stroked-button type="button" class="auth-google"
+          (click)="onGoogleSignIn()" [disabled]="loading" data-testid="auth-google">
+          Continue with Google
+        </button>
       </form>
     </div>
   } @else {
@@ -97,15 +148,19 @@
             <mat-icon aria-hidden="true">edit</mat-icon>
             <span>Edit profile</span>
           </button>
+          @if (isSuperAdmin) {
+            <a mat-stroked-button class="account-action account-admin" routerLink="/admin"
+              data-testid="account-admin-link">
+              <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+              <span>Admin</span>
+            </a>
+          }
           <button type="button" class="account-theme-pref" data-testid="account-always-dark" role="switch"
             [attr.aria-checked]="alwaysDark"
             [attr.aria-label]="alwaysDark ? 'Always Dark' : 'Always Light'"
             (click)="onAlwaysDarkChange(!alwaysDark)">
             <span class="account-theme-label">{{ alwaysDark ? 'Always Dark' : 'Always Light' }}</span>
-            <span class="theme-pill" aria-hidden="true">
-              <span class="theme-pill-opt" [class.is-active]="!alwaysDark"><mat-icon>light_mode</mat-icon></span>
-              <span class="theme-pill-opt" [class.is-active]="alwaysDark"><mat-icon>nightlight_round</mat-icon></span>
-            </span>
+            <app-theme-pill [mode]="alwaysDark ? 'dark' : 'light'"></app-theme-pill>
           </button>
           <button mat-stroked-button type="button" class="account-action auth-signout" (click)="onSignOutButtonClick()">
             <mat-icon aria-hidden="true">logout</mat-icon>

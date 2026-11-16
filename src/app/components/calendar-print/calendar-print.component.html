@@ -70,11 +70,11 @@
         </fieldset>
 
         <div class="calendar-print-toggles">
-          <mat-checkbox data-testid="calendar-print-toggle-birthdays" [(ngModel)]="options.includeBirthdays" (change)="onOptionsChange()">Birthdays</mat-checkbox>
-          <mat-checkbox data-testid="calendar-print-toggle-anniversaries" [(ngModel)]="options.includeAnniversaries" (change)="onOptionsChange()">Anniversaries</mat-checkbox>
-          <mat-checkbox data-testid="calendar-print-toggle-holidays" [(ngModel)]="options.includeHolidays" (change)="onOptionsChange()">Holidays</mat-checkbox>
-          <mat-checkbox data-testid="calendar-print-toggle-deceased" [(ngModel)]="options.includeDeceased" (change)="onDeceasedChange()">Include relatives who have passed</mat-checkbox>
-          <mat-checkbox data-testid="calendar-print-toggle-lifespan" [(ngModel)]="options.showLifespan" [disabled]="!options.includeDeceased" (change)="onOptionsChange()">Show lifespans for deceased</mat-checkbox>
+          <mat-slide-toggle data-testid="calendar-print-toggle-birthdays" [(ngModel)]="options.includeBirthdays" (change)="onOptionsChange()">Birthdays</mat-slide-toggle>
+          <mat-slide-toggle data-testid="calendar-print-toggle-anniversaries" [(ngModel)]="options.includeAnniversaries" (change)="onOptionsChange()">Anniversaries</mat-slide-toggle>
+          <mat-slide-toggle data-testid="calendar-print-toggle-holidays" [(ngModel)]="options.includeHolidays" (change)="onOptionsChange()">Holidays</mat-slide-toggle>
+          <mat-slide-toggle data-testid="calendar-print-toggle-deceased" [(ngModel)]="options.includeDeceased" (change)="onDeceasedChange()">Include relatives who have passed</mat-slide-toggle>
+          <mat-slide-toggle data-testid="calendar-print-toggle-lifespan" [(ngModel)]="options.showLifespan" [disabled]="!options.includeDeceased" (change)="onOptionsChange()">Show lifespans for deceased</mat-slide-toggle>
         </div>
       </div>
     }

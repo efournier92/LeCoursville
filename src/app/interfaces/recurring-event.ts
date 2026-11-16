@@ -10,6 +10,8 @@ export class RecurringEvent implements CalendarEvent {
   personId: string | null = null;
   personId2: string | null = null;
   isLiving = true;
+  familyColor = '';
+  familyName = '';
 
   // Implemented from CalendarEvent
   start: Date = new Date();

@@ -41,7 +41,11 @@ describe('AdminComponent', () => {
       providers: [
         {
           provide: FeatureFlagsService,
-          useValue: { getAllFeatureFlags: () => flags$, getPromotedRoute: () => of(null) },
+          useValue: {
+            getAllFeatureFlags: () => flags$,
+            getPromotedRoute: () => of(null),
+            getPendingPromotedRoute: () => of(null),
+          },
         },
         {
           provide: AuthService,
@@ -51,7 +55,7 @@ describe('AdminComponent', () => {
           provide: AdminBadgeService,
           useValue: {
             pendingUploads: () => pendingUploads$,
-            openRecoveryRequests: () => openRecovery$,
+            outstandingRecoveryRequests: () => openRecovery$,
           },
         },
       ],
@@ -103,7 +107,7 @@ describe('AdminComponent', () => {
   });
 
   it('rebuilds the nav from the latest flags when the user emits later', () => {
-    flags$.next({ enablePhotoAlbums: { enabled: true } });
+    flags$.next({ legacyCalendarPdf: { enabled: true } });
     fixture.detectChanges();
     user$.next({ id: 'u1', roles: { user: true, admin: true, super: false } });
     fixture.detectChanges();
@@ -135,7 +139,7 @@ describe('AdminComponent', () => {
     expect(uploads.textContent).toContain('3');
     expect(uploads.textContent).toContain('3 pending');
     const recovery = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-recovery"]');
-    expect(recovery.textContent).toContain('2 open');
+    expect(recovery.textContent).toContain('2 outstanding');
   });
 
   it('renders a "!" badge with an accessible label when a listener fails', () => {

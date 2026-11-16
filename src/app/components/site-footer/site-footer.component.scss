@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  // Pushed to the bottom when a short page leaves the body flex column with
+  // spare height.
+  margin-top: auto;
+}
+
+.site-footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 16px;
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: 600px) {
+    padding-bottom: 12px;
+  }
+}
+
+.privacy-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-2);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+// Touch widths: the short label leaves the link under the 44px width minimum.
+@media (max-width: 1024px) {
+  .privacy-link {
+    min-width: 44px;
+  }
+}
+
+@media print {
+  // A zero-height host box landing on a page boundary makes Chromium emit a blank trailing sheet.
+  :host {
+    display: none;
+  }
+
+  .site-footer {
+    display: none;
+  }
+}

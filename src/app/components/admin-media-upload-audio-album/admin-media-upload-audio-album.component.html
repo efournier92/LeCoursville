@@ -205,12 +205,11 @@
             <div class="media-zip-controls">
               @if (!needsManualZip()) {
                 <p class="media-file-name">{{ zipSummary() }}</p>
-                <mat-checkbox
+                <mat-slide-toggle
                   class="admin-upload-checkbox"
                   name="useOwnZip"
                   [(ngModel)]="useOwnZip"
-                  >Use my own zip</mat-checkbox
-                  >
+                  >Use my own zip</mat-slide-toggle>
                 @if (useOwnZip) {
                   <label class="media-control-label" for="albumZipInput">Zip file</label>
                   <input
@@ -241,18 +240,16 @@
             </div>
           }
 
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isSticky"
             [(ngModel)]="album.isSticky"
-            >Is Sticky?</mat-checkbox
-            >
-          <mat-checkbox
+            >Is Sticky?</mat-slide-toggle>
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isHidden"
             [(ngModel)]="album.isHidden"
-            >Should Hide from Lists?</mat-checkbox
-            >
+            >Should Hide from Lists?</mat-slide-toggle>
         </div>
       </details>
 

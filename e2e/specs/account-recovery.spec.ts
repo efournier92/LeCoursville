@@ -33,6 +33,9 @@ test.afterEach(async () => {
 
 async function requestReset(page: Page, email: string): Promise<void> {
   await page.goto('/');
+  // Wait for auth to resolve before driving the form, so the handler is bound
+  // under full-suite load (WebKit raced the first paint otherwise).
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
   await page.getByTestId('auth-email').fill(email);
   await page.getByTestId('auth-forgot').click();
   await expect(page.getByTestId('auth-reset-info')).toBeVisible();
@@ -109,7 +112,7 @@ async function addRecoveryRequest(page: Page, email: string, name: string, alter
   // Settle on a quiescent signed-out app before clicking: right after a
   // sign-out, Firefox can still be flipping auth state and re-rendering the
   // form region, and a click dispatched mid-flip lands on a detached node.
-  await expect(page.getByRole('link', { name: 'Sign In' })).toBeVisible();
+  await expect(page.getByTestId('theme-toggle')).toBeVisible();
   await expect(page.getByTestId('auth-email')).toBeVisible();
   await page.getByTestId('auth-recovery-open').click();
   await expect(page.getByTestId('recovery-email')).toBeVisible();
@@ -291,9 +294,9 @@ test.describe('account recovery', () => {
     await expect(row.getByRole('button', { name: `Mark closed for ${accountEmail}` })).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
     await expect(
-      row.getByRole('checkbox', { name: `Email reset link to ${alternate} for ${accountEmail}` }),
+      row.getByRole('switch', { name: `Email reset link to ${alternate} for ${accountEmail}` }),
     ).toBeVisible();
-    await row.getByTestId('admin-recovery-email-alternate').locator('input').check();
+    await row.getByTestId('admin-recovery-email-alternate').getByRole('switch').click();
     await expect(row.getByTestId('admin-recovery-generate')).toBeEnabled();
     await row.getByTestId('admin-recovery-generate').click();
     const generateButton = page
@@ -410,7 +413,7 @@ test.describe('account recovery', () => {
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
-    await expect(row.getByTestId('admin-recovery-email-alternate').locator('input')).not.toBeChecked();
+    await expect(row.getByTestId('admin-recovery-email-alternate').getByRole('switch')).toHaveAttribute('aria-checked', 'false');
     await row.getByTestId('admin-recovery-generate').click();
     await page
       .locator('mat-dialog-container')
@@ -510,7 +513,7 @@ test.describe('account recovery', () => {
 
     // Trigger an alert as an anonymous visitor. `/` redirects a signed-in user
     // to the promoted route, so open the account card via the nav first.
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     await addRecoveryRequest(page, triggerEmail, 'Recovery Eleven');
 
@@ -540,8 +543,11 @@ test.describe('account recovery', () => {
     const removeButton = page
       .locator('mat-dialog-container')
       .getByRole('button', { name: 'Remove', exact: true });
-    // Removing a recipient is reversible, so it is no longer marked destructive.
-    await expect(removeButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    // Remove is a destructive confirm: error-solid on the action, neutral Cancel.
+    await expect(removeButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(
+      page.locator('mat-dialog-container').getByRole('button', { name: 'Cancel', exact: true }),
+    ).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
     await removeButton.click();
     await expect(page.locator('.recipient-row', { hasText: added })).toHaveCount(0);
 

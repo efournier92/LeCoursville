@@ -5,6 +5,72 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261116-01 | 2026-11-16 | [trap] | admin/security | Repo and emulator deny pending users, but there is no recorded deploy of the `roles/user` gate landed in `5ceb2c46` (2026-10-30), and a manual test on the dev project still had full access. `ng build`/`ng serve` use `useEmulators: false`, so only an `--configuration=e2e` bundle exercises emulator rules | src/environments/environment.ts:10
+
+- D-20261116-02 | 2026-11-16 | [find] | admin/security | Pending users still read `photos` and `photoAlbums` (auth-only), and still see Songs, Chat, Audio, Videos, and Expressions in the nav. Decide before the next release whether Photos counts as PII | database.rules.json:136
+
+- D-20261115-01 | 2026-11-15 | [decision] | build/perf | Test cycle is tiered: `check` 43s static+unit, `e2e:fast` 27-35s one emulator plus chromium with `--last-failed` default, `e2e:pr` about 8m full suite plus rules, `e2e:gate` unchanged and mandatory before push-to-deploy | package.json:11
+
+- D-20261115-02 | 2026-11-15 | [trap] | media/routing | `isOnAdminRoute` matched `url.startsWith('/admin')`, so stale deep links like `/administrator` took the already-on-admin branch and the logo skipped `/admin`. Now an exact `ADMIN_PATHS` set | src/app/services/routing.service.ts:23
+
+- D-20261115-03 | 2026-11-15 | [trap] | admin/ui | Material form-field text size comes from three tokens (input, select trigger, floating label). Pin trigger and outlined-label sizes to `--mat-form-field-container-text-size` to keep filter placeholders equal | src/app/components/shared/page-toolbar/page-toolbar.component.scss:88
+
+- D-20261115-04 | 2026-11-15 | [trap] | calendar/print | The agenda sheet must use 100dvh, not 100vh, because 100vh overflows mobile browser chrome. The dialog container and surface also need height 100 percent to fill the pane | src/app/components/calendar-view/calendar-view.component.ts:122
+
+- D-20261115-05 | 2026-11-15 | [trap] | admin/ui | Hover styling must key off the clickable name, not a shared row ancestor like `.tree-row:hover .person-name`, or every name in a couple row underlines at once | src/app/components/shared/person-tree/person-tree.component.scss:34
+
+- D-20261115-06 | 2026-11-15 | [trap] | build/perf | The shared AGENTS.md points at `scripts/lint-markdown.py`, which does not exist in this repo. The working copy is the global one at `/Users/e/.config/opencode/scripts/lint-markdown.py` | /Users/e/.config/opencode/scripts/lint-markdown.py
+
+- D-20261115-07 | 2026-11-15 | [outcome] | admin/ui | Batch shipped: theme toggle beside nav, agenda 100dvh, right-aligned Expand outline button, brand-green audio toggle, muted video autoplay, full-width mobile media and account rows, single-name hover, exact admin match. Gate 560 per browser, unit 950, functions green | .gate-results/chromium.json
+
+- D-20261114-08 | 2026-11-14 | [outcome] | calendar/print | Mobile calendar redteam converged on a compact Timeline preview above the month grid with a full-height Expand sheet; gate 552 across the matrix, unit 950, theme clean | docs/critique/2026-11-14_MobileCalendarOrdering.md
+
+- D-20261114-07 | 2026-11-14 | [trap] | admin/ui | A CSS-hidden mobile-only component still renders duplicate event tags in the desktop DOM and wins `.first()` locators; gate it structurally with BreakpointObserver, not only `display:none` | src/app/components/calendar-view/calendar-view.component.html:98
+
+- D-20261114-06 | 2026-11-14 | [decision] | calendar/print | Mobile calendar shows a 3-day Timeline preview above the inline month grid; the full rolling agenda lives in a 100vh sheet opened from the preview Expand control. This beats a naive hoist that pushed the grid off-screen | src/app/components/calendar-view/calendar-view.component.html:98
+
+- D-20261114-05 | 2026-11-14 | [outcome] | admin/ui | Mobile overnight loop converged user and admin routes: per-engine audit 210 pass user, 216 pass admin on chromium, gate 548 per browser, unit 941 | docs/critique/2026-11-14_MobileOvernight.md
+
+- D-20261114-04 | 2026-11-14 | [trap] | build/perf | The sparse seed account still sees global seeded contacts, people, and photos, so it cannot prove empty states; empty-state review needs a data-less family in the seed | scripts/e2e/seed.mjs
+
+- D-20261114-03 | 2026-11-14 | [trap] | admin/ui | WebKit stretches a column flex item with percentage flex-basis to its max-content width, which widened page toolbars 28px; set width and max-width 100 percent | src/app/components/shared/page-toolbar/page-toolbar.component.scss
+
+- D-20261114-02 | 2026-11-14 | [decision] | calendar/print | Narrow-phone calendar uses a fluid seven-column track; the 44px-column pan contract is superseded because hidden weekend dates are the worse defect | e2e/specs/calendar.spec.ts:550
+
+- D-20261114-01 | 2026-11-14 | [trap] | admin/ui | Headless Chromium reserves a 10px classic scrollbar, so its layout viewport is narrower than WebKit and Firefox; launch the capture harness with --hide-scrollbars for parity | scripts/mobile/audit.mjs
+
+- D-20261113-03 | 2026-11-13 | [decision] | admin/ui | Data rights footer is a slim pinned "Data Privacy" bar. The information and request form live in a MatDialog, and print hides the footer host | src/app/components/site-footer/site-footer.component.html:1
+
+- D-20261113-02 | 2026-11-13 | [trap] | calendar/print | A zero-height block (the footer host) landing exactly on a print page boundary makes Chromium emit a blank trailing PDF sheet | src/app/components/site-footer/site-footer.component.scss:37
+
+- D-20261113-01 | 2026-11-13 | [trap] | admin/ui | mat-slide-toggle with-icon handle margin defaults to 0 24px, pushing the 14px handle outside a 36px track and the check icon over the label. Set both with-icon margins and icon size | src/styles.scss:1060
+
+- D-20261109-12 | 2026-11-09 | [decision] | admin/ui | Data rights footer uses a family-voice split copy: friendly Update, calm Remove, and Contact, signed off with the draft marker removed | docs/handoffs/2026-11-09_UiReviewBatch.md
+
+- D-20261109-11 | 2026-11-09 | [trap] | build/perf | The dev seed must set expression authorName to the historical author, not the seed owner, because expression-view renders authorName with yearWritten | scripts/dev-seed/index.mjs:203
+
+- D-20261109-10 | 2026-11-09 | [decision] | admin/security | Open email signup requires messages read to be approved-user-only (`roles/user === true`). pending accounts no longer read chat | database.rules.json:23
+
+- D-20261109-09 | 2026-11-09 | [trap] | admin/security | An RTDB ancestor `.write` overrides child `.write`, and child `.validate` sees `newData.val()` at that path. put field restrictions in `.validate` | database.rules.json:205
+
+- D-20261109-08 | 2026-11-09 | [trap] | admin/ui | `mat-slide-toggle` sets `name` on its inner button, so `[name=...]` selectors miss the host. query `role=switch` instead | e2e/specs/media.spec.ts:1526
+
+- D-20261109-07 | 2026-11-09 | [trap] | build/perf | Firebase Auth emulator accepts 6-character passwords (HTTP 200), so a client-only 8-character minimum is not server-enforced | src/app/components/auth/auth.component.ts:128
+
+- D-20261109-06 | 2026-11-09 | [trap] | build/perf | `src/environments/*` is gitignored, so env contract additions stay local and out of commits unless mirrored into tracked config | .gitignore:54
+
+- D-20261109-05 | 2026-11-09 | [trap] | rules/deploy | `npm version` exits 1 when the version is unchanged. guard for equality, and commit the bump before the release tag so the tag points at the matching version | scripts/deploy.sh:109
+
+- D-20261109-04 | 2026-11-09 | [trap] | admin/ui | Playwright WebKit and Firefox do not open a page for a synthesized middle click, while Firefox modifier-click does. assert the anchor contract per engine | e2e/specs/nav.spec.ts:187
+
+- D-20261109-03 | 2026-11-09 | [decision] | admin/ui | `/account` is deep-link safe while `/` triggers the one-shot promoted-route bounce, so new-tab targets point at `/account` | src/app/config/feature-config.ts:28
+
+- D-20261109-02 | 2026-11-09 | [trap] | build/perf | The dev seed downloader must return the asset Buffer. passing a cache path to `file.save` writes nothing | scripts/dev-seed/downloader.mjs:91
+
+- D-20261109-01 | 2026-11-09 | [outcome] | admin/ui | UI review batch WS1 to WS8 implemented and redteamed: 160 findings, 157 addressed, 2 rejected, 1 escalated (captions). gate 507 per browser, unit 921 | docs/critique/2026-11-08_UiReviewRedteam.md
+
+- D-20261108-02 | 2026-11-08 | [decision] | build/perf | Accepted 18 `npm audit` findings: 4 high `@grpc/grpc-js` (Node-only, not in browser bundle), 14 moderate in `firebase-tools` CLI; `--force` needs major downgrade | package-lock.json
+
 - D-20261108-01 | 2026-11-08 | [trap] | build/perf | Pinned `@angular-devkit/architect` must match `@angular-devkit/build-angular`; bumping one alone leaves a duplicate `0.2202.x` | package.json:49
 
 - D-20261107-05 | 2026-11-07 | [trap] | calendar/print | Seed dates must be absolute; current-month dates made print e2e pass only in November 2026 | scripts/e2e/seed.mjs

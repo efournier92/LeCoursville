@@ -26,7 +26,7 @@ const ADMIN_ROUTES: AdminRoute[] = [
   {
     path: '/admin/people',
     title: 'People',
-    ready: (page) => expect(page.locator('.import-card .upload-area')).toBeVisible(),
+    ready: (page) => expect(page.getByTestId('admin-people-table')).toBeVisible(),
   },
   {
     path: '/admin/calendars',
@@ -82,10 +82,12 @@ async function expectTitleBar(page: Page, title: string, expectedHeight: number)
 
   const box = await toolbar.boundingBox();
   expect(box).not.toBeNull();
-  // Bars wrap and grow instead of clipping (DC-20261026-05): the minimum holds,
-  // and one wrapped control row (<=48px) is allowed.
+  // Below 600px the bar stacks its title above one action row (UI-019), so it
+  // grows instead of clipping; desktop and the phone stack are asserted apart.
+  const stacked = expectedHeight < 64;
+  await expect(toolbar).toHaveCSS('flex-direction', stacked ? 'column' : 'row');
   expect(box!.height).toBeGreaterThanOrEqual(expectedHeight - 1);
-  expect(box!.height).toBeLessThanOrEqual(expectedHeight + 48);
+  expect(box!.height).toBeLessThanOrEqual(stacked ? expectedHeight + 64 : expectedHeight + 8);
 
   const surface = await toolbar.evaluate((el) => {
     const styles = getComputedStyle(el);
@@ -180,7 +182,10 @@ test.describe('admin visual contract', () => {
       await route.ready(page);
       await expectTitleBar(page, route.title, 64);
       await expectSharedPageGap(page);
-      if (await page.locator('.admin-filter-bar').count()) {
+      // The Media section switch sits between the title and the photo-album
+      // filter bar, so that surface is not a joined card by design.
+      const hasSectionSwitch = await page.locator('.admin-media-section-switch').count();
+      if (!hasSectionSwitch && await page.locator('.admin-filter-bar').count()) {
         await expectJoinedFilterBar(page);
       }
 

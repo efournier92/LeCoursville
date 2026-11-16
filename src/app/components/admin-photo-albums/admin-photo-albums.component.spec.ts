@@ -67,6 +67,7 @@ describe('AdminPhotoAlbumsComponent', () => {
             getPhotosByAlbum,
             deletePhoto,
             setAlbumCover,
+            updatePhoto: jasmine.createSpy('updatePhoto').and.returnValue(Promise.resolve()),
             uploadPhotoToAlbum: jasmine.createSpy('uploadPhotoToAlbum'),
           },
         },
@@ -235,5 +236,31 @@ describe('AdminPhotoAlbumsComponent', () => {
 
     second.next([{ id: 'p2', albumId: 'a2' } as Photo]);
     expect(component.selectedAlbumPhotos.length).toBe(1);
+  });
+
+  it('toggles the circa switch and saves the flag', async () => {
+    const photo = { id: 'p1', albumId: 'a1', isYearCirca: false } as Photo;
+    component.selectedAlbum = album('a1', 'Album One');
+    component.selectedAlbumPhotos = [photo];
+    component.editingPhotoId = 'p1';
+    component.editDraft = { ...photo };
+    fixture.detectChanges();
+
+    const toggle = fixture.nativeElement.querySelector(
+      'mat-slide-toggle',
+    ) as HTMLElement;
+    const button = toggle.querySelector('button[role="switch"]') as HTMLButtonElement;
+    expect(button.getAttribute('aria-checked')).toBe('false');
+
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-checked')).toBe('true');
+    expect(component.editDraft?.isYearCirca).toBe(true);
+
+    await component.onSavePhotoEdit();
+    const photosService = TestBed.inject(PhotosService) as any;
+    expect(photosService.updatePhoto).toHaveBeenCalledWith(
+      jasmine.objectContaining({ id: 'p1', isYearCirca: true }),
+    );
   });
 });

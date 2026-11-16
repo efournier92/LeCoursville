@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { MessageService } from 'src/app/services/message.service';
 import { User } from 'src/app/models/user';
@@ -58,13 +58,14 @@ export abstract class MessageComponent implements OnInit {
 
   private subscribeMessagesObservable(): void {
     this.messagesSub?.unsubscribe();
-    let isSeed = true;
-    this.messagesSub = this.messageService.messagesObservable.subscribe((messages: Message[]) => {
-      // The service BehaviorSubject replays its [] seed synchronously; that is
-      // still loading, not empty.
-      const seedEmpty = isSeed && messages.length === 0;
-      isSeed = false;
-      if (seedEmpty) return;
+    this.messagesSub = combineLatest([
+      this.messageService.messagesObservable,
+      this.messageService.messagesLoaded$,
+    ]).subscribe(([messages, loaded]) => {
+      // The loaded flag is the only proof the first real read finished; a
+      // replayed empty seed must not resolve the skeleton or claim empty.
+      if (!loaded) return;
+      this.loading = false;
       this.onMessagesObservableUpdate(messages);
       this.getQueryParams();
     }, () => this.onError());

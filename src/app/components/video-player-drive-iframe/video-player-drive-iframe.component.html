@@ -1,13 +1,27 @@
 <div class="d-flex justify-content-center">
-  <div class="video-iframe-container w-100">
-    <iframe
-      class="video-iframe"
-      [src]="videoUrl"
-      width="100%"
-      height="100%"
-      allow="autoplay"
-      allowfullscreen="allowfullscreen"
-    >
-    </iframe>
+  <div
+    class="video-iframe-container w-100"
+    [class.video-iframe-container-fallback]="showFallback"
+  >
+    @if (showFallback) {
+      <div class="video-fallback">
+        <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
+        <button type="button" class="video-retry-button" (click)="retry()">
+          Try again
+        </button>
+      </div>
+    } @else {
+      <iframe
+        class="video-iframe"
+        [src]="videoUrl"
+        [attr.title]="video?.title || 'Video player'"
+        width="100%"
+        height="100%"
+        allow="autoplay"
+        allowfullscreen="allowfullscreen"
+        (load)="onIframeLoad()"
+      >
+      </iframe>
+    }
   </div>
 </div>

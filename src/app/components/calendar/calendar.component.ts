@@ -50,6 +50,9 @@ export class CalendarComponent implements OnInit, OnDestroy {
   showHolidays = true;
   selectedPersonId: string | null = null;
   datePickerOpen = false;
+  // Phone-only: the four filter switches collapse behind a Filters button so
+  // they stop crowding the first screen. Desktop renders them inline always.
+  filtersOpen = false;
   pickerDate: Date;
   pickerYear: number;
   legacyCalendarPdf = false;
@@ -247,6 +250,20 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.selectedYear = this.pickerYear;
     this.datePickerOpen = false;
     this.events = this.calendarService.updateEvents(this.allEvents, this.pickerYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
+    this.updateStatus();
+    this.updateQueryParams();
+  }
+
+  goToToday(): void {
+    const now = new Date();
+    const monthIndex = now.getMonth();
+    this.viewMonth = this.months[monthIndex];
+    this.selectedYear = now.getFullYear();
+    this.viewDate = new Date(this.selectedYear, monthIndex, 1);
+    this.pickerYear = this.selectedYear;
+    this.pickerDate = new Date(this.selectedYear, monthIndex, 1);
+    this.datePickerOpen = false;
+    this.events = this.calendarService.updateEvents(this.allEvents, this.selectedYear, this.showBirthdays, this.showAnniversaries, this.showNotLiving, this.showHolidays);
     this.updateStatus();
     this.updateQueryParams();
   }

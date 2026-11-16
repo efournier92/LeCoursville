@@ -70,6 +70,43 @@ test.describe('feature flags', () => {
     expect(await readDb('features/songs/enabled')).toBe(true);
   });
 
+  test('Features offers approved and pending landing selects; pending excludes PII routes', async ({ page }) => {
+    const before = await readDb('promotedRoutePending');
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+      await expect(page.getByLabel('Approved Users Landing Page')).toBeVisible();
+      const pending = page.getByLabel('Pending Users Landing Page');
+      await expect(pending).toBeVisible();
+      await expect(page.getByText('Pending users are signed in but cannot view PII')).toBeVisible();
+
+      await pending.click();
+      await expect(page.getByRole('option', { name: /Photos \(\/photos\)/ })).toBeVisible();
+      await expect(page.getByRole('option', { name: /People \(\/people\)/ })).toHaveCount(0);
+      await expect(page.getByRole('option', { name: /Calendar \(\/calendar\)/ })).toHaveCount(0);
+      await page.getByRole('option', { name: /Expressions \(\/expressions\)/ }).click();
+      await expect
+        .poll(async () => (await readDb<{ route?: string }>('promotedRoutePending'))?.route)
+        .toBe('/expressions');
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
+  test('an off-allowlist pending route warns on the Features page', async ({ page }) => {
+    const before = await readDb('promotedRoutePending');
+    await writeDb('promotedRoutePending', { route: '/calendar', updatedAt: Date.now() });
+    try {
+      await login(page, 'admin');
+      await page.goto('/admin/features');
+      const warning = page.getByTestId('pending-route-warning');
+      await expect(warning).toBeVisible();
+      await expect(warning).toContainText('not an allowed pending landing page');
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
+  });
+
   test('layout: every toggle right edge aligns to one shared column', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/features');
@@ -86,7 +123,7 @@ test.describe('feature flags', () => {
     }
   });
 
-  test('layout: Changed tag sits left of its toggle with a small gap, Title Case', async ({ page }) => {
+  test('layout: Changed tag is a muted line under the route, Title Case', async ({ page }) => {
     await login(page, 'admin');
     // Toggle through the real UI so updatedAt lands and the tag renders.
     await setFeatureFlag(page, 'chat', true);
@@ -98,14 +135,26 @@ test.describe('feature flags', () => {
     const text = (await tag.textContent())?.trim() ?? '';
     expect(text).toMatch(/^Changed\b/);
     expect(text.replace(/[^\d]/g, '')).not.toBe('');
-    const toggle = page.getByTestId('feature-toggle-chat');
-    const tagBox = await tag.boundingBox();
-    const toggleBox = await toggle.boundingBox();
-    expect(tagBox && toggleBox).toBeTruthy();
-    const gap = toggleBox!.x - (tagBox!.x + tagBox!.width);
-    // Small fixed gap: present but not a wide void (scss gap is 12px).
-    expect(gap).toBeGreaterThanOrEqual(2);
-    expect(gap).toBeLessThanOrEqual(24);
+    const geometry = await page.getByTestId('feature-toggle-chat').evaluate((toggleEl) => {
+      const row = toggleEl.closest('.feature-row') as HTMLElement;
+      const tagEl = row.querySelector('[data-testid="feature-changed-chat"]') as HTMLElement;
+      const copy = row.querySelector('.feature-copy') as HTMLElement;
+      const route = row.querySelector('.feature-route') as HTMLElement;
+      const rect = (el: Element) => el.getBoundingClientRect();
+      return {
+        tagLeft: Math.round(rect(tagEl).left),
+        copyLeft: Math.round(rect(copy).left),
+        tagTop: Math.round(rect(tagEl).top),
+        routeBottom: Math.round(rect(route).bottom),
+        tagRight: Math.round(rect(tagEl).right),
+        toggleLeft: Math.round(rect(toggleEl).left),
+      };
+    });
+    // The tag shares the copy column's left edge and sits below the route,
+    // clear of the toggle's right-aligned control column.
+    expect(Math.abs(geometry.tagLeft - geometry.copyLeft)).toBeLessThanOrEqual(1);
+    expect(geometry.tagTop).toBeGreaterThanOrEqual(geometry.routeBottom - 1);
+    expect(geometry.tagRight).toBeLessThan(geometry.toggleLeft);
   });
 });
 
@@ -114,14 +163,16 @@ test.describe('photo-albums flag and the photos-legacy fallback', () => {
     await writeDb('features/enablePhotoAlbums/enabled', true);
   });
 
-  test('flag off hides Photo Albums in the admin nav (visibleAdminNav filter)', async ({ page }) => {
+  test('flag off hides the Photo Albums tab but keeps the Media page', async ({ page }) => {
     await writeDb('features/enablePhotoAlbums/enabled', false);
     await login(page, 'admin');
-    await page.goto('/admin/users');
-    await expect(page.getByTestId('admin-nav')).toBeVisible();
+    await page.goto('/admin/media');
+    await expect(page.getByTestId('media-section-video')).toBeVisible();
+    await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
+    // Photo Albums is never a sidebar item.
     await expect(page.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
-    // The unflagged Contacts entry is unaffected.
-    await expect(page.getByTestId('admin-nav-link-contacts')).toBeVisible();
+    // The retired Contacts entry stays gone.
+    await expect(page.getByTestId('admin-nav-link-contacts')).toHaveCount(0);
   });
 
   test('flag off renders photos-legacy with its admin edit controls; album view is read-only', async ({ page }) => {
@@ -137,7 +188,7 @@ test.describe('photo-albums flag and the photos-legacy fallback', () => {
     // The legacy view has no navbar chrome; go to the landing page (navbar
     // present) and then the Account page, the only home of Sign out.
     await page.goto('/');
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     await login(page, 'user');
     await page.goto('/photos');

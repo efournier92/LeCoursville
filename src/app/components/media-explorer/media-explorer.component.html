@@ -1,27 +1,48 @@
 <div class="media-explorer-component page-ground page-content">
-  <app-page-toolbar [title]="title">
-    <mat-form-field class="media-list-filters-input" appearance="outline">
-      <mat-label>Filter</mat-label>
-      <input
-        matInput
-        name="media-explorer-filter"
-        (input)="onSearchInputChange($event)"
-        [(ngModel)]="searchQuery"
-        />
-    </mat-form-field>
-  </app-page-toolbar>
+  @if (!selectedMedia?.id) {
+    <app-page-toolbar [title]="title">
+      <mat-form-field class="media-list-filters-input" appearance="outline">
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          name="media-explorer-filter"
+          (input)="onSearchInputChange($event)"
+          [(ngModel)]="searchQuery"
+          />
+      </mat-form-field>
+    </app-page-toolbar>
+  }
 
   <div class="row">
     @if (selectedMedia?.id) {
       <div
+        #playerContainer
         class="media-explorer-player-container col-lg-7 justify-content-center"
         >
-        <div
-          class="media-explorer-actions-container"
-          >
+        <div class="media-explorer-heading">
+          <button type="button" class="media-explorer-back" (click)="resetSelection()">
+            <mat-icon aria-hidden="true">chevron_left</mat-icon>
+            <span>{{ backLabel }}</span>
+          </button>
+          <h1 class="media-explorer-title">{{ selectedMedia.title }}</h1>
+          @if (selectedMedia.date || selectedMedia.duration) {
+            <p class="media-explorer-meta">
+              @if (selectedMedia.date) {
+                <span class="media-explorer-meta-date">{{ selectedMedia.date }}</span>
+              }
+              @if (selectedMedia.date && selectedMedia.duration) {
+                <span class="media-explorer-meta-sep" aria-hidden="true">·</span>
+              }
+              @if (selectedMedia.duration) {
+                <span class="media-explorer-meta-duration">{{ formatDuration(selectedMedia.duration) }}</span>
+              }
+            </p>
+          }
+        </div>
+        <div class="media-explorer-actions-container">
           @if (shouldShowDownloadButton()) {
             <button
-              mat-stroked-button
+              mat-button
               class="media-explorer-action-button"
               matTooltip="Downloads the selected media to a file"
               (click)="downloadSelectedMedia()"
@@ -32,7 +53,7 @@
           }
           @if (shouldShowShareableLinkButton()) {
             <button
-              mat-stroked-button
+              mat-button
               class="media-explorer-action-button"
               matTooltip="Copies a shareable link to your clipboard"
               (click)="onGetShareableLink()"
@@ -54,14 +75,23 @@
               </app-video-player-drive-iframe>
             } @else {
               <video
+                #nativeVideoPlayer
                 data-testid="native-video-player"
                 class="video-element"
                 controls
+                playsinline
+                muted
+                autoplay
                 preload="metadata"
                 [src]="selectedMedia.urls.download"
                 [attr.poster]="selectedMedia.urls.icon || null"
+                [attr.aria-label]="selectedMedia.title || 'Video'"
+                (error)="onVideoError($event)"
                 >
               </video>
+              @if (videoErrorMessage) {
+                <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
+              }
             }
           </div>
         }
@@ -118,6 +148,8 @@
         <app-media-list
           [mediaTypesToShow]="mediaTypesToShow"
           [isAdminMode]="false"
+          [compact]="!!selectedMedia?.id"
+          [selectedId]="selectedMedia?.id || ''"
           [searchQuery]="searchQuery"
           (mediaClickEvent)="onMediaSelect($event)"
         ></app-media-list>

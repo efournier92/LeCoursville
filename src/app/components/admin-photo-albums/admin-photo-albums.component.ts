@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { Photo } from 'src/app/models/photo';
@@ -17,7 +18,6 @@ import { PhotoAlbum } from 'src/app/models/photo-album';
 import { paginate, pageRange, Page } from 'src/app/admin/pagination';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
-import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
 import { PhotoUploadProgressComponent } from 'src/app/components/photo-upload-progress/photo-upload-progress.component';
 import { PhotoAlbumsService } from 'src/app/services/photo-albums.service';
@@ -50,10 +50,10 @@ import {
     MatInputModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     MatTooltipModule,
     NoResultsMessageComponent,
     LvLoadErrorComponent,
-    PageToolbarComponent,
     AdminFilterBarComponent,
     PhotoUploadProgressComponent
 ]

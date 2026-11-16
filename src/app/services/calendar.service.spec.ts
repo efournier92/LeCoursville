@@ -1,28 +1,37 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { CalendarService } from './calendar.service';
+import { FamilyService } from './family.service';
 import { PeopleService } from './people.service';
 import { RtdbService } from './rtdb.service';
+import { Family } from 'src/app/models/family';
 import { Person } from 'src/app/models/person';
 import { RecurringEvent } from 'src/app/interfaces/recurring-event';
 
 describe('CalendarService', () => {
   let mockPeopleService: any;
   let mockPeopleSubject: BehaviorSubject<Person[]>;
+  let mockFamilyService: any;
+  let mockFamiliesSubject: BehaviorSubject<Family[]>;
   let mockLoadErrorSubject: BehaviorSubject<string | null>;
 
   beforeEach(() => {
     mockPeopleSubject = new BehaviorSubject<Person[]>([]);
+    mockFamiliesSubject = new BehaviorSubject<Family[]>([]);
     mockLoadErrorSubject = new BehaviorSubject<string | null>(null);
     mockPeopleService = {
       people$: mockPeopleSubject.asObservable(),
       loadError$: mockLoadErrorSubject.asObservable()
     };
+    mockFamilyService = {
+      families$: mockFamiliesSubject.asObservable()
+    };
 
     TestBed.configureTestingModule({
       providers: [
         CalendarService,
-        { provide: PeopleService, useValue: mockPeopleService }
+        { provide: PeopleService, useValue: mockPeopleService },
+        { provide: FamilyService, useValue: mockFamilyService }
       ]
     });
   });
@@ -125,6 +134,34 @@ describe('CalendarService', () => {
       expect(birthEvents[0].personId).toBe('person-1');
     }));
 
+    it('resolves the family color onto each event and leaves it empty when absent', inject([CalendarService], (service: CalendarService) => {
+      mockFamiliesSubject.next([
+        { id: 'family-1', name: 'Alder', hexColor: '#F44336', sortOrder: 'A', createdAt: 0, updatedAt: 0 }
+      ]);
+      mockPeopleSubject.next([
+        createPerson({ id: 'person-1', familyId: 'family-1' }),
+        createPerson({ id: 'person-2', familyId: null })
+      ]);
+
+      const events = service['calendarEventsSource'].getValue();
+      expect(events.find(e => e.personId === 'person-1')?.familyColor).toBe('#F44336');
+      expect(events.find(e => e.personId === 'person-2')?.familyColor).toBe('');
+    }));
+
+    it('resolves the family color and name on anniversary events through the anchor person', inject([CalendarService], (service: CalendarService) => {
+      mockFamiliesSubject.next([
+        { id: 'family-1', name: 'Alder', hexColor: '#F44336', sortOrder: 'A', createdAt: 0, updatedAt: 0 }
+      ]);
+      mockPeopleSubject.next([
+        createPerson({ id: 'person-1', familyId: 'family-1', spouseId: 'spouse-1', anniversaryDate: { year: 2015, month: 7, day: 4 } }),
+        createPerson({ id: 'spouse-1', familyId: 'family-1', name: { firstGiven: 'Jane', firstPreferred: null, maiden: null, last: 'Smith', suffix: null }, spouseId: 'person-1' })
+      ]);
+
+      const event = service['calendarEventsSource'].getValue().find(e => e.type === 'anniversary');
+      expect(event?.familyColor).toBe('#F44336');
+      expect(event?.familyName).toBe('Alder');
+    }));
+
     it('propagates a people load error to its error subscriber', inject([CalendarService], (service: CalendarService) => {
       let error: string | null = null;
       service.loadError$.subscribe(value => error = value);
@@ -219,6 +256,19 @@ describe('CalendarService', () => {
       const result = service.updateEvents(events, 2024, true, true, true, false);
 
       expect(result.map(e => e.start.getMonth())).toEqual([0, 11]);
+    }));
+
+    it('keeps the resolved family color through updateEvents', inject([CalendarService], (service: CalendarService) => {
+      const event = new RecurringEvent();
+      event.id = 'birth-1';
+      event.type = 'birth';
+      event.title = 'John Doe';
+      event.date = new Date(1990, 5, 15);
+      event.isLiving = true;
+      event.familyColor = '#F44336';
+
+      const result = service.updateEvents([event], 2024, true, true, true, false);
+      expect(result[0].familyColor).toBe('#F44336');
     }));
 
     it('getEventsByPerson returns only events for specified person', inject([CalendarService], (service: CalendarService) => {

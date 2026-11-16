@@ -78,6 +78,7 @@
                 data-testid="song-title"
                 [routerLink]="['/songs', song.id]"
                 >{{ song.title }}</a>
+              <mat-icon class="song-chevron" aria-hidden="true">chevron_right</mat-icon>
             </h2>
 
             @if (song.source) {

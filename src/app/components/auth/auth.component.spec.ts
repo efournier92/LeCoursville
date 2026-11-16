@@ -91,6 +91,24 @@ describe('AuthComponent', () => {
         'Google sign-in is not available right now.'
       );
     });
+
+    it('maps signup errors to friendly messages', () => {
+      expect(map('auth/email-already-in-use')).toBe(
+        'An account already exists for that email. Sign in instead.'
+      );
+      expect(map('auth/weak-password')).toBe('Password must be at least 8 characters.');
+      expect(map('auth/invalid-email')).toBe('That email address looks invalid.');
+    });
+  });
+
+  describe('create account mode', () => {
+    it('defaults to Sign In and switches submit copy', () => {
+      expect(component.isCreateAccount).toBe(false);
+      expect(component.submitLabel).toBe('Sign In');
+      component.setMode('create');
+      expect(component.isCreateAccount).toBe(true);
+      expect(component.submitLabel).toBe('Create Account');
+    });
   });
 });
 

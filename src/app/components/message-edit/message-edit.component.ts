@@ -139,8 +139,8 @@ export abstract class MessageEditComponent implements OnInit {
       "Are You Sure?",
       "Do you want to remove this message from LeCoursville?",
       [
-        { label: "No", color: "warn", isConfirmAction: false },
-        { label: "Yes", color: "primary", isConfirmAction: true, destructive: true },
+        { label: "Cancel", isConfirmAction: false },
+        { label: "Delete", color: "primary", isConfirmAction: true, destructive: true },
       ],
     );
     dialogRef.afterClosed().subscribe((confirmedAction: boolean) => {

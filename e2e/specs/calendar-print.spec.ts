@@ -213,6 +213,21 @@ test.describe('calendar print', () => {
     await expect(edith).not.toContainText('(');
   });
 
+  test('8a. disabled toggle tracks use a one-pixel hairline outline', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto(PRINT_URL);
+    await page.getByTestId('calendar-print-customize').click();
+
+    const lifespan = page.getByTestId('calendar-print-toggle-lifespan');
+    await expect(lifespan.locator('.mdc-switch--disabled')).toBeVisible();
+    const widths = await lifespan.locator('.mdc-switch__track').evaluate((track) => ({
+      before: getComputedStyle(track, '::before').borderTopWidth,
+      after: getComputedStyle(track, '::after').borderTopWidth,
+    }));
+    expect(widths.before).toBe('1px');
+    expect(widths.after).toBe('1px');
+  });
+
   test('19. entry tokens are bold, right-aligned numerals with no bracket rules', async ({ page }) => {
     await login(page, 'admin');
     await page.goto(PRINT_URL);
@@ -400,6 +415,24 @@ test.describe('calendar print', () => {
     for (const wrap of wraps) {
       expect(['anywhere', 'break-word']).toContain(wrap);
     }
+  });
+
+  test('22b. print entry labels drop the on-screen hanging indent', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto(PRINT_URL);
+    await page.getByTestId('calendar-print-customize').click();
+    await page.getByTestId('calendar-print-scope-month').check();
+    await page.getByTestId('calendar-print-month').selectOption('3');
+    await expect(page.getByTestId('calendar-print-status')).toHaveText('1 page');
+    await page.emulateMedia({ media: 'print' });
+
+    const march = page.getByTestId('calendar-print-page');
+    const indent = await march.locator('.calendar-print-entry-label').first().evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { paddingLeft: style.paddingLeft, textIndent: style.textIndent };
+    });
+    expect(indent.paddingLeft).toBe('0px');
+    expect(indent.textIndent).toBe('0px');
   });
 
   test('22a. unknown birth years are skipped and a shared-surname couple prints once', async ({ page }) => {
@@ -605,8 +638,8 @@ test.describe('calendar print', () => {
     await expect(christmas).toHaveCSS('font-style', 'italic');
     await expect(december.getByText('LECOURSVILLE.COM')).toBeVisible();
 
-    const holidays = page.getByRole('checkbox', { name: 'Holidays' });
-    await holidays.uncheck();
+    const holidays = page.getByRole('switch', { name: 'Holidays' });
+    await holidays.click();
     await expect(christmas).toHaveCount(0);
   });
 

@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 test.describe('people', () => {
   test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
@@ -12,6 +13,39 @@ test.describe('people', () => {
         await page.goto('/people');
         await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
         await expectNoHorizontalOverflow(page.locator('mat-toolbar'));
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
+  test('filter bar placeholders share one font size', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/people');
+        await page.locator('.family-filter-form-field').waitFor();
+        const sizes = await page.evaluate(() => {
+          const input = document.querySelector('.filter-people-form-field input') as HTMLInputElement;
+          const selectPlaceholder = document.querySelector('.family-filter-form-field .mat-mdc-select-placeholder') as HTMLElement;
+          const inputLabel = document.querySelector('.filter-people-form-field .mat-mdc-floating-label') as HTMLElement;
+          const selectLabel = document.querySelector('.family-filter-form-field .mat-mdc-floating-label') as HTMLElement;
+          return [
+            getComputedStyle(input, '::placeholder').fontSize,
+            getComputedStyle(selectPlaceholder).fontSize,
+            getComputedStyle(inputLabel).fontSize,
+            getComputedStyle(selectLabel).fontSize,
+          ];
+        });
+        expect(new Set(sizes).size).toBe(1);
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        const clipped = await page.evaluate(() => {
+          const fields = Array.from(document.querySelectorAll('.page-toolbar-content .mat-mdc-form-field'));
+          return fields.some(field => field.scrollWidth > field.clientWidth);
+        });
+        expect(clipped).toBe(false);
       }
     } finally {
       await page.setViewportSize(original);
@@ -135,7 +169,7 @@ test.describe('people', () => {
     const name = row.locator('.person-name');
     const before = await row.evaluate(el => getComputedStyle(el).backgroundColor);
 
-    await row.hover();
+    await name.hover();
 
     await expect(name).toHaveCSS('text-decoration-line', 'underline');
     const after = await row.evaluate(el => getComputedStyle(el).backgroundColor);
@@ -151,5 +185,41 @@ test.describe('people', () => {
     await expect(modal.getByText('Contact', { exact: true })).toHaveCount(0);
     await expect(modal.getByText('Died', { exact: true })).toBeVisible();
     await expect(modal).toContainText('June 15, 2015');
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('clickable person names clear the 24px target at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/people');
+    await expect(page.locator('.people-container')).toBeVisible();
+    await expectMinTouchTarget(page, '.person-name.clickable');
+  });
+});
+
+test.describe('mobile convergence', () => {
+  test('people list separates members and colors clickable names at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/people');
+    await expect(page.locator('.people-container')).toBeVisible();
+    const separators = page.locator('.person-separator[aria-hidden="true"]');
+    await expect(separators.first()).toBeVisible();
+    expect(await separators.count()).toBeGreaterThanOrEqual(1);
+    // /people renders first-generation names as .first-gen-person.
+    const clickable = page.locator('.first-gen-person:not(.deceased)').first();
+    await expect(clickable).toBeVisible();
+    await expectMinTouchTarget(page, '.first-gen-person');
+    const clickableColor = await clickable.evaluate((el) => getComputedStyle(el).color);
+    const probeColor = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--color-link)';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+    expect(clickableColor).toBe(probeColor);
   });
 });

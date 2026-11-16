@@ -91,9 +91,8 @@ export class ErrorsService {
       [
         {
           label: 'Sign Out',
-          color: 'warn',
+          color: 'primary',
           isConfirmAction: true,
-          destructive: true,
         },
       ],
     );

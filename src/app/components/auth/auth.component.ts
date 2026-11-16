@@ -1,9 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
-import { environment } from "src/environments/environment";
 import { AuthService } from "src/app/services/auth.service";
-import { User } from "src/app/models/user";
+import { User, isApprovedUser } from "src/app/models/user";
 import { RoutingService } from "src/app/services/routing.service";
 import { AnalyticsService } from "src/app/services/analytics.service";
 import { ThemeService } from "src/app/services/theme.service";
@@ -21,13 +20,19 @@ export class AuthComponent implements OnInit {
   user: User;
   isEditMode: boolean;
   showPassword = false;
+  showConfirmPassword = false;
   email = "";
+  name = "";
   password = "";
+  confirmPassword = "";
+  isCreateAccount = false;
   loading = false;
   sendingReset = false;
   error = "";
+  errorField: "email" | "name" | "password" | "confirmPassword" | "" = "";
   info = "";
   isNotFound = false;
+  isAccount = false;
   // True while a cached session is being restored: the page holds a neutral
   // interstitial so a returning user at "/" never flashes the login form
   // (or the account card) before the promoted-route redirect lands.
@@ -46,10 +51,11 @@ export class AuthComponent implements OnInit {
 
   ngOnInit(): void {
     this.isNotFound = !!this.route.snapshot.data['notFound'];
+    this.isAccount = !!this.route.snapshot.data['account'];
     const cachedUser = this.authService.getCachedUser();
-    // A signed-in user on an unknown URL stays put so the not-found card can
+    // A signed-in user on an unknown or account URL stays put so its card can
     // render; everyone else is normalised back to the sign-in route.
-    if (!(this.isNotFound && cachedUser?.id)) {
+    if (!((this.isNotFound || this.isAccount) && cachedUser?.id)) {
       this.routingService.NavigateToSignIn();
     }
     this.isEditMode = false;
@@ -58,8 +64,8 @@ export class AuthComponent implements OnInit {
       // Firebase says there is no session: show the real login form.
       if (resolved && this.authService.isSignedOut()) {
         this.awaitingSession = false;
-        // A stale cached session must not leave the login form on an unknown URL.
-        if (this.isNotFound) {
+        // A stale cached session must not leave the login form on a deep URL.
+        if (this.isNotFound || this.isAccount) {
           this.routingService.NavigateToSignIn();
         }
       }
@@ -95,13 +101,109 @@ export class AuthComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  async onSignIn(): Promise<void> {
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  get submitLabel(): string {
+    if (this.loading) {
+      return this.isCreateAccount ? "Creating Account…" : "Signing In…";
+    }
+    return this.isCreateAccount ? "Create Account" : "Sign In";
+  }
+
+  setMode(mode: "signin" | "create"): void {
+    // Switching mid-request would rewrite the submit label and clear the
+    // password while the auth call is still in flight.
+    if (this.loading) {
+      return;
+    }
+    this.isCreateAccount = mode === "create";
+    this.error = "";
+    this.errorField = "";
+    this.info = "";
+    this.password = "";
+    this.confirmPassword = "";
+  }
+
+  onModeKeydown(event: KeyboardEvent, mode: "signin" | "create"): void {
+    const modes: ("signin" | "create")[] = ["signin", "create"];
+    const current = modes.indexOf(mode);
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      const next = event.key === "ArrowRight"
+        ? (current + 1) % modes.length
+        : (current - 1 + modes.length) % modes.length;
+      this.setMode(modes[next]);
+      const target = event.currentTarget as HTMLElement | null;
+      const sibling = target?.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]')[next];
+      sibling?.focus();
+    }
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.isCreateAccount) {
+      return this.onCreateAccount();
+    }
+    return this.onSignIn();
+  }
+
+  async onCreateAccount(): Promise<void> {
     if (!this.email.trim() || !this.password) {
       this.error = "Enter your email and password.";
+      this.errorField = "email";
+      return;
+    }
+    if (!this.name.trim()) {
+      this.error = "Enter your name so an admin can identify you.";
+      this.errorField = "name";
+      return;
+    }
+    if (this.password.length < 8) {
+      this.error = "Password must be at least 8 characters.";
+      this.errorField = "password";
+      return;
+    }
+    if (this.password !== this.confirmPassword) {
+      this.error = "Passwords do not match.";
+      this.errorField = "confirmPassword";
       return;
     }
     this.loading = true;
     this.error = "";
+    this.errorField = "";
+    this.info = "";
+    try {
+      const fbUser = await this.authService.createAccount(
+        this.email.trim(),
+        this.password,
+        this.name.trim(),
+      );
+      this.analyticsService.logEvent("auth_sign_up", { userId: fbUser.uid });
+      this.password = "";
+      this.confirmPassword = "";
+    } catch (e: any) {
+      const code = e?.code || "";
+      // A profile write failure leaves the auth account behind but no
+      // membership: tell the user to sign in so the retry path can finish it.
+      this.error = code.startsWith("auth/")
+        ? this.mapAuthError(code)
+        : "Your account was created, but we couldn't finish setting it up. Try signing in.";
+      this.errorField = this.errorFieldForCode(code);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async onSignIn(): Promise<void> {
+    if (!this.email.trim() || !this.password) {
+      this.error = "Enter your email and password.";
+      this.errorField = "email";
+      return;
+    }
+    this.loading = true;
+    this.error = "";
+    this.errorField = "";
     this.info = "";
     try {
       const fbUser = await this.authService.signIn(this.email.trim(), this.password);
@@ -118,6 +220,7 @@ export class AuthComponent implements OnInit {
   async onGoogleSignIn(): Promise<void> {
     this.loading = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     try {
       const fbUser = await this.authService.signInWithGoogle();
@@ -140,6 +243,7 @@ export class AuthComponent implements OnInit {
     }
     this.sendingReset = true;
     this.error = "";
+    this.errorField = "";
     this.info = "";
     this.analyticsService.logEvent("auth_forgot_clicked", {});
     try {
@@ -180,13 +284,18 @@ export class AuthComponent implements OnInit {
     return this.user?.prefs?.theme === 'dark';
   }
 
+  get isSuperAdmin(): boolean {
+    return this.user?.roles?.super === true;
+  }
+
   get promotedRouteLabel(): string {
-    const segment = (environment.promotedRoute || '').split('/').filter(Boolean).pop();
+    const route = this.routingService.getPromotedRoute(isApprovedUser(this.user));
+    const segment = route.split('/').filter(Boolean).pop();
     return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'home';
   }
 
   goToPromotedRoute(): void {
-    this.routingService.NavigateToPromotedRoute();
+    this.routingService.NavigateToPromotedRoute(isApprovedUser(this.user));
   }
 
   onAlwaysDarkChange(checked: boolean): void {
@@ -200,6 +309,18 @@ export class AuthComponent implements OnInit {
 
   // HELPERS
 
+  private errorFieldForCode(code: string): "email" | "password" | "" {
+    switch (code) {
+      case "auth/invalid-email":
+      case "auth/email-already-in-use":
+        return "email";
+      case "auth/weak-password":
+        return "password";
+      default:
+        return "";
+    }
+  }
+
   private mapAuthError(code: string): string {
     switch (code) {
       case "auth/user-not-found":
@@ -208,6 +329,10 @@ export class AuthComponent implements OnInit {
         return "Incorrect email or password.";
       case "auth/invalid-email":
         return "That email address looks invalid.";
+      case "auth/email-already-in-use":
+        return "An account already exists for that email. Sign in instead.";
+      case "auth/weak-password":
+        return "Password must be at least 8 characters.";
       case "auth/too-many-requests":
         return "Too many attempts — try again in a minute.";
       case "auth/network-request-failed":

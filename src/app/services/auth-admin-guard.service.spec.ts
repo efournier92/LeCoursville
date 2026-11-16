@@ -52,8 +52,17 @@ describe('AuthAdminGuardService', () => {
     const result = firstValueFrom(service.canActivate());
     user$.next({ id: 'u2', roles: { user: true } });
     expect(await result).toEqual({ url: '/calendar' });
+    expect(routingSpy.getPromotedRoute).toHaveBeenCalledWith(true);
     expect(parseUrl).toHaveBeenCalledWith('/calendar');
     expect(routingSpy.NavigateToSignIn).not.toHaveBeenCalled();
+  });
+
+  it('canActivate sends a pending non-admin to the pending promoted route', async () => {
+    const result = firstValueFrom(service.canActivate());
+    user$.next({ id: 'u4', roles: {} });
+    expect(await result).toEqual({ url: '/calendar' });
+    expect(routingSpy.getPromotedRoute).toHaveBeenCalledWith(false);
+    expect(parseUrl).toHaveBeenCalledWith('/calendar');
   });
 
   it('canActivate redirects to sign-in when no RTDB user record arrives (timeout)', async () => {

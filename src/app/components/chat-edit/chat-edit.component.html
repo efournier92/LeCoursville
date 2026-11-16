@@ -11,188 +11,163 @@
     }
     @if (!isSaving) {
       <div
-        class="row mb-4 message-card-content-container"
+        class="message-card-content-container message-card-content-chat"
         [style.--reply-depth]="message.replyLevel"
         >
-        <div class="col-2 col-md-1 message-tools-container">
-          <div class="d-flex justify-content-center flex-column mt-2">
-            @if (message.isSaved) {
+        <div class="message-edit-message-form-container">
+          <mat-card-content>
+            <mat-card-title>
+              <mat-card-subtitle class="chat-message-author-name">
+                {{ message.authorName }}
+              </mat-card-subtitle>
+              <mat-card-subtitle class="message-timestamp message-timestamp-compact">
+                {{ message.dateSent | date : "M/d h:mm a" }}
+              </mat-card-subtitle>
+            </mat-card-title>
+            @if (!message.isReply) {
               <div
-                class="mb-3 message-button"
-          [ngStyle]="{
-            color: highlights.trash === true ? 'var(--color-accent)' : 'var(--color-error)'
-          }"
+                class="message-title-input-container"
                 >
-                @if (!message.isDeleted) {
-                  <div>
-                    <div
-                      class="d-flex flex-row justify-content-center"
-                      (mouseover)="highlightElement('trash', true)"
-                      (mouseleave)="highlightElement('trash', false)"
-                      (click)="deleteMessage()"
-                      >
-                      <mat-icon class="message-tool-icon" aria-hidden="true">delete</mat-icon>
-                    </div>
-                    <span class="message-button-label d-flex justify-content-center"
-                      >Delete</span
-                      >
-                    </div>
-                  }
-                  @if (message.isDeleted) {
-                    <div>
-                      <div
-                        class="d-flex flex-row justify-content-center"
-                        (mouseover)="highlightElement('trash', true)"
-                        (mouseleave)="highlightElement('trash', false)"
-                        (click)="restoreMessage()"
-                        >
-                        <mat-icon class="message-tool-icon" aria-hidden="true">undo</mat-icon>
-                      </div>
-                      <span class="message-button-label d-flex justify-content-center"
-                        >Restore</span
-                        >
-                      </div>
-                    }
-                  </div>
-                }
-                <div
-                  class="mb-3 message-button chat-edit-button-cancel"
-          [ngStyle]="{
-            color: highlights.cancel === true ? 'var(--color-accent)' : 'var(--color-error)'
-          }"
+                <mat-form-field class="w-100">
+                  <input
+                    matInput
+                    class="chat-edit-input-title"
+                    placeholder="Title"
+                    [(ngModel)]="message.title"
+                    />
+                </mat-form-field>
+              </div>
+            }
+            <mat-form-field class="w-100">
+              <textarea
+                matInput
+                class="message-edit-input-body"
+                placeholder="Message"
+                cdkTextareaAutosize
+                #autosize="cdkTextareaAutosize"
+                #input
+                data-testid="chat-message-input"
+                [(ngModel)]="message.body"
+              ></textarea>
+            </mat-form-field>
+            @if (!message.isReply) {
+              <div
+                class="d-flex align-items-end"
+                >
+                <app-file-input
+                  [matIcon]="'attach_file'"
+                  [inputMessage]="'Attach Photo'"
+                  [shouldShowLabel]="true"
+                  [shouldShowClearButton]="true"
+                  [shouldAllowMultipleFiles]="false"
+                  (inputFileChangeEvent)="inputFileChangeEvent($event)"
                   >
-                  <div
-                    class="d-flex flex-row justify-content-center"
-                    (mouseover)="highlightElement('cancel', true)"
-                    (mouseleave)="highlightElement('cancel', false)"
-                    (click)="cancelEdit()"
+                </app-file-input>
+              </div>
+            }
+            <div class="message-actions">
+              @if (message.isSaved) {
+                @if (!message.isDeleted) {
+                  <button
+                    type="button"
+                    class="message-button message-action-button"
+                    aria-label="Delete"
+                    [ngStyle]="{
+                      color: highlights.trash === true ? 'var(--color-accent)' : 'var(--color-error)'
+                    }"
+                    (mouseover)="highlightElement('trash', true)"
+                    (mouseleave)="highlightElement('trash', false)"
+                    (click)="deleteMessage()"
                     >
-                    <mat-icon class="message-tool-icon" aria-hidden="true">block</mat-icon>
-                  </div>
-                  <span class="message-button-label d-flex justify-content-center"
-                    >Cancel</span
+                    <mat-icon class="message-tool-icon" aria-hidden="true">delete</mat-icon>
+                    <span class="message-button-label">Delete</span>
+                  </button>
+                }
+                @if (message.isDeleted) {
+                  <button
+                    type="button"
+                    class="message-button message-action-button"
+                    aria-label="Restore"
+                    [ngStyle]="{
+                      color: highlights.trash === true ? 'var(--color-accent)' : 'var(--color-error)'
+                    }"
+                    (mouseover)="highlightElement('trash', true)"
+                    (mouseleave)="highlightElement('trash', false)"
+                    (click)="restoreMessage()"
                     >
-                  </div>
-                  <div
-                    class="mb-3 message-button chat-edit-button-send"
-                    data-testid="chat-send"
-          [ngStyle]="{
-            color: highlights.send === true ? 'var(--color-accent)' : 'var(--color-error)'
-          }"
+                    <mat-icon class="message-tool-icon" aria-hidden="true">undo</mat-icon>
+                    <span class="message-button-label">Restore</span>
+                  </button>
+                }
+              }
+              <button
+                type="button"
+                class="message-button message-action-button chat-edit-button-cancel"
+                aria-label="Cancel"
+                [ngStyle]="{
+                  color: highlights.cancel === true ? 'var(--color-accent)' : 'var(--color-error)'
+                }"
+                (mouseover)="highlightElement('cancel', true)"
+                (mouseleave)="highlightElement('cancel', false)"
+                (click)="cancelEdit()"
+                >
+                <mat-icon class="message-tool-icon" aria-hidden="true">block</mat-icon>
+                <span class="message-button-label">Cancel</span>
+              </button>
+              <button
+                type="button"
+                class="message-button message-action-button chat-edit-button-send"
+                data-testid="chat-send"
+                aria-label="Send"
+                [ngStyle]="{
+                  color: highlights.send === true ? 'var(--color-accent)' : 'var(--color-error)'
+                }"
+                (mouseover)="highlightElement('send', true)"
+                (mouseleave)="highlightElement('send', false)"
+                (click)="saveMessage(message)"
+                >
+                <mat-icon class="message-tool-icon" aria-hidden="true">share</mat-icon>
+                <span class="message-button-label">Send</span>
+              </button>
+              @if (shouldShowStickyButton) {
+                <div
+                  class="chat-edit-button-sticky message-sticky-toggle"
+                  [ngStyle]="{
+                    color: highlights.sticky === true ? 'var(--color-accent)' : 'var(--color-error)'
+                  }"
+                  >
+                  <mat-slide-toggle id="chat-edit-sticky" [(ngModel)]="message.isSticky" aria-label="Sticky"></mat-slide-toggle>
+                  <label class="message-button-label" for="chat-edit-sticky-button"
+                    >Sticky</label
                     >
-                    <div
-                      class="d-flex flex-row justify-content-center"
-                      (mouseover)="highlightElement('send', true)"
-                      (mouseleave)="highlightElement('send', false)"
-                      (click)="saveMessage(message)"
-                      >
-                      <mat-icon class="message-tool-icon" aria-hidden="true">share</mat-icon>
-                    </div>
-                    <span class="message-button-label d-flex justify-content-center"
-                      >Send</span
-                      >
-                    </div>
-                    @if (shouldShowStickyButton) {
-                      <div
-                        class="mb-3 chat-edit-button-sticky"
-          [ngStyle]="{
-            color: highlights.sticky === true ? 'var(--color-accent)' : 'var(--color-error)'
-          }"
-                        >
-                        <div
-                          class="d-flex flex-row justify-content-center"
-                          (mouseover)="highlightElement('sticky', true)"
-                          (mouseleave)="highlightElement('sticky', false)"
-                          >
-                          <mat-checkbox [(ngModel)]="message.isSticky"></mat-checkbox>
-                        </div>
-                        <span class="message-button-label d-flex justify-content-center"
-                          >Sticky</span
-                          >
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  <mat-divider
-                    class="message-controls-divider-vertical"
-                    [vertical]="true"
-                  ></mat-divider>
-                  <div class="message-edit-message-form-container col-9">
-                    <mat-card-content>
-                      <mat-card-title>
-                        <mat-card-subtitle class="chat-message-author-name">
-                          {{ message.authorName }}
-                        </mat-card-subtitle>
-                        <mat-card-subtitle class="message-timestamp">
-                          {{ message.dateSent | date : "short" }}
-                        </mat-card-subtitle>
-                      </mat-card-title>
-                      @if (!message.isReply) {
-                        <div
-                          class="message-title-input-container"
-                          >
-                          <mat-form-field class="w-100">
-                            <input
-                              matInput
-                              class="chat-edit-input-title"
-                              placeholder="Title"
-                              [(ngModel)]="message.title"
-                              />
-                          </mat-form-field>
-                        </div>
-                      }
-                      <mat-form-field class="w-100">
-                        <textarea
-                          matInput
-                          class="message-edit-input-body"
-                          placeholder="Message"
-                          cdkTextareaAutosize
-                          #autosize="cdkTextareaAutosize"
-                          #input
-                          data-testid="chat-message-input"
-                          [(ngModel)]="message.body"
-                        ></textarea>
-                      </mat-form-field>
-                      @if (!message.isReply) {
-                        <div
-                          class="d-flex align-items-end"
-                          >
-                          <app-file-input
-                            [matIcon]="'attach_file'"
-                            [inputMessage]="'Attach Photo'"
-                            [shouldShowLabel]="true"
-                            [shouldShowClearButton]="true"
-                            [shouldAllowMultipleFiles]="false"
-                            (inputFileChangeEvent)="inputFileChangeEvent($event)"
-                            >
-                          </app-file-input>
-                        </div>
-                      }
-                    </mat-card-content>
-                  </div>
                 </div>
               }
-              @for (reply of message.replies; track reply) {
-                <mat-card-content>
-                  @if (!reply.isEditable) {
-                    <app-chat-view
-                      [message]="reply"
-                      [parent]="message"
-                      [rootId]="rootId"
-                      (updateParentEvent)="updateParent()"
-                      >
-                    </app-chat-view>
-                  }
-                  @if (reply.isEditable) {
-                    <app-chat-edit
-                      [message]="reply"
-                      [parent]="message"
-                      [rootId]="rootId"
-                      (updateParentEvent)="updateParent()"
-                      >
-                    </app-chat-edit>
-                  }
-                </mat-card-content>
-              }
             </div>
-          }
+          </mat-card-content>
+        </div>
+      </div>
+    }
+    @for (reply of message.replies; track reply) {
+      <mat-card-content>
+        @if (!reply.isEditable) {
+          <app-chat-view
+            [message]="reply"
+            [parent]="message"
+            [rootId]="rootId"
+            (updateParentEvent)="updateParent()"
+            >
+          </app-chat-view>
+        }
+        @if (reply.isEditable) {
+          <app-chat-edit
+            [message]="reply"
+            [parent]="message"
+            [rootId]="rootId"
+            (updateParentEvent)="updateParent()"
+            >
+          </app-chat-edit>
+        }
+      </mat-card-content>
+    }
+  </div>
+}

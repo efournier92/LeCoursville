@@ -2,6 +2,9 @@
   // 100% (not 100vw): with the scrollbar lane reserved below, 100vw would
   // extend under the lane and clip the right gutter.
   width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
   background: var(--color-app-bg);
   // THIS element is the app's real scroll container (overflow-x: hidden
@@ -48,6 +51,15 @@
 }
 
 .toolbar-icon {
+  // The logo asset is portrait (520x640); at the old 80% height hint the
+  // glyph overran the bar on phones and bled onto the page ground. Clamp it to
+  // 60% of the header height and let .toolbar-logo's flex centring hold it in
+  // the green bar. The 44x44 button box is untouched.
+  display: block;
+  height: 60%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
   cursor: pointer;
 }
 
@@ -85,33 +97,75 @@
   outline-offset: 2px !important;
 }
 
-/* Minimal theme toggle: one sun/moon glyph swapped by state, no track or
-   knob. Transparent and muted so it stays present but does not compete with
-   the nav; it brightens on hover/focus only. */
+// Right-hand cluster: theme toggle, then nav links or burger. The gap keeps the
+// toggle from crowding the nav.
 .icons-menu {
+  display: inline-flex;
   align-items: center;
+  gap: 10px;
+}
+
+// Primary nav actions in the app header: raise the 40px Material touch box to
+// the 44px minimum. The token drives the state layer; min-* is what moves the
+// layout box, which the token alone did not.
+@media (max-width: 1024px) {
+  :host ::ng-deep mat-toolbar .mat-mdc-icon-button {
+    --mat-icon-button-state-layer-size: 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  // Phones keep the toggle beside the menu rather than centered in the bar,
+  // where it read as the page's primary control. The left cluster takes the
+  // free space so the toggle and menu sit together at the right edge.
+  mat-toolbar {
+    justify-content: flex-start;
+  }
+
+  .toolbar-left {
+    margin-right: auto;
+  }
 }
 
 .theme-switch {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  width: auto;
+  min-width: 44px;
   height: 44px;
-  // Sits at the far right end of the nav, after the Account entry.
-  margin-left: 8px;
-  padding: 0;
+  margin: 0;
+  padding: 0 4px;
   border: 0;
-  border-radius: var(--radius-avatar);
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--color-on-brand);
-  opacity: 0.7;
+  // On-brand pill tinting so both options read against the green toolbar.
+  // The inactive glyph keeps >= 3:1 on the translucent track, and the active
+  // glyph is the invariant brand solid (5.7:1) on a white disc. The button is
+  // no longer dimmed as a whole: at 0.7 opacity both halves washed out on the
+  // green bar and the active glyph vanished into its own disc.
+  --theme-pill-track: color-mix(in srgb, var(--color-on-brand) 20%, transparent);
+  --theme-pill-icon: color-mix(in srgb, var(--color-on-brand) 90%, transparent);
+  --theme-pill-active-bg: var(--color-on-brand);
+  --theme-pill-active-ink: var(--color-brand-solid);
+  opacity: 1;
   cursor: pointer;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition: opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 
   &:hover {
     opacity: 1;
-    background: color-mix(in srgb, var(--color-on-brand) 15%, transparent);
+  }
+
+  &:active {
+    background: transparent;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
   }
 
   &:focus-visible {
@@ -121,20 +175,14 @@
   }
 }
 
-.theme-switch-icon {
-  font-size: 20px;
-  height: 20px;
-  width: 20px;
-}
+/* The inline nav outgrows the bar below 1280px, earlier than Bootstrap's 992px lg. */
+.nav-desktop { display: none; }
+.nav-mobile { display: block; }
 
-// Mobile: the hamburger stays anchored at the right edge (primary menu
-// control, thumb-reachable); the theme toggle tucks in just to its left.
-@media (max-width: 991.98px) {
-  .theme-switch {
-    order: -1;
-    margin-left: 0;
-    margin-right: 8px;
-  }
+@media (min-width: 1280px) {
+  .nav-desktop { display: block; }
+  .nav-mobile { display: none; }
+  .nav-skeleton.nav-desktop { display: flex; }
 }
 
 /* Nav loading skeleton styles live globally in styles.scss (shared by
@@ -145,6 +193,9 @@
 // clips its content, so Chromium prints only the first page of a long song.
 @media print {
   .app-container {
+    // Block flow (not flex) so Chromium fragments long pages across sheets.
+    display: block;
+    min-height: 0;
     overflow: visible;
   }
 }

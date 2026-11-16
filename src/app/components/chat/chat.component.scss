@@ -2,9 +2,47 @@
   min-width: 0;
 }
 
+// Compact page heading: the title and the create action share one line, so no
+// card chrome sits between the top of the page and the first message.
+.chat-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.chat-heading-title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// One 44px control in the heading row, matching the toolbar's control height.
+.chat-heading-action {
+  flex: 0 0 auto;
+  min-height: var(--height-control);
+  --mat-button-filled-container-height: var(--height-control);
+}
+
 .chat-container {
   padding: 0;
   margin: 0; // kill Bootstrap .row negative side margins — page-content owns the gutters
+}
+
+// Even card rhythm; the heading owns the gap above the first card.
+.chat-container > .message-card-container {
+  margin-top: 12px;
+}
+
+.chat-container > .message-card-container:first-of-type {
+  margin-top: 0;
 }
 
 // Message cards are white sheets like every other card; the bootstrap column
@@ -13,7 +51,11 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 
   &.mat-mdc-card-outlined {
     box-shadow: var(--shadow-card);

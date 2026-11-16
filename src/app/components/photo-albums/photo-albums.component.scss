@@ -5,11 +5,6 @@
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
 
-  // The no-results/empty message lives inside the grid; without this it is
-  // squeezed into a single 180px cell.
-  app-no-results-message {
-    grid-column: 1 / -1;
-  }
 }
 
 .skeleton-tile {
@@ -25,7 +20,7 @@
 }
 
 .skeleton-line {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--color-overlay-white-40);
   border-radius: var(--radius-sm);
   animation: pulse 1.5s ease-in-out infinite;
 
@@ -41,11 +36,28 @@
   }
 }
 
-// A single full-bleed 1:1 tile fills most of a phone screen; cap the height so
-// more than one album is visible without scrolling.
+// A single full-bleed 1:1 tile fills most of a phone screen; two columns with
+// a capped tile height keep several albums above the fold and captions legible.
 @media (max-width: 600px) {
+  .album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .album-tile {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1 / 1;
+    max-height: 200px;
+  }
+
+  // Screens this narrow fit about ten characters on one line, which makes
+  // distinct album names read alike. Give the title a second line instead.
+  .album-tile-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: clip;
+    line-height: 1.25;
   }
 }
 
@@ -98,14 +110,6 @@
   }
 }
 
-.album-tile-initial {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--color-ink-2);
-  text-transform: uppercase;
-}
-
 .album-tile-scrim {
   position: absolute;
   left: 0;
@@ -119,7 +123,7 @@
 .album-tile-title {
   font-weight: 600;
   font-size: 0.95rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: var(--shadow-text-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -128,4 +132,92 @@
 .album-tile-count {
   font-size: 0.8rem;
   opacity: 0.85;
+}
+
+// Placeholder tiles are a light fill, so a dark scrim under white ink has no
+// contrast budget. Flip the caption to primary ink over a wash that matches the
+// placeholder fill (theme tokens keep it correct in dark mode too).
+.album-tile:has(.album-tile-placeholder) {
+  .album-tile-scrim {
+    background: linear-gradient(180deg, transparent, var(--color-surface-muted));
+    color: var(--color-ink);
+  }
+
+  .album-tile-title {
+    text-shadow: none;
+  }
+}
+
+// "Upload photos" wraps once the toolbar row gets tight. Below 360px show the
+// short label (aria-label on the anchor keeps the accessible name intact);
+// the 44px control box is unchanged.
+.gallery-upload-cta {
+  white-space: nowrap;
+}
+
+.gallery-upload-cta-label--short {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .gallery-upload-cta {
+    .gallery-upload-cta-label--full {
+      display: none;
+    }
+
+    .gallery-upload-cta-label--short {
+      display: inline;
+    }
+  }
+}
+
+// Phone toolbar: fold the count onto the title row and put the sort control
+// beside the upload CTA, so the tools card stops eating the first screen.
+@media (max-width: 600px) {
+  // The bar itself keeps the shared mobile contract (a flex column, stretch,
+  // 8px rows). Tighten only the tools slot: compact count line, full-width
+  // search, then sort and upload sharing one row.
+  :host ::ng-deep .page-toolbar .page-toolbar-content:has(> *) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "count count"
+      "search search"
+      "sort upload";
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 8px;
+    width: 100%;
+  }
+
+  .gallery-count {
+    grid-area: count;
+  }
+
+  .gallery-search {
+    grid-area: search;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .gallery-upload-cta {
+    min-width: 0;
+  }
+
+  .gallery-segmented {
+    grid-area: sort;
+    justify-self: start;
+    padding: 2px;
+  }
+
+  .gallery-segmented-btn {
+    padding: 0 6px;
+  }
+
+  .gallery-upload-cta {
+    grid-area: upload;
+    justify-self: end;
+    padding: 0 10px;
+  }
 }

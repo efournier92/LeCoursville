@@ -27,7 +27,7 @@ export const FEATURES: FeatureConfig[] = [
 export const ACCOUNT_FEATURE: FeatureConfig = {
   id: 'account',
   label: 'Account',
-  route: '/',
+  route: '/account',
   icon: 'account_circle',
 };
 

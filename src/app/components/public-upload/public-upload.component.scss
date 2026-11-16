@@ -4,29 +4,34 @@
   // A narrow single-action sheet, so the form does not become the widest card on the site.
   max-width: 680px;
   margin: 24px auto;
-  padding: 24px;
+  // Bottom padding runs a little deeper than the top so the folder strip does
+  // not crowd the card edge.
+  padding: 24px 24px 32px;
 
   @media (max-width: 600px) {
-    padding: 16px;
+    padding: 16px 16px 20px;
   }
 }
 
 h1 {
   text-align: center;
   color: var(--color-ink);
+  margin-top: 0;
   margin-bottom: 8px;
 }
 
 .subtitle {
   text-align: center;
   color: var(--color-ink-2);
-  margin-bottom: 32px;
+  margin-top: 0;
+  margin-bottom: 24px;
 }
 
 .drop-zone {
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-card);
   padding: 60px 40px;
+  box-sizing: border-box;
   text-align: center;
   cursor: pointer;
   background: var(--color-surface);
@@ -39,9 +44,16 @@ h1 {
 }
 
 .drop-icon {
-  font-size: 48px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 16px;
   color: var(--color-brand-primary);
+
+  mat-icon {
+    font-size: 44px;
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .drop-zone p {
@@ -49,30 +61,64 @@ h1 {
   color: var(--color-ink);
   font-size: 16px;
 
-  &:last-child {
+  &.drop-copy-drag {
     color: var(--color-ink-2);
     font-size: 14px;
   }
 }
 
+// Desktop copy names a pointer gesture; touch devices get a tap instruction.
+.drop-copy-tap {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .drop-copy-select,
+  .drop-copy-drag {
+    display: none;
+  }
+
+  .drop-copy-tap {
+    display: block;
+  }
+}
+
 .folder-upload-link {
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 12px;
 }
 
 .btn-folder-link {
-  background: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--color-surface-muted);
   border: none;
+  border-radius: var(--radius-sm);
   color: var(--color-ink-2);
   cursor: pointer;
-  font-size: 13px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-style: italic;
+  font-size: 14px;
+  text-align: left;
 
   &:hover {
     color: var(--color-brand-primary);
+    background: color-mix(in srgb, var(--color-brand-primary) 8%, var(--color-surface-muted));
   }
+}
+
+.folder-glyph,
+.folder-chevron {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: var(--color-ink-3);
+}
+
+// Push the chevron to the far edge so the strip spans the card's inner width.
+.folder-chevron {
+  margin-left: auto;
 }
 
 .drop-zone .hint {
@@ -113,11 +159,83 @@ h1 {
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
     }
   }
+
+  // 16px up to tablet widths so iOS does not zoom the viewport when the field is focused.
+  @media (max-width: 1024px) {
+    input {
+      font-size: 16px;
+    }
+  }
 }
 
-.event-input {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+@media (max-width: 600px) {
+  .upload-container {
+    margin: 12px auto;
+  }
+
+  .subtitle {
+    margin-bottom: 16px;
+  }
+
+  .name-input,
+  .event-input {
+    margin-bottom: 12px;
+  }
+
+  .drop-zone {
+    padding: 24px 16px;
+  }
+
+  .drop-icon {
+    margin-bottom: 12px;
+  }
+}
+
+// Short viewports (landscape phones): compress the head of the card so at least
+// the upper half of the drop target clears the fold on load.
+@media (max-height: 500px) {
+  .upload-container {
+    margin: 12px auto;
+    padding: 14px 20px 22px;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    margin-bottom: 12px;
+  }
+
+  .name-input,
+  .event-input {
+    margin-bottom: 10px;
+
+    label {
+      margin-bottom: 4px;
+    }
+
+    input {
+      padding: 8px 12px;
+    }
+  }
+
+  .drop-zone {
+    padding: 28px 24px;
+  }
+
+  .drop-icon {
+    margin-bottom: 10px;
+  }
+}
+
+// Narrow phones: cap the zone so the whole drop target and the folder row
+// clear a 568px fold.
+@media (max-width: 360px) {
+  .drop-zone {
+    max-height: 200px;
+  }
 }
 
 .file-list {

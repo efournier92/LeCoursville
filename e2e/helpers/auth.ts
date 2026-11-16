@@ -1,4 +1,5 @@
-import { Page, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 export const E2E_USERS = {
   admin: { email: 'admin@e2e.local', password: 'E2e-pass-2026' },

@@ -1,10 +1,10 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
-import { readDb, writeDb } from '../helpers/admin-db';
+import { expectMinTouchTarget } from '../helpers/touch';
 
 // The contacts page is a people-derived directory (people + families in RTDB).
-// The legacy `contacts` node is not read by the current UI.
+// The legacy `contacts` node and its admin fixup surface are retired.
 
 test.describe('contacts', () => {
   test('top bars do not overflow horizontally at 900px and 768px', async ({ page }) => {
@@ -74,6 +74,22 @@ test.describe('contacts', () => {
     await expect(page.locator('.contact-card', { hasText: 'Dave Davis' })).toHaveCount(1);
   });
 
+  test('hovering one spouse underlines only that name', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts');
+    const card = page.locator('.contact-card', { hasText: 'Carol Clark' }).first();
+    const carol = card.locator('.clickable-name').filter({ hasText: 'Carol Clark' });
+    const dave = card.locator('.clickable-name').filter({ hasText: 'Dave Davis' });
+    await expect(carol).toBeVisible();
+    await expect(dave).toBeVisible();
+    await expect(dave).toHaveCSS('text-decoration-line', 'none');
+
+    await carol.hover();
+
+    await expect(carol).toHaveCSS('text-decoration-line', 'underline');
+    await expect(dave).toHaveCSS('text-decoration-line', 'none');
+  });
+
   test('deep link /contacts/:id opens that person modal', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts/person-a');
@@ -90,69 +106,34 @@ test.describe('contacts', () => {
   });
 });
 
-// Read-only boundary + admin fixup surface for the legacy contacts node.
-test.describe('contacts read-only + admin fixup', () => {
-  test('member contact directory renders no edit surfaces', async ({ page }) => {
+test.describe('mobile touch targets', () => {
+  test('contact list fits 320px with 24px email targets', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
     await login(page, 'user');
     await page.goto('/contacts');
-    await expect(page.locator('app-contact-edit')).toHaveCount(0);
-    await expect(page.locator('mat-card-footer')).toHaveCount(0);
+    await expect(page.locator('.contacts-grid')).toBeVisible();
+    await expectNoHorizontalOverflow(page.locator('.app-container'));
+    await expectMinTouchTarget(page, '.email-value');
   });
+});
 
-  test('admin contacts list shows seeded contacts and opens the fixup editor', async ({ page }) => {
-    const seeded = await readDb<Record<string, any>>('contacts/contact-1');
-    try {
-      await login(page, 'admin');
-      await page.goto('/admin/contacts');
-      await expect(page.locator('.admin-contacts-row', { hasText: 'Legacy Contact One' })).toBeVisible();
-      await expect(page.locator('.admin-contacts-row', { hasText: 'one@e2e.local' })).toBeVisible();
-
-      await page.locator('.admin-contacts-row', { hasText: 'Legacy Contact One' }).click();
-      await expect(page).toHaveURL(/\/admin\/contacts\/contact-1/);
-      await expect(page.getByPlaceholder('Name')).toHaveValue('Legacy Contact One');
-
-      // Fixup: rename and save through the reused contact-edit surface
-      // (the save control is icon-only).
-      await page.getByPlaceholder('Name').fill('Legacy Contact One — fixed');
-      await page.locator('mat-card-footer button').filter({ hasText: 'save' }).click();
-      await expect
-        .poll(async () => (await readDb<Record<string, any>>('contacts/contact-1'))?.name)
-        .toBe('Legacy Contact One — fixed');
-
-      // C-20261031-25: the seeded non-editable contact opens through the same
-      // admin surface (its isEditable flag is stored data; the editor renders
-      // the record either way).
-      await page.goto('/admin/contacts/contact-3');
-      await expect(page.getByPlaceholder('Name')).toHaveValue('Legacy Contact Three');
-    } finally {
-      if (seeded) {
-        await writeDb('contacts/contact-1', seeded);
-      }
-    }
-  });
-
-  test('admin contact editor reads family options from the database', async ({ page }) => {
-    const seeded = await readDb<Record<string, any>>('contacts/contact-1');
-    try {
-      await login(page, 'admin');
-      await page.goto('/admin/contacts/contact-1');
-
-      const familySelect = page.locator('app-contact-edit mat-select');
-      await expect(familySelect).toBeEnabled();
-      await familySelect.click({ force: true });
-
-      await expect(page.getByRole('option', { name: 'Alder' })).toBeVisible();
-      await expect(page.getByRole('option', { name: 'Cedar' })).toBeVisible();
-      await page.getByRole('option', { name: 'Alder' }).click();
-
-      await page.locator('mat-card-footer button').filter({ hasText: 'save' }).click();
-      await expect
-        .poll(async () => (await readDb<Record<string, any>>('contacts/contact-1'))?.family)
-        .toBe('Alder');
-    } finally {
-      if (seeded) {
-        await writeDb('contacts/contact-1', seeded);
-      }
-    }
+test.describe('mobile convergence', () => {
+  test('contacts filter field spans the controls card at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/contacts');
+    const card = page.locator('.page-toolbar');
+    const field = card.locator('.filter-people-form-field');
+    await expect(field).toBeVisible();
+    const contentWidth = await card.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return (
+        el.getBoundingClientRect().width -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
+      );
+    });
+    const fieldWidth = await field.evaluate((el) => el.getBoundingClientRect().width);
+    expect(Math.abs(fieldWidth - contentWidth)).toBeLessThanOrEqual(2);
   });
 });

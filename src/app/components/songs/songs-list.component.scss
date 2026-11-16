@@ -9,6 +9,7 @@
   @media (max-width: 600px) {
     flex: 1 1 100%;
     width: 100%;
+    min-width: 0;
   }
 }
 
@@ -60,8 +61,26 @@
 // Reset both margins and flex the box so the card's 10px gap is unchanged.
 .song-title-heading {
   display: flex;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0;
   font: inherit;
+}
+
+// Trailing affordance: the card's only pointer cue used to be the cursor, so
+// the title row now ends in a chevron that reads as "opens lyrics".
+.song-chevron {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  color: var(--color-ink-2);
+}
+
+.song-card:hover .song-chevron {
+  color: var(--color-brand-primary-hover);
 }
 
 .song-title {
@@ -85,6 +104,10 @@
   &:hover {
     color: var(--color-brand-primary-hover);
     text-decoration: underline;
+  }
+
+  @media (max-width: 1024px) {
+    min-height: 24px;
   }
 }
 
@@ -139,9 +162,11 @@
   margin: auto 0 0;
   overflow: hidden;
   white-space: pre-wrap;
-  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
-  font-size: 0.8rem;
-  line-height: 1.35;
+  // The lyric preview reads as prose, not a terminal log: the monospace face
+  // stays on the lyric sheet only.
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.45;
   color: var(--color-ink-2);
 }
 

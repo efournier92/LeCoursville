@@ -2,6 +2,7 @@ import { test, expect } from '../helpers/fixture';
 import { login, logout } from '../helpers/auth';
 import { setFeatureFlag } from '../helpers/flags';
 import { writeDb, readDb, deleteDb } from '../helpers/admin-db';
+import { failNextRtdbQuery } from '../helpers/rtdb-errors';
 
 // Chat is seeded OFF; the chat double-submit test turns it ON.
 test.afterEach(async () => {
@@ -74,7 +75,7 @@ test.describe('edge cases', () => {
     // guards and settles on the last destination.
     const hops = ['People', 'Contacts', 'Calendar', 'Photos', 'Expressions', 'Contacts'];
     for (const label of hops) {
-      await nav.getByRole('button', { name: label }).click();
+      await nav.getByRole('link', { name: label }).click();
     }
     await expect(page).toHaveURL(/\/contacts/);
     await expect(page.locator('.contacts-skeleton-grid, .contacts-grid').first()).toBeAttached();
@@ -88,9 +89,24 @@ test.describe('edge cases', () => {
     await expect(page.getByText('We couldn\'t find any albums matching "zzznope".')).toBeVisible();
   });
 
+  test('admin people load failure shows the error state and retry recovers', async ({ page }) => {
+    await login(page, 'admin');
+    await failNextRtdbQuery(page, '/people');
+    await page.goto('/admin/people');
+
+    const error = page.locator('app-load-error');
+    await expect(error).toBeVisible();
+    await expect(page.getByTestId('admin-people-table')).toHaveCount(0);
+
+    await error.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.getByTestId('admin-people-table')).toBeVisible();
+    await expect(error).toHaveCount(0);
+  });
+
   test('malformed CSV import surfaces validation errors', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
     const bad = [
       'ID,Name_First_Given,Name_Last,Birthday',
       'bad-row-1,One',
@@ -111,6 +127,7 @@ test.describe('edge cases', () => {
     await login(page, 'admin');
     // Seed-like person created via the import pipeline with an XSS name.
     await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
     const payload = '<img src=x onerror=window.__xss=3>';
     const csv = [
       'ID,Name_First_Given,Name_First_Preferred,Name_Last,Birthday,Generation_Number,Living?,Family',
@@ -206,7 +223,7 @@ test.describe('theme control contract (light/dark parity)', () => {
     // Invalid surface: a malformed required email (auth form) flags the field
     // and the error edge override is wired to the invalid token. Sign out
     // first (via the Account page, the only home of the Sign out control).
-    await page.getByRole('button', { name: 'Account' }).click();
+    await page.getByRole('link', { name: 'Account' }).click();
     await logout(page);
     // Touch the required email (focus), then blur it (focus the password):
     // empty + required + touched flags the field, engaging the error edge.
@@ -228,5 +245,55 @@ test.describe('theme control contract (light/dark parity)', () => {
       // toggle would otherwise persist dark for every later spec.
       await deleteDb(`users/${uid}/prefs`);
     }
+  });
+
+  test('benign confirm uses brand Yes and neutral No, never red', async ({ page }) => {
+    await login(page, 'admin');
+    await page.getByRole('link', { name: 'Account' }).click();
+    await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+
+    const dialog = page.locator('app-prompt-modal');
+    await expect(dialog).toBeVisible();
+    const no = dialog.getByRole('button', { name: 'No', exact: true });
+    const yes = dialog.getByRole('button', { name: 'Yes', exact: true });
+
+    await expect(yes).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(no).toHaveCSS('background-color', 'rgb(235, 237, 240)');
+    await expect(no).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+
+    await no.click();
+    await expect(dialog).toBeHidden();
+
+    try {
+      await page.getByTestId('theme-toggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      await page.getByRole('button', { name: 'Sign Out', exact: true }).click();
+
+      await expect(dialog).toBeVisible();
+      await expect(yes).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+      await expect(no).toHaveCSS('background-color', 'rgb(38, 43, 49)');
+      await expect(no).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+      await no.click();
+    } finally {
+      if ((await page.locator('html').getAttribute('data-theme')) === 'dark') {
+        await page.getByTestId('theme-toggle').click();
+      }
+    }
+  });
+
+  test('one-action info prompt uses the brand fill and no warning icon', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+    await page.getByRole('button', { name: 'Share' }).click();
+
+    const dialog = page.locator('app-prompt-modal');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button')).toHaveCount(1);
+    const action = dialog.getByRole('button', { name: 'Continue' });
+    await expect(action).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(action).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await expect(action.locator('mat-icon')).toHaveCount(0);
+    await action.click();
+    await expect(dialog).toBeHidden();
   });
 });

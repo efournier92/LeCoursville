@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 
 import { TestSharedModule } from '../../../test-shared.module';
@@ -330,6 +331,37 @@ describe('UserEditComponent', () => {
     user.roles.admin = false;
     component.onAdminChange(user);
     expect(user.roles.admin).toBe(true);
+  });
+
+  it('disables the Content Admin switch while Super is on', () => {
+    component.formUser.roles.super = true;
+    fixture.detectChanges();
+
+    const toggles = fixture.debugElement.queryAll(By.css('mat-slide-toggle'));
+    expect(toggles.map((toggle) => toggle.attributes['name'])).toEqual([
+      'user-roles-user',
+      'user-roles-admin',
+      'user-roles-super',
+    ]);
+    const adminToggle = toggles[1].componentInstance;
+    const superToggle = toggles[2].componentInstance;
+
+    expect(superToggle.disabled).toBe(false);
+    expect(adminToggle.disabled).toBe(true);
+  });
+
+  it('rolls the role switches back when the save fails', async () => {
+    const user = makeUser();
+    component.userOnCard = user;
+    component.ngOnInit();
+    confirmDialog.confirm.mockResolvedValue(true);
+    adminService.changeUserRole.mockRejectedValueOnce(new Error('write failed'));
+    component.formUser.roles.admin = true;
+
+    await component.onSaveUser(component.formUser);
+
+    expect(component.saveError).toContain('Could not save Ada Lovelace: write failed');
+    expect(component.formUser.roles.admin).toBe(false);
   });
 
   it('has no localStorage-backed role fallback', () => {

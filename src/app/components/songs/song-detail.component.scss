@@ -1,5 +1,12 @@
 .song-detail {
   min-width: 0;
+  // The routed page is the scroll tail before the site footer, so its bottom
+  // container clears the phone home-indicator inset.
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+
+  @media (max-width: 600px) {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .song-sheet {
@@ -7,7 +14,9 @@
   min-width: 0;
 
   @media (max-width: 600px) {
-    padding: 20px;
+    // 320px phones: the page gutter already eats 32px, so the sheet keeps a
+    // tighter 16px inset and the first lyric line clears the fold.
+    padding: 16px;
   }
 }
 
@@ -18,6 +27,13 @@
   padding-bottom: 16px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--color-border);
+
+  @media (max-width: 600px) {
+    // Compact header: metadata stacks tighter so the lyric body starts higher.
+    gap: 4px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
 }
 
 .song-title {
@@ -27,12 +43,21 @@
   font-weight: 600;
   line-height: 1.25;
   color: var(--color-ink);
+
+  @media (max-width: 600px) {
+    font-size: 1.4rem;
+  }
 }
 
 .song-meta {
   margin: 0;
   font-size: 0.9rem;
   color: var(--color-ink-2);
+
+  @media (max-width: 600px) {
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
 }
 
 .song-leaders {
@@ -91,6 +116,10 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+
+  @media (max-width: 600px) {
+    margin-bottom: 10px;
+  }
 }
 
 .transpose-label {
@@ -153,8 +182,26 @@
 }
 
 .transpose-reset {
+  // It reads as a control, not dead text: the stepper pill's hairline box.
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
   // M3 text buttons colour their label from the token, not the host color.
   --mat-button-text-label-text-color: var(--color-ink-2);
+  --mat-button-text-disabled-label-text-color: var(--color-ink-3);
+  --mat-button-text-container-height: 36px;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-brand-primary-hover);
+  }
+
+  // At offset 0 there is nothing to reset: keep the bordered box but mute it.
+  &:disabled {
+    border-color: var(--color-border);
+    color: var(--color-ink-3);
+    opacity: 1;
+  }
 }
 
 .song-tools {
@@ -162,6 +209,69 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+
+  @media (max-width: 600px) {
+    // One row of equal-width pills at the 44px touch height instead of two
+    // wrapped 48px rows.
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
+
+    button {
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      --mat-button-outlined-container-height: 44px;
+      --mat-button-outlined-horizontal-padding: 10px;
+      --mat-button-outlined-icon-spacing: 4px;
+      --mat-button-outlined-label-text-size: 0.8rem;
+    }
+  }
+}
+
+// Landscape phones: a ~390px viewport height leaves no room for a stacked
+// header, so the meta block collapses to one line and a tighter rhythm to
+// lift the first chord + lyric above the fold.
+@media (max-height: 500px) {
+  .song-sheet {
+    padding-top: 4px;
+  }
+
+  .song-header {
+    gap: 2px;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+
+  .song-title {
+    font-size: 1.1rem;
+    line-height: 1.15;
+  }
+
+  .song-meta {
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .song-leaders {
+    margin-top: 0;
+  }
+
+  .song-leaders-label {
+    line-height: 30px;
+  }
+
+  .leader-chip {
+    min-height: 30px;
+  }
+
+  .transpose-controls {
+    margin-bottom: 2px;
+  }
+
+  .song-tools {
+    margin-bottom: 2px;
+  }
 }
 
 .song-body {
@@ -198,10 +308,35 @@
 
   @media (max-width: 600px) {
     font-size: 0.95rem;
+
+    // Phones keep the inline bracket view, but a chord must break onto its own
+    // line above the lyric word instead of fusing with it ("GA mazing grace").
+    .chord {
+      display: block;
+      width: fit-content;
+    }
+  }
+
+  // Narrow phones: one step down so single words stop orphaning onto their
+  // own line while the ink color (and so the contrast) stays untouched.
+  @media (max-width: 430px) {
+    font-size: 0.875rem;
+  }
+
+  // 320px phones: one more step so "Amazing grace how sweet the sound" stays
+  // a whole line instead of orphaning its last word.
+  @media (max-width: 340px) {
+    font-size: 13px;
   }
 
   @media (min-width: 900px) {
     font-size: 1.2rem;
+  }
+
+  // Tablet portrait: 72ch runs the full card (~700px), so tighten the measure
+  // to 60ch. Desktop keeps 72ch.
+  @media (min-width: 601px) and (max-width: 1024px) {
+    max-width: 60ch;
   }
 }
 
@@ -248,8 +383,16 @@
   }
 }
 
-// 44px mobile hit areas: the transpose trio and the toolbar back button.
-@media (max-width: 600px) {
+// 44px touch target: the toolbar back button ships 40px.
+@media (max-width: 1024px) {
+  .song-back {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+// 44px hit areas: the transpose trio shares the action pills' height.
+@media (max-width: 1024px) {
   .transpose-pill {
     height: 44px;
 
@@ -267,11 +410,6 @@
   .transpose-reset {
     --mat-button-text-container-height: 44px;
     min-height: 44px;
-  }
-
-  .song-back {
-    width: 44px;
-    height: 44px;
   }
 }
 

@@ -13,6 +13,7 @@ import { SharedModule } from "src/app/components/shared/shared.module";
 
 // Declarations
 import { AdminMediaComponent } from "src/app/components/admin-media/admin-media.component";
+import { AdminPhotoAlbumsComponent } from "src/app/components/admin-photo-albums/admin-photo-albums.component";
 import { AppComponent } from "src/app/app.component";
 import { AuthActionComponent } from "src/app/components/auth-action/auth-action.component";
 import { AuthComponent } from "src/app/components/auth/auth.component";
@@ -22,9 +23,9 @@ import { ChatViewComponent } from "src/app/components/chat-view/chat-view.compon
 import { PromptModalComponent } from "src/app/components/prompt-modal/prompt-modal.component";
 import { ConfirmDialogComponent } from "src/app/components/confirm-dialog/confirm-dialog.component";
 import { RecoveryRequestComponent } from "src/app/components/recovery-request/recovery-request.component";
+import { SiteFooterComponent } from "src/app/components/site-footer/site-footer.component";
+import { DataPrivacyDialogComponent } from "src/app/components/data-privacy-dialog/data-privacy-dialog.component";
 import { ContactCardComponent } from "src/app/components/contacts/contact-card/contact-card.component";
-import { ContactEditComponent } from "src/app/components/contacts/contact-edit/contact-edit.component";
-import { ContactViewComponent } from "src/app/components/contacts/contact-view/contact-view.component";
 import { ContactsComponent } from "src/app/components/contacts/contacts.component";
 import { FileInputComponent } from "src/app/components/file-input/file-input.component";
 import { PhotoUploadProgressComponent } from "src/app/components/photo-upload-progress/photo-upload-progress.component";
@@ -43,10 +44,10 @@ import { ExpressionsComponent } from "./components/expressions/expressions.compo
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
 import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
 import { PeopleComponent } from "./components/people/people.component";
-import { AdminContactsComponent } from "./components/admin-contacts/admin-contacts.component";
 import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
 import { PageToolbarComponent } from "./components/shared/page-toolbar/page-toolbar.component";
+import { ThemePillComponent } from "./components/shared/theme-pill/theme-pill.component";
 
 @NgModule({ declarations: [
         AdminMediaComponent,
@@ -58,8 +59,6 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         PromptModalComponent,
         ConfirmDialogComponent,
         ContactCardComponent,
-        ContactEditComponent,
-        ContactViewComponent,
         ContactsComponent,
         FileInputComponent,
         PhotoShellComponent,
@@ -77,13 +76,15 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         ExpressionViewComponent,
         ExpressionEditComponent,
         PeopleComponent,
-        AdminContactsComponent,
         AuthActionComponent,
         RecoveryRequestComponent,
+        SiteFooterComponent,
+        DataPrivacyDialogComponent,
+        ThemePillComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     bootstrap: [AppComponent],
-    exports: [ContactEditComponent], imports: [AppRoutingModule,
+    imports: [AppRoutingModule,
         BrowserModule,
         BrowserAnimationsModule,
         FormsModule,
@@ -94,5 +95,6 @@ import { PageToolbarComponent } from "./components/shared/page-toolbar/page-tool
         NoResultsMessageComponent,
         PageToolbarComponent,
         PhotoUploadProgressComponent,
+        AdminPhotoAlbumsComponent,
         ReactiveFormsModule], providers: [{ provide: LocationStrategy, useClass: PathLocationStrategy }, provideHttpClient(withXhr(), withInterceptorsFromDi()), { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: "outline" } }] })
 export class AppModule {}

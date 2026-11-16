@@ -42,12 +42,24 @@ async function storageObjectExists(path: string): Promise<boolean> {
 test.afterEach(async ({ collector }) => collector.assertClean());
 
 test.describe('admin content surfaces', () => {
+  test('media: video drop zone reads the requested copy', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/media');
+
+    const zone = page.locator('app-admin-media-upload-video .media-drop-zone');
+    await expect(zone).toBeVisible();
+    await expect(zone.locator('.media-drop-zone-hint')).toHaveText(
+      'Drag/Drop an mp4 here, or click to select a file',
+    );
+  });
+
   test('media: only the live sections render, and a filtered-out section shows an empty message', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/media');
 
     await expect(page.getByTestId('media-section-video')).toBeVisible();
     await expect(page.getByTestId('media-section-audio')).toBeVisible();
+    await expect(page.getByTestId('media-section-photo-albums')).toBeVisible();
     await expect(page.getByRole('tab')).toHaveCount(0);
 
     await page.getByTestId('media-section-audio').click();
@@ -64,6 +76,45 @@ test.describe('admin content surfaces', () => {
     await expect(audioPanel.locator('.media-list-item').first()).toBeVisible();
   });
 
+  test('content sidebar order and Photo Albums embeds the album manager in Media', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin');
+    const nav = page.getByTestId('admin-nav');
+    await expect(nav).toHaveAttribute('aria-busy', 'false');
+    const contentIds = await nav
+      .locator('[data-testid="admin-nav-group-content"] [data-testid^="admin-nav-link-"]')
+      .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid')));
+    expect(contentIds).toEqual([
+      'admin-nav-link-uploads',
+      'admin-nav-link-media',
+      'admin-nav-link-expressions',
+      'admin-nav-link-songs',
+      'admin-nav-link-familyExplorer',
+    ]);
+
+    await page.goto('/admin/media');
+    await page.getByTestId('media-section-photo-albums').click();
+    await expect(page).toHaveURL(/section=photo-albums/);
+    await expect(page.locator('app-admin-photo-albums')).toBeVisible();
+    await expect(page.locator('.admin-album-grid')).toBeVisible();
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+
+    // The page title stays above the section switch, not below it.
+    const titleBox = await page.locator('.page-toolbar-title').boundingBox();
+    const switchBox = await page.locator('.admin-media-section-switch').boundingBox();
+    expect(titleBox).not.toBeNull();
+    expect(switchBox).not.toBeNull();
+    expect(titleBox!.y + titleBox!.height).toBeLessThanOrEqual(switchBox!.y);
+    await expect(page.locator('.page-toolbar-title')).toHaveText('Photo Albums');
+
+    // The legacy route redirects to the same tab with a matching URL.
+    await page.goto('/admin/photo-albums');
+    await expect(page).toHaveURL(/\/admin\/media\?section=photo-albums$/);
+    await expect(page.getByTestId('media-section-photo-albums')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('app-admin-photo-albums')).toBeVisible();
+    await expect(page.getByText('E2E Album One')).toBeVisible();
+  });
+
   test('photo albums: seeded albums render, and a throwaway album delete can be cancelled then confirmed', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/photo-albums');
@@ -78,6 +129,12 @@ test.describe('admin content surfaces', () => {
     const throwaway = page.locator('.admin-album-card', { hasText: 'E2E Throwaway Album' });
     await expect(throwaway).toBeVisible();
 
+    // Warn is its own amber role, not the M3 error red.
+    await expect(throwaway.locator('button[matTooltip="Delete"] mat-icon')).toHaveCSS(
+      'color',
+      'rgb(138, 95, 30)',
+    );
+
     await throwaway.locator('button[matTooltip="Delete"]').click();
     const confirm = page.locator('app-confirm-dialog');
     // 30s timeout: webkit full-suite load can exceed the 15s default (ledger C-20261023-01).
@@ -88,7 +145,9 @@ test.describe('admin content surfaces', () => {
     await expect(deleteAlbumButton).toHaveCSS('background-color', 'rgb(179, 38, 30)');
     await expect(deleteAlbumButton).toHaveCSS('color', 'rgb(255, 255, 255)');
     await expect(deleteAlbumButton.locator('mat-icon')).toBeVisible();
-    await confirm.getByRole('button', { name: 'Cancel' }).click();
+    const cancelAlbumButton = confirm.getByRole('button', { name: 'Cancel' });
+    await expect(cancelAlbumButton).not.toHaveCSS('background-color', 'rgb(179, 38, 30)');
+    await cancelAlbumButton.click();
     await expect(confirm).toBeHidden();
     await expect(throwaway).toBeVisible();
 
@@ -551,5 +610,29 @@ test.describe('admin content surfaces', () => {
     await expect(renameDialog.getByLabel('Album title')).toHaveValue('E2E Album One');
     await renameDialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(renameDialog).toBeHidden();
+  });
+
+  test('every switch uses the same 36x20 track', async ({ page }) => {
+    const trackSize = (locator: import('@playwright/test').Locator) =>
+      locator.locator('.mdc-switch__track').evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height) };
+      });
+
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    await expect(page.getByTestId('feature-toggle-contacts')).toBeVisible();
+    const featureTrack = await trackSize(page.getByTestId('feature-toggle-contacts'));
+    await expect(
+      page.getByTestId('feature-toggle-contacts').locator('.mdc-switch__handle-track'),
+    ).toHaveCSS('transition-duration', '0.175s');
+
+    await page.goto('/admin/family-explorer');
+    const archiveSwitch = page.getByRole('switch', { name: 'Published', exact: true });
+    await expect(archiveSwitch).toBeVisible();
+    const archiveTrack = await trackSize(archiveSwitch);
+
+    expect(featureTrack).toEqual({ width: 36, height: 20 });
+    expect(archiveTrack).toEqual(featureTrack);
   });
 });

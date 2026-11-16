@@ -32,13 +32,20 @@ describe('AdminBadgeService', () => {
     expect(rtdbSpy.list).toHaveBeenCalledWith('userUploads', ['orderByChild', 'equalTo']);
   });
 
-  it('openRecoveryRequests counts open recovery rows', async () => {
-    rtdbSpy.list.and.returnValue({
-      valueChanges: () => of([{ status: 'open' }, { status: 'open' }, { status: 'open' }]),
-    });
+  it('outstandingRecoveryRequests sums open and pending rows', async () => {
+    rtdbSpy.equalTo.and.callFake((status: string) => status as any);
+    rtdbSpy.list.and.callFake((_path: string, query: any[]) => ({
+      valueChanges: () => of(
+        query[1] === 'open'
+          ? [{ status: 'open' }, { status: 'open' }]
+          : [{ status: 'pending' }],
+      ),
+    }));
 
-    expect(await firstValueFrom(service.openRecoveryRequests())).toBe(3);
+    expect(await firstValueFrom(service.outstandingRecoveryRequests())).toBe(3);
     expect(rtdbSpy.equalTo).toHaveBeenCalledWith('open');
-    expect(rtdbSpy.list).toHaveBeenCalledWith('recoveryRequests', ['orderByChild', 'equalTo']);
+    expect(rtdbSpy.equalTo).toHaveBeenCalledWith('pending');
+    expect(rtdbSpy.list).toHaveBeenCalledWith('recoveryRequests', ['orderByChild', 'open']);
+    expect(rtdbSpy.list).toHaveBeenCalledWith('recoveryRequests', ['orderByChild', 'pending']);
   });
 });

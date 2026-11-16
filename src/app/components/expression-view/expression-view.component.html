@@ -2,12 +2,23 @@
   <div class="expression-card">
     <div class="expression-content">
       <div class="expression-header">
-        <h3 class="expression-title">"{{ message.title }}"</h3>
-        <span class="expression-attribution">- {{ message.attribution }}</span>
+        <h3 class="expression-title">&ldquo;{{ message.title }}&rdquo;</h3>
+        <span class="expression-attribution">{{ message.attribution }}</span>
       </div>
       <div class="expression-body" [innerHTML]="message.body"></div>
       <div class="expression-meta">
-        <span class="expression-author">- {{ message.authorName }}, {{ message.yearWritten }}</span>
+        @if ((message.authorName && message.authorName !== message.attribution) || message.yearWritten) {
+          <span class="expression-author">
+            @if (message.authorName && message.authorName !== message.attribution) {
+              <span class="expression-author-name">&mdash; {{ message.authorName }}</span>
+              @if (message.yearWritten) {
+                <span class="expression-author-year">&middot; {{ message.yearWritten }}</span>
+              }
+            } @else if (message.yearWritten) {
+              <span class="expression-author-year">&mdash; {{ message.yearWritten }}</span>
+            }
+          </span>
+        }
         @if (getAttachmentType(message) === 'photo') {
           <img
             [src]="message.attachmentUrl"

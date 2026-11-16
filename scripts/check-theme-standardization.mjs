@@ -54,8 +54,8 @@ for (const f of scss.filter(p => !p.includes('photos-legacy'))) {
 
 // 3. Role-conditional controls banned in user-facing templates. Exceptions:
 //    admin* components (the admin portal), photos-legacy (decision 3, out of
-//    scope this run), user-view (informational role badges). user-edit and
-//    contact-edit now compute their role flags in TypeScript, not templates.
+//    scope this run), user-view (informational role badges). user-edit
+//    computes its role flags in TypeScript, not templates.
 //    chat-view, expressions, and expression-view keep #51's role-gated edit
 //    controls on the shared member surface; route gating cannot replace them.
 const templateExceptions = /\/(admin[^/]*|photos-legacy|user-view|chat-view|expressions|expression-view)\//;
@@ -81,7 +81,8 @@ for (const f of [...scss, ...html, 'src/styles.scss'].concat(
 }
 
 // 5. Rules re-audit: every .write is admin/super-gated, author-scoped
-//    (messages), self-create (users/$uid), or False (admin-SDK-only).
+//    (messages), self-create (users/$uid), a validated public create
+//    (dataRequests/$id, dataRequestThrottle/$key), or False (admin-SDK-only).
 const rules = JSON.parse(readFileSync('database.rules.json', 'utf8')).rules;
 (function audit(node, path) {
   for (const [key, value] of Object.entries(node)) {
@@ -92,6 +93,8 @@ const rules = JSON.parse(readFileSync('database.rules.json', 'utf8')).rules;
         rule.includes('roles/admin') || rule.includes('roles/super') ||
         (p.startsWith('/messages') && rule.includes('authorId')) ||
         (p.startsWith('/users') && rule.includes('auth.uid')) ||
+        (p === '/dataRequests/$id' && rule.includes("newData.child('status').val() === 'open'")) ||
+        (p === '/dataRequestThrottle/$key' && rule.includes("newData.child('count')")) ||
         rule === 'false';
       if (!ok) fail(`rules audit: member-writable .write at ${p}: ${rule.slice(0, 80)}`);
     } else if (value && typeof value === 'object') {

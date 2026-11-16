@@ -231,7 +231,7 @@ async function main() {
   const person = (id, first, last, birthday, extra = {}) => ({
     id,
     name: { firstGiven: first, firstPreferred: first, maiden: null, last, suffix: null },
-    familyId: extra.familyId ?? 'family-1',
+    familyId: 'familyId' in extra ? extra.familyId : 'family-1',
     birthday: birthday ?? { year, month: month1, day: clampDay(day) },
     spouseId: extra.spouseId ?? null,
     anniversaryDate: extra.anniversaryDate ?? null,
@@ -285,6 +285,8 @@ async function main() {
     'person-m': person('person-m', 'Maximiliana', 'Wolfeschlegelsteinhausenbergerdorff', { year: 1986, month: 3, day: 18 }),
     'person-n': person('person-n', 'Clementine', 'Featherstonehaugh', { year: 1988, month: 3, day: 20 }, { spouseId: 'person-o' }),
     'person-o': person('person-o', 'Thaddeus', 'Featherstonehaugh', { year: 1987, month: 3, day: 21 }),
+    // No family: proves the calendar tag accent falls back to the brand color.
+    'person-p': person('person-p', 'Nora', 'Nobody', { year: 1995, month: 3, day: 26 }, { familyId: null }),
   };
   people['person-c'].anniversaryDate = { year: 2016, month: 11, day: 14 };
   people['person-i'].anniversaryDate = { year: 2014, month: 5, day: 1 };
@@ -311,6 +313,7 @@ async function main() {
     'album-1': { id: 'album-1', title: 'E2E Album One', coverPhotoId: 'photo-1-1', createdAt: now - 86400000, updatedAt: now - 86400000 },
     'album-2': { id: 'album-2', title: 'E2E Album Two', coverPhotoId: 'photo-2-1', createdAt: now, updatedAt: now },
     'album-3': { id: 'album-3', title: 'E2E Delete Album', coverPhotoId: 'photo-3-1', createdAt: now, updatedAt: now },
+    'album-4': { id: 'album-4', title: 'E2E Empty Album', coverPhotoId: '', createdAt: now, updatedAt: now },
   };
 
   const photos = {};
@@ -431,8 +434,21 @@ async function main() {
       urls: { download: 'https://drive.google.com/file/d/e2efixture/preview', icon: '' },
       type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:30',
     },
+    // Legacy Google Docs video link: must route to the Drive iframe player.
+    'media-video-docs': {
+      id: 'media-video-docs', title: 'Legacy Drive Video', artist: '', date: '2026',
+      folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
+      urls: { download: 'https://docs.google.com/file/d/e2edocs/view', icon: '' },
+      type: 'video', format: 'video/mp4', dateUpdated: now, duration: '00:30',
+    },
     // Legacy non-Drive record with no storage block: exercises the native player
     // and the database-only delete path.
+    'media-photo-album': {
+      id: 'media-photo-album', title: 'E2E Photo Album', artist: '', date: '2026',
+      folderName: 'E2E', fileName: '', isSticky: false, isHidden: false, listing: [],
+      urls: { download: 'http://localhost:5000/assets/e2e-fixtures/fixture.zip', icon: '' },
+      type: 'photo-album', format: 'collection/photo', dateUpdated: now,
+    },
     'media-video-s3': {
       id: 'media-video-s3', title: 'E2E S3 Video', artist: '', date: '2026',
       folderName: 'E2E', fileName: 'fixture.mp4', isSticky: false, isHidden: false, listing: [],
@@ -487,14 +503,55 @@ async function main() {
     },
     features: Object.fromEntries(FEATURE_IDS.map(id => [id, { enabled: !FEATURES_OFF_BY_DEFAULT.has(id), updatedAt: now }])),
     promotedRoute: { route: '/calendar', updatedAt: now },
+    promotedRoutePending: { route: '/photos', updatedAt: now },
+    // One outstanding and one closed request: the shell badge counts the
+    // former and the recovery list exercises the latter.
+    recoveryRequests: {
+      'recovery-open': {
+        id: 'recovery-open',
+        email: 'recovery-open@e2e.local',
+        name: 'Open Recovery E2E',
+        status: 'open',
+        createdAt: now - 2 * 86400000,
+      },
+      'recovery-closed': {
+        id: 'recovery-closed',
+        email: 'recovery-closed@e2e.local',
+        name: 'Closed Recovery E2E',
+        status: 'closed',
+        createdAt: now - 30 * 86400000,
+      },
+    },
+    // Data-rights queue fixtures: one open removal and one resolved update,
+    // plus an audit entry so the admin surface has a non-PII record to render.
+    dataRequests: {
+      'data-request-removal': {
+        id: 'data-request-removal',
+        kind: 'removal',
+        dataClass: 'people',
+        contact: 'data-removal@e2e.local',
+        description: 'Please remove my public listing.',
+        status: 'open',
+        createdAt: now - 3 * 86400000,
+        throttleKey: 'seed-removal',
+        verifiedAt: now - 2 * 86400000,
+        verifiedBy: 'seed-admin',
+        verificationMethod: 'admin_review',
+      },
+      'data-request-update': {
+        id: 'data-request-update',
+        kind: 'update',
+        dataClass: 'photos',
+        contact: 'data-update@e2e.local',
+        description: 'Please correct the caption on my photo.',
+        status: 'resolved',
+        createdAt: now - 10 * 86400000,
+        throttleKey: 'seed-update',
+      },
+    },
     config: {
       // RTDB keys cannot contain ".", so recipients are array values, not keys.
       adminAlertRecipients: ['admin@e2e.local'],
-    },
-    contacts: {
-      'contact-1': { id: 'contact-1', name: 'Legacy Contact One', addresses: [], family: '', emails: [{ info: 'home', address: 'one@e2e.local' }], phones: [{ info: 'mobile', number: '555-0101' }], isEditable: true },
-      'contact-2': { id: 'contact-2', name: 'Legacy Contact Two', addresses: [], family: '', emails: [], phones: [], isEditable: true },
-      'contact-3': { id: 'contact-3', name: 'Legacy Contact Three', addresses: [], family: '', emails: [], phones: [], isEditable: false },
     },
     people,
     families,

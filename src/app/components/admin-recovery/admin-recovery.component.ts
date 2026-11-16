@@ -459,6 +459,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
       title: 'Remove recipient?',
       message: `Remove ${email} from the recovery alert recipients? They will stop receiving recovery alerts.`,
       confirmLabel: 'Remove',
+      destructive: true,
     });
     if (!confirmed) {
       return;

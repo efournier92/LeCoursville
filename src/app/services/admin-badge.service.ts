@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RtdbService } from './rtdb.service';
 
@@ -17,8 +17,13 @@ export class AdminBadgeService {
     return this.count('userUploads', 'pending');
   }
 
-  openRecoveryRequests(): Observable<number> {
-    return this.count('recoveryRequests', 'open');
+  outstandingRecoveryRequests(): Observable<number> {
+    // RTDB has no "not equal" index; outstanding is the sum of the two live
+    // statuses, keeping each query on the indexed `status` field.
+    return combineLatest([
+      this.count('recoveryRequests', 'open'),
+      this.count('recoveryRequests', 'pending'),
+    ]).pipe(map(([open, pending]) => open + pending));
   }
 
   private count(path: string, status: string): Observable<number> {

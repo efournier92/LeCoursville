@@ -72,6 +72,12 @@ export class NavbarLinksComponent implements OnInit {
     });
   }
 
+  // A native anchor ignores Space, so menu items must replay the click to navigate.
+  activateMenuItem(event: KeyboardEvent): void {
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).click();
+  }
+
   private getFeatureIdFromLink(link: string): string {
     const feature = FEATURES.find(f => f.route === link);
     return feature ? feature.id : link;

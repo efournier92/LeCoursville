@@ -4,6 +4,92 @@
   overflow: hidden;
 }
 
+.cal-day-control {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+}
+
+.cal-day-control:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.cal-mobile-dots {
+  display: none;
+}
+
+.day-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-avatar);
+  flex-shrink: 0;
+  background: var(--color-brand-primary);
+}
+
+.day-dot--birth {
+  background: var(--cal-birth-accent);
+}
+
+.day-dot--anniv {
+  background: var(--cal-anniv-accent);
+}
+
+.day-dot--holiday {
+  background: var(--color-ink-2);
+}
+
+.cal-mobile-overflow {
+  font-size: 0.7em;
+  line-height: 1;
+  color: var(--color-ink-2);
+}
+
+.calendar-timeline-preview {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .cal-day-control {
+    position: relative;
+    cursor: pointer;
+    min-height: 64px;
+  }
+
+  .cal-day-control[aria-selected="true"] {
+    background: color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
+    box-shadow: inset 0 0 0 2px var(--color-brand-primary);
+  }
+
+  .cal-events-container.cal-events-desktop {
+    display: none;
+  }
+
+  .cal-mobile-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 2px 4px 4px;
+    min-height: 16px;
+  }
+
+  .calendar-timeline-preview {
+    display: block;
+    margin-bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-day-control {
+    transition: none;
+  }
+}
+
 .cal-cell-content {
   display: flex;
   flex-direction: column;
@@ -18,8 +104,15 @@
 
 .cal-events-overflow,
 .cal-events-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   font-size: 0.75em;
+  font-family: inherit;
   color: var(--color-brand-primary);
+  background: transparent;
+  border: 0;
   cursor: pointer;
   padding: 2px 4px;
   text-align: center;
@@ -77,23 +170,6 @@
   display: block;
 }
 
-// The month grid is intentionally wider than a phone viewport; the hint is
-// the affordance that tells a first-time viewer the grid pans sideways.
-.calendar-pan-hint {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
-  font-size: 0.85em;
-  color: var(--color-ink-2);
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-}
-
 @media (min-width: 1350px) {
   .calendar-scroll-container {
     overflow-x: hidden;
@@ -125,23 +201,19 @@
   box-shadow: var(--shadow-card);
   overflow: visible;
   min-width: 700px;
-  // minimalist: max-content let long event text push the 7-column grid past
-  // the scroll container, clipping Saturday. Cap at 100% so the grid always
-  // fits when the column is >= 700px; below that the min-width keeps the
-  // intentional horizontal scroller. Upgrade path: per-cell minmax grid.
+  // Desktop: max-content lets long event text size the grid; max-width caps it
+  // at the column so Saturday never clips. Below 1024px the fluid grid fits.
   width: max-content;
   max-width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 700px;
-    width: max-content;
-  }
-
-  .calendar-pan-hint {
-    display: flex;
+    // The fluid seven-column track fits the viewport, so no fixed floor:
+    // a min-width here would push the grid past the scroll container again.
+    min-width: 0;
+    width: 100%;
   }
 
   .calendar-title-date {
@@ -156,11 +228,30 @@
 
   .calendar-month-view-container {
     border-radius: var(--radius-sm);
-    min-width: 700px;
-    width: max-content;
+    min-width: 0;
+    width: 100%;
   }
 
   .calendar-title-date {
     font-size: 1.1em;
+  }
+}
+
+// One-letter weekday labels when seven columns get too narrow for full names.
+.cal-header-full {
+  display: inline;
+}
+
+.cal-header-short {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .cal-header-full {
+    display: none;
+  }
+
+  .cal-header-short {
+    display: inline;
   }
 }

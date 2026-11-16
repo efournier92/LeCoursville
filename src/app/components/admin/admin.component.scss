@@ -16,7 +16,7 @@
   overflow-y: auto;
   scrollbar-gutter: stable;
   border-right: 1px solid var(--color-border);
-  box-shadow: 2px 0 8px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--shadow-sidebar);
 
   .sidebar-header {
     padding: 20px 16px;
@@ -138,7 +138,7 @@
       }
 
       .nav-badge-error {
-        background: var(--color-error);
+        background: var(--color-error-solid);
       }
 
       .nav-badge-accessible {
@@ -156,6 +156,8 @@
   }
 
   .sidebar-footer {
+    display: flex;
+    justify-content: flex-end;
     padding: 14px 16px;
     border-top: 1px solid var(--color-border);
 
@@ -193,7 +195,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-scrim-drawer);
   z-index: 998;
 }
 

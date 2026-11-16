@@ -29,8 +29,11 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
   actionError = '';
   loading = true;
   loadError = '';
+  copiedId = '';
+  copyErrorId = '';
 
   private calendarsSub?: Subscription;
+  private copyResetTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private rtdb: RtdbService,
@@ -43,6 +46,29 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.calendarsSub?.unsubscribe();
+    if (this.copyResetTimer) {
+      clearTimeout(this.copyResetTimer);
+    }
+  }
+
+  async copyUrl(calendar: Calendar): Promise<void> {
+    this.copiedId = '';
+    this.copyErrorId = '';
+    try {
+      await this.writeClipboard(calendar.url);
+    } catch {
+      this.copyErrorId = calendar.id;
+      return;
+    }
+    this.copiedId = calendar.id;
+    if (this.copyResetTimer) {
+      clearTimeout(this.copyResetTimer);
+    }
+    this.copyResetTimer = setTimeout(() => {
+      if (this.copiedId === calendar.id) {
+        this.copiedId = '';
+      }
+    }, 2000);
   }
 
   loadCalendars(): void {
@@ -166,5 +192,35 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
   private writeFailure(action: string, error: unknown): string {
     const message = (error as Error)?.message || 'Unknown error';
     return `Could not ${action}: ${message}`;
+  }
+
+  private async writeClipboard(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch {
+        // Fall through to the legacy path so a blocked clipboard still copies.
+      }
+    }
+    this.copyFallback(text);
+  }
+
+  private copyFallback(text: string): void {
+    const textarea = document.createElement('textarea');
+    let copied = false;
+    try {
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      copied = document.execCommand('copy');
+    } finally {
+      textarea.remove();
+    }
+    if (!copied) {
+      throw new Error('Clipboard copy is unavailable.');
+    }
   }
 }

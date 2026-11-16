@@ -18,8 +18,9 @@
       <button
         mat-flat-button
         class="col"
-        color="{{ button.color }}"
+        [color]="button.color"
         [class.btn-destructive]="button.destructive"
+        [class.btn-neutral]="!button.isConfirmAction && !button.destructive"
         (click)="onActionClick(button.isConfirmAction)"
         >
         @if (button.destructive) {

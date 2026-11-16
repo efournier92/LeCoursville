@@ -13,7 +13,37 @@
   width: 160px;
   min-width: 0;
   max-width: 100%;
-}// ── Family card ──────────────────────────────────────────────────────────────
+}
+
+// At 320px the shared toolbar gives each field about half the row, so the
+// "By Family" label ellipsizes. Swap to the shorter visible label there while
+// the full text stays available to assistive tech.
+.family-label-short {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .family-filter-form-field {
+    .family-label-full {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .family-label-short {
+      display: inline;
+    }
+  }
+}
+
+// ── Family card ──────────────────────────────────────────────────────────────
 // Each family is an entry in the family book: a white sheet with a full-height
 // rail in the family's own color. The rail is the identity marker; the tree's
 // generation bars echo the same hue at lower opacity.
@@ -56,7 +86,7 @@
 }.member-count {
   margin-left: auto;
   flex: none;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-ink-2);
   background: var(--color-surface-muted);
@@ -82,11 +112,33 @@
   padding: 10px 16px 8px 0;
   color: var(--color-ink);
 
+  // One entry per person (plus spouse and trailing dot). The entry keeps the
+  // 24px row so name rows stay on the same rhythm they had with the old 24px
+  // inline-flex name box.
+  .first-gen-entry {
+    display: block;
+    min-width: 0;
+    min-height: 24px;
+  }
+
   .first-gen-person {
+    // Plain inline, not inline-flex: an atomic inline box takes the whole line
+    // width, which pushed the trailing dot onto a line of its own. In normal
+    // inline flow the name and the dot after it share one formatting context
+    // with no whitespace between them, so no soft-wrap can split the last word
+    // from the dot. Block padding keeps the tap target above the 24px floor
+    // without adding an atomic box.
+    display: inline;
+    padding-block: 4px;
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.01em;
     cursor: pointer;
+    // Hyphenate a broken surname so the wrap point is visible; anywhere stays
+    // as the fallback for names no dictionary can split.
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    overflow-wrap: anywhere;
     transition: color 0.15s;
 
     &:hover {
@@ -102,9 +154,22 @@
     }&.deceased {
       color: var(--color-ink-2);
       font-style: italic;
-    }}.spouse-separator {
+    }  }
+
+  .spouse-separator {
     color: var(--color-ink-2);
-    margin: 0 4px;
+    margin: 0 8px;
+  }.person-separator {
+    // Rhythm, not punctuation: smaller and at 45% of the surrounding ink. It is
+    // an inline sibling of the name with no whitespace between them, so it
+    // always rides with the preceding name.
+    color: var(--color-ink-2);
+    font-size: 0.75em;
+    font-weight: 400;
+    line-height: 1;
+    margin-left: 4px;
+    opacity: 0.45;
+    white-space: nowrap;
   }}// ── Skeleton ─────────────────────────────────────────────────────────────────
 
 .skeleton-state {
@@ -178,7 +243,29 @@
     }}.family-link {
     font-size: 1.15rem;
   }.member-count {
-    font-size: 0.66rem;
+    font-size: 0.75rem;
   }.first-generation-row {
     padding: 8px 12px 6px 0;
-  }}
+  }
+
+  // Filter and family select share one row so the first card starts higher.
+  .filter-people-form-field,
+  .family-filter-form-field {
+    flex: 1 1 0;
+    width: auto;
+  }
+
+  // Clickable names read as the page's actions; captions and deceased names
+  // stay on the plain ink scale.
+  .first-generation-row .first-gen-person:not(.deceased):not(:hover) {
+    color: var(--color-link);
+  }
+}
+
+// Phone fold: two fewer pixels between name rows clears one more line. Only the
+// flex row gap moves; the 24px min-height that makes each name a tap box stays.
+@media (max-width: 360px) {
+  .first-generation-row {
+    row-gap: 2px;
+  }
+}

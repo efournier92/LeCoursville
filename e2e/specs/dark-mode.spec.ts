@@ -99,43 +99,105 @@ test('toggle switches the document to dark', async ({ page }) => {
   await expect(body(page)).not.toHaveCSS('background-color', 'rgb(243, 244, 246)');
 });
 
-test('theme control exposes switch semantics with an action icon', async ({ page }) => {
+test('theme control exposes a two-option sun/moon pill with switch semantics', async ({ page }) => {
   await login(page, 'user');
   const toggle = page.getByTestId('theme-toggle');
+  const sun = page.getByTestId('theme-icon-sun');
+  const moon = page.getByTestId('theme-icon-moon');
   await expect(toggle).toHaveAttribute('role', 'switch');
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
-  // Icon shows the action, not current state: moon in light (→ dark),
-  // sun in dark (→ light).
-  await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
-  await expect(page.getByTestId('theme-icon-sun')).toHaveCount(0);
+  // The accessible name stays constant: state is carried by aria-checked.
+  await expect(toggle).toHaveAccessibleName('Dark mode');
+  // Both options are always present; the active one carries the highlight.
+  await expect(sun).toBeVisible();
+  await expect(sun).toHaveText(/light_mode/);
+  await expect(moon).toBeVisible();
+  await expect(moon).toHaveText(/dark_mode/);
+  await expect(sun).toHaveClass(/is-active/);
+  await expect(moon).not.toHaveClass(/is-active/);
+  // The active option's background must differ from the inactive one.
+  const [sunBg, moonBg] = await Promise.all([
+    sun.evaluate((el) => getComputedStyle(el).backgroundColor),
+    moon.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+  expect(sunBg).not.toBe(moonBg);
+
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByTestId('theme-icon-sun')).toBeVisible();
-  await expect(page.getByTestId('theme-icon-moon')).toHaveCount(0);
+  await expect(toggle).toHaveAccessibleName('Dark mode');
+  await expect(sun).toBeVisible();
+  await expect(moon).toBeVisible();
+  await expect(moon).toHaveClass(/is-active/);
+  await expect(sun).not.toHaveClass(/is-active/);
+  const [sunDarkBg, moonDarkBg] = await Promise.all([
+    sun.evaluate((el) => getComputedStyle(el).backgroundColor),
+    moon.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+  expect(moonDarkBg).not.toBe(sunDarkBg);
+
   await toggle.click();
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
 });
 
-test('theme toggle sits at the far right of the top nav, after Account', async ({ page }) => {
+test('theme toggle has no lit circle on hover', async ({ page }) => {
+  await login(page, 'user');
+  const toggle = page.getByTestId('theme-toggle');
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await page.hover('[data-testid="theme-toggle"]');
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  // The two-option pill itself stays visible on hover.
+  await expect(page.getByTestId('theme-icon-sun')).toBeVisible();
+  await expect(page.getByTestId('theme-icon-moon')).toBeVisible();
+});
+
+test('theme toggle sits immediately left of the desktop nav items', async ({ page }) => {
   await login(page, 'user');
   const logo = page.locator('.toolbar-logo');
   const toggle = page.getByTestId('theme-toggle');
-  const account = page.getByRole('button', { name: 'Account' });
+  const people = page.getByRole('link', { name: 'People' });
+  const account = page.getByRole('link', { name: 'Account' });
+  const toolbar = page.locator('mat-toolbar');
   await expect(logo).toBeVisible();
   await expect(toggle).toBeVisible();
+  await expect(people).toBeVisible();
   await expect(account).toBeVisible();
   const logoBox = await logo.boundingBox();
   const toggleBox = await toggle.boundingBox();
+  const pillBox = await toggle.locator('app-theme-pill').boundingBox();
+  const peopleBox = await people.boundingBox();
   const accountBox = await account.boundingBox();
-  expect(logoBox && toggleBox && accountBox).toBeTruthy();
+  const toolbarBox = await toolbar.boundingBox();
+  expect(logoBox && toggleBox && pillBox && peopleBox && accountBox && toolbarBox).toBeTruthy();
+  // The pill must sit fully inside the button on both axes: no circular
+  // button edge peeking past the wider pill.
+  expect(toggleBox!.x).toBeLessThanOrEqual(pillBox!.x);
+  expect(pillBox!.x + pillBox!.width).toBeLessThanOrEqual(toggleBox!.x + toggleBox!.width);
+  expect(toggleBox!.y).toBeLessThanOrEqual(pillBox!.y);
+  expect(pillBox!.y + pillBox!.height).toBeLessThanOrEqual(toggleBox!.y + toggleBox!.height);
   // Logo stays within the 64px toolbar row (it had blown up when the left
   // cluster lost its definite height).
   expect(logoBox!.height).toBeLessThanOrEqual(64);
-  // Logo on the left; toggle is the rightmost control, after Account.
+  expect(toolbarBox!.height).toBe(64);
+  // Logo on the left, then the toggle immediately left of the nav items.
   expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
-  expect(accountBox!.x + accountBox!.width).toBeLessThanOrEqual(toggleBox!.x);
+  expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(peopleBox!.x);
+  expect(peopleBox!.x).toBeLessThanOrEqual(accountBox!.x);
+  // The toggle is adjacent to the first nav item, not centered in the gap.
+  const navGap = peopleBox!.x - (toggleBox!.x + toggleBox!.width);
+  expect(navGap).toBeGreaterThanOrEqual(8);
+  expect(navGap).toBeLessThanOrEqual(14);
+  // It moved right of where the old centered position sat.
+  const oldGapCenter = (logoBox!.x + logoBox!.width + peopleBox!.x) / 2;
+  const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
+  expect(toggleCenterX).toBeGreaterThan(oldGapCenter);
+  // Toggle keeps its 44px target.
+  expect(toggleBox!.height).toBe(44);
+  // Toggle stays vertically centered in the toolbar.
+  const toggleCenter = toggleBox!.y + toggleBox!.height / 2;
+  const toolbarCenter = toolbarBox!.y + toolbarBox!.height / 2;
+  expect(Math.abs(toggleCenter - toolbarCenter)).toBeLessThanOrEqual(2);
 });
 
 test('theme switch operates by keyboard', async ({ page }) => {
@@ -176,12 +238,52 @@ test('toggling off restores light and persists', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 });
 
+test('signed-out sign-in page shows a working theme toggle', async ({ page }) => {
+  await page.goto('/');
+  // Wait for auth to resolve: sign-out clears the session override, which
+  // would race the toggles below if the form paints first.
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+  await expect(page.getByTestId('auth-email')).toBeVisible();
+  const toggle = page.getByTestId('theme-toggle');
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await toggle.click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
+
+test('selected auth mode tab stays distinct in dark mode', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  const active = page.getByTestId('auth-mode-signin');
+  const inactive = page.getByTestId('auth-mode-create');
+  const track = page.locator('.auth-mode-switch');
+  const [activeBg, inactiveBg, trackBg] = await Promise.all([
+    active.evaluate((el) => getComputedStyle(el).backgroundColor),
+    inactive.evaluate((el) => getComputedStyle(el).backgroundColor),
+    track.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ]);
+
+  // The selected pill must not collapse into the track or the unselected tab.
+  expect(activeBg).not.toBe(trackBg);
+  expect(activeBg).not.toBe(inactiveBg);
+  const delta = (a: string, b: string) => {
+    const ca = parseRgb(a);
+    const cb = parseRgb(b);
+    return Math.abs(ca.r - cb.r) + Math.abs(ca.g - cb.g) + Math.abs(ca.b - cb.b);
+  };
+  expect(delta(activeBg, trackBg)).toBeGreaterThan(12);
+});
+
 test('guest never renders dark', async ({ page }) => {
   await login(page, 'user');
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   // The Sign out button lives on the Account page (route '/').
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await logout(page);
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
   await expect(body(page)).toHaveCSS('background-color', 'rgb(243, 244, 246)');
@@ -194,7 +296,7 @@ test('toolbar toggle is session-only and leaves the account pref untouched', asy
   // The account preference must remain unset (no RTDB write).
   await expect.poll(() => readDb(`users/${uid}/prefs/theme`), { timeout: 5000 }).toBeNull();
   // And the account card reflects no saved preference.
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   await expect(page.locator('.account-theme-label')).toHaveText('Always Light');
@@ -202,7 +304,7 @@ test('toolbar toggle is session-only and leaves the account pref untouched', asy
 
 test('account "Always use dark mode" persists to RTDB and a fresh session', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   const label = page.locator('.account-theme-label');
@@ -216,7 +318,7 @@ test('account "Always use dark mode" persists to RTDB and a fresh session', asyn
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   // The pref write emits a user update; it must not trigger the promoted-route
   // bounce and yank us off Account.
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL('/account');
   // Simulate a new session: drop the per-tab override, then reload. The
   // account preference alone must restore dark mode.
   await page.evaluate(() => sessionStorage.clear());
@@ -227,20 +329,23 @@ test('account "Always use dark mode" persists to RTDB and a fresh session', asyn
 
 test('account theme toggle keeps you on the account page', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await page.getByRole('link', { name: 'Account' }).click();
+  await expect(page).toHaveURL('/account');
   const pref = page.getByTestId('account-always-dark');
+  // The shared pill is the same structure as the topbar's: two options, one active.
+  await expect(pref.locator('app-theme-pill .theme-pill-opt')).toHaveCount(2);
+  await expect(pref.locator('app-theme-pill .theme-pill-opt.is-active')).toHaveCount(1);
   await pref.click();
   await expect(pref).toHaveAttribute('aria-checked', 'true');
   // Regression: the profile write used to emit a user update that re-ran the
   // promoted-route bounce, sending the user to /calendar mid-toggle.
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL('/account');
   await expect(pref).toBeVisible();
 });
 
 test('clicking anywhere on the account theme chip toggles it', async ({ page }) => {
   await login(page, 'user');
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const pref = page.getByTestId('account-always-dark');
   await expect(pref).toHaveAttribute('aria-checked', 'false');
   // Click the text label, not the icon pair: the whole chip is the control.
@@ -248,18 +353,43 @@ test('clicking anywhere on the account theme chip toggles it', async ({ page }) 
   await expect(pref).toHaveAttribute('aria-checked', 'true');
 });
 
-test('mobile: theme toggle sits just left of the hamburger', async ({ page }) => {
+test('mobile: logo left, theme toggle and hamburger grouped at the right', async ({ page }) => {
   await page.setViewportSize({ width: 600, height: 800 });
   await login(page, 'user');
+  const logo = page.locator('.toolbar-logo');
   const toggle = page.getByTestId('theme-toggle');
   const burger = page.locator('.menu-icon-container');
+  await expect(logo).toBeVisible();
   await expect(toggle).toBeVisible();
   await expect(burger).toBeVisible();
+  const logoBox = await logo.boundingBox();
   const toggleBox = await toggle.boundingBox();
   const burgerBox = await burger.boundingBox();
-  expect(toggleBox && burgerBox).toBeTruthy();
-  // Toggle is immediately left of the burger, which stays at the right edge.
+  expect(logoBox && toggleBox && burgerBox).toBeTruthy();
+  // Logo left, then the toggle and hamburger grouped at the right edge. The
+  // centered slot read as the page's primary control on a phone.
+  expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
   expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(burgerBox!.x);
+  const adjacency = burgerBox!.x - (toggleBox!.x + toggleBox!.width);
+  expect(adjacency).toBeGreaterThanOrEqual(10);
+  expect(adjacency).toBeLessThanOrEqual(24);
+  const toolbar = await page.locator('mat-toolbar').boundingBox();
+  expect(toolbar).toBeTruthy();
+  expect(toolbar!.x + toolbar!.width - (burgerBox!.x + burgerBox!.width)).toBeLessThanOrEqual(24);
+  // The toggle sits in the right third of the bar, not the middle.
+  const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
+  expect(toggleCenterX).toBeGreaterThan(toolbar!.x + toolbar!.width * 0.6);
+
+  await toggle.click();
+  // WebKit does not focus buttons on click, so never assert focus here.
+  await expect(toggle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(toggle).toHaveCSS('outline-style', 'none');
+  const clickToggleBox = await toggle.boundingBox();
+  const clickBurgerBox = await burger.boundingBox();
+  expect(clickToggleBox && clickBurgerBox).toBeTruthy();
+  expect(clickBurgerBox!.x - (clickToggleBox!.x + clickToggleBox!.width)).toBeGreaterThanOrEqual(10);
+  // Clicking must not shift the right cluster.
+  expect(Math.abs(clickToggleBox!.x - toggleBox!.x)).toBeLessThanOrEqual(1);
 });
 
 test('light dialog scrim separates the sheet from the pale page', async ({ page }) => {
@@ -335,7 +465,7 @@ test('dark mode keeps filled brand controls on brand green with white ink', asyn
   expect(text).toBe('rgb(255, 255, 255)');
   await expectReadable(print);
   // M3 filled buttons (Edit profile) follow the same brand-green + white rule.
-  await page.getByRole('button', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   const edit = page.getByRole('button', { name: 'Edit profile' });
   await expect(edit).toBeVisible();
   const editColors = await surfaceColors(edit);
@@ -456,7 +586,7 @@ test('account card surface follows the dark theme', async ({ page }) => {
   // A fresh load at '/' bounces a signed-in user to the promoted route
   // (app.component), so reach the account card the way users do: the
   // Account toolbar link (client-side, no reload).
-  await page.locator('#lecoursville-navbar-links').getByRole('button', { name: 'Account' }).click();
+  await page.locator('#lecoursville-navbar-links').getByRole('link', { name: 'Account' }).click();
   const card = page.locator('.auth-card--account');
   await expect(card).toBeVisible();
   const light = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -482,4 +612,103 @@ test('topnav toolbar keeps the theme-invariant brand solid green in both themes'
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toolbar).toHaveCSS('background-color', 'rgb(39, 116, 74)'); // emerald brand-solid
+});
+
+test('filled brand buttons match the toolbar in both themes', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/admin/families');
+  const addFamily = page.getByRole('button', { name: /Add Family/ });
+  await expect(addFamily).toBeVisible();
+  await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(addFamily).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+});
+
+test('calendar family tag bars clear 3:1 against the tag fill in dark', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/calendar?year=2026&month=3');
+  const bar = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+    .locator('.calendar-cell-event-container');
+  await expect(bar).toBeVisible();
+  await expect(bar).toHaveCSS('border-left-width', '4px');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const ratio = await bar.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { bar: style.borderLeftColor, surface: style.backgroundColor };
+  });
+  expect(contrast(ratio.bar, ratio.surface)).toBeGreaterThanOrEqual(3);
+});
+
+test('tag bars raise a low-contrast family colour to 3:1 in both themes', async ({ page }) => {
+  const family = await readDb<{ hexColor: string }>('families/family-1');
+  try {
+    // A raw yellow admin value is 1.04:1 on the light tag fill.
+    await writeDb('families/family-1/hexColor', '#FFFF00');
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+    const bar = page.locator('.event-birth', { hasText: 'Alice Anderson' }).first()
+      .locator('.calendar-cell-event-container');
+    await expect(bar).toBeVisible();
+
+    const light = await bar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { bar: style.borderLeftColor, surface: style.backgroundColor };
+    });
+    expect(light.bar).not.toBe('rgb(255, 255, 0)');
+    expect(contrast(light.bar, light.surface)).toBeGreaterThanOrEqual(3);
+
+    await page.getByTestId('theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const dark = await bar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { bar: style.borderLeftColor, surface: style.backgroundColor };
+    });
+    expect(contrast(dark.bar, dark.surface)).toBeGreaterThanOrEqual(3);
+  } finally {
+    await writeDb('families/family-1/hexColor', family?.hexColor ?? '#F44336');
+  }
+});
+
+test('dark today marker uses a lighter-on-dark circle and a visible wash', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/calendar');
+  // Wait for auth to resolve: the session override is cleared on restore,
+  // which can race the click on WebKit under full-suite load.
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  const today = page.locator('.cal-day-cell.cal-today');
+  await expect(today).toBeVisible();
+  // Dark brand primary #8CCDA3 fill with the dark ground as ink.
+  await expect(today.locator('.cal-day-number')).toHaveCSS('background-color', 'rgb(140, 205, 163)');
+  await expect(today.locator('.cal-day-number')).toHaveCSS('color', 'rgb(17, 20, 24)');
+  // The 18% brand-over-transparent wash survives both serialization forms.
+  await expect(today).toHaveCSS(
+    'background-color',
+    /^(rgba\(140, 205, 163, 0\.18\)|color\(srgb 0\.549\d* 0\.8039\d* 0\.639\d* \/ 0\.18\))$/,
+  );
+});
+
+test('audio play control is brand green in light and white in dark', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/media/audio');
+  await page.getByText('E2E Audio').first().click();
+
+  const play = page.locator('.audio-player-toggle');
+  await expect(play).toBeVisible();
+  // Light: filled brand green with on-brand ink.
+  await expect(play).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+  await expect(play).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  // Dark: white transport control, dark ink, so it stays the primary action.
+  await expect(play).toHaveCSS('background-color', 'rgb(230, 233, 237)');
+  await expect(play).toHaveCSS('color', 'rgb(27, 31, 36)');
 });

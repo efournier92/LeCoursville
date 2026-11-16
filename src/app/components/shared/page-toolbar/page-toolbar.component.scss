@@ -82,6 +82,11 @@
 :host ::ng-deep .mat-mdc-form-field {
   --mat-form-field-container-height: 44px;
   --mat-form-field-container-vertical-padding: 10px;
+  // The input, select trigger, and floating label each resolve text size from
+  // a separate Material token. Point all three at the field's text-size token
+  // so every filter placeholder in the bar renders at one size.
+  --mat-select-trigger-text-size: var(--mat-form-field-container-text-size);
+  --mat-form-field-outlined-label-text-size: var(--mat-form-field-container-text-size);
   align-self: center;
 
   // M3 reserves phantom space below the box for hints/errors, which makes the
@@ -115,12 +120,27 @@
 
 @media (max-width: 600px) {
   .page-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 8px;
     min-height: 56px;
   }
 
-  // Tools drop below the title rather than squeezing it when the row is tight.
+  .page-toolbar-left,
+  .page-toolbar-title {
+    width: 100%;
+    text-align: left;
+  }
+
+  // Tools drop below the title and wrap from the left instead of the right.
   .page-toolbar-content:has(> *) {
-    flex-basis: 100%;
+    flex: 1 1 100%;
+    // WebKit stretches a column flex item to its max-content width when the
+    // basis is a percentage, which lets a search field widen the whole bar.
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 
   // Projected icon buttons (search clear included) get a 44px touch target;

@@ -15,12 +15,8 @@
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
     },
-    "contacts": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"
-    },
     "messages": {
-      ".read": "auth != null",
+      ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       "$id": {
         ".write": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true && (root.child('users').child(auth.uid).child('roles/admin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid && newData.child('isSticky').val() === false && newData.child('isReply').val() !== true && newData.child('replies').val() === null && newData.child('likes').val() === null) || (data.exists() && newData.val() === null && data.child('authorId').val() === auth.uid))",
         ".validate": "newData.child('id').val() === $id && (!data.exists() ? ((newData.child('messageType').val() === 'expression' ? ((root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && (newData.child('authorName').val() === '' || newData.child('authorName').val() === root.child('users').child(auth.uid).child('name').val() || root.child('users').child(auth.uid).child('roles/admin').val() === true)) : (newData.child('authorName').isString() && newData.child('authorName').val().length <= 100 && newData.child('authorName').val() === root.child('users').child(auth.uid).child('name').val())) && (newData.child('attachmentUrl').val() === null || newData.child('attachmentUrl').val() === '' || newData.child('attachmentUrl').val().matches(/^https:\\/\\/firebasestorage\\.googleapis\\.com\\/v0\\/b\\/[^\\/]+\\/o\\//) || newData.child('attachmentUrl').val().matches(/^http:\\/\\/(localhost|127\\.0\\.0\\.1):9199\\/v0\\/b\\/[^\\/]+\\/o\\//)) && newData.child('dateSent').isNumber() && newData.child('dateSent').val() >= now - 86400000 && newData.child('dateSent').val() <= now + 300000 && newData.child('isEditable').val() !== true) : true)",
@@ -164,7 +160,7 @@
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true)",
-        ".write": "((!data.exists() && $uid === auth.uid && newData.child('roles/user').val() === null && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && !newData.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true) || (newData.child('email').val() === data.child('email').val() && data.exists() && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('roles/user').val() === data.child('roles/user').val() && newData.child('roles/admin').val() === data.child('roles/admin').val() && newData.child('roles/super').val() === data.child('roles/super').val()))"
+        ".write": "((!data.exists() && $uid === auth.uid && newData.child('id').val() === $uid && newData.child('email').val() === auth.token.email && newData.child('roles/user').val() === null && newData.child('roles/admin').val() !== true && newData.child('roles/super').val() !== true) || (data.exists() && !newData.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true) || (newData.child('email').val() === data.child('email').val() && data.exists() && ($uid === auth.uid || root.child('users').child(auth.uid).child('roles/super').val() === true) && newData.child('roles/user').val() === data.child('roles/user').val() && newData.child('roles/admin').val() === data.child('roles/admin').val() && newData.child('roles/super').val() === data.child('roles/super').val()))"
       }
     },
     "features": {
@@ -175,6 +171,135 @@
       ".read": "true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true"
     },
+    "promotedRoutePending": {
+      ".read": "true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true",
+      ".validate": "newData.hasChildren(['route', 'updatedAt']) && newData.child('updatedAt').isNumber() && (newData.child('route').val() === '/photos' || newData.child('route').val() === '/media/video' || newData.child('route').val() === '/media/audio' || newData.child('route').val() === '/expressions' || newData.child('route').val() === '/account' || newData.child('route').val() === '/upload')"
+    },
+    "dataRequests": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+      ".indexOn": [
+        "status"
+      ],
+      "$id": {
+        ".read": "auth != null && data.child('requesterUid').val() === auth.uid",
+        ".write": "((!data.exists() && newData.exists() && newData.child('id').val() === $id && $id.matches(/^[A-Za-z0-9_-]{20}$/) && newData.child('status').val() === 'open' && newData.child('createdAt').isNumber() && newData.child('createdAt').val() <= now + 300000 && newData.child('createdAt').val() >= now - 86400000 && newData.child('kind').isString() && (newData.child('kind').val() === 'removal' || newData.child('kind').val() === 'update' || newData.child('kind').val() === 'contact') && newData.child('dataClass').isString() && (newData.child('dataClass').val() === 'people' || newData.child('dataClass').val() === 'photos' || newData.child('dataClass').val() === 'media' || newData.child('dataClass').val() === 'calendar' || newData.child('dataClass').val() === 'contacts' || newData.child('dataClass').val() === 'messages' || newData.child('dataClass').val() === 'other') && newData.child('contact').isString() && newData.child('contact').val().length >= 1 && newData.child('contact').val().length <= 200 && newData.child('description').isString() && newData.child('description').val().length <= 1000 && newData.child('throttleKey').isString() && newData.child('throttleKey').val().matches(/^[A-Za-z0-9_-]{1,128}$/) && root.child('dataRequestThrottle').child(newData.child('throttleKey').val()).child('windowStart').isNumber() && root.child('dataRequestThrottle').child(newData.child('throttleKey').val()).child('windowStart').val() >= now - 3600000 && root.child('dataRequestThrottle').child(newData.child('throttleKey').val()).child('count').val() <= 10 && (newData.child('requesterUid').val() === null || (auth != null && newData.child('requesterUid').val() === auth.uid))) || (data.exists() && newData.exists() && auth != null && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)))",
+        ".validate": "newData.hasChildren(['id','kind','dataClass','contact','description','status','createdAt'])",
+        "id": {
+          ".validate": "newData.val() === $id"
+        },
+        "kind": {
+          ".validate": "(!data.exists() || newData.val() === data.val()) && newData.isString() && (newData.val() === 'removal' || newData.val() === 'update' || newData.val() === 'contact')"
+        },
+        "dataClass": {
+          ".validate": "(!data.exists() || newData.val() === data.val()) && newData.isString() && (newData.val() === 'people' || newData.val() === 'photos' || newData.val() === 'media' || newData.val() === 'calendar' || newData.val() === 'contacts' || newData.val() === 'messages' || newData.val() === 'other')"
+        },
+        "contact": {
+          ".validate": "(!data.exists() || newData.val() === data.val() || ((newData.parent().child('status').val() === 'resolved' || newData.parent().child('status').val() === 'closed') && newData.val() === '[redacted]')) && newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+        },
+        "description": {
+          ".validate": "(!data.exists() || newData.val() === data.val() || ((newData.parent().child('status').val() === 'resolved' || newData.parent().child('status').val() === 'closed') && newData.val() === '')) && newData.isString() && newData.val().length <= 1000"
+        },
+        "status": {
+          ".write": "auth != null && data.exists() && newData.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === 'open' || newData.val() === 'resolved' || newData.val() === 'closed'"
+        },
+        "requesterUid": {
+          ".validate": "(!data.exists() || newData.val() === data.val()) && (newData.val() === null || (auth != null && newData.val() === auth.uid))"
+        },
+        "createdAt": {
+          ".validate": "(!data.exists() || newData.val() === data.val()) && newData.isNumber()"
+        },
+        "throttleKey": {
+          ".validate": "(!data.exists() || newData.val() === data.val()) && newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,128}$/)"
+        },
+        "updatedAt": {
+          ".write": "auth != null && data.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || (newData.parent().exists() && newData.isNumber())"
+        },
+        "updatedBy": {
+          ".write": "auth != null && data.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || (newData.parent().exists() && newData.isString() && newData.val() === auth.uid)"
+        },
+        "verifiedAt": {
+          ".write": "auth != null && data.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || (newData.parent().exists() && newData.isNumber())"
+        },
+        "verifiedBy": {
+          ".write": "auth != null && data.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || (newData.parent().exists() && newData.isString() && newData.val() === auth.uid)"
+        },
+        "verificationMethod": {
+          ".write": "auth != null && data.exists() && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || newData.val() === 'admin_review' || newData.val() === 'email' || newData.val() === 'phone' || newData.val() === 'in_person'"
+        },
+        "redactedAt": {
+          ".write": "auth != null && data.exists() && (data.parent().child('status').val() === 'resolved' || data.parent().child('status').val() === 'closed') && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || newData.isNumber()"
+        },
+        "redactedBy": {
+          ".write": "auth != null && data.exists() && (data.parent().child('status').val() === 'resolved' || data.parent().child('status').val() === 'closed') && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val() === auth.uid)"
+        },
+        "grantedAt": {
+          ".write": "auth != null && data.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true && ((data.child('status').val() === 'open' && data.child('kind').val() === 'removal' && data.child('verifiedAt').isNumber() && data.child('grantedAt').val() === null && newData.isNumber()) || ((data.child('status').val() === 'resolved' || data.child('status').val() === 'closed') && newData.val() === null))",
+          ".validate": "newData.val() === null || (newData.isNumber() && root.child('users').child(auth.uid).child('roles/super').val() === true && data.parent().child('status').val() === 'open' && data.parent().child('kind').val() === 'removal' && data.parent().child('verifiedAt').isNumber() && data.parent().child('grantedAt').val() === null)"
+        },
+        "grantedBy": {
+          ".write": "auth != null && data.exists() && root.child('users').child(auth.uid).child('roles/super').val() === true && ((data.child('status').val() === 'open' && data.child('kind').val() === 'removal' && data.child('verifiedAt').isNumber() && data.child('grantedAt').val() === null && newData.val() === auth.uid) || ((data.child('status').val() === 'resolved' || data.child('status').val() === 'closed') && newData.val() === null))",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val() === auth.uid && root.child('users').child(auth.uid).child('roles/super').val() === true && data.parent().child('status').val() === 'open' && data.parent().child('kind').val() === 'removal' && data.parent().child('verifiedAt').isNumber() && data.parent().child('grantedAt').val() === null)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+,
+    "dataRequestThrottle": {
+      ".read": "true",
+      ".write": false,
+      "$key": {
+        ".write": "newData.exists() && $key.matches(/^[A-Za-z0-9_-]{1,128}$/) && ((!data.exists() && newData.child('count').val() === 1 && newData.child('windowStart').isNumber() && newData.child('windowStart').val() <= now + 300000 && newData.child('windowStart').val() >= now - 300000) || (data.exists() && newData.child('count').val() === data.child('count').val() + 1 && newData.child('count').val() <= 10 && newData.child('windowStart').val() === data.child('windowStart').val()) || (data.exists() && data.child('windowStart').val() < now - 3600000 && newData.child('count').val() === 1 && newData.child('windowStart').isNumber() && newData.child('windowStart').val() <= now + 300000 && newData.child('windowStart').val() >= now - 300000))",
+        ".validate": "newData.hasChildren(['count','windowStart']) && newData.child('count').isNumber() && newData.child('windowStart').isNumber()",
+        "count": {
+          ".validate": "newData.isNumber()"
+        },
+        "windowStart": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+,
+    "dataRequestAudit": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('roles/admin').val() === true || root.child('users').child(auth.uid).child('roles/super').val() === true)",
+      ".write": false,
+      "$id": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('roles/super').val() === true && !data.exists()",
+        ".validate": "newData.hasChildren(['requestId','action','actorUid','createdAt','dataClass']) && newData.child('action').val() === 'removal_granted' && newData.child('actorUid').val() === auth.uid && root.child('dataRequests').child(newData.child('requestId').val()).exists() && newData.child('dataClass').val() === root.child('dataRequests').child(newData.child('requestId').val()).child('dataClass').val()",
+        "requestId": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{20}$/)"
+        },
+        "action": {
+          ".validate": "newData.val() === 'removal_granted'"
+        },
+        "actorUid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "dataClass": {
+          ".validate": "newData.isString()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+,
     "clans": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('roles/user').val() === true",
       ".write": "auth != null && root.child('users').child(auth.uid).child('roles/admin').val() === true"

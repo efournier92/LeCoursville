@@ -35,10 +35,27 @@
   margin: 0;
 }
 
+// Attribution is the family line, not the author: a brand-tinted pill sets it
+// apart from the plain, muted author line below. Tint and ink both derive from
+// --color-brand-primary, so light and dark stay in parity.
 .expression-attribution {
-  font-size: 0.9em;
-  color: var(--color-ink-2);
-  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 10px;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--color-brand-primary) 12%, transparent);
+  color: var(--color-brand-primary);
+  font-size: 0.78em;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+
+  @media (max-width: 576px) {
+    align-self: flex-start;
+  }
 }
 
 .expression-body {
@@ -56,10 +73,27 @@
   flex-wrap: wrap;
 }
 
+// Author line: em dash + name, middot + year. Wraps as whole fragments so the
+// dash never strands on its own line at 320px.
 .expression-author {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em;
+  max-width: 100%;
   font-size: 0.8em;
   color: var(--color-ink-2);
   font-weight: 500;
+  line-height: 1.4;
+}
+
+.expression-author-name {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.expression-author-year {
+  color: var(--color-ink-2);
 }
 
 .expression-image {

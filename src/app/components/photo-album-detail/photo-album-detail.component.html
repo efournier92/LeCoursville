@@ -19,8 +19,8 @@
   <button class="gallery-slideshow-btn"
     [disabled]="photos.length === 0"
     (click)="onStartSlideshow()">
-    <mat-icon aria-hidden="true">play_arrow</mat-icon>
-    Slideshow
+    <mat-icon aria-hidden="true">photo_library</mat-icon>
+    <span class="gallery-slideshow-label">Slideshow</span>
   </button>
 </app-page-toolbar>
 
@@ -60,17 +60,18 @@
         }
       </div>
     }
-    @if (getFilteredPhotos().length === 0 && searchTerm) {
-      <app-no-results-message [searchTerm]="searchTerm" noun="photos"></app-no-results-message>
-    }
-    @if (getFilteredPhotos().length === 0 && !searchTerm) {
-      <app-no-results-message
-        title="We couldn't find any photos in this album."
-        hint="Check back later."
-        [isCentered]="true"
-      ></app-no-results-message>
-    }
   </div>
+
+  @if (getFilteredPhotos().length === 0 && searchTerm) {
+    <app-no-results-message [searchTerm]="searchTerm" noun="photos"></app-no-results-message>
+  }
+  @if (getFilteredPhotos().length === 0 && !searchTerm) {
+    <app-no-results-message
+      title="We couldn't find any photos in this album."
+      hint="Check back later."
+      [isCentered]="true"
+    ></app-no-results-message>
+  }
 }
 
   <div class="pswp-gallery" [id]="'gallery-' + albumId" style="display: none;">

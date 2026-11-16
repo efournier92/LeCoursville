@@ -84,7 +84,7 @@ mat-dialog-content {
   padding: 10px 12px;
   border-left: 4px solid var(--color-accent-strong);
   border-radius: var(--radius-sm);
-  background: rgba(178, 106, 0, 0.08);
+  background: var(--color-accent-tint-soft);
   color: var(--color-ink);
   font-size: 0.875rem;
 }

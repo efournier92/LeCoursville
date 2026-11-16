@@ -61,3 +61,11 @@ The apply path is no longer manual: `scripts/deploy.sh` ships `database.rules.js
 - `after.json` sha256: `94d6eab36aa160c62dfd5b9ba99df7dbd5bc2ab365fa017d304314a17ce6c4e9`.
 - `before-storage.rules` sha256: `142adcc4e0e0e73ad3bb609205b39099436e4e830cc5d6e2b4f299a80c117eb0`.
 - `after-storage.rules` sha256: `547a3158b35d737224a25cf5a85f64ab6a1fece49167c360b7e2e4bc9a10f55b`.
+
+## 2026-11-08
+
+- `before.json` is the repo `database.rules.json` at the parent of commit `01111d75`, which still carries the live `contacts` block with a user read and an admin write.
+- `after.json` is a copy of the repo `database.rules.json` after the legacy contact retirement (`01111d75`). The only hunks are the removal of the `contacts` block.
+- `before.json` sha256: `c249db8d748f9bf629dfb55e07bb58b09a4f22efbbc0a2896c1a34ab44791fad`.
+- `after.json` sha256: `d15511230dfe8f35f7f439892ab5f9d5718a3337e0f93862e0bfcf92be55993d`.
+- Deploy consequence to confirm before sign-off: the `contacts` node becomes denied for every client once production takes `after.json`. The migration refuses while either the checked-in or deployed rules still grant a contacts write.

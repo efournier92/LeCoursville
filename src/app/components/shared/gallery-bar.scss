@@ -17,12 +17,14 @@
   height: var(--height-control);
   min-width: 180px;
   max-width: 360px;
-  flex: 1 1 240px;
+  // Zero basis: share the free space instead of sizing from content, which
+  // made the field 252 to 297px across engines at the same viewport.
+  flex: 1 1 0;
   padding: 0 8px 0 14px;
   border-radius: var(--radius-card);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-bar);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 
   &:focus-within {
@@ -74,7 +76,7 @@
   }
 
   &:hover {
-    background: rgba(15, 23, 42, 0.07);
+    background: var(--color-overlay-ink-07);
     color: var(--color-ink);
   }
 }
@@ -103,10 +105,12 @@
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 
+  // Selected pill carries the brand color rather than a neutral surface chip,
+  // so the active sort reads at a glance in the gallery toolbar.
   &.active {
-    background: var(--color-surface);
-    color: var(--color-ink);
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
+    box-shadow: var(--shadow-control);
   }
 }
 
@@ -149,7 +153,7 @@
   border: none;
   border-radius: var(--radius-control);
   background: var(--color-brand-solid);
-  color: var(--color-on-brand);
+  color: var(--color-on-brand-solid);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
@@ -166,7 +170,7 @@
   }
 
   &:hover:not(:disabled) {
-    background: var(--color-brand-primary-hover);
+    background: var(--color-brand-solid-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-primary) 35%, transparent);
   }
@@ -180,5 +184,44 @@
 @media (max-width: 720px) {
   .gallery-search {
     min-width: 150px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .gallery-search {
+    height: 44px;
+  }
+
+  .gallery-search-input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .gallery-search-clear {
+    width: 44px;
+    height: 44px;
+  }
+
+  .gallery-segmented-btn {
+    min-height: 44px;
+  }
+
+  .gallery-back-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .gallery-primary-btn,
+  .gallery-slideshow-btn {
+    height: 44px;
+  }
+}
+
+// Fold-width phones: the search's fixed min-width plus its icon/gap/padding
+// chrome can exceed the toolbar's content box. Let the field shrink to the line.
+@media (max-width: 600px) {
+  .gallery-search {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 }

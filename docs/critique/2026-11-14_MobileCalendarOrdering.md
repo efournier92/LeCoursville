@@ -1,0 +1,62 @@
+# Critique Ledger: Mobile Calendar Ordering
+
+- Goal: Decide whether the rolling Timeline sits above or below the month grid on mobile, and which surface is higher value at phone widths.
+- Started: 2026-11-14
+- Branch: 2026-11-08_UxReview
+- Lens set: correctness, product, visual, testing
+
+## Findings
+- C-20261114-01 | 2026-11-14 | product | high | high | addressed | Hoisting the 420px Timeline scroller pushes the month grid to ~y745 on 390x844 and fully off-screen at 375x667 and 320x568 | src/app/components/week-agenda/week-agenda.component.scss:55
+  - rebuttal | addressed | week-agenda.component.scss:55 | upheld: Scroller cap is min(60vh,420px); toolbar 180 + nav 84 + card still lands the grid near y737 at 390x844
+- C-20261114-02 | 2026-11-14 | product | high | high | addressed | Month navigation re-anchors the Timeline to the 1st, so a hoisted hero hides the 15th-31st while the only control that reaches them is off-screen | src/app/components/calendar-view/calendar-view.component.ts:213
+  - rebuttal | addressed | calendar-view.component.ts:213 | upheld: selectDefaultDay anchors non-current months to day 1 and the 21-day window never loads 15-31; grid stays the only tap-to-date control
+- C-20261114-03 | 2026-11-14 | product | high | high | addressed | Grid-first at <=1023px hides all event text and names behind 6px dots, so the first screen cannot answer who or what without the Timeline | src/app/components/calendar-view/calendar-view.component.scss:74
+  - rebuttal | addressed | calendar-view.component.scss:78 | upheld: Chips are opacity 0 and pointer-events none below 1024px; aria labels carry counts but no names
+- C-20261114-04 | 2026-11-14 | product | medium | high | addressed | The month pill picker changes month/year only, selects no day and scrolls nowhere, so it cannot restore per-date discovery under a hoisted Timeline | src/app/components/calendar/calendar.component.ts:244
+  - rebuttal | addressed | calendar-view.component.ts:69 | corrected: Picker does select a day via child ngOnChanges; the real defect is reset-to-day-1, not no selection
+- C-20261114-05 | 2026-11-14 | product | medium | high | addressed | Any filter toggle recreates events and resets selectedDay and the loaded window, so a hoisted hero visibly jumps back to today or the 1st mid-session | src/app/components/calendar-view/calendar-view.component.ts:69
+  - rebuttal | addressed | calendar.component.ts:371 | upheld: rederiveEvents assigns a new events array on every toggle and the child resets selection, anchor, and window
+- C-20261114-06 | 2026-11-14 | visual | high | high | addressed | A 420px internally scrolling Timeline with overscroll-behavior contain traps swipes, so users may never reach the grid below it | src/app/components/week-agenda/week-agenda.component.scss:52
+  - rebuttal | addressed | week-agenda.component.scss:54 | upheld: overflow-y auto plus overscroll-behavior contain blocks scrolling chaining at both ends; header and margins remain escape routes
+- C-20261114-07 | 2026-11-14 | visual | high | medium | addressed | Toolbar, nav and a 420px Timeline leave about one grid row at 390x844 and none at 320x568, so the stacked composition has no room for two heroes | src/app/components/calendar-view/calendar-view.component.scss:60
+  - rebuttal | addressed | calendar-view.component.scss:63 | upheld: Six 64px rows plus toolbar, nav and hero exceed both heights; about 115px remains at 390x844
+- C-20261114-08 | 2026-11-14 | visual | high | high | addressed | Status quo also fails glanceability: the first screen is a dot-only grid and the Timeline starts near or below the fold | src/app/components/calendar-view/calendar-view.component.html:114
+  - rebuttal | addressed | calendar-view.component.html:114 | upheld: Card top is near y737 and first row near y780 at 390x844; at 320x568 the whole Timeline is below the fold
+- C-20261114-09 | 2026-11-14 | visual | medium | high | addressed | Month arrows above a hoisted Timeline change only the off-screen grid, and the card range labels a list that begins seven days earlier | src/app/components/calendar/calendar.component.html:36
+  - rebuttal | addressed | calendar.component.html:38 | corrected: Arrows also re-anchor the Timeline through viewDate; the surviving defect is the range label mismatch anchor..+6 vs list anchor-7
+- C-20261114-10 | 2026-11-14 | visual | medium | medium | addressed | Four 44px filter toggles and the nav consume the top ~264px at 320x568, so secondary filters still own the fold over the agenda | src/app/components/calendar/calendar.component.html:16
+  - rebuttal | addressed | calendar.component.html:19 | upheld: Toolbar, nav and two toggle rows consume roughly the stated strip; at 320x568 the agenda starts past 700px
+- C-20261114-11 | 2026-11-14 | testing | high | high | addressed | No fold assertion exists: nothing measures the Timeline against the visual viewport, and document-coordinate boxes cannot prove first paint | e2e/specs/calendar-mobile.spec.ts:52
+  - rebuttal | addressed | e2e/specs/calendar-mobile.spec.ts:52 | corrected: boundingBox is viewport-relative already; the gap is the missing comparison against viewport height
+- C-20261114-12 | 2026-11-14 | testing | high | high | addressed | Order rests on two box inequalities with no DOM or focus chain, so a CSS order hoist or timeline-above-nav still passes | e2e/specs/calendar-mobile.spec.ts:154
+  - rebuttal | addressed | e2e/specs/calendar-mobile.spec.ts:57 | corrected: The two inequalities do lock visible vertical order at 390px; DOM and focus order and 320/landscape order are what escape
+- C-20261114-13 | 2026-11-14 | testing | high | high | rejected | Desktop order is unobservable because the Timeline is display none above 1023px and the only desktop assertion is toBeHidden | src/app/components/calendar-view/calendar-view.component.scss:51
+  - rebuttal | rejected | calendar-view.component.scss:51 | rejected: Timeline is display none above 1023px by design, so there is no desktop order to observe and toBeHidden is the correct guard
+- C-20261114-14 | 2026-11-14 | testing | high | medium | addressed | Day selection auto-scroll masks the hoist: the spec stays green while a human must scroll past a 420px Timeline and never sees the re-anchored hero | e2e/specs/calendar-mobile.spec.ts:74
+  - rebuttal | addressed | week-agenda.component.ts:105 | corrected: Day select scrolls only the inner container; the spec passes because visibility ignores viewport clipping, not because auto-scroll hides it
+- C-20261114-15 | 2026-11-14 | testing | medium | high | addressed | Fixed clock plus toBeVisible ignores scroll clipping and no spec polls scrollTop, so today-row checks pass while unscrolled; 844x390 order untested | src/app/components/week-agenda/week-agenda.component.ts:68
+  - rebuttal | addressed | e2e/specs/calendar-mobile.spec.ts:45 | upheld: toBeVisible does not intersect the viewport and no spec reads scrollTop or the today offset; landscape asserts no order
+- C-20261114-16 | 2026-11-14 | correctness | medium | high | addressed | The picker panel is absolute with no top, so under a hoisted Timeline its static slot overlaps the Timeline header and Today control | src/app/components/calendar/calendar.component.scss:167
+  - rebuttal | addressed | calendar.component.scss:167 | upheld: Panel is absolute with no top and its static slot sits above the view wrap, so a hoisted header and Today sit under it
+- C-20261114-17 | 2026-11-14 | correctness | medium | high | addressed | Agenda before grid makes keyboard users tab through 21+ day buttons and event links before the 42 grid cells, and the scroller has no tabindex | src/app/components/week-agenda/week-agenda.component.html:12
+  - rebuttal | addressed | week-agenda.component.html:12 | upheld: The agenda puts 21 day buttons plus event links ahead of 42 grid cells and the scroller has no tabindex
+- C-20261114-18 | 2026-11-14 | correctness | low | high | addressed | The Timeline host carries only margin-top, so reordering leaves the card flush against the grid instead of preserving the 8px rhythm | src/app/components/calendar-view/calendar-view.component.scss:92
+  - rebuttal | addressed | calendar-view.component.scss:92 | upheld: Only margin-top exists on the host, so a hoist leaves the grid flush beneath the card
+- C-20261114-19 | 2026-11-14 | correctness | low | high | addressed | The only region landmark and heading in the view is the Timeline, so putting it first makes landmark navigation reach derived state before the grid | src/app/components/week-agenda/week-agenda.component.html:2
+  - rebuttal | addressed | week-agenda.component.html:2 | corrected: The grid has no landmark or heading either way; the real gap is a missing grid landmark, not Timeline position
+- C-20261114-20 | 2026-11-14 | product | high | high | addressed | Timeline default demotes the only date-picking surface; after a month pick its rolling window runs anchor-7..+13, so the 15th-31st always cost a mode switch plus a tap | src/app/components/calendar-view/calendar-view.component.ts:219
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | user decision: Inline grid stays under the preview; late-month reach costs only scroll, accepted in walkthrough
+- C-20261114-21 | 2026-11-14 | correctness | high | high | addressed | The mode trigger is unspecified: the pill already owns the month picker and a segmented control adds a third 44px control to a nav row with two arrows and a 110px pill | src/app/components/calendar/calendar.component.html:41
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | user decision: No third nav control; the preview header carries a Full agenda link that opens a sheet
+- C-20261114-22 | 2026-11-14 | testing | high | high | addressed | Timeline default invalidates the shared mobile harness that waits on .cal-days and clicks grid cells; no mode state, URL, persistence, analytics, or spec plan exists | e2e/specs/calendar-mobile.spec.ts:10
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | user decision: Fold and DOM/focus specs ship in the same change
+- C-20261114-23 | 2026-11-14 | maintainability | high | high | addressed | The inner scroller plus 21-day window and +/-7 growth render 21 rows in a 9-row nested viewport with zero analytics, so the growth machinery and prepend compensation are unearned | src/app/components/week-agenda/week-agenda.component.ts:72
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | un-ship batch: Inner scroller and 21-day growth move out of the inline stack into the dedicated full-agenda sheet
+- C-20261114-24 | 2026-11-14 | maintainability | high | high | addressed | The desktop chip layer stays on mobile as opacity 0 inert duplicate events solely for a legacy geometry spec, adding invisible tab stops and 44px hit targets no user can press | src/app/components/calendar-view/calendar-view.component.scss:71
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | un-ship batch: Inert mobile chip layer removed and the legacy geometry spec updated
+- C-20261114-25 | 2026-11-14 | maintainability | medium | high | addressed | About 85 lines of print CSS at <=360px and 601-720px style a button hidden at every matching width; the real mobile control is the footer button | src/app/components/calendar/calendar.component.scss:329
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | un-ship batch: Dead print CSS at <=360px and 601-720px deleted
+- C-20261114-26 | 2026-11-14 | maintainability | medium | high | addressed | ngOnChanges duplicates ngOnInit work and every parent array re-derivation resets selection and window, so growth state can never survive; empty ngAfterViewInit also remains | src/app/components/calendar-view/calendar-view.component.ts:60
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | un-ship batch: Duplicated lifecycle work and empty ngAfterViewInit removed
+- C-20261114-27 | 2026-11-14 | maintainability | low | medium | addressed | The dot legend explains an aria-hidden encoding whose meaning the day aria-label already carries, costing about 22px at the saturated fold point | src/app/components/calendar-view/calendar-view.component.html:109
+  - rebuttal | addressed | docs/critique/2026-11-14_MobileCalendarOrdering.md | un-ship batch: Dot legend removed to reclaim fold space

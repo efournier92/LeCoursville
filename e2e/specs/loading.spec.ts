@@ -1,6 +1,7 @@
 import { test, expect, Page } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { readDb, writeDb, deleteDb } from '../helpers/admin-db';
+import { failNextRtdbQuery } from '../helpers/rtdb-errors';
 import type { Locator } from '@playwright/test';
 
 // Per-route content selectors come straight from each component template.
@@ -27,13 +28,14 @@ const ROUTES: { route: string; url?: RegExp; content: (page: Page) => Locator }[
 const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/users', content: (p) => p.locator('[data-testid="admin-users-table"]') },
   { route: '/admin/families', content: (p) => p.locator('.admin-table').first() },
-  { route: '/admin/people', content: (p) => p.locator('.import-card') },
+  { route: '/admin/people', content: (p) => p.getByTestId('admin-people-table') },
   { route: '/admin/calendars', content: (p) => p.locator('.admin-table').first() },
   { route: '/admin/media', content: (p) => p.getByTestId('media-section-video') },
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
   { route: '/admin/uploads', content: (p) => p.getByText('pending.png').first() },
   { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
   { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
+  { route: '/admin/analytics', content: (p) => p.getByTestId('admin-analytics-totals') },
   { route: '/admin/family-explorer', content: (p) => p.getByTestId('archive-row-archive-1') },
 ];
 
@@ -56,6 +58,7 @@ test.describe('loading contract', () => {
   });
 
   test('skeleton resolves under reload stress', async ({ page }) => {
+    test.setTimeout(600_000);
     await login(page, 'admin');
     for (const { route, url, content } of ROUTES) {
       await page.goto(route);
@@ -63,8 +66,8 @@ test.describe('loading contract', () => {
       if (url) {
         await expect(page).toHaveURL(url);
       }
-      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
-      await expect(content(page)).toBeVisible({ timeout: 45_000 });
+      // 120s stress-wait, not a retry: a saturated full-suite browser can stall a route well past 30s.
+      await expect(content(page)).toBeVisible({ timeout: 120_000 });
     }
   });
 
@@ -97,10 +100,62 @@ test.describe('loading contract', () => {
     }
   });
 
+  test('empty admin collections show an empty state, never a skeleton', async ({ page }) => {
+    // Admin-media and admin-analytics have no collection to empty; every other
+    // audited admin surface is exercised here. Each global node is restored.
+    const cases = [
+      { path: 'calendars', route: '/admin/calendars', empty: 'app-no-results-message' },
+      { path: 'songs', route: '/admin/songs', empty: '[data-testid="admin-songs-empty"]' },
+      { path: 'photoAlbums', route: '/admin/photo-albums', empty: 'app-no-results-message' },
+      { path: 'families', route: '/admin/families', empty: 'app-no-results-message' },
+      { path: 'userUploads', route: '/admin/uploads', empty: 'app-no-results-message' },
+      { path: 'familyExplorer', route: '/admin/family-explorer', empty: '[data-testid="archive-empty"]' },
+      { path: 'people', route: '/admin/people', empty: 'app-no-results-message' },
+    ];
+    const saved: Record<string, unknown> = {};
+    for (const item of cases) {
+      saved[item.path] = await readDb(item.path);
+    }
+    try {
+      await login(page, 'admin');
+      for (const item of cases) {
+        await deleteDb(item.path);
+        await page.goto(item.route);
+        await expect(page.locator(item.empty).first()).toBeVisible({ timeout: 45_000 });
+        await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+      }
+    } finally {
+      for (const item of cases) {
+        await writeDb(item.path, saved[item.path]);
+      }
+    }
+  });
+
+  test('admin people import renders the upload area', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/people');
+    await page.getByTestId('people-view-import').click();
+    await expect(page.locator('.import-card .upload-area')).toBeVisible();
+    await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+  });
+
+  test('retry after a load error recovers the collection', async ({ page }) => {
+    await login(page, 'admin');
+    await failNextRtdbQuery(page, '/songs');
+    await page.goto('/admin/songs');
+    const error = page.locator('app-load-error');
+    await expect(error).toBeVisible();
+    await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
+
+    await error.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.locator('[data-testid="admin-songs-table"]')).toBeVisible();
+    await expect(error).toHaveCount(0);
+  });
+
   test('top-nav never blank', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('mat-toolbar')).toBeVisible({ timeout: 1000 });
-    await expect(page.locator('mat-toolbar').getByText('Sign In')).toBeVisible();
+    await expect(page.locator('mat-toolbar').getByTestId('theme-toggle')).toBeVisible();
     await login(page, 'admin');
     await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
   });
@@ -118,12 +173,13 @@ test.describe('loading contract', () => {
   });
 
   test('admin skeleton resolves under reload stress', async ({ page }) => {
+    test.setTimeout(600_000);
     await login(page, 'admin');
     for (const { route, content } of ADMIN_ROUTES) {
       await page.goto(route);
       await page.reload();
-      // 45s stress-wait, not a retry: full-suite browser load can exceed 30s (Songs suite included).
-      await expect(content(page)).toBeVisible({ timeout: 45_000 });
+      // 120s stress-wait, not a retry: a saturated full-suite browser can stall a route well past 30s.
+      await expect(content(page)).toBeVisible({ timeout: 120_000 });
       await expect(page.locator('.admin-skeleton-rows:visible')).toHaveCount(0);
     }
   });

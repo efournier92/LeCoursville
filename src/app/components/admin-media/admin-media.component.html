@@ -1,9 +1,11 @@
 <div class="admin-page">
-<app-page-toolbar title="Media"></app-page-toolbar>
+<app-page-toolbar [title]="section === 'photo-albums' ? 'Photo Albums' : 'Media'"></app-page-toolbar>
 
-<p class="admin-intro">
-  Upload and manage family videos and audio albums.
-</p>
+@if (section !== 'photo-albums') {
+  <p class="admin-intro">
+    Upload and manage family videos and audio albums.
+  </p>
+}
 
 <div class="admin-media-section-switch" role="group" aria-label="Media section">
   <button
@@ -12,18 +14,31 @@
     data-testid="media-section-video"
     [class.is-active]="section === 'video'"
     [attr.aria-pressed]="section === 'video'"
-    (click)="section = 'video'"
+    (click)="setSection('video')"
     >Video</button
   >
   <button
     type="button"
     class="admin-media-section-option"
     data-testid="media-section-audio"
+    aria-label="Audio Album"
     [class.is-active]="section === 'audio'"
     [attr.aria-pressed]="section === 'audio'"
-    (click)="section = 'audio'"
-    >Audio Album</button
+    (click)="setSection('audio')"
+    >Audio</button
   >
+  @if (photoAlbumsEnabled) {
+    <button
+      type="button"
+      class="admin-media-section-option"
+      data-testid="media-section-photo-albums"
+      aria-label="Photo Albums"
+      [class.is-active]="section === 'photo-albums'"
+      [attr.aria-pressed]="section === 'photo-albums'"
+      (click)="setSection('photo-albums')"
+      >Photos</button
+    >
+  }
 </div>
 
 @if (section === 'video') {
@@ -31,6 +46,9 @@
 }
 @if (section === 'audio') {
   <app-admin-media-upload-audio-album></app-admin-media-upload-audio-album>
+}
+@if (section === 'photo-albums') {
+  <app-admin-photo-albums></app-admin-photo-albums>
 }
 
 @for (success of successMessages; track success) {

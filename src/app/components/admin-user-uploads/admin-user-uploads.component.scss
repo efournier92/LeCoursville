@@ -38,7 +38,7 @@
   margin-bottom: 12px;
   border-left: 4px solid var(--color-error);
   border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
+  background: var(--color-error-tint);
   color: var(--color-ink);
   font-size: 0.875rem;
 }
@@ -92,7 +92,7 @@
   white-space: nowrap;
 
   &.pending {
-    background: rgba(156, 107, 38, 0.12);
+    background: var(--color-warn-tint);
     color: var(--color-ink);
     .status-dot { background: var(--color-accent-strong); }
   }
@@ -104,7 +104,7 @@
   }
 
   &.rejected {
-    background: rgba(179, 38, 30, 0.10);
+    background: var(--color-error-tint-strong);
     color: var(--color-error);
     .status-dot { background: var(--color-error); }
   }
@@ -191,6 +191,16 @@
   &:hover:not(:disabled),
   &:focus-visible:not(:disabled) {
     background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  }
+}
+
+// Tablets, phones in landscape, and other mid-width touch surfaces: the bare
+// glyphs get a real 44px box instead of relying on the 32px desktop shape.
+// Desktop (>=1025px) keeps the compact 32px triage row.
+@media (max-width: 1024px) {
+  .upload-actions .mat-mdc-icon-button {
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -499,7 +509,7 @@
     }
 
     &:hover {
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--color-scrim-strong);
     }
   }
 }
@@ -552,10 +562,6 @@
   .uploads-table .upload-thumbnail {
     width: 72px;
     height: 56px;
-  }
-
-  .upload-actions {
-    gap: 0;
   }
 
   .files-grid {
@@ -613,7 +619,7 @@
     }
 
     td[data-label="Preview"] {
-      grid-row: 1 / span 3;
+      grid-row: 1 / span 4;
       grid-column: 1;
     }
 
@@ -644,16 +650,16 @@
       grid-column: 3;
     }
 
+    // The date is the only temporal context, so it takes its own line instead
+    // of being ellipsized away at 320px. Size and type share the line above.
     td[data-label="Added"] {
-      grid-row: 2;
-      grid-column: 4;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      grid-row: 3;
+      grid-column: 2 / -1;
       white-space: nowrap;
     }
 
     td[data-label="Uploader"] {
-      grid-row: 3;
+      grid-row: 4;
       grid-column: 2 / -1;
     }
 
@@ -664,12 +670,11 @@
     }
 
     td[data-label=""] {
-      grid-row: 4;
+      grid-row: 5;
       grid-column: 1 / -1;
     }
 
-    td[data-label="Size"]::after,
-    td[data-label="Type"]::after {
+    td[data-label="Size"]::after {
       content: "·";
       margin-left: 6px;
       color: var(--color-ink-3);
@@ -685,28 +690,64 @@
       border-radius: 0;
     }
 
+    // Approve and Reject read as bordered decisions, each at least 16px away
+    // from Preview and from each other, so a destructive tap is never a slip
+    // from a harmless preview.
     .upload-actions {
       width: 100%;
-      gap: 8px;
-      justify-content: stretch;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .upload-actions .mat-mdc-icon-button {
-      flex: 1 1 0;
+      flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: auto;
+      min-width: 44px;
       height: 44px;
-      padding: 0 10px;
+      padding: 0 8px;
       gap: 6px;
       line-height: 1;
 
       &::after {
         content: attr(data-label);
         font-family: inherit;
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         font-weight: 600;
+      }
+    }
+
+    .approve-btn.mat-mdc-icon-button {
+      border: 1px solid var(--color-brand-primary);
+      border-radius: var(--radius-control);
+      background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
+
+      &::after {
+        color: var(--color-brand-primary);
+      }
+    }
+
+    .reject-btn.mat-mdc-icon-button {
+      border: 1px solid var(--color-error);
+      border-radius: var(--radius-control);
+      background: var(--color-error-tint);
+
+      &::after {
+        color: var(--color-error);
+      }
+    }
+
+    // A decided row keeps its pill shape but drops the semantic edge.
+    .row-decided .approve-btn.mat-mdc-icon-button,
+    .row-decided .reject-btn.mat-mdc-icon-button {
+      border-color: var(--color-border);
+      background: transparent;
+
+      &::after {
+        color: var(--color-ink-3);
       }
     }
   }
@@ -723,31 +764,37 @@
     flex: 1 1 100%;
     height: auto;
     margin-left: 0;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  // The storage jump rides beside the filter pills instead of owning a row.
+  .gallery-segmented {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .filter-storage-btn {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0 12px;
+  }
+
+  .gallery-segmented-btn {
+    flex: 1 1 0;
+  }
+}
+
+// Below 360px there is no room for the two side by side: stack them again.
+@media (max-width: 359px) {
+  :host ::ng-deep app-admin-filter-bar .admin-filter-actions {
     flex-wrap: wrap;
-    justify-content: stretch;
   }
 
   .gallery-segmented,
   .filter-storage-btn {
     flex: 1 1 100%;
     width: 100%;
-  }
-
-  .gallery-segmented-btn {
-    flex: 1 1 0;
-  }
-
-  .admin-pagination-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-
-    .pager {
-      flex-direction: column;
-
-      button {
-        width: 100%;
-      }
-    }
   }
 }

@@ -6,39 +6,49 @@
   min-width: 200px;
 }
 
+// The direction toggle and the menu caret are one control: no gap between
+// them, so the caret sits flush against the label instead of reading as a
+// stray glyph, and both share the 44px control height.
 .sort-controls {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.25em;
+  gap: 0;
+  min-height: var(--height-control);
+  --mat-button-text-container-height: var(--height-control);
 }
 
 .sort-label {
   font-size: 0.85em;
   color: var(--color-ink-2);
-  margin-right: 0.25em;
+  margin-right: 0.35em;
 }
 
 .sort-button {
   font-size: 0.85em;
   color: var(--color-ink-2);
   letter-spacing: 0.02em;
-  padding: 0 0.5em;
+  padding: 0 0.15em 0 0.5em;
   min-width: unset;
+  min-height: var(--height-control);
 
   mat-icon {
     font-size: 1em;
     width: 1em;
     height: 1em;
-    margin-left: 0.2em;
+    margin-left: 0.25em;
+    line-height: 1;
+    vertical-align: -0.1em;
   }
 }
 
 .sort-menu-trigger {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: var(--height-control);
+  margin: 0;
+  padding: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 
   mat-icon {
     font-size: 1.1em;
@@ -51,18 +61,18 @@
 
   .create-expression-button {
     border-radius: var(--radius-control);
-    background: var(--color-brand-primary);
-    color: var(--color-on-brand);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
     width: auto;
     height: var(--height-control);
 
     &:hover {
-      background: var(--color-brand-primary-hover);
-      color: var(--color-on-brand);
+      background: var(--color-brand-solid-hover);
+      color: var(--color-on-brand-solid);
     }
 
     &:active {
-      background: var(--color-brand-primary-hover);
+      background: var(--color-brand-solid-hover);
       transform: scale(0.98);
     }
   }
@@ -74,11 +84,16 @@
 }
 
 // The page column is owned by .page-content; this list only stacks cards.
+// Capped around 640px and centered so short quotes do not stretch into bare
+// lines across a half-empty tablet screen.
 .expressions-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 4px 0 0;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 .expression-card-wrapper {
@@ -142,6 +157,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 .skeleton-card {

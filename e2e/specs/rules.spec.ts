@@ -113,6 +113,56 @@ test.describe('rules', () => {
     }
   });
 
+  test('account creation pins the stored id to the uid and email to the token', async () => {
+    const email = `rules-pin-${Date.now()}@e2e.local`;
+    const { uid, token } = await signUp(email);
+    const profile = {
+      id: uid,
+      email,
+      name: 'Rules Pin',
+      dateRegistered: Date.now(),
+      dateLastActive: Date.now(),
+    };
+
+    try {
+      expect(
+        (await put(`users/${uid}`, { ...profile, id: 'someone-else' }, token)).status,
+      ).not.toBe(200);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+
+      expect(
+        (await put(`users/${uid}`, { ...profile, email: `other-${Date.now()}@e2e.local` }, token))
+          .status,
+      ).not.toBe(200);
+      expect(await readDb(`users/${uid}`)).toBeNull();
+
+      expect((await put(`users/${uid}`, profile, token)).ok).toBe(true);
+      expect(await readDb<Record<string, any>>(`users/${uid}`)).toMatchObject({
+        id: uid,
+        email,
+      });
+    } finally {
+      await deleteDb(`users/${uid}`);
+      await deleteAuthAccount(token);
+    }
+  });
+
+  test('messages reads require an approved user, not just any auth session', async () => {
+    const userToken = await signIn('user');
+    const pending = await pendingSignIn();
+
+    try {
+      expect((await get('messages', pending.token)).status).not.toBe(200);
+      expect((await get('messages/msg-1', pending.token)).status).not.toBe(200);
+
+      const approved = await get('messages', userToken);
+      expect(approved.ok).toBe(true);
+      expect(await approved.json()).toHaveProperty('msg-1');
+    } finally {
+      await pending.dispose();
+    }
+  });
+
   test('creation writes and super deletes are still allowed', async () => {
     const email = `rules-create-${Date.now()}@e2e.local`;
     const { uid, token } = await signUp(email);
@@ -145,6 +195,7 @@ test.describe('rules', () => {
     const token = await signIn('staff');
     const featureBefore = await readDb('features/chat');
     const routeBefore = await readDb('promotedRoute');
+    const pendingRouteBefore = await readDb('promotedRoutePending');
 
     const featureRes = await put(
       'features/chat',
@@ -161,6 +212,39 @@ test.describe('rules', () => {
     );
     expect(routeRes.status).not.toBe(200);
     expect(await readDb('promotedRoute')).toEqual(routeBefore);
+
+    const pendingRouteRes = await put(
+      'promotedRoutePending',
+      { route: '/calendar', updatedAt: Date.now() },
+      token,
+    );
+    expect(pendingRouteRes.status).not.toBe(200);
+    expect(await readDb('promotedRoutePending')).toEqual(pendingRouteBefore);
+  });
+
+  test('promotedRoutePending validates shape and the pending allowlist server-side', async () => {
+    const token = await signIn('admin');
+    const before = await readDb('promotedRoutePending');
+    try {
+      for (const body of [
+        { route: '/calendar', updatedAt: Date.now() },
+        { route: '/photos' },
+        { route: 42, updatedAt: Date.now() },
+      ]) {
+        const res = await put('promotedRoutePending', body, token);
+        expect(res.status).not.toBe(200);
+      }
+      expect(await readDb('promotedRoutePending')).toEqual(before);
+
+      const valid = { route: '/photos', updatedAt: Date.now() };
+      expect((await put('promotedRoutePending', valid, token)).ok).toBe(true);
+      expect(await readDb('promotedRoutePending')).toEqual(valid);
+
+      // The route value is non-sensitive and stays world-readable.
+      expect((await get('promotedRoutePending')).status).toBe(200);
+    } finally {
+      await writeDb('promotedRoutePending', before);
+    }
   });
 
   test('super-only nodes reject staff reads and allow super reads', async () => {
@@ -588,13 +672,17 @@ test.describe('rules', () => {
     }
   });
 
-  test('contacts reads require an authenticated user', async () => {
+  test('the retired contacts node denies client reads and writes', async () => {
     const userToken = await signIn('user');
+    const staffToken = await signIn('staff');
 
     expect((await get('contacts')).status).not.toBe(200);
-    const userRead = await get('contacts', userToken);
-    expect(userRead.status).toBe(200);
-    expect(await userRead.json()).toMatchObject({ 'contact-1': { id: 'contact-1' } });
+    expect((await get('contacts', userToken)).status).not.toBe(200);
+    expect((await get('contacts', staffToken)).status).not.toBe(200);
+    const denied = await put('contacts/retired-probe', { name: 'x' }, staffToken);
+    expect(denied.status).toBe(401);
+    expect(await denied.text()).toMatch(/permission denied/i);
+    expect(await readDb('contacts/retired-probe')).toBeNull();
   });
 
   test('a member cannot create an expression message', async () => {
@@ -682,13 +770,6 @@ test.describe('rules', () => {
     }
   });
 
-  test('a plain admin can read contacts', async () => {
-    const staffToken = await signIn('staff');
-
-    const res = await get('contacts', staffToken);
-    expect(res.status).toBe(200);
-  });
-
   test('a plain admin can create an expression message', async () => {
     const token = await signIn('staff');
     const uid = await uidForEmail(E2E_USERS.staff.email);
@@ -738,7 +819,6 @@ test.describe('admin tier split', () => {
     const token = await signIn('staff');
     const key = `rules-staff-content-${Date.now()}`;
     const nodes = [
-      'contacts',
       'calendars',
       'calendarEvents',
       'photos',
@@ -819,6 +899,194 @@ test.describe('admin tier split', () => {
       ).not.toBe(200);
     } finally {
       await deleteDb(`messages/msg-3/likes/${staffUid}`);
+    }
+  });
+
+  test('dataRequests: public create is throttled, validated, undeletable, and grant needs verification', async () => {
+    const suffix = String(Date.now()).slice(-9);
+    const keyFor = (tag: string) => `rules${tag}${suffix}abc`.slice(0, 20);
+    const key = keyFor('Rat');
+    const grantKey = keyFor('Gra');
+    const updateKey = keyFor('Upd');
+    const throttleKey = `throttle-${suffix}`;
+    const denial = (res: Response) => [401, 403].includes(res.status);
+    const createdAt = Date.now();
+    const record = (id: string, overrides: Record<string, unknown> = {}) => ({
+      id,
+      kind: 'removal',
+      dataClass: 'people',
+      contact: 'rules-requester@e2e.local',
+      description: 'Rules probe request.',
+      status: 'open',
+      createdAt,
+      throttleKey: `throttle-${suffix}`,
+      ...overrides,
+    });
+
+    try {
+      // No throttle node means no public create.
+      expect(denial(await put(`dataRequests/${key}`, record(key)))).toBe(true);
+
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 1, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${key}`, record(key))).status).toBe(200);
+
+      // Public create does not grant a public read, even for the same record.
+      expect((await get(`dataRequests/${key}`)).status).toBe(401);
+      expect((await get('dataRequests')).status).toBe(401);
+
+      // Request ids must be push-shaped so PII cannot ride into the audit key.
+      expect((await put('dataRequests/attacker-chosen-id', {
+        ...record('attacker-chosen-id'),
+      })).status).toBe(401);
+
+      // Every malformed field is denied, not merely some non-200.
+      const badCreates: Record<string, unknown>[] = [
+        { status: 'closed' },
+        { grantedBy: 'forged' },
+        { kind: 'secret' },
+        { dataClass: 'secrets' },
+        { createdAt: createdAt - 2 * 86400000 },
+        { createdAt: createdAt + 3600000 },
+        { contact: 'a'.repeat(201) },
+        { contact: '' },
+        { description: 'b'.repeat(1001) },
+        { throttleKey: undefined },
+        { extra: 'nope' },
+        { id: 'someone-else' },
+      ];
+      for (const [index, overrides] of badCreates.entries()) {
+        const badKey = keyFor(`X${index}`);
+        expect(denial(await put(`dataRequests/${badKey}`, {
+          ...record(badKey, overrides),
+          ...(overrides.id ? { id: overrides.id } : {}),
+        }))).toBe(true);
+      }
+
+      const userToken = await signIn('user');
+      const staffToken = await signIn('staff');
+      const superToken = await signIn('admin');
+      const staffUid = await uidForEmail(E2E_USERS.staff.email);
+      const superUid = await uidForEmail(E2E_USERS.admin.email);
+
+      expect(denial(await get('dataRequests', userToken))).toBe(true);
+      expect((await get('dataRequests', staffToken)).status).toBe(200);
+
+      // Client deletes are denied for every admin, including super (C-125).
+      expect(denial(await del(`dataRequests/${key}`, staffToken))).toBe(true);
+      expect(denial(await del(`dataRequests/${key}`, superToken))).toBe(true);
+      expect((await readDb(`dataRequests/${key}`))).toBeTruthy();
+
+      // A normal admin can resolve; that also opens the PII-erasure path.
+      expect((await patch(`dataRequests/${key}`, {
+        status: 'resolved',
+        updatedAt: Date.now(),
+        updatedBy: staffUid,
+      }, staffToken)).status).toBe(200);
+      expect((await patch(`dataRequests/${key}`, {
+        contact: '[redacted]',
+        description: '',
+        redactedAt: Date.now(),
+        redactedBy: staffUid,
+      }, staffToken)).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${key}`, {
+        contact: 'second@example.com',
+      }, staffToken))).toBe(true);
+
+      // Grant constraints: removal only, open only, verified first, super only.
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 2, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${grantKey}`, record(grantKey))).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        grantedAt: Date.now(),
+        grantedBy: staffUid,
+      }, staffToken))).toBe(true);
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      expect((await patch(`dataRequests/${grantKey}`, {
+        verifiedAt: Date.now(),
+        verifiedBy: staffUid,
+        verificationMethod: 'admin_review',
+      }, staffToken)).status).toBe(200);
+      expect((await patch(`dataRequests/${grantKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+        updatedAt: Date.now(),
+        updatedBy: superUid,
+      }, superToken)).status).toBe(200);
+      // No re-grant without a reopen.
+      expect(denial(await patch(`dataRequests/${grantKey}`, {
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      expect((await put(`dataRequestThrottle/${throttleKey}`, { count: 3, windowStart: createdAt })).status)
+        .toBe(200);
+      expect((await put(`dataRequests/${updateKey}`, record(updateKey, { kind: 'update' }))).status).toBe(200);
+      expect((await patch(`dataRequests/${updateKey}`, {
+        verifiedAt: Date.now(),
+        verifiedBy: staffUid,
+        verificationMethod: 'admin_review',
+      }, staffToken)).status).toBe(200);
+      expect(denial(await patch(`dataRequests/${updateKey}`, {
+        status: 'resolved',
+        grantedAt: Date.now(),
+        grantedBy: superUid,
+      }, superToken))).toBe(true);
+
+      // Audit rows must name a real request with the matching data class.
+      const auditBase = {
+        requestId: grantKey,
+        action: 'removal_granted',
+        actorUid: superUid,
+        createdAt: Date.now(),
+        dataClass: 'people',
+      };
+      const auditKey = keyFor('Aud');
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, auditBase, staffToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        dataClass: 'photos',
+      }, superToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        requestId: keyFor('None'),
+      }, superToken))).toBe(true);
+      expect(denial(await put(`dataRequestAudit/${auditKey}`, {
+        ...auditBase,
+        note: 'extra',
+      }, superToken))).toBe(true);
+      expect((await put(`dataRequestAudit/${auditKey}`, auditBase, superToken)).status).toBe(200);
+      expect(denial(await get('dataRequestAudit', userToken))).toBe(true);
+      expect((await get('dataRequestAudit', staffToken)).status).toBe(200);
+
+      // The throttle stops at ten increments and cannot be reset inside the window.
+      const limitKey = `limit-${suffix}`;
+      const limitWindow = Date.now();
+      expect((await put(`dataRequestThrottle/${limitKey}`, { count: 1, windowStart: limitWindow })).status)
+        .toBe(200);
+      for (let count = 2; count <= 10; count += 1) {
+        expect((await put(`dataRequestThrottle/${limitKey}`, { count, windowStart: limitWindow })).status)
+          .toBe(200);
+      }
+      expect(denial(await put(`dataRequestThrottle/${limitKey}`, { count: 11, windowStart: limitWindow })))
+        .toBe(true);
+      expect(denial(await put(`dataRequestThrottle/${limitKey}`, { count: 1, windowStart: limitWindow })))
+        .toBe(true);
+      await deleteDb(`dataRequestThrottle/${limitKey}`);
+    } finally {
+      for (const id of [key, grantKey, updateKey, keyFor('Bad'),
+        ...Array.from({ length: 12 }, (_, index) => keyFor(`X${index}`))]) {
+        await deleteDb(`dataRequests/${id}`);
+      }
+      await deleteDb(`dataRequests/attacker-chosen-id`);
+      await deleteDb(`dataRequestThrottle/${throttleKey}`);
+      await deleteDb(`dataRequestAudit/${keyFor('Aud')}`);
     }
   });
 });

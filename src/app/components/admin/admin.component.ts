@@ -24,7 +24,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   navGroups: { name: AdminNavGroup; items: AdminNavItem[] }[] = this.buildNavGroups(null, null);
   sidenavOpen = false;
   pendingUploads = 0;
-  openRecoveryRequests = 0;
+  outstandingRecoveryRequests = 0;
   badgeFailures: Partial<Record<AdminRouteKey, boolean>> = {};
   private sidenavSub: Subscription;
   private userSub: Subscription;
@@ -92,13 +92,13 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.badgeFailures.uploads = true;
         },
       }),
-      this.adminBadgeService.openRecoveryRequests().subscribe({
+      this.adminBadgeService.outstandingRecoveryRequests().subscribe({
         next: count => {
-          this.openRecoveryRequests = count;
+          this.outstandingRecoveryRequests = count;
           this.badgeFailures.recovery = false;
         },
         error: () => {
-          this.openRecoveryRequests = 0;
+          this.outstandingRecoveryRequests = 0;
           this.badgeFailures.recovery = true;
         },
       }),
@@ -109,7 +109,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (key === 'uploads') {
       return this.pendingUploads;
     }
-    return key === 'recovery' ? this.openRecoveryRequests : 0;
+    return key === 'recovery' ? this.outstandingRecoveryRequests : 0;
   }
 
   badgeText(count: number): string {
@@ -117,7 +117,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   badgeLabel(key: AdminRouteKey, count: number): string {
-    return `${this.badgeText(count)} ${key === 'recovery' ? 'open' : 'pending'}`;
+    return `${this.badgeText(count)} ${key === 'recovery' ? 'outstanding' : 'pending'}`;
   }
 
   hasBadge(key: AdminRouteKey): boolean {
@@ -131,7 +131,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   badgeAccessibleLabel(key: AdminRouteKey): string {
     if (this.badgeFailures[key]) {
       return key === 'recovery'
-        ? 'Open recovery requests count unavailable'
+        ? 'Outstanding recovery requests count unavailable'
         : 'Pending uploads count unavailable';
     }
     return this.badgeLabel(key, this.badgeCount(key));
@@ -144,7 +144,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     return ADMIN_NAV_GROUPS.map(name => ({
       name,
       items: visibleAdminNav(flags, user).filter(item => item.group === name),
-    }));
+    })).filter(group => group.items.length > 0);
   }
 
   private subscribeToUserObservable(): void {

@@ -4,6 +4,10 @@ import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { CalendarViewComponent } from './calendar-view.component';
 
+function change<T>(value: T): any {
+  return { currentValue: value, previousValue: value, firstChange: false, isFirstChange: () => false };
+}
+
 describe('CalendarViewComponent', () => {
   let component: CalendarViewComponent;
   let fixture: ComponentFixture<CalendarViewComponent>;
@@ -50,5 +54,30 @@ describe('CalendarViewComponent', () => {
       events: [1, 2, 3, 4, 5, 6].map(i => ({ date: new Date(2024, 6, i) })),
     };
     expect(component.getHiddenEventCount(day)).toBe(2);
+  });
+
+  it('onDaySelect moves selectedDay and agendaAnchor', () => {
+    component.agendaAnchor = new Date(2024, 6, 1);
+    component.onDaySelect({ date: new Date(2024, 6, 15) });
+    expect(component.selectedDay).toEqual(new Date(2024, 6, 15));
+    expect(component.agendaAnchor).toEqual(new Date(2024, 6, 15));
+  });
+
+  it('changing events does not reset selectedDay or agendaAnchor', () => {
+    component.selectedDay = new Date(2024, 6, 15);
+    component.agendaAnchor = new Date(2024, 6, 15);
+    component.events = [];
+    component.ngOnChanges({ events: change([]) });
+    expect(component.selectedDay).toEqual(new Date(2024, 6, 15));
+    expect(component.agendaAnchor).toEqual(new Date(2024, 6, 15));
+  });
+
+  it('changing viewDate resets selectedDay and agendaAnchor', () => {
+    component.selectedDay = new Date(2024, 6, 15);
+    component.agendaAnchor = new Date(2024, 6, 15);
+    component.viewDate = new Date(2024, 8, 1);
+    component.ngOnChanges({ viewDate: change(component.viewDate) });
+    expect(component.selectedDay).toEqual(new Date(2024, 8, 1));
+    expect(component.agendaAnchor).toEqual(new Date(2024, 8, 1));
   });
 });

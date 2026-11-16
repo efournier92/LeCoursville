@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MediaConstants } from 'src/app/constants/media-constants';
@@ -10,6 +10,7 @@ import { MediaService } from 'src/app/services/media.service';
 import { RoutingService } from 'src/app/services/routing.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { PromptModalService } from 'src/app/services/prompt-modal.service';
+import { isExternalDriveUrl as isGoogleDriveUrl } from './video-source';
 
 @Component({
     selector: 'app-media-explorer',
@@ -22,6 +23,9 @@ export class MediaExplorerComponent implements OnInit {
   @Input() mediaTypesToShow: string;
   @Input() title = 'Media';
 
+  @ViewChild('nativeVideoPlayer') nativeVideoPlayer?: ElementRef<HTMLVideoElement>;
+  @ViewChild('playerContainer') playerContainer?: ElementRef<HTMLElement>;
+
   user: User;
   // allMedia: UploadableMedia[] = [];
   loadedMedia: UploadableMedia[];
@@ -29,6 +33,7 @@ export class MediaExplorerComponent implements OnInit {
   eventsSubject: Subject<UploadableMedia> = new Subject<UploadableMedia>();
   isLoading: boolean;
   searchQuery = '';
+  videoErrorMessage = '';
 
   constructor(
     private authService: AuthService,
@@ -89,10 +94,16 @@ export class MediaExplorerComponent implements OnInit {
 
   onMediaSelect(media: UploadableMedia): void {
     this.isLoading = true;
+    const reselectingSameMedia = !!media?.id && media.id === this.selectedMedia?.id;
     this.resetSelectedMedia();
 
     if (this.shouldSetCurrentMedia(media)) {
       this.setCurrentMedia(media);
+      if (reselectingSameMedia) {
+        this.reloadNativeVideo();
+      }
+      // 0ms lets the @if render the <video> before scroll and play run.
+      this.revealVideoOnMobile();
     }
 
     this.scrollToTop();
@@ -103,6 +114,24 @@ export class MediaExplorerComponent implements OnInit {
       type: this.selectedMedia.type,
       userId: this.user?.id,
     });
+  }
+
+  // The breadcrumb clears the open item and returns to the list, labelled with
+  // the collection ("All Video") rather than a separate route.
+  get backLabel(): string {
+    if (this.mediaTypesToShow === MediaConstants.AUDIO_ALBUM.id) {
+      return 'All Audio';
+    }
+    if (this.mediaTypesToShow === MediaConstants.VIDEO.id) {
+      return 'All Video';
+    }
+    return 'All Media';
+  }
+
+  resetSelection(): void {
+    this.resetSelectedMedia();
+    this.routingService.clearQueryParams();
+    this.scrollToTop();
   }
 
   getShareableLink(): string {
@@ -131,6 +160,20 @@ export class MediaExplorerComponent implements OnInit {
         },
       ],
     );
+  }
+
+  onVideoError(event: Event): void {
+    const code = (event.target as HTMLVideoElement).error?.code;
+    this.videoErrorMessage =
+      code === 1 // MEDIA_ERR_ABORTED
+        ? 'This video could not be played because playback was aborted.'
+        : code === 2 // MEDIA_ERR_NETWORK
+          ? 'This video could not be played because the network failed while loading it.'
+          : code === 3 // MEDIA_ERR_DECODE
+            ? 'This video could not be played because its data could not be decoded.'
+            : code === 4 // MEDIA_ERR_SRC_NOT_SUPPORTED
+              ? 'This video could not be played. Its format may not be supported.'
+              : 'This video could not be played.';
   }
 
   downloadSelectedMedia(): void {
@@ -166,7 +209,9 @@ export class MediaExplorerComponent implements OnInit {
 
   shouldShowDownloadButton() {
     return (
-      this.hasSelectedMedia() && this.isMediaDowloadLinkAZip(this.selectedMedia)
+      this.hasSelectedMedia() &&
+      (this.isMediaDowloadLinkAZip(this.selectedMedia) ||
+        (this.isVideo(this.selectedMedia) && !!this.selectedMedia.urls?.download))
     );
   }
 
@@ -174,14 +219,18 @@ export class MediaExplorerComponent implements OnInit {
     return !!this.user?.id;
   }
 
+  /** Stored durations are zero-padded (`00:30`); the meta line reads `0:30`. */
+  formatDuration(duration: string): string {
+    const match = duration?.trim().match(/^(\d+):(\d{2})$/);
+    return match ? `${Number(match[1])}:${match[2]}` : duration;
+  }
+
   isVideo(selectedMedia: UploadableMedia): boolean {
     return selectedMedia?.type === MediaConstants.VIDEO.id;
   }
 
   isExternalDriveUrl(selectedMedia: UploadableMedia): boolean {
-    return !!selectedMedia?.urls?.download?.startsWith(
-      'https://drive.google.com/',
-    );
+    return isGoogleDriveUrl(selectedMedia?.urls?.download);
   }
 
   isDocument(selectedMedia: UploadableMedia): boolean {
@@ -201,14 +250,21 @@ export class MediaExplorerComponent implements OnInit {
   // HELPERS
 
   private isMediaDowloadLinkAZip(media: UploadableMedia): boolean {
-    return media?.urls?.download.includes('.zip');
+    return media?.urls?.download?.includes('.zip');
   }
 
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
+    this.videoErrorMessage = '';
   }
 
   private scrollToTop(): void {
+    // The app shell owns the scroll container, not the window.
+    const container = document.querySelector('.app-container') as HTMLElement | null;
+    if (container) {
+      container.scrollTop = 0;
+      return;
+    }
     window.scroll(0, 0);
   }
 
@@ -243,6 +299,45 @@ export class MediaExplorerComponent implements OnInit {
     this.eventsSubject.next(media);
   }
 
+  // A reselected video keeps the same [src], so the browser never retries and
+  // no fresh error event fires; load() forces a new attempt.
+  private reloadNativeVideo(): void {
+    setTimeout(() => {
+      this.nativeVideoPlayer?.nativeElement.load();
+      this.maybeAutoplayVideo();
+    });
+  }
+
+  private maybeAutoplayVideo(): void {
+    const el = this.nativeVideoPlayer?.nativeElement;
+    if (!el || !this.selectedMedia || !this.isVideo(this.selectedMedia)) return;
+    el.muted = true;
+    const playback = el.play?.();
+    playback?.catch(() => {});
+  }
+
+  // On phones the player sits above the library list, so a tap far down the
+  // list needs to bring the chosen video back into view before it plays.
+  private revealVideoOnMobile(): void {
+    setTimeout(() => {
+      if (this.isMobileViewport()) {
+        this.playerContainer?.nativeElement?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+      this.maybeAutoplayVideo();
+    });
+  }
+
+  private isMobileViewport(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(max-width: 991.98px)').matches
+    );
+  }
+
   private getQueryParams() {
     this.activatedRoute.queryParams.subscribe((params) => {
       this.getMediaIdFromQueryParams(params);
@@ -267,6 +362,8 @@ export class MediaExplorerComponent implements OnInit {
     const media = this.mediaService.getMediaById(id);
     if (media?.id === id) {
       this.selectedMedia = media;
+      this.videoErrorMessage = '';
+      this.revealVideoOnMobile();
       this.analyticsService.logEvent('media_explorer_load_by_query_param', {
         id: this.selectedMedia?.id,
         type: this.selectedMedia.type,

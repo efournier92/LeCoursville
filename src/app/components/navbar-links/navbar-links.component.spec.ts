@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { RouterTestingModule } from '@angular/router/testing';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { NavbarLinksComponent } from './navbar-links.component';
@@ -18,7 +19,7 @@ describe('NavbarLinksComponent', () => {
     spy.getAllFeatureFlags.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
-      imports: [AppModule, TestSharedModule],
+      imports: [AppModule, TestSharedModule, RouterTestingModule],
       declarations: [NavbarLinksComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
@@ -79,11 +80,11 @@ describe('NavbarLinksComponent', () => {
 
     const accountButton = component.filteredButtons.find(b => b.title === 'Account');
     expect(accountButton).toBeDefined();
-    expect(accountButton!.link).toBe('/');
+    expect(accountButton!.link).toBe('/account');
   });
 
-  it('Account button maps to link === "/" and is never filtered', () => {
-    const accountButton = component.buttons.find(b => b.link === '/');
+  it('Account button maps to the deep-link-safe "/account" route and is never filtered', () => {
+    const accountButton = component.buttons.find(b => b.link === '/account');
     expect(accountButton).toBeDefined();
     expect(accountButton!.title).toBe('Account');
   });

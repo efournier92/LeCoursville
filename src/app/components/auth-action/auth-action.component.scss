@@ -3,13 +3,18 @@
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 32px 16px 56px;
   box-sizing: border-box;
   background:
     radial-gradient(900px 420px at 50% -8%, color-mix(in srgb, var(--color-brand-primary) 12%, transparent), transparent 65%),
     linear-gradient(180deg, color-mix(in srgb, var(--color-brand-primary) 8%, transparent) 0%, var(--color-app-bg) 48%);
+
+  // Short viewports: centering would clip a tall card, so keep it top-anchored.
+  @media (max-height: 700px) {
+    align-items: flex-start;
+  }
 }
 
 .auth-action-card {
@@ -18,10 +23,8 @@
   padding: 40px 36px 32px;
   border-radius: var(--radius-card);
   background: var(--color-surface);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow:
-    0 18px 50px rgba(15, 23, 42, 0.07),
-    0 2px 6px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--color-overlay-white-75);
+  box-shadow: var(--shadow-auth-card);
   text-align: center;
 }
 
@@ -81,6 +84,19 @@
   margin-top: 10px;
 }
 
+.auth-action-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-action-back {
+  --mdc-text-button-label-text-color: var(--color-ink-2);
+  font-size: 0.875rem;
+  color: var(--color-ink-2);
+}
+
 .auth-action-banner {
   display: flex;
   align-items: center;
@@ -101,7 +117,7 @@
 }
 
 .auth-action-banner--error {
-  background: rgba(220, 38, 38, 0.08);
+  background: var(--color-error-tint);
   color: var(--color-error);
 }
 
@@ -119,4 +135,77 @@
   width: 44px;
   height: 44px;
   margin-bottom: 8px;
+}
+
+// Narrow phones: a 56px brand tile plus its padding ate the top of the card.
+// Shrink it (and its surround) so the title, banner, and primary action stay
+// in the upper half of a 320x568 screen.
+@media (max-width: 360px) {
+  .auth-action-card {
+    padding: 24px 20px 20px;
+  }
+
+  .auth-action-logo {
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    padding: 6px;
+  }
+
+  .auth-action-title {
+    margin-bottom: 6px;
+  }
+
+  .auth-action-text {
+    margin-bottom: 12px;
+  }
+
+  .auth-action-banner {
+    margin: 2px 0 12px;
+  }
+}
+
+// Landscape phones (844x390 and similar): the 700px block still top-anchors
+// the page, so the card ran flush to the bottom edge with the Back link at the
+// extreme edge. Measure the page against the space below the header, center
+// the card there, and keep 16px clear on both ends while compressing the card.
+@media (max-height: 500px) {
+  .auth-action-page {
+    align-items: center;
+    min-height: calc(100dvh - var(--header-height));
+    padding: 16px;
+  }
+
+  .auth-action-card {
+    padding: 20px 24px 18px;
+  }
+
+  .auth-action-logo {
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    padding: 6px;
+  }
+
+  .auth-action-title {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+  }
+
+  .auth-action-text {
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .auth-action-banner {
+    margin: 2px 0 10px;
+    padding: 8px 10px;
+  }
+
+  .auth-action-actions {
+    gap: 4px;
+  }
 }

@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { MediaExplorerComponent } from './media-explorer.component';
+import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -103,6 +104,151 @@ describe('MediaExplorerComponent video player branch', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="native-video-player"]'),
     ).not.toBeNull();
+  });
+
+  it('surfaces an announced message when the native video errors', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    component.onVideoError({ target: { error: { code: 4 } } } as any);
+    fixture.detectChanges();
+
+    const message = fixture.nativeElement.querySelector('.video-error');
+    expect(message).not.toBeNull();
+    expect(message.getAttribute('role')).toBe('alert');
+    expect(message.textContent).toContain('could not be played');
+  });
+
+  it('renders the action row above the player', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    fixture.detectChanges();
+
+    const player = fixture.nativeElement.querySelector(
+      '[data-testid="native-video-player"]',
+    );
+    const actions = fixture.nativeElement.querySelector(
+      '.media-explorer-actions-container',
+    );
+    expect(
+      actions.compareDocumentPosition(player) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('labels the breadcrumb with the collection it clears back to', () => {
+    component.mediaTypesToShow = MediaConstants.VIDEO.id;
+    expect(component.backLabel).toBe('All Video');
+
+    component.mediaTypesToShow = MediaConstants.AUDIO_ALBUM.id;
+    expect(component.backLabel).toBe('All Audio');
+
+    component.mediaTypesToShow = undefined as unknown as string;
+    expect(component.backLabel).toBe('All Media');
+  });
+
+  it('clears the open media when the breadcrumb is used', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    const routing = TestBed.inject(RoutingService);
+    const clear = vi.spyOn(routing, 'clearQueryParams');
+
+    component.resetSelection();
+
+    expect(component.selectedMedia).toBeNull();
+    expect(clear).toHaveBeenCalled();
+  });
+
+  it('routes a docs.google.com open link to the Drive iframe', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://docs.google.com/open?id=abc123',
+    });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('app-video-player-drive-iframe'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="native-video-player"]'),
+    ).toBeNull();
+  });
+
+  it('offers Download for a video when a download URL exists', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    fixture.detectChanges();
+
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('.media-explorer-action-button span'),
+    ).map((span: HTMLElement) => span.textContent?.trim());
+    expect(labels).toEqual(['Download', 'Share']);
+  });
+
+  it('does not render a new-tab escape for an unsupported source', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    component.onVideoError({ target: { error: { code: 4 } } } as any);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.video-open-link')).toBeNull();
+  });
+
+  it('reloads a reselected native video so a failed source retries', async () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/broken.mp4',
+    });
+    fixture.detectChanges();
+    const video = fixture.nativeElement.querySelector(
+      '[data-testid="native-video-player"]',
+    ) as HTMLVideoElement;
+    const load = vi.spyOn(video, 'load');
+
+    component.onMediaSelect(component.selectedMedia);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(load).toHaveBeenCalled();
+  });
+
+  it('clears a stale error when selecting media from a query param', () => {
+    const media = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    (TestBed.inject(MediaService) as any).getMediaById = () => media;
+    component.videoErrorMessage = 'stale error';
+
+    (component as any).loadMediaByQueryId(media.id);
+
+    expect(component.selectedMedia).toBe(media);
+    expect(component.videoErrorMessage).toBe('');
+  });
+
+  it('names every media error code distinctly', () => {
+    const messages = [1, 2, 3, 4].map((code) => {
+      component.onVideoError({ target: { error: { code } } } as any);
+      return component.videoErrorMessage;
+    });
+
+    expect(new Set(messages).size).toBe(4);
+    messages.forEach((message) => expect(message).toContain('could not be played'));
+  });
+
+  it('plays inline and has an accessible name on the native video', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    fixture.detectChanges();
+
+    const video = fixture.nativeElement.querySelector(
+      '[data-testid="native-video-player"]',
+    ) as HTMLVideoElement;
+    expect(video.hasAttribute('playsinline')).toBe(true);
+    expect(video.getAttribute('aria-label')).toBe('Video');
   });
 
   it('renders native video without a poster when the icon is missing', () => {

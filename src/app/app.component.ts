@@ -6,7 +6,7 @@ import { ErrorsService } from './errors.service';
 import { User, isApprovedUser } from './models/user';
 import { RoutingService } from './services/routing.service';
 import { ThemeService } from './services/theme.service';
-import { filter } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-root',
@@ -22,6 +22,8 @@ export class AppComponent implements OnInit {
   // firebase-auth restore time — that gap flashed a wrong Sign In link).
   authResolved = false;
   layout = 'default';
+  // The account page owns a labeled theme preference, so the header toggle
+  // would duplicate it there. Set from Router.events, never sniffed in CSS.
 
   get sidenavOpen$() {
     return this.routingService.sidenavOpen$;
@@ -70,9 +72,13 @@ export class AppComponent implements OnInit {
       // sign-in/restore, so this is only a one-shot safety net.
       if (!this.promotedRouteBounceDone) {
         this.promotedRouteBounceDone = true;
-        if (this.shouldNavigateToPromotedRoute()) {
-          this.routingService.NavigateToPromotedRoute();
-        }
+        // Wait for the RTDB routes so a pending user never bounces on the
+        // environment default before the stored value arrives.
+        this.routingService.routesReady().pipe(filter(ready => ready), take(1)).subscribe(() => {
+          if (this.shouldNavigateToPromotedRoute()) {
+            this.routingService.NavigateToPromotedRoute(this.isApproved());
+          }
+        });
       }
     });
   }
@@ -89,7 +95,9 @@ export class AppComponent implements OnInit {
     }
     this.subscribeToAuthResolved();
     this.subscribeToUserObservable();
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => this.readLayout());
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.readLayout();
+    });
     this.readLayout();
     this.versionService.writeVersionToWindow();
     this.errorsService.listenForErrors(this.user);
@@ -138,7 +146,7 @@ export class AppComponent implements OnInit {
   }
 
   onLogoClick(): void {
-    this.routingService.handleLogoNavigation(this.isSuperAdmin());
+    this.routingService.handleLogoNavigation(this.isSuperAdmin(), this.isApproved());
   }
 
   onMenuClick(): void {
@@ -154,7 +162,16 @@ export class AppComponent implements OnInit {
     target?.scrollIntoView({ block: 'start' });
   }
 
+  /** The root route is the sign-in card; its toolbar link would duplicate it. */
+  isSignInRoute(): boolean {
+    return this.routingService.IsRootRoute();
+  }
+
   shouldShowSidenavToggle(): boolean {
     return this.isSuperAdmin() && this.routingService.isOnAdminRoute();
+  }
+
+  isAdminRoute(): boolean {
+    return this.routingService.isOnAdminRoute();
   }
 }

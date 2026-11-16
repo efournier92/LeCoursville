@@ -15,3 +15,12 @@
   width: 18px;
   height: 18px;
 }
+
+// A declining action is neutral: it must never read as the recommended or the
+// dangerous choice. Mirrors the destructive override in src/styles.scss.
+.btn-neutral {
+  --mat-button-filled-container-color: var(--color-surface-muted);
+  --mat-button-filled-label-text-color: var(--color-ink);
+  --mat-button-filled-state-layer-color: var(--color-ink);
+  --mat-button-filled-ripple-color: var(--color-ink);
+}

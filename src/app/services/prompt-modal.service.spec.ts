@@ -26,7 +26,7 @@ describe("PromptModalService", () => {
   });
 
   it("openDialog opens the prompt modal with header, message and buttons", () => {
-    const buttons = [{ label: 'Yes', color: 'primary', isConfirmAction: true }];
+    const buttons = [{ label: 'Yes', color: 'primary' as const, isConfirmAction: true }];
     const ref = service.openDialog('Are You Sure?', 'Do it?', buttons);
 
     expect(dialogSpy.open).toHaveBeenCalledWith(PromptModalComponent, {

@@ -58,6 +58,8 @@
   font-size: 16px;
   margin-bottom: 8px;
   color: var(--color-ink);
+  // Even out the two lines instead of orphaning "disabled." on its own.
+  text-wrap: balance;
 }
 
 .hint {

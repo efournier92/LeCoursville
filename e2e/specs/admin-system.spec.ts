@@ -65,16 +65,16 @@ test.describe('admin system surfaces', () => {
         .filter({ hasText: role });
 
     const member = badge('user@e2e.local', 'Member');
-    await expect(member).toHaveCSS('background-color', 'rgb(236, 239, 241)');
+    await expect(member).toHaveCSS('background-color', 'rgb(235, 237, 240)');
     await expect(member).toHaveCSS('color', 'rgb(55, 71, 79)');
 
     const admin = badge('staff@e2e.local', 'Content Admin');
-    await expect(admin).toHaveCSS('background-color', 'rgb(232, 234, 246)');
-    await expect(admin).toHaveCSS('color', 'rgb(40, 53, 147)');
+    await expect(admin).toHaveCSS('background-color', 'rgb(220, 239, 227)');
+    await expect(admin).toHaveCSS('color', 'rgb(18, 55, 38)');
 
     const superBadge = badge('admin@e2e.local', 'Super');
-    await expect(superBadge).toHaveCSS('background-color', 'rgb(243, 229, 245)');
-    await expect(superBadge).toHaveCSS('color', 'rgb(106, 27, 154)');
+    await expect(superBadge).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(superBadge).toHaveCSS('color', 'rgb(255, 255, 255)');
   });
 
   test('users: role history shows when, actor, target, and before -> after roles', async ({ page }) => {
@@ -134,7 +134,7 @@ test.describe('admin system surfaces', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(editor).toBeVisible();
-      await editor.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
+      await editor.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
       const grantDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
       await expect(grantDialog).toContainText('Give Regular User content admin access?');
@@ -156,7 +156,7 @@ test.describe('admin system surfaces', () => {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
       const reopen = page.getByRole('dialog').filter({ hasText: 'Edit user' });
       await expect(reopen).toBeVisible();
-      await reopen.getByRole('checkbox', { name: 'Content Admin', exact: true }).click();
+      await reopen.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await reopen.getByRole('button', { name: 'Save' }).click();
       const revokeDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
       await expect(revokeDialog).toContainText('Remove content admin access from Regular User?');
@@ -380,6 +380,13 @@ test.describe('admin system surfaces', () => {
     await expect(page.getByTestId('feature-changed-chat')).toContainText(/\d/);
   });
 
+  test('features: the card title carries no oversized subtitle', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/features');
+    await expect(page.locator('.admin-card-title', { hasText: 'Feature Flags' })).toBeVisible();
+    await expect(page.getByText('Toggle visibility of navigation menu items')).toHaveCount(0);
+  });
+
   test('features: warns when the stored promoted route belongs to a disabled flag', async ({ page }) => {
     const before = await readDb('promotedRoute');
     await writeDb('promotedRoute', { route: '/chat', updatedAt: Date.now() });
@@ -409,7 +416,7 @@ test.describe('admin system surfaces', () => {
       await music.click();
       await expect(music).toHaveAttribute('aria-checked', 'false');
 
-      await page.getByLabel('Default Landing Page').click();
+      await page.getByLabel('Approved Users Landing Page').click();
       await page.getByRole('option', { name: /Chat/ }).click();
 
       await expect

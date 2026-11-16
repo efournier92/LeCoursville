@@ -401,7 +401,7 @@ describe('AdminMediaUploadVideoComponent', () => {
       fixture.nativeElement.querySelector('[data-testid="video-thumbnail-input"]'),
     ).toBeNull();
     expect(
-      fixture.nativeElement.querySelector('mat-checkbox[name="replaceVideoFile"]'),
+      fixture.nativeElement.querySelector('mat-slide-toggle[name="replaceVideoFile"]'),
     ).not.toBeNull();
 
     component.video.title = 'New title';

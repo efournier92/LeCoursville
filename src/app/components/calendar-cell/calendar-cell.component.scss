@@ -2,7 +2,9 @@
   font-size: 1.05em;
   font-weight: 500;
   margin-bottom: 3px;
-}.calendar-cell-event-container {
+}
+
+.calendar-cell-event-container {
   display: flex;
   align-items: flex-start;
   margin-bottom: 3px;
@@ -10,58 +12,84 @@
   background: var(--cal-tag-bg);
   border-radius: var(--radius-sm);
   padding: 6px 8px;
-  border-left: 4px solid;
+  border-left: 4px solid var(--event-accent-light, var(--color-brand-primary));
   width: auto;
   box-sizing: border-box;
   overflow: hidden;
-}.border-birth {
-  border-left-color: var(--cal-birth-accent);
-}.border-anniv {
-  border-left-color: var(--cal-anniv-accent);
-}.border-holiday {
+}
+
+.border-holiday {
   border-left-color: var(--color-ink-2);
-}.birthday-color {
+}
+
+:host-context(html[data-theme="dark"]) .calendar-cell-event-container:not(.border-holiday) {
+  border-left-color: var(--event-accent-dark, var(--color-brand-primary));
+}
+
+.birthday-color {
   color: var(--cal-birth-accent);
-}.anniversary-color {
+}
+
+.anniversary-color {
   color: var(--cal-anniv-accent);
-}.calendar-years-since-container {
+}
+
+.calendar-years-since-container {
   line-height: 1.2em;
   min-width: 1.6em;
   text-align: right;
   margin-right: 8px;
-}.calendar-years-since {
+}
+
+.calendar-years-since {
   font-size: 0.95em;
   opacity: 0.85;
   font-weight: 600;
-}.calendar-event-title-container {
+}
+
+.calendar-event-title-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   flex: 1;
   min-width: 0;
   line-height: 1.2em;
-}.is-anniversary {
+}
+
+.is-anniversary {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-}.event-title-link,
+}
+
+.event-title-link,
 .event-title-spouse-link {
   color: var(--cal-tag-ink);
   cursor: pointer;
   font-weight: 600;
   font-size: 1em;
+  font-family: inherit;
   transition: color 0.15s ease;
-  display: block;
-  padding: 1px 4px 1px 12px;
-  text-indent: -8px;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  width: 100%;
+  padding: 1px 4px;
+  text-indent: 0;
+  border: 0;
   border-radius: var(--radius-sm);
+  background: transparent;
   text-align: left;
   line-height: 1.1;
-}.event-title-link:hover,
+}
+
+.event-title-link:hover,
 .event-title-spouse-link:hover {
   color: var(--color-brand-primary);
   text-decoration: underline;
-}.event-ampersand-row {
+}
+
+.event-ampersand-row {
   display: block;
   color: var(--color-ink-2);
   user-select: none;
@@ -69,28 +97,76 @@
   line-height: 1;
   padding: 0;
   text-align: left;
-}.anniv-first-line {
+}
+
+.anniv-first-line {
   display: flex;
   align-items: center;
   gap: 4px;
   width: 100%;
   text-align: left;
-}.event-ampersand-inline {
+}
+
+.event-ampersand-inline {
   color: var(--color-ink-2);
   user-select: none;
   font-size: 0.85em;
   font-weight: 400;
   flex-shrink: 0;
-}.event-not-living {
-  opacity: 0.55;
-}.event-title-holiday {
+}
+
+.event-not-living {
+  .calendar-years-since-container,
+  .event-title-link,
+  .event-title-spouse-link,
+  .event-title-holiday {
+    opacity: 0.55;
+  }
+}
+
+.event-title-holiday {
   display: block;
   color: var(--cal-tag-ink);
   font-style: italic;
   font-weight: 500;
   font-size: 1em;
-  padding: 1px 4px 1px 12px;
-  text-indent: -8px;
+  padding: 1px 4px;
+  text-indent: 0;
   text-align: left;
   line-height: 1.1;
+}
+
+@media (max-width: 768px) {
+  .calendar-cell-container {
+    font-size: 0.95em;
+  }
+
+  .calendar-cell-event-container {
+    margin-inline: 2px;
+    padding: 3px 4px;
+  }
+
+  .event-title-link,
+  .event-title-spouse-link,
+  .event-title-holiday {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+  }
+
+  .calendar-years-since-container {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  // At this width the only tag surface is the Timeline, which keeps the token
+  // inline to match the calendar.
+  .calendar-years-since {
+    font-size: 0.8em;
+  }
 }

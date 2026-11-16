@@ -24,6 +24,7 @@ app-person-tree {
     font-weight: 400;
     color: var(--color-ink);
     white-space: nowrap;
+    overflow-wrap: anywhere;
 
     &.clickable {
       cursor: pointer;
@@ -102,5 +103,23 @@ app-person-tree {
 
   .person-tree-wrapper {
     padding: 8px 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  app-person-tree {
+    .person-name.clickable {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+    }
+  }
+}
+
+// Phone layout: touch has no hover, so clickable names carry the link color to
+// stay distinguishable from caption text. Deceased names keep the plain scale.
+@media (max-width: 600px) {
+  app-person-tree.person-tree--people .person-name.clickable:not(.deceased) {
+    color: var(--color-link);
   }
 }

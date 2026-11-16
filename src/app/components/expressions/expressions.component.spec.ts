@@ -28,7 +28,7 @@ describe('ExpressionsComponent', () => {
   });
 
   function showExpressions(): void {
-    component.isLoading = false;
+    component.loading = false;
     component.allItems = [
       new Expression(false, 'a', 'Patience', 'Wait for it'),
       new Expression(false, 'b', 'Courage', 'Stand tall'),
@@ -74,6 +74,16 @@ describe('ExpressionsComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-expression-edit')).not.toBeNull();
+  });
+
+  it('renders the empty state when the loaded collection is empty', () => {
+    component.loading = false;
+    component.allItems = [];
+    component.displayedItems = [];
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.expressions-empty')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.expressions-skeleton')).toBeNull();
   });
 
   it('flips the sort icon when the direction reverses', () => {

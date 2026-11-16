@@ -17,8 +17,9 @@
             (dragover)="onDragOver($event)"
             (drop)="onVideoDrop($event)"
             >
+            <mat-icon class="media-drop-zone-icon" aria-hidden="true">cloud_upload</mat-icon>
             <span class="media-drop-zone-title">Video file</span>
-            <span class="media-drop-zone-hint">Drop an MP4 here or choose a file.</span>
+            <span class="media-drop-zone-hint">Drag/Drop an mp4 here, or click to select a file</span>
             <input
               #videoFileInput
               id="videoFileInput"
@@ -36,12 +37,11 @@
         }
 
         @if (isEditing()) {
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="replaceVideoFile"
             [(ngModel)]="replaceFile"
-            >Replace video file</mat-checkbox
-            >
+            >Replace video file</mat-slide-toggle>
         }
       </section>
 
@@ -156,18 +156,16 @@
             </mat-form-field>
           }
 
-          <mat-checkbox
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isSticky"
             [(ngModel)]="video.isSticky"
-            >Is Sticky?</mat-checkbox
-            >
-          <mat-checkbox
+            >Is Sticky?</mat-slide-toggle>
+          <mat-slide-toggle
             class="admin-upload-checkbox"
             name="isHidden"
             [(ngModel)]="video.isHidden"
-            >Should Hide from Lists?</mat-checkbox
-            >
+            >Should Hide from Lists?</mat-slide-toggle>
         </div>
       </details>
 

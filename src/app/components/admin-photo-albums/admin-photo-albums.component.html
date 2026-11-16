@@ -2,14 +2,6 @@
 @if (actionError) {
   <div class="action-error" role="alert">{{ actionError }}</div>
 }
-<app-page-toolbar class="albums-toolbar" title="Photo Albums">
-  <button mat-flat-button color="primary" class="album-upload-btn" (click)="onUploadClick()">
-    <mat-icon>create_new_folder</mat-icon> Upload Folder
-  </button>
-  <input #folderInput type="file" webkitdirectory multiple hidden
-    (change)="onFolderPicked($event)" />
-</app-page-toolbar>
-
 <app-admin-filter-bar>
   <mat-form-field class="album-search-field" admin-filter-search>
     <input matInput placeholder="Search albums" [ngModel]="searchTerm"
@@ -21,6 +13,11 @@
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
   </div>
+  <button mat-flat-button color="primary" class="album-upload-btn" admin-filter-actions (click)="onUploadClick()">
+    <mat-icon>create_new_folder</mat-icon> Upload Folder
+  </button>
+  <input #folderInput type="file" webkitdirectory multiple hidden
+    (change)="onFolderPicked($event)" />
   <button mat-stroked-button class="album-new-btn" admin-filter-actions (click)="onCreateEmptyAlbum()">
     <mat-icon>add</mat-icon> New Album
   </button>
@@ -189,7 +186,7 @@
                   <mat-label>Year</mat-label>
                   <input matInput type="number" [(ngModel)]="editDraft.year" />
                 </mat-form-field>
-                <mat-checkbox [(ngModel)]="editDraft.isYearCirca">Year is circa</mat-checkbox>
+                <mat-slide-toggle [(ngModel)]="editDraft.isYearCirca">Year is circa</mat-slide-toggle>
               </div>
               <mat-form-field class="photo-edit-field photo-edit-field--full">
                 <mat-label>Taken by</mat-label>

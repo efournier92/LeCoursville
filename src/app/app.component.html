@@ -24,31 +24,44 @@
       </button>
     </div>
     <div class="icons-menu d-inline-flex">
+      <button
+        type="button"
+        class="theme-switch"
+        data-testid="theme-toggle"
+        role="switch"
+        [attr.aria-checked]="(theme$ | async) === 'dark'"
+        aria-label="Dark mode"
+        (click)="onThemeToggle()"
+        >
+        <app-theme-pill [mode]="((theme$ | async) === 'dark') ? 'dark' : 'light'"></app-theme-pill>
+      </button>
       @if (!authResolved) {
         <div data-testid="nav-links-skeleton">
-          <div class="nav-skeleton d-none d-lg-flex" aria-hidden="true">
+          <div class="nav-skeleton nav-desktop" aria-hidden="true">
             <div class="nav-skeleton-item">
               <div class="nav-skeleton-icon"></div>
               <div class="nav-skeleton-label"></div>
             </div>
           </div>
-          <div class="nav-skeleton-burger d-lg-none" aria-hidden="true"></div>
+          <div class="nav-skeleton-burger nav-mobile" aria-hidden="true"></div>
         </div>
       } @else if (!user?.id) {
-        <a
-          mat-button
-          routerLink="/"
-          >
-          Sign In
-        </a>
+        @if (!isSignInRoute()) {
+          <a
+            mat-button
+            routerLink="/"
+            >
+            Sign In
+          </a>
+        }
       } @else {
         <div
-          class="d-none d-lg-block"
+          class="nav-desktop"
           >
           <app-navbar-links [isMenuList]="false" [isSuperUser]="isSuperAdmin()" [isApproved]="isApproved()"></app-navbar-links>
         </div>
         <div
-          class="d-block d-lg-none"
+          class="nav-mobile"
           >
           @if (shouldShowSidenavToggle()) {
             <button
@@ -78,21 +91,6 @@
             </mat-menu>
           }
         </div>
-        <button
-          type="button"
-          class="theme-switch"
-          data-testid="theme-toggle"
-          role="switch"
-          [attr.aria-checked]="(theme$ | async) === 'dark'"
-          [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-          (click)="onThemeToggle()"
-          >
-          @if ((theme$ | async) === 'dark') {
-            <mat-icon class="theme-switch-icon" data-testid="theme-icon-sun">light_mode</mat-icon>
-          } @else {
-            <mat-icon class="theme-switch-icon" data-testid="theme-icon-moon">nightlight_round</mat-icon>
-          }
-        </button>
       }
     </div>
   </mat-toolbar>
@@ -103,4 +101,7 @@
   }
   }
   <router-outlet></router-outlet>
+  @if (!isAdminRoute()) {
+    <app-site-footer></app-site-footer>
+  }
 </body>

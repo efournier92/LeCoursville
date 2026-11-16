@@ -29,6 +29,8 @@ describe('AdminFeaturesComponent', () => {
       'setFeatureFlag',
       'getPromotedRoute',
       'setPromotedRoute',
+      'getPendingPromotedRoute',
+      'setPendingPromotedRoute',
       'addFeatureFlagAudit',
       'getFeatureFlagAudit',
       'flagsReady',
@@ -36,6 +38,8 @@ describe('AdminFeaturesComponent', () => {
     spy.getAllFeatureFlags.and.returnValue(of({}));
     spy.getPromotedRoute.and.returnValue(of(null));
     spy.setPromotedRoute.and.returnValue(Promise.resolve());
+    spy.getPendingPromotedRoute.and.returnValue(of(null));
+    spy.setPendingPromotedRoute.and.returnValue(Promise.resolve());
     spy.addFeatureFlagAudit.and.returnValue(Promise.resolve());
     spy.getFeatureFlagAudit.and.returnValue(auditSource.asObservable());
     spy.flagsReady.and.returnValue(of(true));
@@ -336,6 +340,20 @@ describe('AdminFeaturesComponent', () => {
     fixture.detectChanges();
 
     expect(component.promotedRouteWarning).toContain('Chat is currently off');
+  });
+
+  it('warns when the pending route is off the allowlist or its flag is off', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(AdminFeaturesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.promotedRoutePending = '/calendar';
+    expect(component.pendingRouteWarning).toContain('not an allowed pending landing page');
+
+    component.promotedRoutePending = '/media/audio';
+    component.flagsMap = { music: { enabled: false, updatedAt: Date.now() } };
+    expect(component.pendingRouteWarning).toContain('Audio is currently off');
   });
 
   it('shows the absolute local changed time from the flag updatedAt', () => {

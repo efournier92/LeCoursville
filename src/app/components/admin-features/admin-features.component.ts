@@ -6,6 +6,7 @@ import { FeatureFlag } from 'src/app/models/feature-flag';
 import { FEATURES, FeatureConfig } from 'src/app/config/feature-config';
 import { AuthService } from 'src/app/services/auth.service';
 import { User } from 'src/app/models/user';
+import { environment } from 'src/environments/environment';
 
 interface FeatureGroup {
   label: string;
@@ -19,6 +20,19 @@ const FEATURE_GROUPS: { label: string; ids: string[] }[] = [
   { label: 'Content', ids: ['calendar', 'legacyCalendarPdf', 'songs', 'music', 'videos', 'photos', 'enablePhotoAlbums', 'expressions'] },
   { label: 'System', ids: ['chat'] },
 ];
+
+// Only these landing pages are reachable while a user is pending. PII and
+// planning surfaces are deliberately absent.
+const PENDING_ROUTE_OPTIONS: { label: string; route: string }[] = [
+  { label: 'Photos', route: '/photos' },
+  { label: 'Videos', route: '/media/video' },
+  { label: 'Audio', route: '/media/audio' },
+  { label: 'Expressions', route: '/expressions' },
+  { label: 'Account', route: '/account' },
+  { label: 'Upload', route: '/upload' },
+];
+
+const PENDING_ROUTES = new Set(PENDING_ROUTE_OPTIONS.map(option => option.route));
 
 @Component({
     selector: 'app-admin-features',
@@ -36,7 +50,9 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       .filter((feature): feature is FeatureConfig => !!feature),
   }));
   promotedRoute: string = '';
+  promotedRoutePending: string = '';
   featureOptions = FEATURES;
+  pendingRouteOptions = PENDING_ROUTE_OPTIONS;
   auditHistory: FeatureFlagAuditRecord[] = [];
   readonly auditHistoryLimit = 10;
   loading = true;
@@ -49,9 +65,11 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
 
   private userSignedIn: User;
   private storedPromotedRoute = '';
+  private storedPromotedRoutePending = '';
   private readySub?: Subscription;
   private flagsSub?: Subscription;
   private promotedSub?: Subscription;
+  private promotedPendingSub?: Subscription;
   private userSub?: Subscription;
   private auditSub?: Subscription;
 
@@ -72,6 +90,11 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     this.promotedSub = this.featureFlagsService.getPromotedRoute().subscribe(route => {
       this.storedPromotedRoute = route || '';
       this.promotedRoute = this.storedPromotedRoute;
+    });
+
+    this.promotedPendingSub = this.featureFlagsService.getPendingPromotedRoute().subscribe(route => {
+      this.storedPromotedRoutePending = route || '';
+      this.promotedRoutePending = this.storedPromotedRoutePending;
     });
 
     this.userSub = this.authService.userObservable.subscribe((user: User) => {
@@ -96,6 +119,7 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     this.readySub?.unsubscribe();
     this.flagsSub?.unsubscribe();
     this.promotedSub?.unsubscribe();
+    this.promotedPendingSub?.unsubscribe();
     this.userSub?.unsubscribe();
     this.auditSub?.unsubscribe();
   }
@@ -159,6 +183,36 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     });
   }
 
+  async onPendingPromotedRouteChange(route: string): Promise<void> {
+    this.toggleError = '';
+    this.auditNotice = '';
+    const stored = this.storedPromotedRoutePending;
+    try {
+      await this.featureFlagsService.setPendingPromotedRoute(route);
+    } catch {
+      this.promotedRoutePending = stored;
+      this.toggleError = 'Couldn’t save the pending landing page. The selection was reverted.';
+      return;
+    }
+    this.writeAudit({
+      flagId: 'promotedRoutePending',
+      field: 'promotedRoutePending',
+      from: stored,
+      to: route,
+    });
+  }
+
+  get pendingRouteWarning(): string {
+    const selected = this.pendingRouteIssue(this.promotedRoutePending);
+    if (selected) {
+      return selected;
+    }
+    if (this.storedPromotedRoutePending !== this.promotedRoutePending) {
+      return this.pendingRouteIssue(this.storedPromotedRoutePending);
+    }
+    return '';
+  }
+
   get promotedRouteWarning(): string {
     const selected = this.disabledRouteWarning(this.promotedRoute);
     if (selected) {
@@ -194,6 +248,9 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
     if (record.flagId === 'promotedRoute') {
       return 'Promoted Route';
     }
+    if (record.flagId === 'promotedRoutePending') {
+      return 'Pending Promoted Route';
+    }
     return FEATURES.find(feature => feature.id === record.flagId)?.label || record.flagId;
   }
 
@@ -202,6 +259,21 @@ export class AdminFeaturesComponent implements OnInit, OnDestroy {
       return value ? 'On' : 'Off';
     }
     return value ? String(value) : 'None';
+  }
+
+  private pendingRouteIssue(route: string): string {
+    if (!route) {
+      return '';
+    }
+    const fallback = environment.promotedRoutePending || '/photos';
+    if (!PENDING_ROUTES.has(route)) {
+      return `“${route}” is not an allowed pending landing page, so pending users will land on ${fallback}.`;
+    }
+    const feature = this.featureForRoute(route);
+    if (feature && !this.isEnabled(feature.id)) {
+      return `${feature.label} is currently off, so pending users will land on the feature-disabled page.`;
+    }
+    return '';
   }
 
   private disabledRouteWarning(route: string): string {

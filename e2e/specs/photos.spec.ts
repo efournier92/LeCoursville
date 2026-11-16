@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/fixture';
 import { login } from '../helpers/auth';
 import { expectNoHorizontalOverflow } from '../helpers/overflow';
+import { expectInputFontSize, expectMinTouchTarget } from '../helpers/touch';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -77,16 +78,32 @@ test.describe('photos', () => {
       .toBe(true);
   });
 
+  test('empty album shows a page-level centered empty state', async ({ page }) => {
+    await login(page, 'admin');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/photos/album-4');
+    const message = page.locator('.no-results-message');
+    await expect(message).toBeVisible();
+    const [messageBox, pageBox] = await Promise.all([
+      message.boundingBox(),
+      page.locator('.page-content').boundingBox(),
+    ]);
+    expect(messageBox!.width).toBeGreaterThanOrEqual(400);
+    const messageCenter = messageBox!.x + messageBox!.width / 2;
+    const pageCenter = pageBox!.x + pageBox!.width / 2;
+    expect(Math.abs(messageCenter - pageCenter)).toBeLessThanOrEqual(2);
+  });
+
   test('slideshow renders and next/prev advance the image', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/photos/album-1/slideshow');
     await expect(page.locator('.slideshow-image')).toBeVisible();
     const counter = page.locator('.slideshow-counter');
-    await expect(counter).toContainText('/ 2');
+    await expect(counter).toContainText('/2');
     await page.locator('button[matTooltip="Next"]').click();
-    await expect(counter).toContainText('2 / 2');
+    await expect(counter).toContainText('2/2');
     await page.locator('button[matTooltip="Previous"]').click();
-    await expect(counter).toContainText('1 / 2');
+    await expect(counter).toContainText('1/2');
   });
 
   test('upload photo: admin uploads a folder with one PNG and the album appears', async ({ page }) => {
@@ -126,5 +143,60 @@ test.describe('control standard geometry (gallery)', () => {
     });
     expect(btnStyle.height).toBe('44px');
     expect(btnStyle.radius).toBe('999px');
+    await expect(slideshow.locator('mat-icon')).toHaveText('photo_library');
+  });
+});
+
+test.describe('mobile touch targets', () => {
+  test('gallery search clears 24px and 16px text on albums and album detail', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    await expect(page.locator('.album-grid')).toBeVisible();
+    await expectMinTouchTarget(page, 'input.gallery-search-input');
+    await expectInputFontSize(page, 'input.gallery-search-input', 16);
+
+    await page.goto('/photos/album-1');
+    await expect(page.locator('input.gallery-search-input')).toBeVisible();
+    await expectMinTouchTarget(page, 'input.gallery-search-input');
+    await expectInputFontSize(page, 'input.gallery-search-input', 16);
+  });
+
+  test('toolbar tools stay inside the bar at 320px', async ({ page }) => {
+    // WebKit stretched the column flex slot to its max-content width, so the
+    // search field pushed the whole toolbar 28px past the viewport.
+    await page.setViewportSize({ width: 320, height: 568 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    await expect(page.locator('.album-grid')).toBeVisible();
+    await expectNoHorizontalOverflow(page.locator('.page-toolbar'));
+    await expectNoHorizontalOverflow(page.locator('.app-container'));
+  });
+});
+
+test.describe('mobile convergence', () => {
+  test('album grid uses exactly two columns at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/photos');
+    const grid = page.locator('.album-grid:not([data-testid="albums-skeleton"])');
+    await expect(grid).toBeVisible();
+    const columns = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    const tracks = columns.split(/\s+/).filter((part) => part.length > 0);
+    expect(tracks).toHaveLength(2);
+  });
+
+  test('album detail breaks a short album to three columns at 768 and keeps two at 320', async ({ page }) => {
+    await login(page, 'user');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto('/photos/album-1');
+    const grid = page.locator('.photo-grid');
+    await expect(grid).toBeVisible();
+    const wide = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    expect(wide.split(/\s+/).filter(Boolean)).toHaveLength(3);
+
+    await page.setViewportSize({ width: 320, height: 568 });
+    const narrow = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+    expect(narrow.split(/\s+/).filter(Boolean)).toHaveLength(2);
   });
 });

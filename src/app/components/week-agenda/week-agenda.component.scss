@@ -1,0 +1,214 @@
+.week-agenda {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+  text-align: left;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.week-agenda-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.week-agenda-title {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.week-agenda-range {
+  font-size: 0.85em;
+  color: var(--color-ink-2);
+}
+
+.week-agenda-today-btn,
+.week-agenda-full-btn {
+  margin-left: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-brand-primary);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+// Expand is an outline button pinned to the header's far right; Today stays
+// beside the range. auto on this one lets the free space split there.
+.week-agenda-full-btn {
+  margin-left: auto;
+  align-self: center;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 45%, transparent);
+  border-radius: var(--radius-control);
+}
+
+.week-agenda-today-btn:hover,
+.week-agenda-full-btn:hover {
+  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+}
+
+.week-agenda-full-btn:hover {
+  border-color: color-mix(in srgb, var(--color-brand-primary) 70%, transparent);
+}
+
+.week-agenda-full-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.week-agenda-scroll {
+  position: relative;
+}
+
+// In the full (expanded sheet) variant the agenda fills the space its host is
+// given and the list owns the scroll, rather than capping at the inline
+// preview height and leaving dead space below it.
+.week-agenda.is-full {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.week-agenda.is-full .week-agenda-header {
+  flex-shrink: 0;
+}
+
+.week-agenda.is-full .week-agenda-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.week-agenda:not(.is-full) .week-agenda-scroll {
+  overflow: hidden;
+}
+
+.week-agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.week-agenda-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.week-agenda-item.is-selected {
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-primary) 35%, transparent);
+}
+
+.week-agenda-item.is-today {
+  background: color-mix(in srgb, var(--color-brand-primary) 18%, var(--color-surface));
+  box-shadow: inset 3px 0 0 var(--color-brand-primary), inset 0 0 0 1px var(--color-brand-primary);
+}
+
+.week-agenda-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.week-agenda-date:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.week-agenda-weekday {
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-2);
+}
+
+.week-agenda-daynum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  border-radius: var(--radius-avatar);
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.week-agenda-item.is-today .week-agenda-daynum {
+  background: var(--color-brand-solid);
+  color: var(--color-on-brand-solid);
+}
+
+.week-agenda-today-tag {
+  font-size: 0.6em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-brand-primary);
+}
+
+.week-agenda-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.week-agenda-empty {
+  font-size: 0.85em;
+  color: var(--color-ink-2);
+}
+
+// Clicking a feed name must not draw the global focus border around the tag.
+// Keyboard users still get an underline indicator.
+:host ::ng-deep app-calendar-cell {
+  .event-title-link:focus,
+  .event-title-spouse-link:focus,
+  .event-title-link:focus-visible,
+  .event-title-spouse-link:focus-visible {
+    outline: none !important;
+  }
+
+  .event-title-link:focus-visible,
+  .event-title-spouse-link:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}

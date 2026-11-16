@@ -1,31 +1,36 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Routes } from '@angular/router';
+import { CanActivateFn, Router, RouterModule, Routes } from '@angular/router';
 import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 import { AdminMediaComponent } from 'src/app/components/admin-media/admin-media.component';
-import { AdminContactsComponent } from 'src/app/components/admin-contacts/admin-contacts.component';
 import { ExpressionsComponent } from 'src/app/components/expressions/expressions.component';
-import { AdminPhotoAlbumsComponent } from 'src/app/components/admin-photo-albums/admin-photo-albums.component';
 import { AdminUserUploadsComponent } from 'src/app/components/admin-user-uploads/admin-user-uploads.component';
 import { AdminAnalyticsComponent } from 'src/app/components/admin-analytics/admin-analytics.component';
 import { LvLoadErrorComponent } from 'src/app/components/load-error/load-error.component';
 import { NoResultsMessageComponent } from 'src/app/components/no-results-message/no-results-message.component';
 import { AdminFilterBarComponent } from 'src/app/components/shared/admin-filter-bar/admin-filter-bar.component';
+import { SharedModule } from 'src/app/components/shared/shared.module';
 import { PageToolbarComponent } from 'src/app/components/shared/page-toolbar/page-toolbar.component';
 import { MaterialModule } from 'src/app/modules/material.module';
 import { PhotoAlbumsFeatureGuard } from 'src/app/services/photo-albums-feature.guard';
 import { SuperAdminGuard } from 'src/app/services/super-admin.guard';
 import { AdminComponent } from './admin.component';
 import { AdminCalendarsComponent } from '../admin-calendars/admin-calendars.component';
+import { AdminDataRequestsComponent } from '../admin-data-requests/admin-data-requests.component';
 import { AdminFamiliesComponent } from '../admin-families/admin-families.component';
 import { AdminFamilyExplorerComponent } from '../admin-family-explorer/admin-family-explorer.component';
 import { AdminFeaturesComponent } from '../admin-features/admin-features.component';
 import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-import.component';
+import { AdminPeopleComponent } from '../admin-people/admin-people.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
 import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
 import { SongDraftDialogComponent } from '../song-draft-dialog/song-draft-dialog.component';
+
+// Legacy links open the Media photo-albums tab with a URL that matches it.
+const redirectPhotoAlbums: CanActivateFn = () =>
+  inject(Router).createUrlTree(['/admin/media'], { queryParams: { section: 'photo-albums' } });
 
 const routes: Routes = [
   {
@@ -40,9 +45,15 @@ const routes: Routes = [
       },
       {
         path: ADMIN_ROUTE.photoAlbums,
-        component: AdminPhotoAlbumsComponent,
-        canActivate: [PhotoAlbumsFeatureGuard],
+        // Compatibility route: media is the only surface, with the Photo Albums
+        // section selected. Old links and tests no longer 404. An empty
+        // `children` keeps the dev-mode route validator happy: this route
+        // always redirects from `canActivate`, but Angular still requires one of
+        // component/loadComponent/redirectTo/children/loadChildren (NG04014),
+        // and `redirectTo` cannot combine with `canActivate`.
+        canActivate: [PhotoAlbumsFeatureGuard, redirectPhotoAlbums],
         data: { fallbackUrl: '/admin' },
+        children: [],
       },
       {
         path: ADMIN_ROUTE.songs,
@@ -60,18 +71,7 @@ const routes: Routes = [
       },
       {
         path: ADMIN_ROUTE.people,
-        component: AdminPeopleImportComponent,
-      },
-      {
-        // Contact fixups after CSV import. AdminContactsComponent is declared
-        // in AppModule so it can embed ContactEditComponent (same pattern as
-        // AdminMedia: routed here, declared eagerly).
-        path: ADMIN_ROUTE.contacts,
-        component: AdminContactsComponent,
-      },
-      {
-        path: ADMIN_ROUTE.contacts + '/:id',
-        component: AdminContactsComponent,
+        component: AdminPeopleComponent,
       },
       {
         // Expressions reuse: the member route stays read-only; admin
@@ -103,6 +103,10 @@ const routes: Routes = [
         canActivate: [SuperAdminGuard],
       },
       {
+        path: ADMIN_ROUTE.dataRequests,
+        component: AdminDataRequestsComponent,
+      },
+      {
         path: ADMIN_ROUTE.analytics,
         component: AdminAnalyticsComponent,
         canActivate: [SuperAdminGuard],
@@ -122,6 +126,7 @@ const routes: Routes = [
     AdminUsersComponent,
     AdminFeaturesComponent,
     AdminPeopleImportComponent,
+    AdminPeopleComponent,
     AdminFamiliesComponent,
     AdminCalendarsComponent,
     AdminFamilyExplorerComponent,
@@ -129,6 +134,7 @@ const routes: Routes = [
     AdminSongsComponent,
     SongDraftDialogComponent,
     AdminAnalyticsComponent,
+    AdminDataRequestsComponent,
   ],
   imports: [
     CommonModule,
@@ -139,6 +145,7 @@ const routes: Routes = [
     NoResultsMessageComponent,
     PageToolbarComponent,
     AdminFilterBarComponent,
+    SharedModule,
   ],
 })
 export class AdminModule {}

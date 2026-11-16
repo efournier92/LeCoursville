@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .no-results-message {
   display: flex;
   align-items: center;
@@ -12,6 +17,10 @@
     justify-content: center;
     gap: 12px;
     text-align: center;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 16px;
   }
 
   @media (max-width: 600px) {

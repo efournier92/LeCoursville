@@ -2,7 +2,7 @@
 <app-page-toolbar title="Features"></app-page-toolbar>
 
 <p class="admin-intro">
-  Choose what appears in the app. Changes save immediately; the promoted route picks the page people land on after signing in.
+  Choose what appears in the app. Changes save immediately.
 </p>
 
 @if (toggleError) {
@@ -13,7 +13,7 @@
   <p class="feature-audit-notice" role="status" data-testid="feature-audit-notice">{{ auditNotice }}</p>
 }
 
-<mat-card class="admin-surface">
+<mat-card class="admin-surface promoted-route-card">
   <mat-card-content>
     <div class="promoted-route-row">
       <div class="promoted-route-copy">
@@ -21,8 +21,11 @@
         <p class="promoted-route-support">The page users see by default after signing in</p>
       </div>
       <mat-form-field class="promoted-route-input">
-        <mat-label>Default Landing Page</mat-label>
-        <mat-select [(value)]="promotedRoute" (selectionChange)="onPromotedRouteChange($event.value)">
+        <mat-label>Approved Landing Page</mat-label>
+        <mat-select
+          [(value)]="promotedRoute"
+          (selectionChange)="onPromotedRouteChange($event.value)"
+          aria-label="Approved Users Landing Page">
           <mat-option value="">-- Select --</mat-option>
           @for (feature of featureOptions; track feature) {
             <mat-option [value]="feature.route">
@@ -37,13 +40,40 @@
         {{ promotedRouteWarning }}
       </p>
     }
+    <div class="promoted-route-row">
+      <div class="promoted-route-copy">
+        <h3 class="promoted-route-subtitle">Pending Users</h3>
+        <p class="promoted-route-support" id="pending-route-caption">
+          Pending users are signed in but cannot view PII, so they land on a restricted page.
+        </p>
+      </div>
+      <mat-form-field class="promoted-route-input">
+        <mat-label>Pending Users Landing Page</mat-label>
+        <mat-select
+          [(value)]="promotedRoutePending"
+          (selectionChange)="onPendingPromotedRouteChange($event.value)"
+          aria-describedby="pending-route-caption"
+          data-testid="pending-promoted-route">
+          <mat-option value="">-- Select --</mat-option>
+          @for (option of pendingRouteOptions; track option) {
+            <mat-option [value]="option.route">
+              {{ option.label }} ({{ option.route }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    @if (pendingRouteWarning) {
+      <p class="promoted-route-warning" role="status" data-testid="pending-route-warning">
+        {{ pendingRouteWarning }}
+      </p>
+    }
   </mat-card-content>
 </mat-card>
 
 <mat-card class="admin-surface features-card">
   <mat-card-header>
     <mat-card-title class="admin-card-title">Feature Flags</mat-card-title>
-    <mat-card-subtitle>Toggle visibility of navigation menu items</mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>
@@ -68,13 +98,13 @@
                 <div class="feature-copy">
                   <span class="feature-label">{{ feature.label }}</span>
                   <span class="feature-route">{{ feature.route }}</span>
-                </div>
-                <div class="feature-controls">
                   @if (changedLabel(feature.id)) {
                     <span class="feature-changed" [attr.data-testid]="'feature-changed-' + feature.id">
                       {{ changedLabel(feature.id) }}
                     </span>
                   }
+                </div>
+                <div class="feature-controls">
                   <mat-slide-toggle
                     [id]="'feature-id-' + feature.id"
                     [checked]="isEnabled(feature.id)"

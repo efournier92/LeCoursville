@@ -36,13 +36,31 @@
 
 // Absorbs the five per-page `.action-error` copies.
 .admin-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
   padding: 12px 16px;
   margin-bottom: 12px;
   border-left: 4px solid var(--color-error);
   border-radius: var(--radius-sm);
-  background: rgba(179, 38, 30, 0.08);
+  background: var(--color-error-tint);
   color: var(--color-ink);
   font-size: 0.875rem;
+
+  mat-icon {
+    flex: 0 0 auto;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    margin-top: 1px;
+  }
+}
+
+// The reason is a second line beneath the message, never a sibling column.
+.admin-error-reason {
+  flex: 1 0 100%;
 }
 
 // Mirrors the error shape so a success reads as the same kind of inline banner.
@@ -82,14 +100,16 @@
   box-shadow: var(--shadow-card);
 
   @media (max-width: 600px) {
-    align-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    align-content: normal;
+    row-gap: 8px;
   }
 }
 
 .admin-filter-search {
   display: flex;
   align-items: center;
-  order: 1;
   flex: 1 1 auto;
   max-width: 420px;
   min-width: 0;
@@ -139,7 +159,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  order: 2;
   margin-left: auto;
   flex: 0 0 auto;
   height: 36px;
@@ -154,7 +173,21 @@
 
   @media (max-width: 600px) {
     flex: 1 1 100%;
+    flex-wrap: wrap;
+    height: auto;
+    justify-content: flex-start;
+    margin-left: 0;
   }
+}
+
+// Phones: an admin table pans inside its card instead of being clipped by it.
+// min-width: 0 keeps a grid or flex parent from forcing the wrapper wider than
+// the surface it sits in.
+.admin-table-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {

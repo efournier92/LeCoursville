@@ -16,6 +16,10 @@ export class MessageService {
 
   private messagesSource: BehaviorSubject<Message[]>;
   private messagesErrorSource = new Subject<void>();
+  // Explicit first-read signal: an empty collection is a real result, not a
+  // seed replay, so consumers can leave the skeleton without guessing.
+  private messagesLoadedSource = new BehaviorSubject(false);
+  messagesLoaded$: Observable<boolean>;
   private messagesSub: Subscription | null = null;
 
   constructor(
@@ -25,6 +29,7 @@ export class MessageService {
     this.messagesSource = new BehaviorSubject([]);
     this.messagesObservable = this.messagesSource.asObservable();
     this.messagesError$ = this.messagesErrorSource.asObservable();
+    this.messagesLoaded$ = this.messagesLoadedSource.asObservable();
     this.subscribeToUserObservable();
   }
 
@@ -175,6 +180,7 @@ export class MessageService {
   }
 
   retryMessages(): void {
+    this.messagesLoadedSource.next(false);
     this.subscribeToGetMessages();
   }
 
@@ -183,6 +189,7 @@ export class MessageService {
     this.messagesSub = this.getMessages().valueChanges().subscribe(
       (messages: Message[]) => {
         this.updateMessagesEvent(messages);
+        this.messagesLoadedSource.next(true);
       },
       () => this.messagesErrorSource.next(),
     );

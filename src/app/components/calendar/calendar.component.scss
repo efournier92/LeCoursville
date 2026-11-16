@@ -11,35 +11,37 @@
 .calendar-toolbar-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: space-between;
+  justify-content: flex-end;
   flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 .calendar-toolbar-filters {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: row;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
 }
 
 .calendar-toolbar-actions {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+// Phone-only disclosure; desktop keeps the switches inline in the toolbar row.
+.calendar-filters-toggle {
+  display: none;
 }
 
 .calendar-checkbox {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--color-ink-2);
   margin: 0;
-
-  // Keep the checked box on the brand solid green with a white check in both
-  // themes; M3's dark palette would otherwise render it pale/neon green.
-  --mat-checkbox-selected-icon-color: var(--color-brand-solid);
-  --mat-checkbox-selected-hover-icon-color: var(--color-brand-solid-dark);
-  --mat-checkbox-selected-focus-icon-color: var(--color-brand-solid-dark);
-  --mat-checkbox-selected-checkmark-color: var(--color-on-brand);
 }
 
 // mat-flat-button supplies shape/states; pin the fill and label to the
@@ -149,6 +151,32 @@
 
 .calendar-month-year-pill:hover {
   background-color: color-mix(in srgb, var(--color-brand-primary) 6%, transparent);
+}
+
+// Jump back to the current month. The label is "Today" because that is the
+// anchor people know from other calendars; the action refocuses the month.
+.calendar-today-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: -2px;
+  }
 }
 
 .calendar-month-label {
@@ -278,25 +306,69 @@
 
   .calendar-toolbar-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  // Phone: the switches live behind this disclosure so the toolbar stays a
+  // single compact control instead of a two-row switch grid.
+  .calendar-filters-toggle {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-brand-primary);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
   }
 
   .calendar-toolbar-filters {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 4px;
     width: 100%;
+  }
+
+  .calendar-toolbar-filters.is-open {
+    display: grid;
   }
 
   .calendar-checkbox {
     font-size: 1rem;
     margin: 0;
+    height: 44px;
+  }
+
+  .calendar-toolbar-actions {
+    width: 100%;
   }
 
   .calendar-print-button {
     width: 100%;
-    margin-top: 4px;
+    margin-top: 0;
   }
 
   .calendar-nav-row {
@@ -322,6 +394,42 @@
     font-size: 0.8em;
   }
 }
+
+// Narrow phones: keep the filter grid's two rows and unclip every toggle label
+// from the card edge.
+@media (max-width: 360px) {
+  .calendar-toolbar-filters {
+    // Symmetric inset so no label can reach the card edge.
+    padding-inline: 4px;
+    column-gap: 8px;
+  }
+
+  .calendar-checkbox {
+    width: 100%;
+    min-width: 0;
+  }
+
+  // Cap the label column: a long label ellipsizes instead of overflowing into
+  // the card's right padding.
+  :host ::ng-deep .calendar-checkbox .mdc-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Touch widths: the pill renders 40px tall, under the 44px minimum.
+@media (max-width: 1024px) {
+  .calendar-month-year-pill {
+    min-height: 44px;
+  }
+
+  .calendar-today-btn {
+    min-height: 44px;
+  }
+}
+
 .calendar-skeleton {
   display: flex;
   flex-direction: column;
@@ -392,4 +500,51 @@
 .calendar-empty-hint {
   color: var(--color-ink-2);
   margin: 0;
+}
+
+// Mobile print lives at the foot of the page as a filled brand action. Hidden
+// on desktop where the toolbar button still leads.
+.calendar-print-button-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .calendar-print-button {
+    display: none;
+  }
+
+  .calendar-print-button-mobile {
+    --mdc-filled-button-container-color: var(--color-brand-solid);
+    --mdc-filled-button-label-text-color: var(--color-on-brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: calc(100% - 32px);
+    max-width: 360px;
+    min-height: 44px;
+    margin: 16px auto 8px;
+    border: none;
+    border-radius: var(--radius-control);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .calendar-print-button-mobile:hover {
+    background: var(--color-brand-solid-hover);
+    color: var(--color-on-brand-solid);
+  }
+
+  .calendar-print-button-mobile:active {
+    background: var(--color-brand-solid-dark);
+  }
 }

@@ -34,7 +34,7 @@ export class User {
   dateLastActive: Date;
   prefs?: UserPrefs;
 
-  constructor(authData: any, existingUser: User) {
+  constructor(authData: any, existingUser: User | null) {
     const authUser = authData?.authResult?.user || authData;
 
     this.id = existingUser?.id || authUser?.uid;
