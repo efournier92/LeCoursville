@@ -154,6 +154,13 @@
     align-items: center;
     padding: 2px 4px;
   }
+
+  .calendar-years-since-container {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
 }
 
 @media (max-width: 480px) {
