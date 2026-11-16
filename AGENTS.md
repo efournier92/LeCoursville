@@ -30,22 +30,22 @@ Record the behavior assertion or red proof in the commit.
 
 ## The gate
 
-```bash
-npm run e2e:gate
-```
+The tier ladder trades breadth for latency during iteration and never weakens the final gate.
 
-Builds the emulator-wired bundle, boots the Firebase Emulator Suite (auth,
-database, storage, hosting), seeds deterministic data, and runs the full
-Playwright matrix (Chromium + WebKit + Firefox). Fast local iteration:
+| Tier | Command | When | Cost |
+|---|---|---|---|
+| 1 | `npm run check` | Every edit that touches `src/`, the theme, or PII strings | Static checks, unit suite, no emulator or browser |
+| 2 | `npm run e2e:fast -- <spec or flags>` | One changed behavior, repeated until green | One emulator boot, chromium only |
+| 3 | `npm run e2e:pr` | Before pushing a full change set | One emulator boot, rules plus full chromium suite |
+| 4 | `npm run e2e:gate` | Mandatory before any push-to-deploy or release | Four emulator boots, chromium, WebKit, Firefox |
 
-```bash
-npx ng build --configuration=e2e
-firebase emulators:exec --project lecoursville-dev --only auth,database,storage,hosting,functions \
-  "node scripts/e2e/seed.mjs && npx playwright test --project=chromium"
-```
+`npm run e2e:gate` builds the emulator-wired bundle, runs the theme and PII checks, the unit and functions suites, the prod storage rules pass, and the full browser matrix.
 
-Seed data lives in `scripts/e2e/seed.mjs` — when a spec needs new data,
-extend the seed, don't hand-edit the emulator database.
+`scripts/deploy.sh` calls it unchanged and a green gate still needs the human sign-off.
+
+Tier 2 passes its arguments straight to `playwright test`. With no arguments it reruns `--last-failed` when a prior run recorded failures, otherwise it runs the full chromium suite.
+
+Seed data lives in `scripts/e2e/seed.mjs`. When a spec needs new data, extend the seed and never hand-edit the emulator database.
 
 ## Deploy sign-off
 

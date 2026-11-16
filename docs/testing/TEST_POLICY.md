@@ -82,9 +82,26 @@ Rules and callable logic are tested once, at the lowest layer that can prove the
 - A test that pins an accepted risk carries a header comment naming the risk and the ledger id; it records current policy, it does not endorse it.
 - Changing the deployed rules posture is a policy decision with a ledger entry, not a test edit.
 
+## The Tier Ladder
+
+Iteration cost is dominated by four emulator boots, three browser projects, and serial workers.
+The tiers trade breadth for latency and never trade depth of the final gate.
+
+| Tier | Command | Scope | When |
+|---|---|---|---|
+| 1 | `npm run check` | Theme check, PII canary, e2e bundle build, unit suite. No emulator or browser. | Every edit that touches `src/`, the theme, or PII strings |
+| 2 | `npm run e2e:fast -- <spec or flags>` | One emulator boot, seed once, chromium only. | One changed behavior, repeated until green |
+| 3 | `npm run e2e:pr` | Two emulator boots, rules project, full chromium suite, prod storage rules pass. No unit, functions, WebKit, or Firefox. | Before pushing a full change set |
+| 4 | `npm run e2e:gate` | The full pre-deploy matrix below. | Mandatory before any push-to-deploy or release |
+
+Tier 2 passes its arguments straight to `playwright test`, so a spec path, several spec paths, and `-g` all work.
+With no arguments it reruns `--last-failed` when a prior run recorded failures.
+The ladder never lowers `retries`, never changes `workers`, and never introduces parallelism.
+
 ## The Pre-Deploy Gate
 
-- `npm run e2e:gate` runs before every deploy: `scripts/deploy.sh` gates before any build, tag, or deploy step.
+- `npm run e2e:gate` runs before every deploy and `scripts/deploy.sh` gates before any build, tag, or deploy step.
+- Tiers 1 to 3 never replace the gate, which stays mandatory before any push-to-deploy or release.
 - A green gate still requires the human sign-off in `scripts/deploy.sh`: any input containing `deploy` or `yes` (any casing), or a bare `y`/`d`; Enter aborts.
 - A red gate blocks the default path but prints the report paths and asks for the same confirmation, or `E2E_FORCE=1` non-interactively. The override is always a human decision.
 - `SKIP_GATE=1` (`npm run deploy:dev:nogate`, `npm run deploy:prod:nogate`) skips the gate for a build whose gate already passed; sign-off and the bundle identity check still apply.
