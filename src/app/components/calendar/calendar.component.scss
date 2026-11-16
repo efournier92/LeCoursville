@@ -30,6 +30,11 @@
   flex-shrink: 0;
 }
 
+// Phone-only disclosure; desktop keeps the switches inline in the toolbar row.
+.calendar-filters-toggle {
+  display: none;
+}
+
 .calendar-checkbox {
   display: inline-flex;
   align-items: center;
@@ -146,6 +151,32 @@
 
 .calendar-month-year-pill:hover {
   background-color: color-mix(in srgb, var(--color-brand-primary) 6%, transparent);
+}
+
+// Jump back to the current month. The label is "Today" because that is the
+// anchor people know from other calendars; the action refocuses the month.
+.calendar-today-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: -2px;
+  }
 }
 
 .calendar-month-label {
@@ -279,12 +310,50 @@
     gap: 12px;
   }
 
+  // Phone: the switches live behind this disclosure so the toolbar stays a
+  // single compact control instead of a two-row switch grid.
+  .calendar-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-brand-primary);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+  }
+
   .calendar-toolbar-filters {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 12px;
     row-gap: 4px;
     width: 100%;
+  }
+
+  .calendar-toolbar-filters.is-open {
+    display: grid;
   }
 
   .calendar-checkbox {
@@ -353,6 +422,10 @@
 // Touch widths: the pill renders 40px tall, under the 44px minimum.
 @media (max-width: 1024px) {
   .calendar-month-year-pill {
+    min-height: 44px;
+  }
+
+  .calendar-today-btn {
     min-height: 44px;
   }
 }

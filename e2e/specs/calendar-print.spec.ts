@@ -213,6 +213,21 @@ test.describe('calendar print', () => {
     await expect(edith).not.toContainText('(');
   });
 
+  test('8a. disabled toggle tracks use a one-pixel hairline outline', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto(PRINT_URL);
+    await page.getByTestId('calendar-print-customize').click();
+
+    const lifespan = page.getByTestId('calendar-print-toggle-lifespan');
+    await expect(lifespan.locator('.mdc-switch--disabled')).toBeVisible();
+    const widths = await lifespan.locator('.mdc-switch__track').evaluate((track) => ({
+      before: getComputedStyle(track, '::before').borderTopWidth,
+      after: getComputedStyle(track, '::after').borderTopWidth,
+    }));
+    expect(widths.before).toBe('1px');
+    expect(widths.after).toBe('1px');
+  });
+
   test('19. entry tokens are bold, right-aligned numerals with no bracket rules', async ({ page }) => {
     await login(page, 'admin');
     await page.goto(PRINT_URL);

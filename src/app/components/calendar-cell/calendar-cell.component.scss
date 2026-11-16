@@ -157,25 +157,9 @@
 }
 
 @media (max-width: 480px) {
-  // Seven narrow columns: stack the years token above the name instead of
-  // letting it squeeze the name container to zero.
-  .calendar-cell-event-container {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .calendar-years-since-container {
-    min-width: 0;
-    margin-right: 0;
-    text-align: left;
-    line-height: 1;
-  }
-
+  // At this width the only tag surface is the Timeline, which keeps the token
+  // inline to match the calendar.
   .calendar-years-since {
-    font-size: 0.75em;
-  }
-
-  .calendar-event-title-container {
-    width: 100%;
+    font-size: 0.8em;
   }
 }

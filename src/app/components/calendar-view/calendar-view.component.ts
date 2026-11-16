@@ -119,8 +119,8 @@ export class CalendarViewComponent implements OnInit, OnChanges, OnDestroy {
       panelClass: 'calendar-agenda-sheet',
       width: '100vw',
       maxWidth: '100vw',
-      height: '100vh',
-      maxHeight: '100vh',
+      height: '100dvh',
+      maxHeight: '100dvh',
       autoFocus: 'dialog',
       disableClose: true,
     });

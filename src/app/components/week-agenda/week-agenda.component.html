@@ -42,12 +42,14 @@
             <div class="week-agenda-events">
               @if (day.events.length) {
                 @for (event of day.events; track event.id) {
-                  <app-calendar-cell
-                    [event]="event"
-                    [selectedYear]="day.date.getFullYear()"
-                    (personClick)="personClick.emit($event)"
-                    (spouseClick)="spouseClick.emit($event)"
-                  ></app-calendar-cell>
+                  <small class="mb-1">
+                    <app-calendar-cell
+                      [event]="event"
+                      [selectedYear]="day.date.getFullYear()"
+                      (personClick)="personClick.emit($event)"
+                      (spouseClick)="spouseClick.emit($event)"
+                    ></app-calendar-cell>
+                  </small>
                 }
               } @else {
                 <span class="week-agenda-empty">No events</span>

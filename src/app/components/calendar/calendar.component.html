@@ -16,7 +16,22 @@
     <app-page-toolbar title="Calendar">
       <div class="calendar-toolbar">
         <div class="calendar-toolbar-row">
-          <div class="calendar-toolbar-filters" role="group" aria-label="Calendar filters">
+          <button
+            type="button"
+            class="calendar-filters-toggle"
+            [attr.aria-expanded]="filtersOpen"
+            aria-controls="calendar-filters"
+            (click)="filtersOpen = !filtersOpen">
+            <mat-icon aria-hidden="true">tune</mat-icon>
+            <span>Filters</span>
+            <mat-icon class="calendar-filters-chevron" aria-hidden="true">{{ filtersOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+          <div
+            id="calendar-filters"
+            class="calendar-toolbar-filters"
+            role="group"
+            aria-label="Calendar filters"
+            [class.is-open]="filtersOpen">
             <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showBirthdays" (change)="toggleBirthdays($event)">Birthdays</mat-slide-toggle>
             <mat-slide-toggle class="calendar-checkbox" color="primary" [(ngModel)]="showAnniversaries" (change)="toggleAnniversaries($event)">Anniversaries</mat-slide-toggle>
             <mat-slide-toggle class="calendar-checkbox" color="primary" aria-label="Show deceased" [(ngModel)]="showNotLiving" (change)="toggleNotLiving($event)">Deceased</mat-slide-toggle>
@@ -53,6 +68,12 @@
         <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_right</mat-icon>
         </div>
+        <button
+          type="button"
+          class="calendar-today-btn"
+          (click)="goToToday()">
+          Today
+        </button>
       </div>
     </div>
     @if (datePickerOpen) {

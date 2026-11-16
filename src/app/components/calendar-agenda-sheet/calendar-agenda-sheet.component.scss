@@ -2,13 +2,32 @@
   display: block;
   height: 100%;
   box-sizing: border-box;
-  overflow: auto;
+  // minimalist: the sheet root must not scroll once it fills the viewport;
+  // .week-agenda.is-full .week-agenda-scroll owns the inner scroll.
+  overflow: hidden;
   background: var(--color-surface);
   padding: max(8px, env(safe-area-inset-top)) 16px max(8px, env(safe-area-inset-bottom));
 }
 
+// The sheet body is a full-height flex column: the header holds its line and
+// the week agenda grows to fill the rest, so the timeline uses the whole sheet
+// instead of topping out at the inline preview's scroll cap.
+.calendar-agenda-sheet-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.calendar-agenda-sheet-body app-week-agenda {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .calendar-agenda-sheet-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;

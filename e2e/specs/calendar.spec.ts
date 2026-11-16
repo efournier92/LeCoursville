@@ -292,6 +292,24 @@ test.describe('calendar', () => {
     await expect(pill).toBeFocused();
   });
 
+  test('Today returns to the current month from a different year and month', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2024&month=1');
+
+    await expect(page.locator('.calendar-month-label')).toHaveText('January');
+    await expect(page.locator('.calendar-year-label')).toHaveText('2024');
+
+    const today = page.locator('.calendar-today-btn');
+    await expect(today).toHaveText('Today');
+    await today.click();
+
+    const now = new Date();
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now);
+    await expect(page.locator('.calendar-month-label')).toHaveText(monthName);
+    await expect(page.locator('.calendar-year-label')).toHaveText(String(now.getFullYear()));
+    await expect(page).toHaveURL(new RegExp(`month=${now.getMonth() + 1}`));
+  });
+
   test('nav row keeps its vertical rhythm at desktop and 390px', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar');
@@ -316,13 +334,22 @@ test.describe('calendar', () => {
     expect(mobileMargins.top).toBe(mobileMargins.bottom);
   });
 
-  test('mobile toolbar lays filters in a 2x2 grid and shows the filled Print Calendar action', async ({ page }) => {
+  test('mobile toolbar collapses filters behind a Filters button and shows the filled Print Calendar action', async ({ page }) => {
     await login(page, 'admin');
     const original = page.viewportSize()!;
     await page.setViewportSize({ width: 390, height: 844 });
     try {
       await page.goto('/calendar');
       const filters = page.locator('.calendar-toolbar-filters');
+      const toggle = page.locator('.calendar-filters-toggle');
+      // Collapsed by default: the switches are hidden until the button opens them.
+      await expect(toggle).toBeVisible();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(filters).toBeHidden();
+
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(filters).toBeVisible();
       const columns = await filters.evaluate((el) =>
         getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
       expect(columns).toBe(2);
@@ -637,6 +664,7 @@ test.describe('mobile convergence', () => {
     await page.setViewportSize({ width: 320, height: 568 });
     await login(page, 'user');
     await page.goto('/calendar?year=2026&month=11');
+    await page.locator('.calendar-filters-toggle').click();
     const deceased = page.locator('mat-slide-toggle.calendar-checkbox', { hasText: 'Deceased' });
     const holidays = page.locator('mat-slide-toggle.calendar-checkbox', { hasText: 'Holidays' });
     await expect(deceased).toBeVisible();

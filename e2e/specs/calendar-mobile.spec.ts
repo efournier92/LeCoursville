@@ -31,6 +31,26 @@ test.describe('calendar mobile month', () => {
     await expect(day.locator('.cal-events-desktop')).toBeHidden();
   });
 
+  test('timeline tags reuse the calendar-cell presentation with an inline years token', async ({ page }) => {
+    await gotoNovember(page);
+    const row = preview(page).locator('.week-agenda-item[data-today="true"]');
+    const container = row.locator('.week-agenda-events app-calendar-cell .calendar-cell-event-container');
+    await expect(container).toBeVisible();
+    const title = container.locator('.event-title-link, .event-title-spouse-link').first();
+    await expect(title).toBeVisible();
+    const token = container.locator('.calendar-years-since');
+    await expect(token).toHaveText('10');
+
+    const tokenBox = await token.boundingBox();
+    const titleBox = await title.boundingBox();
+    expect(tokenBox).not.toBeNull();
+    expect(titleBox).not.toBeNull();
+    const tokenCenter = tokenBox!.y + tokenBox!.height / 2;
+    const titleCenter = titleBox!.y + titleBox!.height / 2;
+    expect(Math.abs(tokenCenter - titleCenter)).toBeLessThanOrEqual(6);
+    expect(tokenBox!.x).toBeLessThan(titleBox!.x);
+  });
+
   test('day cells expose accessible labels with event counts', async ({ page }) => {
     await gotoNovember(page);
     const grid = page.locator('.calendar-month-view-container');
@@ -127,6 +147,55 @@ test.describe('calendar mobile month', () => {
     await expect(page.locator('app-person-detail-modal')).toHaveCount(0);
     await expect(sheet).toBeVisible();
     await expect(rows).toHaveCount(35);
+  });
+
+  test('expanded agenda sheet fills the mobile viewport', async ({ page }) => {
+    await gotoNovember(page);
+    await page.getByRole('button', { name: 'Expand' }).click();
+
+    const sheet = page.locator('app-calendar-agenda-sheet');
+    await expect(sheet).toBeVisible();
+    const viewport = page.viewportSize()!;
+    // The dialog enters with a scale animation; wait for it to settle at full height.
+    await expect
+      .poll(async () => (await sheet.boundingBox())?.height ?? 0, { timeout: 5000 })
+      .toBeGreaterThanOrEqual(viewport.height - 2);
+    const box = await sheet.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeGreaterThanOrEqual(viewport.height - 2);
+    // Sub-pixel viewport rounding differs by engine (WebKit reports 388.6 for
+    // a 390px viewport), so allow the same 2px tolerance as the height.
+    expect(Math.abs(box!.width - viewport.width)).toBeLessThanOrEqual(2);
+
+    // The timeline itself fills the sheet: the scroll body stretches to the
+    // sheet's bottom edge instead of topping out at the retired 420px cap and
+    // leaving dead space under the last day.
+    const scroller = sheet.locator('.week-agenda-scroll');
+    const scrollBox = await scroller.boundingBox();
+    expect(scrollBox).not.toBeNull();
+    expect(scrollBox!.height).toBeGreaterThan(420);
+    expect(scrollBox!.y + scrollBox!.height).toBeGreaterThan(box!.y + box!.height - 40);
+
+    // The document behind the full-screen sheet must not scroll.
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollY);
+  });
+
+  test('the Expand button is an outline control pinned to the header right', async ({ page }) => {
+    await gotoNovember(page);
+    const header = preview(page).locator('.week-agenda-header');
+    const expand = page.getByRole('button', { name: 'Expand' });
+    await expect(header).toBeVisible();
+    await expect(expand).toBeVisible();
+    const headerBox = await header.boundingBox();
+    const expandBox = await expand.boundingBox();
+    expect(headerBox && expandBox).toBeTruthy();
+    expect(headerBox!.x + headerBox!.width - (expandBox!.x + expandBox!.width))
+      .toBeLessThanOrEqual(16);
+    await expect(expand).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(expand).toHaveCSS('border-top-style', 'solid');
+    await expect(expand).toHaveCSS('border-top-width', '1px');
   });
 
   test('tapping a grid day moves the preview to that day', async ({ page }) => {
