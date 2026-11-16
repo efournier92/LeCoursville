@@ -5,6 +5,24 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routin
 
 ## Entries
 
+- D-20261116-01 | 2026-11-16 | [trap] | admin/security | Repo and emulator deny pending users, but there is no recorded deploy of the `roles/user` gate landed in `5ceb2c46` (2026-10-30), and a manual test on the dev project still had full access. `ng build`/`ng serve` use `useEmulators: false`, so only an `--configuration=e2e` bundle exercises emulator rules | src/environments/environment.ts:10
+
+- D-20261116-02 | 2026-11-16 | [find] | admin/security | Pending users still read `photos` and `photoAlbums` (auth-only), and still see Songs, Chat, Audio, Videos, and Expressions in the nav. Decide before the next release whether Photos counts as PII | database.rules.json:136
+
+- D-20261115-01 | 2026-11-15 | [decision] | build/perf | Test cycle is tiered: `check` 43s static+unit, `e2e:fast` 27-35s one emulator plus chromium with `--last-failed` default, `e2e:pr` about 8m full suite plus rules, `e2e:gate` unchanged and mandatory before push-to-deploy | package.json:11
+
+- D-20261115-02 | 2026-11-15 | [trap] | media/routing | `isOnAdminRoute` matched `url.startsWith('/admin')`, so stale deep links like `/administrator` took the already-on-admin branch and the logo skipped `/admin`. Now an exact `ADMIN_PATHS` set | src/app/services/routing.service.ts:23
+
+- D-20261115-03 | 2026-11-15 | [trap] | admin/ui | Material form-field text size comes from three tokens (input, select trigger, floating label). Pin trigger and outlined-label sizes to `--mat-form-field-container-text-size` to keep filter placeholders equal | src/app/components/shared/page-toolbar/page-toolbar.component.scss:88
+
+- D-20261115-04 | 2026-11-15 | [trap] | calendar/print | The agenda sheet must use 100dvh, not 100vh, because 100vh overflows mobile browser chrome. The dialog container and surface also need height 100 percent to fill the pane | src/app/components/calendar-view/calendar-view.component.ts:122
+
+- D-20261115-05 | 2026-11-15 | [trap] | admin/ui | Hover styling must key off the clickable name, not a shared row ancestor like `.tree-row:hover .person-name`, or every name in a couple row underlines at once | src/app/components/shared/person-tree/person-tree.component.scss:34
+
+- D-20261115-06 | 2026-11-15 | [trap] | build/perf | The shared AGENTS.md points at `scripts/lint-markdown.py`, which does not exist in this repo. The working copy is the global one at `/Users/e/.config/opencode/scripts/lint-markdown.py` | /Users/e/.config/opencode/scripts/lint-markdown.py
+
+- D-20261115-07 | 2026-11-15 | [outcome] | admin/ui | Batch shipped: theme toggle beside nav, agenda 100dvh, right-aligned Expand outline button, brand-green audio toggle, muted video autoplay, full-width mobile media and account rows, single-name hover, exact admin match. Gate 560 per browser, unit 950, functions green | .gate-results/chromium.json
+
 - D-20261114-08 | 2026-11-14 | [outcome] | calendar/print | Mobile calendar redteam converged on a compact Timeline preview above the month grid with a full-height Expand sheet; gate 552 across the matrix, unit 950, theme clean | docs/critique/2026-11-14_MobileCalendarOrdering.md
 
 - D-20261114-07 | 2026-11-14 | [trap] | admin/ui | A CSS-hidden mobile-only component still renders duplicate event tags in the desktop DOM and wins `.first()` locators; gate it structurally with BreakpointObserver, not only `display:none` | src/app/components/calendar-view/calendar-view.component.html:98

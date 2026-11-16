@@ -18,6 +18,7 @@ Do these before any deploy step. They are hard gates.
 - UI-013 migration approval. See `docs/runbooks/2026-11-08_LegacyContactRetirementRunbook.md`. Requires a prod backup export decision before any prod delete.
 - UI-027 deploy version bump approval. `scripts/deploy.sh` bumps `package.json`, commits a `Release <version>`, builds, validates the bundle, deploys, and tags. This is deploy-affecting.
 - Captions were re-scoped to Expressions. The dev seed Expressions attribution was fixed in `c6046a86`. No further action.
+- Approval-gate deployment drift. There is no recorded deploy of the `roles/user` gate landed in `5ceb2c46` (2026-10-30). The last captured deployed ruleset (`database-rules/2026-10-25/before.json`) predates it, and a manual test against the dev project showed a brand-new signup reading People, Contacts, Calendar, Songs, and Photos data. Confirm the deployed dev and prod rules, then deploy `database.rules.json` and verify section 9. This is blocking for the release.
 
 ## 2. Pre-Merge
 
@@ -49,6 +50,8 @@ Do these before any deploy step. They are hard gates.
   - `promotedRoutePending` gains a `.validate` shape and allowlist.
   - `dataRequests` and `dataRequestAudit` added with least-privilege rules.
   - The legacy `contacts` block is removed.
+  - `people`, `addresses`, `families`, `clans`, `songs`, `messages`, `calendarEvents`, and `calendars` reads require `roles/user === true`. This gate has never reached the deployed projects.
+  - Known open gap: `photos` and `photoAlbums` reads still allow any authenticated user (`database.rules.json:136,319`), and pending users still see Songs, Chat, Audio, Videos, and Expressions links in the nav (`navbar-links.component.ts:33`). Decide before deploy whether Photos counts as PII.
 - `functions/package.json` and `functions/package-lock.json` bump the runtime to Node 24 and `@types/node` to 24.
 - `functions/src/admin-analytics-summary.ts` drops the retired contacts fixture row.
 - Hosting bundle rebuilt.
@@ -107,6 +110,8 @@ Run dev fully before prod. This verifies rules, functions, the migration, and th
 - The footer renders on user routes, including family explorer, and not on admin or print.
 - The version shown in the footer matches the git tag.
 - Confirm the contacts node is absent and a repeat migration is a no-op.
+- Create a brand-new account and confirm `/people`, `/contacts`, `/calendar`, `/songs`, and `/chat` redirect away and render no PII data.
+- Read `people`, `addresses`, `families`, and `clans` with the new account token directly against the deployed database and confirm every request is denied.
 
 ## 10. Rollback
 
@@ -130,4 +135,5 @@ Run dev fully before prod. This verifies rules, functions, the migration, and th
 | Captions and Expressions scope | Human plus implementer | Re-scoped to Expressions, fixed in c6046a86 | No |
 | C-46 duplicate-account message | Accepted | Rejected by design | No |
 | C-47 client-only password minimum | Accepted | Rejected, console-only gap | No |
+| Approval-gate rules deploy | Human | Not deployed, live drift confirmed | Yes |
 | Library of Congress checksum gap | Accepted | Documented | No |
