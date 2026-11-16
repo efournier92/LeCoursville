@@ -79,6 +79,17 @@
 }
 
 .audio-player-toggle {
+  background: var(--color-brand-solid);
+  color: var(--color-on-brand-solid);
+
+  &:hover {
+    background: var(--color-brand-solid-hover);
+  }
+}
+
+// Dark mode: white transport button with dark ink, so the play control reads
+// as the primary action against the dark surface instead of a muted green.
+:host-context(html[data-theme="dark"]) .audio-player-toggle {
   background: var(--color-control-strong);
   color: var(--color-surface);
 

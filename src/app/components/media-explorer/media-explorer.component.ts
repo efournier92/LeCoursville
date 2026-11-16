@@ -24,6 +24,7 @@ export class MediaExplorerComponent implements OnInit {
   @Input() title = 'Media';
 
   @ViewChild('nativeVideoPlayer') nativeVideoPlayer?: ElementRef<HTMLVideoElement>;
+  @ViewChild('playerContainer') playerContainer?: ElementRef<HTMLElement>;
 
   user: User;
   // allMedia: UploadableMedia[] = [];
@@ -33,7 +34,6 @@ export class MediaExplorerComponent implements OnInit {
   isLoading: boolean;
   searchQuery = '';
   videoErrorMessage = '';
-  videoErrorIsSrcNotSupported = false;
 
   constructor(
     private authService: AuthService,
@@ -102,6 +102,8 @@ export class MediaExplorerComponent implements OnInit {
       if (reselectingSameMedia) {
         this.reloadNativeVideo();
       }
+      // 0ms lets the @if render the <video> before scroll and play run.
+      this.revealVideoOnMobile();
     }
 
     this.scrollToTop();
@@ -112,6 +114,24 @@ export class MediaExplorerComponent implements OnInit {
       type: this.selectedMedia.type,
       userId: this.user?.id,
     });
+  }
+
+  // The breadcrumb clears the open item and returns to the list, labelled with
+  // the collection ("All Video") rather than a separate route.
+  get backLabel(): string {
+    if (this.mediaTypesToShow === MediaConstants.AUDIO_ALBUM.id) {
+      return 'All Audio';
+    }
+    if (this.mediaTypesToShow === MediaConstants.VIDEO.id) {
+      return 'All Video';
+    }
+    return 'All Media';
+  }
+
+  resetSelection(): void {
+    this.resetSelectedMedia();
+    this.routingService.clearQueryParams();
+    this.scrollToTop();
   }
 
   getShareableLink(): string {
@@ -144,7 +164,6 @@ export class MediaExplorerComponent implements OnInit {
 
   onVideoError(event: Event): void {
     const code = (event.target as HTMLVideoElement).error?.code;
-    this.videoErrorIsSrcNotSupported = code === 4;
     this.videoErrorMessage =
       code === 1 // MEDIA_ERR_ABORTED
         ? 'This video could not be played because playback was aborted.'
@@ -237,10 +256,15 @@ export class MediaExplorerComponent implements OnInit {
   private resetSelectedMedia(): void {
     this.selectedMedia = null;
     this.videoErrorMessage = '';
-    this.videoErrorIsSrcNotSupported = false;
   }
 
   private scrollToTop(): void {
+    // The app shell owns the scroll container, not the window.
+    const container = document.querySelector('.app-container') as HTMLElement | null;
+    if (container) {
+      container.scrollTop = 0;
+      return;
+    }
     window.scroll(0, 0);
   }
 
@@ -278,7 +302,40 @@ export class MediaExplorerComponent implements OnInit {
   // A reselected video keeps the same [src], so the browser never retries and
   // no fresh error event fires; load() forces a new attempt.
   private reloadNativeVideo(): void {
-    setTimeout(() => this.nativeVideoPlayer?.nativeElement.load());
+    setTimeout(() => {
+      this.nativeVideoPlayer?.nativeElement.load();
+      this.maybeAutoplayVideo();
+    });
+  }
+
+  private maybeAutoplayVideo(): void {
+    const el = this.nativeVideoPlayer?.nativeElement;
+    if (!el || !this.selectedMedia || !this.isVideo(this.selectedMedia)) return;
+    el.muted = true;
+    const playback = el.play?.();
+    playback?.catch(() => {});
+  }
+
+  // On phones the player sits above the library list, so a tap far down the
+  // list needs to bring the chosen video back into view before it plays.
+  private revealVideoOnMobile(): void {
+    setTimeout(() => {
+      if (this.isMobileViewport()) {
+        this.playerContainer?.nativeElement?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+      this.maybeAutoplayVideo();
+    });
+  }
+
+  private isMobileViewport(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(max-width: 991.98px)').matches
+    );
   }
 
   private getQueryParams() {
@@ -306,7 +363,7 @@ export class MediaExplorerComponent implements OnInit {
     if (media?.id === id) {
       this.selectedMedia = media;
       this.videoErrorMessage = '';
-      this.videoErrorIsSrcNotSupported = false;
+      this.revealVideoOnMobile();
       this.analyticsService.logEvent('media_explorer_load_by_query_param', {
         id: this.selectedMedia?.id,
         type: this.selectedMedia.type,

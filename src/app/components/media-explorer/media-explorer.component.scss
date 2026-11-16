@@ -17,6 +17,11 @@
   gap: 2px;
   min-height: 24px;
   margin-bottom: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -26,6 +31,11 @@
 
   &:hover {
     color: var(--color-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 
   mat-icon {
@@ -99,8 +109,7 @@
   }
 
   .media-explorer-actions-container {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin: 0 0 8px;
   }
 }
 
@@ -111,66 +120,55 @@
 }
 
 .media-explorer-actions-container {
-  margin-top: 12px;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
   display: flex;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
+// Secondary actions: a quiet text-button pair, not a bordered CTA row. Material
+// text buttons keep an accessible 36px desktop target while dropping the
+// outline and fill that made Download and Share compete with the media.
 .media-explorer-action-button {
+  min-width: 0;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 10px;
   border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--color-ink);
-  min-width: 44px;
-  min-height: 44px;
-  height: auto;
-  padding: 0 12px;
-  font-size: 0.875rem;
-  border: 1px solid var(--color-border);
-  // MDC paints the label through a token, which beats the host color.
-  --mat-button-outlined-label-text-color: var(--color-ink);
-  --mat-button-outlined-label-text-hover-color: var(--color-ink);
+  color: var(--color-ink-2);
+  font-size: 0.8rem;
+  font-weight: 500;
+  // MDC paints the label through tokens, which beat the host color.
+  --mat-button-text-label-text-color: var(--color-ink-2);
+  --mat-button-text-label-text-hover-color: var(--color-ink);
+  --mat-button-text-state-layer-color: transparent;
 
   &:hover {
     background: var(--color-surface-muted);
-    border-color: var(--color-border);
     color: var(--color-ink);
   }
 
-  &:active {
-    background: var(--color-border);
-    transform: scale(0.98);
-  }
-
-  &-primary {
-    background: var(--color-brand-solid);
-    border-color: var(--color-brand-solid);
-    color: var(--color-on-brand-solid);
-    --mat-button-outlined-label-text-color: var(--color-on-brand-solid);
-    --mat-button-outlined-label-text-hover-color: var(--color-on-brand-solid);
-
-    &:hover {
-      background: var(--color-brand-solid-hover);
-      border-color: var(--color-brand-solid-hover);
-      color: var(--color-on-brand-solid);
-    }
-
-    &:active {
-      background: var(--color-brand-solid-hover);
-      border-color: var(--color-brand-solid-hover);
-    }
-  }
-
   .mat-icon {
-    margin-right: 0.4em;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    margin-right: 4px;
     vertical-align: middle;
   }
 }
 
-.media-explorer-action-button-icon {
-  margin-right: 0.5em;
-  font-size: 1.1em;
+// Touch widths keep a 44px target (WCAG 2.5.5 / platform guidance) without
+// returning to the old full-width row.
+@media (max-width: 600px) {
+  .media-explorer-actions-container {
+    margin: 0 0 10px;
+    gap: 2px;
+  }
+
+  .media-explorer-action-button {
+    min-height: 44px;
+    padding: 0 8px;
+  }
 }
 
 .media-list-container {
@@ -180,5 +178,18 @@
   // Full-width state (nothing selected): no left divider against the gutter.
   &:not(.col-lg-5) {
     border-left: none;
+  }
+}
+
+// Desktop split view: the related-media rail is a sticky, independently
+// scrolling column so browsing the list never drags the player off screen.
+@media (min-width: 992px) {
+  .media-list-container.col-lg-5 {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    max-height: 100vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }

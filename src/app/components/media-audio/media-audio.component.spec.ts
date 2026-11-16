@@ -27,11 +27,11 @@ describe('AudioComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders the media explorer for the audio album type under a Music title', () => {
+  it('renders the media explorer for the audio album type under an Audio title', () => {
     const explorer = fixture.debugElement.query(By.directive(MediaExplorerComponent));
 
     expect(explorer).not.toBeNull();
     expect(explorer.componentInstance.mediaTypesToShow).toBe(MediaConstants.AUDIO_ALBUM.id);
-    expect(explorer.componentInstance.title).toBe('Music');
+    expect(explorer.componentInstance.title).toBe('Audio');
   });
 });

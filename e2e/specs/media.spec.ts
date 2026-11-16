@@ -387,6 +387,33 @@ test.describe('media', () => {
     await expect(page.locator('.media-list-item').first()).toBeVisible({ timeout: 15000 });
   });
 
+  test('detail: the breadcrumb clears the selection back to the list', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/media/video');
+    await mediaRow(page, 'E2E S3 Video').click();
+    let back = page.locator('.media-explorer-back');
+    await expect(back).toHaveAccessibleName('All Video');
+    await expect(page.getByTestId('native-video-player')).toBeVisible();
+    await back.click();
+    await expect(page.getByTestId('native-video-player')).toHaveCount(0);
+    await expect(
+      page.locator('.media-list-item').filter({ hasText: 'E2E S3 Video' }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/media\/video$/);
+
+    await page.goto('/media/audio');
+    await mediaRow(page, 'E2E Audio').click();
+    back = page.locator('.media-explorer-back');
+    await expect(back).toHaveAccessibleName('All Audio');
+    await back.click();
+    await expect(page.locator('.audio-player-container')).toHaveCount(0);
+    await expect(
+      page.locator('.media-list-item').filter({ hasText: 'E2E Audio' }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/media\/audio$/);
+  });
+
   test('explorer lists the seeded media entries', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
@@ -437,6 +464,132 @@ test.describe('media', () => {
     await expect(page.locator('.video-error')).toHaveCount(0);
   });
 
+  test('video: selecting one autoplays it muted', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await mediaRow(page, 'E2E S3 Video').click();
+
+    const nativePlayer = page.getByTestId('native-video-player');
+    await expect(nativePlayer).toBeVisible();
+    await expect
+      .poll(
+        async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(2);
+    await expect
+      .poll(async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).muted))
+      .toBe(true);
+    await expect
+      .poll(
+        async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).paused),
+        { timeout: 15000 },
+      )
+      .toBe(false);
+  });
+
+  test('video: a phone selection scrolls the player into view and autoplays', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+
+    // Start at the row, the way a thumb scrolls to it, then tap.
+    const row = mediaRow(page, 'E2E S3 Video');
+    await row.scrollIntoViewIfNeeded();
+    await row.click();
+
+    const nativePlayer = page.getByTestId('native-video-player');
+    await expect(nativePlayer).toBeVisible();
+    await expect
+      .poll(async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).muted))
+      .toBe(true);
+    await expect
+      .poll(
+        async () => nativePlayer.evaluate((el) => (el as HTMLVideoElement).paused),
+        { timeout: 15000 },
+      )
+      .toBe(false);
+    await expect
+      .poll(async () =>
+        nativePlayer.evaluate((el) => {
+          const top = el.getBoundingClientRect().top;
+          return top >= -1 && top < window.innerHeight / 2;
+        }),
+      )
+      .toBe(true);
+  });
+
+  test('detail: phone rows give each item a 64px tap target', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+
+    const rows = page.locator('.media-list-item');
+    await expect(rows.first()).toBeVisible();
+    const heights = await rows.evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().height),
+    );
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(64);
+  });
+
+  test('detail: audio and video rows share the same density styling', async ({ page }) => {
+    await login(page, 'admin');
+
+    await page.goto('/media/video?id=media-video-s3');
+    const videoHeight = await page
+      .locator('.media-list-item')
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
+
+    await page.goto('/media/audio?id=media-audio');
+    const audioHeight = await page
+      .locator('.media-list-item')
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
+
+    expect(videoHeight).toBeGreaterThanOrEqual(56);
+    expect(audioHeight).toBeGreaterThanOrEqual(56);
+    expect(audioHeight).toBeCloseTo(videoHeight, 0);
+  });
+
+  test('video: download and share are compact secondary actions', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video-s3');
+
+    const actions = page.locator('.media-explorer-actions-container');
+    await expect(actions.getByRole('button', { name: /Download/ })).toBeVisible();
+    await expect(actions.getByRole('button', { name: /Share/ })).toBeVisible();
+
+    const layout = await page.evaluate(() => {
+      const actionsEl = document.querySelector('.media-explorer-actions-container')!;
+      const buttons = Array.from(actionsEl.querySelectorAll('button'));
+      const downloadEl = buttons.find((button) => button.textContent?.includes('Download'))!;
+      const shareEl = buttons.find((button) => button.textContent?.includes('Share'))!;
+      const container = actionsEl.getBoundingClientRect();
+      const d = downloadEl.getBoundingClientRect();
+      const s = shareEl.getBoundingClientRect();
+      return {
+        containerWidth: container.width,
+        downloadWidth: d.width,
+        shareWidth: s.width,
+        downloadY: d.y,
+        shareY: s.y,
+        downloadHeight: d.height,
+        downloadBorder: getComputedStyle(downloadEl).borderTopWidth,
+        shareBorder: getComputedStyle(shareEl).borderTopWidth,
+      };
+    });
+    // Neither action stretches across the rail or wears a bordered CTA shell.
+    expect(layout.downloadWidth).toBeLessThan(layout.containerWidth * 0.6);
+    expect(layout.shareWidth).toBeLessThan(layout.containerWidth * 0.6);
+    expect(layout.downloadY).toBeCloseTo(layout.shareY, 0);
+    expect(layout.downloadHeight).toBeGreaterThanOrEqual(40);
+    expect(layout.downloadHeight).toBeLessThanOrEqual(48);
+    expect(layout.downloadBorder).toBe('0px');
+    expect(layout.shareBorder).toBe('0px');
+  });
+
   test('video: a legacy Google Docs file link routes to the Drive iframe player', async ({ page }) => {
     await page.route('https://docs.google.com/**', (route) =>
       route.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }),
@@ -454,6 +607,7 @@ test.describe('media', () => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video-s3');
     await expect(page.locator('.video-error')).toBeVisible();
+    await expect(page.locator('.video-open-link')).toHaveCount(0);
 
     await page.locator('.media-list-item').filter({ hasText: 'E2E S3 Video' }).first().click();
     await expect(page.locator('.video-error')).toBeVisible();
@@ -515,8 +669,8 @@ test.describe('media', () => {
 
     const back = page.locator('.media-explorer-back');
     await expect(back).toBeVisible();
-    await expect(back).toHaveAccessibleName('Media');
-    await expect(back).toHaveAttribute('href', '/media/explorer');
+    await expect(back).toHaveAccessibleName('All Media');
+    await expect(back).toHaveAttribute('type', 'button');
     await expect(page.locator('.media-explorer-title')).toHaveText('E2E Video');
     await expect(page.locator('.media-explorer-meta')).toContainText('2026');
     await expect(page.locator('.media-explorer-meta')).toContainText('0:30');
@@ -543,12 +697,12 @@ test.describe('media', () => {
     await expect(page.locator('input[name="media-explorer-filter"]')).toBeVisible();
   });
 
-  test('detail: related rows drop the year that matches the open item', async ({ page }) => {
+  test('detail: related rows keep their year even when it matches the open item', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video');
 
     const row = mediaRow(page, 'E2E S3 Video');
-    await expect(row.locator('.media-details-year')).toHaveCount(0);
+    await expect(row.locator('.media-details-year')).toHaveText('2026');
     await expect(row.locator('.media-details-artist')).toHaveCount(0);
     await expect(row.locator('.media-details-location')).toHaveCount(0);
     await expect(row).toHaveAccessibleName(/E2E S3 Video/);
@@ -564,7 +718,7 @@ test.describe('media', () => {
     expect(layout.flexWrap).toBe('nowrap');
   });
 
-  test('detail: related rows keep a year that differs from the open item', async ({ page }) => {
+  test('detail: related rows show a year that differs from the open item', async ({ page }) => {
     const id = 'media-video-2019';
     await writeDb(`media/${id}`, {
       id,
@@ -598,64 +752,116 @@ test.describe('media', () => {
     }
   });
 
-  test('video: actions render below the player, left aligned', async ({ page }) => {
+  test('detail: the sidebar marks the selected row and moves it on reselect', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/video');
+    await mediaRow(page, 'E2E S3 Video').click();
+
+    const selected = page.locator('.media-list-item-selected');
+    await expect(selected).toHaveCount(1);
+    await expect(selected).toHaveAttribute('aria-current', 'true');
+    await expect(selected).toContainText('E2E S3 Video');
+
+    const layout = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('.media-list-item'));
+      const selectedEl = document.querySelector('.media-list-item-selected') as HTMLElement;
+      const other = items.find((el) => el !== selectedEl) as HTMLElement;
+      return {
+        selectedBackground: getComputedStyle(selectedEl).backgroundColor,
+        otherBackground: getComputedStyle(other).backgroundColor,
+        accent: getComputedStyle(selectedEl).boxShadow,
+      };
+    });
+    expect(layout.selectedBackground).not.toBe(layout.otherBackground);
+    expect(layout.accent).toContain('inset');
+
+    await mediaRow(page, 'E2E Video').click();
+    await expect(page.locator('.media-list-item-selected')).toHaveCount(1);
+    await expect(page.locator('.media-list-item-selected')).toContainText('E2E Video');
+  });
+
+  test('detail: related list renders as dense rows with title, artist, and year', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video');
+
+    const list = page.locator('app-media-list .media-list-container');
+    await expect(list).toHaveClass(/media-list-dense/);
+
+    const rows = page.locator('.media-list-item');
+    await expect(rows.nth(0)).toBeVisible();
+    const first = await rows.nth(0).boundingBox();
+    const second = await rows.nth(1).boundingBox();
+    expect(second!.y).toBeGreaterThan(first!.y);
+    expect(Math.abs(first!.x - second!.x)).toBeLessThanOrEqual(1);
+    // Dense list rows, not tall cover tiles.
+    expect(first!.height).toBeLessThan(64);
+
+    await expect(rows.nth(0).locator('.media-details-name')).not.toBeEmpty();
+    await expect(page.locator('.media-details-artist').first()).toBeVisible();
+
+    const borderBottom = await rows.nth(0).evaluate(
+      (el) => getComputedStyle(el).borderBottomWidth,
+    );
+    expect(borderBottom).toBe('1px');
+  });
+
+  test('detail: the related rail scrolls on its own without moving the page', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer?id=media-video');
+    // Short viewport forces the seven-item rail to overflow its own box.
+    await page.setViewportSize({ width: 1280, height: 280 });
+
+    const rail = page.locator('.media-list-container.col-lg-5');
+    await expect(rail).toHaveCSS('position', 'sticky');
+    await expect(rail).toHaveCSS('overflow-y', 'auto');
+
+    const metrics = await rail.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+
+    const pageBefore = await page.evaluate(() => window.scrollY);
+    await rail.evaluate((el) => {
+      el.scrollTop = 120;
+    });
+    const railTop = await rail.evaluate((el) => el.scrollTop);
+    const pageAfter = await page.evaluate(() => window.scrollY);
+
+    expect(railTop).toBeGreaterThan(0);
+    expect(pageAfter).toBe(pageBefore);
+  });
+
+  test('video: actions render above the player, right aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-video-s3');
     const player = page.getByTestId('native-video-player');
     await expect(player).toBeVisible();
 
     const actions = page.locator('.media-explorer-actions-container');
-    const download = actions.getByRole('button', { name: /Download/ });
-    const share = actions.getByRole('button', { name: /Share/ });
-    await expect(download).toBeVisible();
-    await expect(share).toBeVisible();
-    const buttonLabels = await page.evaluate(() =>
-      Array.from(
-        document.querySelectorAll('.media-explorer-actions-container button'),
-      ).map((button) => button.textContent?.trim() ?? ''),
-    );
-    expect(buttonLabels).toHaveLength(2);
-    expect(buttonLabels[0]).toContain('Download');
-    expect(buttonLabels[1]).toContain('Share');
+    await expect(actions.getByRole('button', { name: /Download/ })).toBeVisible();
+    await expect(actions.getByRole('button', { name: /Share/ })).toBeVisible();
 
     const layout = await page.evaluate(() => {
       const playerEl = document.querySelector('[data-testid="native-video-player"]')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
-      const downloadEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
-        button.textContent?.includes('Download'),
-      )!;
-      const shareEl = Array.from(actionsEl.querySelectorAll('button')).find((button) =>
-        button.textContent?.includes('Share'),
-      )!;
-      const p = playerEl.getBoundingClientRect();
-      const a = actionsEl.getBoundingClientRect();
-      const d = downloadEl.getBoundingClientRect();
-      const dStyle = getComputedStyle(downloadEl);
+      const buttons = Array.from(actionsEl.querySelectorAll('button'));
+      const rightmost = Math.max(
+        ...buttons.map((button) => button.getBoundingClientRect().right),
+      );
       return {
-        afterPlayer: a.top >= p.bottom,
+        abovePlayer:
+          actionsEl.getBoundingClientRect().bottom <= playerEl.getBoundingClientRect().top,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
-        downloadLeftGap: d.left - a.left,
-        downloadWidth: d.width,
-        downloadHeight: d.height,
-        downloadMinWidth: dStyle.minWidth,
-        downloadMinHeight: dStyle.minHeight,
-        downloadBackground: dStyle.backgroundColor,
-        shareColor: getComputedStyle(shareEl).color,
+        downloadRightGap: actionsEl.getBoundingClientRect().right - rightmost,
       };
     });
-    expect(layout.afterPlayer).toBe(true);
-    expect(layout.justifyContent).toBe('flex-start');
-    expect(layout.downloadLeftGap).toBeCloseTo(0, 0);
-    expect(layout.downloadMinWidth).toBe('44px');
-    expect(layout.downloadMinHeight).toBe('44px');
-    expect(layout.downloadWidth).toBeGreaterThanOrEqual(44);
-    expect(layout.downloadHeight).toBeGreaterThanOrEqual(44);
-    // Primary action is filled brand; the secondary label is near-black ink.
-    expect(layout.downloadBackground).toBe('rgb(39, 116, 74)');
-    expect(layout.shareColor).toBe('rgb(35, 42, 50)');
+    expect(layout.abovePlayer).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
+    expect(layout.downloadRightGap).toBeCloseTo(0, 0);
   });
 
-  test('doc: actions render below the document viewer, left aligned', async ({ page }) => {
+  test('doc: actions render above the document viewer, right aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-doc');
     const viewer = page.locator('.doc-viewer-container').first();
@@ -667,16 +873,16 @@ test.describe('media', () => {
       const viewerEl = document.querySelector('.doc-viewer-container')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
       return {
-        afterViewer:
-          actionsEl.getBoundingClientRect().top >= viewerEl.getBoundingClientRect().bottom,
+        beforeViewer:
+          actionsEl.getBoundingClientRect().bottom <= viewerEl.getBoundingClientRect().top,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
       };
     });
-    expect(layout.afterViewer).toBe(true);
-    expect(layout.justifyContent).toBe('flex-start');
+    expect(layout.beforeViewer).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
   });
 
-  test('photo album: actions render below the album, left aligned', async ({ page }) => {
+  test('photo album: actions render above the album, right aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer?id=media-photo-album');
     const album = page.locator('app-photo-album');
@@ -689,16 +895,16 @@ test.describe('media', () => {
       const albumEl = document.querySelector('app-photo-album')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
       return {
-        afterAlbum:
-          actionsEl.getBoundingClientRect().top >= albumEl.getBoundingClientRect().bottom,
+        beforeAlbum:
+          actionsEl.getBoundingClientRect().bottom <= albumEl.getBoundingClientRect().top,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
       };
     });
-    expect(layout.afterAlbum).toBe(true);
-    expect(layout.justifyContent).toBe('flex-start');
+    expect(layout.beforeAlbum).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
   });
 
-  test('music: actions render below the track list, left aligned', async ({ page }) => {
+  test('music: actions render above the track list, right aligned', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
     await page.getByText('E2E Audio').first().click();
@@ -712,14 +918,14 @@ test.describe('media', () => {
       const tracklistEl = document.querySelector('.audio-player-tracklist')!;
       const actionsEl = document.querySelector('.media-explorer-actions-container')!;
       return {
-        afterTracklist:
-          actionsEl.getBoundingClientRect().top >=
-          tracklistEl.getBoundingClientRect().bottom,
+        beforeTracklist:
+          actionsEl.getBoundingClientRect().bottom <=
+          tracklistEl.getBoundingClientRect().top,
         justifyContent: getComputedStyle(actionsEl).justifyContent,
       };
     });
-    expect(layout.afterTracklist).toBe(true);
-    expect(layout.justifyContent).toBe('flex-start');
+    expect(layout.beforeTracklist).toBe(true);
+    expect(layout.justifyContent).toBe('flex-end');
   });
 
   test('audio: player shell renders and the local WAV plays', async ({ page }) => {
@@ -905,7 +1111,7 @@ test.describe('media', () => {
     // onSeek wiring is owned by the unit spec; this e2e owns focus and ARIA.
   });
 
-  test('audio: transport chrome uses the neutral control tokens', async ({ page }) => {
+  test('audio: the play/pause toggle uses the brand green fill', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');
     await page.getByText('E2E Audio').first().click();
@@ -915,24 +1121,20 @@ test.describe('media', () => {
     await expect(toggle).toBeVisible();
     await expect(seek).toBeVisible();
 
-    const { controlStrong, brandPrimary } = await page.evaluate(() => {
-      const resolve = (token: string): string => {
-        const probe = document.createElement('span');
-        probe.style.color = getComputedStyle(document.documentElement)
-          .getPropertyValue(token)
-          .trim();
-        document.body.append(probe);
-        const value = getComputedStyle(probe).color;
-        probe.remove();
-        return value;
-      };
-      return {
-        controlStrong: resolve('--color-control-strong'),
-        brandPrimary: resolve('--color-brand-primary'),
-      };
+    const brandPrimary = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-brand-primary')
+        .trim();
+      document.body.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
     });
 
-    await expect(toggle).toHaveCSS('background-color', controlStrong);
+    // Brand solid (#27744A), not the near-black neutral control fill.
+    await expect(toggle).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(toggle).not.toHaveCSS('background-color', 'rgb(35, 42, 50)');
     await expect(seek).not.toHaveCSS('accent-color', brandPrimary);
   });
 

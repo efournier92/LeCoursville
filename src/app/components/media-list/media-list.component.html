@@ -1,4 +1,4 @@
-<div class="media-list-container row" [class.media-list-admin]="isAdminMode">
+<div class="media-list-container row" [class.media-list-admin]="isAdminMode" [class.media-list-dense]="compact">
   @if (isAdminMode) {
     <div class="media-list-header">
       <div class="media-list-heading">
@@ -59,6 +59,8 @@
           <button
             class="media-list-item"
             [class.media-list-item-compact]="compact"
+            [class.media-list-item-selected]="compact && media.id === selectedId"
+            [attr.aria-current]="compact && media.id === selectedId ? 'true' : null"
             [attr.aria-label]="compact ? mediaRowLabel(media) : null"
             (click)="onMediaSelect(media)"
             >
@@ -79,7 +81,12 @@
             </div>
             @if (compact) {
               <div class="media-details media-details-compact">
-                <div class="media-details-name">{{ media.title }}</div>
+                <div class="media-details-compact-text">
+                  <div class="media-details-name">{{ media.title }}</div>
+                  @if (media.artist) {
+                    <div class="media-details-artist">{{ media.artist }}</div>
+                  }
+                </div>
                 @if (shouldShowYear(media)) {
                   <span class="media-details-year">{{ formatYear(media.date) }}</span>
                 }

@@ -104,6 +104,12 @@ const routes: Routes =
     // MEDIA
     {
       path: 'media',
+      pathMatch: 'full',
+      component: AuthComponent,
+      data: { notFound: true },
+    },
+    {
+      path: 'media',
       loadChildren: () => import('./components/media/media.module').then(m => m.MediaFeatureModule),
     },
     // ADMIN

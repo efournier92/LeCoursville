@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { MediaExplorerComponent } from './media-explorer.component';
+import { MediaConstants } from 'src/app/constants/media-constants';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -119,7 +120,7 @@ describe('MediaExplorerComponent video player branch', () => {
     expect(message.textContent).toContain('could not be played');
   });
 
-  it('renders the action row after the player', () => {
+  it('renders the action row above the player', () => {
     component.selectedMedia = videoMedia({
       download: 'https://assets.lecoursville.com/Video/trip.mp4',
     });
@@ -132,8 +133,32 @@ describe('MediaExplorerComponent video player branch', () => {
       '.media-explorer-actions-container',
     );
     expect(
-      player.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING,
+      actions.compareDocumentPosition(player) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it('labels the breadcrumb with the collection it clears back to', () => {
+    component.mediaTypesToShow = MediaConstants.VIDEO.id;
+    expect(component.backLabel).toBe('All Video');
+
+    component.mediaTypesToShow = MediaConstants.AUDIO_ALBUM.id;
+    expect(component.backLabel).toBe('All Audio');
+
+    component.mediaTypesToShow = undefined as unknown as string;
+    expect(component.backLabel).toBe('All Media');
+  });
+
+  it('clears the open media when the breadcrumb is used', () => {
+    component.selectedMedia = videoMedia({
+      download: 'https://assets.lecoursville.com/Video/trip.mp4',
+    });
+    const routing = TestBed.inject(RoutingService);
+    const clear = vi.spyOn(routing, 'clearQueryParams');
+
+    component.resetSelection();
+
+    expect(component.selectedMedia).toBeNull();
+    expect(clear).toHaveBeenCalled();
   });
 
   it('routes a docs.google.com open link to the Drive iframe', () => {
@@ -162,29 +187,12 @@ describe('MediaExplorerComponent video player branch', () => {
     expect(labels).toEqual(['Download', 'Share']);
   });
 
-  it('offers a new-tab link when the native source type is unsupported', () => {
+  it('does not render a new-tab escape for an unsupported source', () => {
     component.selectedMedia = videoMedia({
       download: 'https://assets.lecoursville.com/Video/broken.mp4',
     });
     fixture.detectChanges();
     component.onVideoError({ target: { error: { code: 4 } } } as any);
-    fixture.detectChanges();
-
-    const link = fixture.nativeElement.querySelector('.video-open-link');
-    expect(link).not.toBeNull();
-    expect(link.getAttribute('href')).toBe(
-      'https://assets.lecoursville.com/Video/broken.mp4',
-    );
-    expect(link.getAttribute('target')).toBe('_blank');
-    expect(link.getAttribute('rel')).toContain('noopener');
-  });
-
-  it('shows no new-tab link for non code-4 errors', () => {
-    component.selectedMedia = videoMedia({
-      download: 'https://assets.lecoursville.com/Video/broken.mp4',
-    });
-    fixture.detectChanges();
-    component.onVideoError({ target: { error: { code: 2 } } } as any);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.video-open-link')).toBeNull();

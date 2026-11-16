@@ -16,13 +16,14 @@
   <div class="row">
     @if (selectedMedia?.id) {
       <div
+        #playerContainer
         class="media-explorer-player-container col-lg-7 justify-content-center"
         >
         <div class="media-explorer-heading">
-          <a class="media-explorer-back" routerLink="/media/explorer">
+          <button type="button" class="media-explorer-back" (click)="resetSelection()">
             <mat-icon aria-hidden="true">chevron_left</mat-icon>
-            <span>{{ title }}</span>
-          </a>
+            <span>{{ backLabel }}</span>
+          </button>
           <h1 class="media-explorer-title">{{ selectedMedia.title }}</h1>
           @if (selectedMedia.date || selectedMedia.duration) {
             <p class="media-explorer-meta">
@@ -36,6 +37,30 @@
                 <span class="media-explorer-meta-duration">{{ formatDuration(selectedMedia.duration) }}</span>
               }
             </p>
+          }
+        </div>
+        <div class="media-explorer-actions-container">
+          @if (shouldShowDownloadButton()) {
+            <button
+              mat-button
+              class="media-explorer-action-button"
+              matTooltip="Downloads the selected media to a file"
+              (click)="downloadSelectedMedia()"
+              >
+              <mat-icon>download</mat-icon>
+              <span>Download</span>
+            </button>
+          }
+          @if (shouldShowShareableLinkButton()) {
+            <button
+              mat-button
+              class="media-explorer-action-button"
+              matTooltip="Copies a shareable link to your clipboard"
+              (click)="onGetShareableLink()"
+              >
+              <mat-icon>share</mat-icon>
+              <span>Share</span>
+            </button>
           }
         </div>
         @if (isVideo(selectedMedia)) {
@@ -55,6 +80,8 @@
                 class="video-element"
                 controls
                 playsinline
+                muted
+                autoplay
                 preload="metadata"
                 [src]="selectedMedia.urls.download"
                 [attr.poster]="selectedMedia.urls.icon || null"
@@ -64,15 +91,6 @@
               </video>
               @if (videoErrorMessage) {
                 <p class="video-error" role="alert">{{ videoErrorMessage }}</p>
-              }
-              @if (videoErrorIsSrcNotSupported) {
-                <a
-                  class="video-open-link"
-                  [href]="selectedMedia.urls.download"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Open video in a new tab</a
-                >
               }
             }
           </div>
@@ -106,30 +124,6 @@
             </app-audio-player>
           </div>
         }
-        <div class="media-explorer-actions-container">
-          @if (shouldShowDownloadButton()) {
-            <button
-              mat-stroked-button
-              class="media-explorer-action-button media-explorer-action-button-primary"
-              matTooltip="Downloads the selected media to a file"
-              (click)="downloadSelectedMedia()"
-              >
-              <mat-icon>download</mat-icon>
-              <span>Download</span>
-            </button>
-          }
-          @if (shouldShowShareableLinkButton()) {
-            <button
-              mat-stroked-button
-              class="media-explorer-action-button"
-              matTooltip="Copies a shareable link to your clipboard"
-              (click)="onGetShareableLink()"
-              >
-              <mat-icon>share</mat-icon>
-              <span>Share</span>
-            </button>
-          }
-        </div>
       </div>
     }
 
@@ -155,7 +149,7 @@
           [mediaTypesToShow]="mediaTypesToShow"
           [isAdminMode]="false"
           [compact]="!!selectedMedia?.id"
-          [referenceDate]="selectedMedia?.date || ''"
+          [selectedId]="selectedMedia?.id || ''"
           [searchQuery]="searchQuery"
           (mediaClickEvent)="onMediaSelect($event)"
         ></app-media-list>

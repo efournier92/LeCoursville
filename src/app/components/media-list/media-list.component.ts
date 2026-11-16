@@ -20,8 +20,8 @@ export class MediaListComponent implements OnInit, OnChanges {
   @Input() isAdminMode = false;
   /** Detail-route rows collapse to icon + title + year. */
   @Input() compact = false;
-  /** The open item's stored date; compact rows drop a year that repeats it. */
-  @Input() referenceDate = '';
+  /** Id of the open item, so its compact row can read as selected. */
+  @Input() selectedId = '';
   /** External search term — set by the hosting page toolbar (non-admin mode).
    *  The list re-filters whenever it changes. In admin mode the internal
    *  toolbar binds to the same property. */
@@ -133,11 +133,10 @@ export class MediaListComponent implements OnInit, OnChanges {
     return match ? match[1] : formatted;
   }
 
-  /** Compact rows omit a year that matches the open item's, so the right-hand
-   *  column marks only rows from a different year. */
+  /** Every compact row shows its own year; the year is identifying data, not
+   *  a difference against the open item. */
   shouldShowYear(media: UploadableMedia): boolean {
-    const year = this.formatYear(media.date);
-    return !!year && year !== this.formatYear(this.referenceDate);
+    return !!this.formatYear(media.date);
   }
 
   /** Preserves the row's pre-compact accessible name when subtitles are hidden. */
