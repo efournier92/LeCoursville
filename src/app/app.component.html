@@ -23,7 +23,7 @@
           />
       </button>
     </div>
-    <div class="toolbar-center">
+    <div class="icons-menu d-inline-flex">
       <button
         type="button"
         class="theme-switch"
@@ -35,8 +35,6 @@
         >
         <app-theme-pill [mode]="((theme$ | async) === 'dark') ? 'dark' : 'light'"></app-theme-pill>
       </button>
-    </div>
-    <div class="icons-menu d-inline-flex">
       @if (!authResolved) {
         <div data-testid="nav-links-skeleton">
           <div class="nav-skeleton nav-desktop" aria-hidden="true">

@@ -46,9 +46,14 @@ const routes: Routes = [
       {
         path: ADMIN_ROUTE.photoAlbums,
         // Compatibility route: media is the only surface, with the Photo Albums
-        // section selected. Old links and tests no longer 404.
+        // section selected. Old links and tests no longer 404. An empty
+        // `children` keeps the dev-mode route validator happy: this route
+        // always redirects from `canActivate`, but Angular still requires one of
+        // component/loadComponent/redirectTo/children/loadChildren (NG04014),
+        // and `redirectTo` cannot combine with `canActivate`.
         canActivate: [PhotoAlbumsFeatureGuard, redirectPhotoAlbums],
         data: { fallbackUrl: '/admin' },
+        children: [],
       },
       {
         path: ADMIN_ROUTE.songs,

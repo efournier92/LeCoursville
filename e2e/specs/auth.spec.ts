@@ -100,6 +100,13 @@ test.describe('auth', () => {
     await expect(page).toHaveURL('/calendar');
   });
 
+  test('signed-in /media with no sub-route shows the not-found card', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media');
+    await expect(page.getByTestId('not-found-card')).toBeVisible();
+    await expect(page).toHaveURL('/media');
+  });
+
   test('login success (admin) lands on the promoted route /calendar', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-email').fill(E2E_USERS.admin.email);
@@ -197,29 +204,68 @@ test.describe('auth', () => {
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   });
 
-  test('account action bar spaces the theme toggle evenly and Sign Out is neutral', async ({ page }) => {
+  test('account theme control is full width on the surface color', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, 'user');
+    await page.goto('/account');
+    await expect(page).toHaveURL('/account');
+
+    const pref = page.locator('.account-theme-pref');
+    const out = page.getByRole('button', { name: 'Sign Out', exact: true });
+    await expect(pref).toBeVisible();
+    await expect(out).toBeVisible();
+
+    const [prefBox, outBox] = await Promise.all([pref.boundingBox(), out.boundingBox()]);
+    expect(prefBox && outBox).toBeTruthy();
+    expect(Math.abs(prefBox!.width - outBox!.width)).toBeLessThanOrEqual(2);
+
+    const { background, surface, surfaceMuted } = await pref.evaluate((el) => {
+      const resolve = (token: string): string => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = getComputedStyle(document.documentElement)
+          .getPropertyValue(token)
+          .trim();
+        document.body.append(probe);
+        const value = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return value;
+      };
+      return {
+        background: getComputedStyle(el).backgroundColor,
+        surface: resolve('--color-surface'),
+        surfaceMuted: resolve('--color-surface-muted'),
+      };
+    });
+    expect(background).toBe(surface);
+    expect(background).not.toBe(surfaceMuted);
+  });
+
+  test('only a super admin sees the account admin link', async ({ page }) => {
+    await login(page, 'admin');
+    await page.getByRole('link', { name: 'Account' }).click();
+    const adminLink = page.getByTestId('account-admin-link');
+    await expect(adminLink).toBeVisible();
+    await expect(adminLink).toHaveAttribute('href', '/admin');
+
+    const barOrder = await page.locator('.account-action-bar').evaluate((bar) => {
+      const admin = bar.querySelector('[data-testid="account-admin-link"]')!;
+      const theme = bar.querySelector('.account-theme-pref')!;
+      const out = bar.querySelector('.auth-signout')!;
+      const follows = (a: Element, b: Element): boolean =>
+        (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+      return follows(admin, theme) && follows(theme, out);
+    });
+    expect(barOrder, 'account bar reads Admin then theme then Sign Out').toBe(true);
+
+    await adminLink.click();
+    // /admin redirects a super admin to the families page.
+    await expect(page).toHaveURL(/\/admin\/families$/);
+
+    await page.goto('/account');
+    await logout(page);
     await login(page, 'user');
     await page.getByRole('link', { name: 'Account' }).click();
-    const edit = page.getByRole('button', { name: 'Edit profile' });
-    const out = page.getByRole('button', { name: 'Sign Out', exact: true });
-    await expect(out).toHaveAccessibleName('Sign Out');
-    const chip = page.locator('.account-theme-pref');
-    const [e, c, o] = await Promise.all([edit.boundingBox(), chip.boundingBox(), out.boundingBox()]);
-    expect(e && c && o).toBeTruthy();
-    // Same row: vertical centers align.
-    const cy = (b: { y: number; height: number }) => b.y + b.height / 2;
-    expect(Math.abs(cy(e!) - cy(c!))).toBeLessThanOrEqual(1);
-    expect(Math.abs(cy(c!) - cy(o!))).toBeLessThanOrEqual(1);
-    // Equal gaps left and right of the whole chip.
-    const left = c!.x - (e!.x + e!.width);
-    const right = o!.x - (c!.x + c!.width);
-    expect(Math.abs(left - right)).toBeLessThanOrEqual(1);
-    // The chip is horizontally centered in the card.
-    const card = await page.locator('.auth-card--account').boundingBox();
-    expect(Math.abs((c!.x + c!.width / 2) - (card!.x + card!.width / 2))).toBeLessThanOrEqual(2);
-    // Sign Out no longer uses brand green in light theme.
-    const color = await out.evaluate((el) => getComputedStyle(el).color);
-    expect(color).toBe('rgb(91, 100, 112)'); // --color-ink-2 light
+    await expect(page.getByTestId('account-admin-link')).toHaveCount(0);
   });
 
   test('signed-in email/password user sees their profile on the account page', async ({ page }) => {

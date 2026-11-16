@@ -97,19 +97,12 @@
   outline-offset: 2px !important;
 }
 
-/* Theme toggle: a two-option sun/moon pill on the green toolbar. Transparent
-   and muted so it stays present but does not compete with the nav; it
-   brightens on hover/focus only. */
+// Right-hand cluster: theme toggle, then nav links or burger. The gap keeps the
+// toggle from crowding the nav.
 .icons-menu {
+  display: inline-flex;
   align-items: center;
-}
-
-.toolbar-center {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  gap: 10px;
 }
 
 // Primary nav actions in the app header: raise the 40px Material touch box to
@@ -124,21 +117,15 @@
     min-height: 44px;
   }
 
-  // Phones put the theme toggle beside the menu instead of centering it in the
-  // bar, where it read as the page's primary control. The left cluster takes
-  // the free space so the toggle and menu sit together at the right edge.
+  // Phones keep the toggle beside the menu rather than centered in the bar,
+  // where it read as the page's primary control. The left cluster takes the
+  // free space so the toggle and menu sit together at the right edge.
   mat-toolbar {
     justify-content: flex-start;
   }
 
   .toolbar-left {
     margin-right: auto;
-  }
-
-  .toolbar-center {
-    flex: 0 0 auto;
-    justify-content: flex-end;
-    margin-right: 10px;
   }
 }
 

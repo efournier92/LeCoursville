@@ -105,9 +105,11 @@
   cursor: pointer;
   transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 
+  // Selected pill carries the brand color rather than a neutral surface chip,
+  // so the active sort reads at a glance in the gallery toolbar.
   &.active {
-    background: var(--color-surface);
-    color: var(--color-ink);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
     box-shadow: var(--shadow-control);
   }
 }

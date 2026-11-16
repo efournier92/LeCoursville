@@ -33,6 +33,9 @@ test.afterEach(async () => {
 
 async function requestReset(page: Page, email: string): Promise<void> {
   await page.goto('/');
+  // Wait for auth to resolve before driving the form, so the handler is bound
+  // under full-suite load (WebKit raced the first paint otherwise).
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
   await page.getByTestId('auth-email').fill(email);
   await page.getByTestId('auth-forgot').click();
   await expect(page.getByTestId('auth-reset-info')).toBeVisible();

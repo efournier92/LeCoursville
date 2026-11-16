@@ -76,10 +76,15 @@
   cursor: pointer;
 
   &.is-active {
-    border-color: var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-brand-primary);
+    border-color: var(--color-brand-solid);
+    background: var(--color-brand-solid);
+    color: var(--color-on-brand-solid);
     box-shadow: var(--shadow-card);
+  }
+
+  &:hover:not(.is-active) {
+    background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+    color: var(--color-brand-primary);
   }
 
   &:focus-visible {

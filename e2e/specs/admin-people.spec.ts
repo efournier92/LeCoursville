@@ -303,6 +303,11 @@ test.describe('admin people surfaces', () => {
     await expect(option).toBeVisible();
     await expect(option).toHaveCSS('min-height', '36px');
     await expect(option).toHaveCSS('font-size', '14px');
+    // The active segment carries the brand fill, matching filled actions like
+    // Add Family, instead of a neutral surface chip.
+    await expect(option).toHaveClass(/is-active/);
+    await expect(option).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+    await expect(option).toHaveCSS('color', 'rgb(255, 255, 255)');
     await expect(page.locator('.people-pagination')).toHaveCSS('padding-top', '12px');
   });
 

@@ -49,6 +49,18 @@ test.describe('admin', () => {
     await expect(page).toHaveURL(/\/admin\/families$/);
   });
 
+  test('clicking the logo from a stale admin URL lands on /admin/families', async ({ page }) => {
+    await login(page, 'admin');
+    for (const path of ['/administrator', '/admin/unknown']) {
+      await page.goto(path);
+      const logo = page.locator('.toolbar-logo');
+      await expect(logo).toBeVisible();
+      await logo.click();
+      await expect(page).toHaveURL(/\/admin\/families$/);
+      await expect(page).not.toHaveURL(/\/calendar$/);
+    }
+  });
+
   test('clicking the logo as a staff admin lands on the promoted route', async ({ page }) => {
     await login(page, 'staff');
     await page.goto('/people');

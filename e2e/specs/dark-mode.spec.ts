@@ -180,14 +180,18 @@ test('theme toggle sits immediately left of the desktop nav items', async ({ pag
   // cluster lost its definite height).
   expect(logoBox!.height).toBeLessThanOrEqual(64);
   expect(toolbarBox!.height).toBe(64);
-  // Logo on the left, the toggle centered in the gap before the nav items.
+  // Logo on the left, then the toggle immediately left of the nav items.
   expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
   expect(toggleBox!.x + toggleBox!.width).toBeLessThanOrEqual(peopleBox!.x);
   expect(peopleBox!.x).toBeLessThanOrEqual(accountBox!.x);
-  // The toggle sits in the middle of the logo-to-People gap, within 2px.
-  const gapCenter = (logoBox!.x + logoBox!.width + peopleBox!.x) / 2;
+  // The toggle is adjacent to the first nav item, not centered in the gap.
+  const navGap = peopleBox!.x - (toggleBox!.x + toggleBox!.width);
+  expect(navGap).toBeGreaterThanOrEqual(8);
+  expect(navGap).toBeLessThanOrEqual(14);
+  // It moved right of where the old centered position sat.
+  const oldGapCenter = (logoBox!.x + logoBox!.width + peopleBox!.x) / 2;
   const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
-  expect(Math.abs(toggleCenterX - gapCenter)).toBeLessThanOrEqual(2);
+  expect(toggleCenterX).toBeGreaterThan(oldGapCenter);
   // Toggle keeps its 44px target.
   expect(toggleBox!.height).toBe(44);
   // Toggle stays vertically centered in the toolbar.
@@ -672,6 +676,9 @@ test('tag bars raise a low-contrast family colour to 3:1 in both themes', async 
 test('dark today marker uses a lighter-on-dark circle and a visible wash', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/calendar');
+  // Wait for auth to resolve: the session override is cleared on restore,
+  // which can race the click on WebKit under full-suite load.
+  await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
   await page.getByTestId('theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
@@ -685,4 +692,23 @@ test('dark today marker uses a lighter-on-dark circle and a visible wash', async
     'background-color',
     /^(rgba\(140, 205, 163, 0\.18\)|color\(srgb 0\.549\d* 0\.8039\d* 0\.639\d* \/ 0\.18\))$/,
   );
+});
+
+test('audio play control is brand green in light and white in dark', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/media/audio');
+  await page.getByText('E2E Audio').first().click();
+
+  const play = page.locator('.audio-player-toggle');
+  await expect(play).toBeVisible();
+  // Light: filled brand green with on-brand ink.
+  await expect(play).toHaveCSS('background-color', 'rgb(39, 116, 74)');
+  await expect(play).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+  await page.getByTestId('theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  // Dark: white transport control, dark ink, so it stays the primary action.
+  await expect(play).toHaveCSS('background-color', 'rgb(230, 233, 237)');
+  await expect(play).toHaveCSS('color', 'rgb(27, 31, 36)');
 });

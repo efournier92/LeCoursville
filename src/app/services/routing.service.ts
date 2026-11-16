@@ -3,6 +3,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { FeatureFlagsService } from 'src/app/services/feature-flags.service';
+import { ADMIN_ROUTE } from 'src/app/admin/admin-nav';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,11 @@ export class RoutingService {
     '/expressions',
     '/account',
     '/upload',
+  ]);
+
+  private static readonly ADMIN_PATHS = new Set([
+    '/admin',
+    ...Object.values(ADMIN_ROUTE).map(route => `/admin/${route}`),
   ]);
 
   private promotedRouteSubject = new BehaviorSubject<string | null>(null);
@@ -142,7 +148,10 @@ export class RoutingService {
   }
 
   isOnAdminRoute(): boolean {
-    return this.router.url.startsWith('/admin');
+    // Prefix matching treated stale admin URLs like /administrator and retired
+    // /admin/* deep links as "on admin", so the logo skipped the admin branch.
+    const path = this.router.url.split(/[?#]/)[0];
+    return RoutingService.ADMIN_PATHS.has(path);
   }
 
   handleLogoNavigation(isAdmin: boolean, approved = true): void {

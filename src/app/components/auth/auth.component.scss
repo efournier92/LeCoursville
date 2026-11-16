@@ -288,17 +288,25 @@
 }
 
 .account-action-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  // minimalist: wrapping flex instead of fixed 1fr tracks, so a fourth control
+  // (Admin) drops to a second row rather than squeezing at 360px.
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin-top: 22px;
   padding-top: 18px;
   border-top: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
 
+  > * {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+
   @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-    .account-theme-pref { justify-self: center; }
+    > * {
+      flex-basis: 100%;
+    }
   }
 }
 
@@ -323,24 +331,42 @@
   &:hover { color: var(--color-ink) !important; background: color-mix(in srgb, var(--color-ink) 6%, transparent); }
 }
 
+// Admin shares Sign Out's neutral outlined treatment.
+.account-admin {
+  @extend .auth-signout;
+}
+
 .account-theme-pref {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
-  width: fit-content;
+  width: 100%;
+  min-width: 0;
   min-height: 44px;
   box-sizing: border-box;
-  justify-self: center;      // center the whole chip in the auto grid column
   padding: 5px 8px 5px 14px;
   border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
   border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
+  // Same surface as the Sign Out button; the inner pill track keeps its own
+  // border/fill so the control still reads as a control.
+  background: var(--color-surface);
   transition: background 150ms, border-color 150ms;
   appearance: none;
   font: inherit;
   color: inherit;
   text-align: left;
   cursor: pointer;
+
+  // minimalist: the shared pill track is content-sized; stretch it here and let
+  // the opts split the width while their 15px glyphs stay centred.
+  app-theme-pill {
+    flex: 1 1 auto;
+    display: flex;
+    min-width: 0;
+    ::ng-deep .theme-pill { width: 100%; }
+    ::ng-deep .theme-pill-opt { flex: 1 1 0; width: auto; }
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-brand-primary);

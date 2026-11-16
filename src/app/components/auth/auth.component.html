@@ -148,6 +148,13 @@
             <mat-icon aria-hidden="true">edit</mat-icon>
             <span>Edit profile</span>
           </button>
+          @if (isSuperAdmin) {
+            <a mat-stroked-button class="account-action account-admin" routerLink="/admin"
+              data-testid="account-admin-link">
+              <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+              <span>Admin</span>
+            </a>
+          }
           <button type="button" class="account-theme-pref" data-testid="account-always-dark" role="switch"
             [attr.aria-checked]="alwaysDark"
             [attr.aria-label]="alwaysDark ? 'Always Dark' : 'Always Light'"

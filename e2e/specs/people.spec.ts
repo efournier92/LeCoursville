@@ -19,6 +19,39 @@ test.describe('people', () => {
     }
   });
 
+  test('filter bar placeholders share one font size', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    try {
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/people');
+        await page.locator('.family-filter-form-field').waitFor();
+        const sizes = await page.evaluate(() => {
+          const input = document.querySelector('.filter-people-form-field input') as HTMLInputElement;
+          const selectPlaceholder = document.querySelector('.family-filter-form-field .mat-mdc-select-placeholder') as HTMLElement;
+          const inputLabel = document.querySelector('.filter-people-form-field .mat-mdc-floating-label') as HTMLElement;
+          const selectLabel = document.querySelector('.family-filter-form-field .mat-mdc-floating-label') as HTMLElement;
+          return [
+            getComputedStyle(input, '::placeholder').fontSize,
+            getComputedStyle(selectPlaceholder).fontSize,
+            getComputedStyle(inputLabel).fontSize,
+            getComputedStyle(selectLabel).fontSize,
+          ];
+        });
+        expect(new Set(sizes).size).toBe(1);
+        await expectNoHorizontalOverflow(page.locator('app-page-toolbar .page-toolbar'));
+        const clipped = await page.evaluate(() => {
+          const fields = Array.from(document.querySelectorAll('.page-toolbar-content .mat-mdc-form-field'));
+          return fields.some(field => field.scrollWidth > field.clientWidth);
+        });
+        expect(clipped).toBe(false);
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
   test('list renders the seeded people grouped by family', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/people');
@@ -136,7 +169,7 @@ test.describe('people', () => {
     const name = row.locator('.person-name');
     const before = await row.evaluate(el => getComputedStyle(el).backgroundColor);
 
-    await row.hover();
+    await name.hover();
 
     await expect(name).toHaveCSS('text-decoration-line', 'underline');
     const after = await row.evaluate(el => getComputedStyle(el).backgroundColor);

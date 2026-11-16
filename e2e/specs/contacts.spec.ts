@@ -74,6 +74,22 @@ test.describe('contacts', () => {
     await expect(page.locator('.contact-card', { hasText: 'Dave Davis' })).toHaveCount(1);
   });
 
+  test('hovering one spouse underlines only that name', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/contacts');
+    const card = page.locator('.contact-card', { hasText: 'Carol Clark' }).first();
+    const carol = card.locator('.clickable-name').filter({ hasText: 'Carol Clark' });
+    const dave = card.locator('.clickable-name').filter({ hasText: 'Dave Davis' });
+    await expect(carol).toBeVisible();
+    await expect(dave).toBeVisible();
+    await expect(dave).toHaveCSS('text-decoration-line', 'none');
+
+    await carol.hover();
+
+    await expect(carol).toHaveCSS('text-decoration-line', 'underline');
+    await expect(dave).toHaveCSS('text-decoration-line', 'none');
+  });
+
   test('deep link /contacts/:id opens that person modal', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/contacts/person-a');

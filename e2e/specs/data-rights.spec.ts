@@ -448,6 +448,9 @@ test.describe('data rights footer', () => {
     await expect(link).toBeVisible();
     await expect(link).toHaveCSS('color', 'rgb(91, 100, 112)');
     await expect(page.getByTestId('theme-toggle')).toBeVisible();
+    // Wait for auth to resolve: sign-out clears the session override, which
+    // can race the click while the sign-in form first paints.
+    await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
     await page.getByTestId('theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(link).toHaveCSS('color', 'rgb(168, 176, 186)');

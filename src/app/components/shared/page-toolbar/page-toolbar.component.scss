@@ -82,6 +82,11 @@
 :host ::ng-deep .mat-mdc-form-field {
   --mat-form-field-container-height: 44px;
   --mat-form-field-container-vertical-padding: 10px;
+  // The input, select trigger, and floating label each resolve text size from
+  // a separate Material token. Point all three at the field's text-size token
+  // so every filter placeholder in the bar renders at one size.
+  --mat-select-trigger-text-size: var(--mat-form-field-container-text-size);
+  --mat-form-field-outlined-label-text-size: var(--mat-form-field-container-text-size);
   align-self: center;
 
   // M3 reserves phantom space below the box for hints/errors, which makes the

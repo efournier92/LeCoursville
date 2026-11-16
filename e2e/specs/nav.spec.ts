@@ -303,6 +303,7 @@ test.describe('mobile page toolbars', () => {
     { path: '/people', title: 'People' },
     { path: '/calendar', title: 'Calendar' },
     { path: '/photos', title: 'Photos' },
+    { path: '/media/audio', title: 'Audio' },
   ];
 
   for (const route of routes) {

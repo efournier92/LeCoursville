@@ -284,6 +284,10 @@ export class AuthComponent implements OnInit {
     return this.user?.prefs?.theme === 'dark';
   }
 
+  get isSuperAdmin(): boolean {
+    return this.user?.roles?.super === true;
+  }
+
   get promotedRouteLabel(): string {
     const route = this.routingService.getPromotedRoute(isApprovedUser(this.user));
     const segment = route.split('/').filter(Boolean).pop();

@@ -443,8 +443,18 @@ html[data-theme="dark"] .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
 // or surface padding may frame it.
 .calendar-agenda-sheet {
   border-radius: 0 !important;
+  // Material writes the pane box inline from the dialog config and injects its
+  // own container/surface sizing after this sheet, so parity with the phone
+  // song sheet (song-draft-panel) needs !important on both levels.
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
 
+  .mat-mdc-dialog-container,
   .mat-mdc-dialog-surface {
+    height: 100% !important;
+    max-height: 100% !important;
     border-radius: 0 !important;
     padding: 0 !important;
   }
@@ -1132,6 +1142,10 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   --mat-slide-toggle-unselected-hover-handle-color: var(--color-surface);
   --mat-slide-toggle-unselected-focus-handle-color: var(--color-surface);
   --mat-slide-toggle-unselected-pressed-handle-color: var(--color-surface);
+  // Disabled switches keep the same quiet hairline as the enabled track,
+  // instead of Material's heavier two-pixel outline.
+  --mat-slide-toggle-disabled-unselected-track-outline-width: 1px;
+  --mat-slide-toggle-disabled-unselected-track-outline-color: var(--color-border);
 }
 
 // The handle icon is decorative; the geometry tokens above keep the knob sized.
