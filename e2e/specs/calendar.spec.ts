@@ -300,7 +300,7 @@ test.describe('calendar', () => {
     await expect(page.locator('.calendar-year-label')).toHaveText('2024');
 
     const today = page.locator('.calendar-today-btn');
-    await expect(today).toHaveText('Today');
+    await expect(today).toHaveText('Current Month');
     await today.click();
 
     const now = new Date();
@@ -308,6 +308,36 @@ test.describe('calendar', () => {
     await expect(page.locator('.calendar-month-label')).toHaveText(monthName);
     await expect(page.locator('.calendar-year-label')).toHaveText(String(now.getFullYear()));
     await expect(page).toHaveURL(new RegExp(`month=${now.getMonth() + 1}`));
+    // Already on the current month now, so the shortcut retires itself.
+    await expect(today).toBeHidden();
+  });
+
+  test('Today shortcut hides while already on the current month', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar');
+    await expect(page.locator('.calendar-today-btn')).toHaveCount(0);
+    await page.goto('/calendar?year=2024&month=1');
+    await expect(page.locator('.calendar-today-btn')).toBeVisible();
+  });
+
+  test('Today sits inline and right-aligned with the month/year tool', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2024&month=1');
+    const row = page.locator('.calendar-nav-row');
+    const pill = page.locator('.calendar-month-year-pill');
+    const today = page.locator('.calendar-today-btn');
+    await expect(today).toBeVisible();
+    const rowBox = (await row.boundingBox())!;
+    const pillBox = (await pill.boundingBox())!;
+    const todayBox = (await today.boundingBox())!;
+    // Same row: vertical centers line up.
+    const pillCenterY = pillBox.y + pillBox.height / 2;
+    const todayCenterY = todayBox.y + todayBox.height / 2;
+    expect(Math.abs(pillCenterY - todayCenterY)).toBeLessThan(4);
+    // Sits to the right of the month/year tool.
+    expect(todayBox.x).toBeGreaterThanOrEqual(pillBox.x + pillBox.width);
+    // Right-aligned to the row edge.
+    expect(Math.abs((todayBox.x + todayBox.width) - (rowBox.x + rowBox.width))).toBeLessThan(2);
   });
 
   test('nav row keeps its vertical rhythm at desktop and 390px', async ({ page }) => {

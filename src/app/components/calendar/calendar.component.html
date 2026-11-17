@@ -68,13 +68,15 @@
         <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_right</mat-icon>
         </div>
+      </div>
+      @if (!isViewingCurrentMonth) {
         <button
           type="button"
           class="calendar-today-btn"
           (click)="goToToday()">
-          Today
+          Current Month
         </button>
-      </div>
+      }
     </div>
     @if (datePickerOpen) {
       <div

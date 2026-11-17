@@ -244,6 +244,16 @@ export class CalendarComponent implements OnInit, OnDestroy {
     return this.months[index] === this.viewMonth && this.pickerYear === this.selectedYear;
   }
 
+  /** The Today shortcut only earns its space when the view is not already on
+   *  the current month. */
+  get isViewingCurrentMonth(): boolean {
+    if (!this.viewMonth) {
+      return true;
+    }
+    const now = new Date();
+    return this.selectedYear === now.getFullYear() && this.viewMonth === this.months[now.getMonth()];
+  }
+
   selectPickerMonth(monthIndex: number): void {
     this.viewMonth = this.months[monthIndex];
     this.viewDate = new Date(this.pickerYear, monthIndex, 1);
