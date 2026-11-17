@@ -89,7 +89,7 @@ test.describe('navigation', () => {
   test('at 600px the inline links are hidden and the hamburger carries them', async ({ page }) => {
     await login(page, 'admin');
     await page.setViewportSize({ width: 600, height: 800 });
-    // Below the 1280px desktop breakpoint the inline nav collapses; only the hamburger shows.
+    // At this width the links cannot fit, so the inline nav collapses; only the hamburger shows.
     await expect(page.locator('#lecoursville-navbar-links')).toBeHidden();
     const hamburger = page.locator('.icons-menu .menu-icon-container');
     await expect(hamburger).toBeVisible();
@@ -101,16 +101,25 @@ test.describe('navigation', () => {
     await expect(menu.getByRole('menuitem', { name: 'Calendar' })).toBeVisible();
   });
 
-  test('the nav collapses just below the 1280px desktop breakpoint', async ({ page }) => {
+  test('inline nav shows only when every link fits, and re-expands on resize', async ({ page }) => {
     await login(page, 'user');
+    const nav = page.locator('#lecoursville-navbar-links');
     const hamburger = page.getByRole('button', { name: 'Open navigation menu' });
 
-    await page.setViewportSize({ width: 1279, height: 800 });
-    await expect(page.locator('#lecoursville-navbar-links')).toBeHidden();
+    await page.setViewportSize({ width: 1600, height: 800 });
+    await expect(nav).toBeVisible();
+    await expect(hamburger).toBeHidden();
+    const navBox = (await nav.boundingBox())!;
+    const toolbarBox = (await page.locator('mat-toolbar').first().boundingBox())!;
+    // Fit invariant: the inline links never spill past the toolbar.
+    expect(navBox.x + navBox.width).toBeLessThanOrEqual(toolbarBox.x + toolbarBox.width + 1);
+
+    await page.setViewportSize({ width: 900, height: 800 });
+    await expect(nav).toBeHidden();
     await expect(hamburger).toBeVisible();
 
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await expect(page.locator('#lecoursville-navbar-links')).toBeVisible();
+    await page.setViewportSize({ width: 1600, height: 800 });
+    await expect(nav).toBeVisible();
     await expect(hamburger).toBeHidden();
   });
 
@@ -483,8 +492,7 @@ test.describe('admin sidebar navigation', () => {
       'admin-nav-link-features',
       'admin-nav-link-analytics',
       'admin-nav-link-users',
-      'admin-nav-link-recovery',
-      'admin-nav-link-dataRequests',
+      'admin-nav-link-support',
     ]);
     expect(await ids('people')).toEqual([
       'admin-nav-link-families',
@@ -499,16 +507,28 @@ test.describe('admin sidebar navigation', () => {
     ]);
   });
 
-  test('a content admin sees only the admin-tier System item', async ({ page }) => {
+  test('a content admin sees no System nav items', async ({ page }) => {
     await login(page, 'staff');
     await page.goto('/admin/families');
     const nav = page.getByTestId('admin-nav');
     await expect(nav).toHaveAttribute('aria-busy', 'false');
-    expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['System', 'People', 'Content']);
+    expect(await nav.locator('.sidebar-group-label').allTextContents()).toEqual(['People', 'Content']);
+    await expect(nav.getByTestId('admin-nav-group-system')).toHaveCount(0);
     expect(
-      await nav.locator('[data-testid="admin-nav-group-system"] [data-testid^="admin-nav-link-"]')
+      await nav.locator('[data-testid="admin-nav-group-people"] [data-testid^="admin-nav-link-"]')
         .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid'))),
-    ).toEqual(['admin-nav-link-dataRequests']);
+    ).toEqual([
+      'admin-nav-link-families',
+      'admin-nav-link-people',
+    ]);
+    expect(
+      await nav.locator('[data-testid="admin-nav-group-content"] [data-testid^="admin-nav-link-"]')
+        .evaluateAll(elements => elements.map(element => element.getAttribute('data-testid'))),
+    ).toEqual([
+      'admin-nav-link-media',
+      'admin-nav-link-expressions',
+      'admin-nav-link-songs',
+    ]);
   });
 
   test('super admin sidebar drops retired Contacts and keeps Expressions (Content)', async ({ page }) => {

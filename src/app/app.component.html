@@ -4,6 +4,7 @@
   }
   @if (layout !== 'bare') {
   <mat-toolbar
+    #toolbar
     class="d-inline-flex justify-content-between"
     color="primary"
     [attr.inert]="(sidenavOpen$ | async) ? '' : null"
@@ -19,7 +20,6 @@
           src="./assets/img/logo/L.png"
           class="toolbar-icon"
           [alt]="isSuperAdmin() ? 'Admin' : 'L'"
-          height="80%"
           />
       </button>
     </div>
@@ -37,13 +37,16 @@
       </button>
       @if (!authResolved) {
         <div data-testid="nav-links-skeleton">
-          <div class="nav-skeleton nav-desktop" aria-hidden="true">
-            <div class="nav-skeleton-item">
-              <div class="nav-skeleton-icon"></div>
-              <div class="nav-skeleton-label"></div>
+          @if (navCollapsed) {
+            <div class="nav-skeleton-burger" aria-hidden="true"></div>
+          } @else {
+            <div class="nav-skeleton" aria-hidden="true">
+              <div class="nav-skeleton-item">
+                <div class="nav-skeleton-icon"></div>
+                <div class="nav-skeleton-label"></div>
+              </div>
             </div>
-          </div>
-          <div class="nav-skeleton-burger nav-mobile" aria-hidden="true"></div>
+          }
         </div>
       } @else if (!user?.id) {
         @if (!isSignInRoute()) {
@@ -57,11 +60,14 @@
       } @else {
         <div
           class="nav-desktop"
+          #navDesktop
+          [class.nav-measuring]="navCollapsed"
           >
           <app-navbar-links [isMenuList]="false" [isSuperUser]="isSuperAdmin()" [isApproved]="isApproved()"></app-navbar-links>
         </div>
         <div
           class="nav-mobile"
+          [class.nav-visible]="navCollapsed"
           >
           @if (shouldShowSidenavToggle()) {
             <button
