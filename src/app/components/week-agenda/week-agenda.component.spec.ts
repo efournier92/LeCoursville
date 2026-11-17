@@ -115,4 +115,17 @@ describe('WeekAgendaComponent', () => {
     expect(component.count).toBe(28);
     expect(component.days.length).toBe(28);
   });
+
+  it('hides the inner title when the host supplies its own', () => {
+    setup({
+      variant: 'full',
+      anchorDate: new Date(2024, 8, 10),
+      selectedDay: new Date(2024, 8, 10),
+    });
+    (component as any).hideTitle = true;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.week-agenda-title')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.week-agenda-range')).not.toBeNull();
+  });
 });

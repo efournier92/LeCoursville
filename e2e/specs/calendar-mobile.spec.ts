@@ -124,7 +124,7 @@ test.describe('calendar mobile month', () => {
 
     const sheet = page.locator('app-calendar-agenda-sheet');
     await expect(sheet).toBeVisible();
-    await expect(sheet.locator('.calendar-agenda-sheet-header h2')).toHaveText('Expand');
+    await expect(sheet.locator('.calendar-agenda-sheet-header h2')).toHaveText('Timeline');
     const rows = sheet.locator('.week-agenda-item');
     await expect(rows).toHaveCount(21);
 

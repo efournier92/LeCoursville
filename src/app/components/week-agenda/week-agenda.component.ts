@@ -24,6 +24,7 @@ export class WeekAgendaComponent implements AfterViewInit, OnChanges {
   @Input() anchorDate: Date;
   @Input() selectedDay: Date;
   @Input() variant: 'preview' | 'full' = 'full';
+  @Input() hideTitle = false;
 
   @Output() daySelect = new EventEmitter<Date>();
   @Output() personClick = new EventEmitter<string>();

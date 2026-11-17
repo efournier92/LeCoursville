@@ -6,6 +6,7 @@ export interface CalendarAgendaSheetData {
   events: RecurringEvent[];
   anchorDate: Date;
   selectedDay: Date;
+  onDaySelect?: (date: Date) => void;
 }
 
 @Component({
@@ -28,6 +29,11 @@ export class CalendarAgendaSheetComponent {
 
   openPerson(id: string): void {
     this.selectedPersonId = id;
+  }
+
+  selectDay(date: Date): void {
+    this.selected = date;
+    this.data.onDaySelect?.(date);
   }
 
   close(): void {

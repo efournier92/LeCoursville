@@ -58,6 +58,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
   legacyCalendarPdf = false;
   printFlagsReady = false;
   prefsError = false;
+  calendarViewMode: 'month' | 'timeline' = 'month';
 
   private userSub: Subscription | null = null;
   private eventsSub: Subscription | null = null;

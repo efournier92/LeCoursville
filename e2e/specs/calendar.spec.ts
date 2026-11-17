@@ -320,24 +320,28 @@ test.describe('calendar', () => {
     await expect(page.locator('.calendar-today-btn')).toBeVisible();
   });
 
-  test('Today sits inline and right-aligned with the month/year tool', async ({ page }) => {
+  test('view toggle and Today shortcut sit right-aligned in the nav row', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/calendar?year=2024&month=1');
     const row = page.locator('.calendar-nav-row');
     const pill = page.locator('.calendar-month-year-pill');
     const today = page.locator('.calendar-today-btn');
+    const toggle = page.locator('.calendar-view-toggle');
     await expect(today).toBeVisible();
+    await expect(toggle).toBeVisible();
     const rowBox = (await row.boundingBox())!;
     const pillBox = (await pill.boundingBox())!;
     const todayBox = (await today.boundingBox())!;
+    const toggleBox = (await toggle.boundingBox())!;
     // Same row: vertical centers line up.
     const pillCenterY = pillBox.y + pillBox.height / 2;
     const todayCenterY = todayBox.y + todayBox.height / 2;
     expect(Math.abs(pillCenterY - todayCenterY)).toBeLessThan(4);
-    // Sits to the right of the month/year tool.
+    // The toggle holds the far right edge of the row.
+    expect(Math.abs((toggleBox.x + toggleBox.width) - (rowBox.x + rowBox.width))).toBeLessThan(2);
+    // Current Month sits immediately to its left.
+    expect(todayBox.x + todayBox.width).toBeLessThanOrEqual(toggleBox.x + 1);
     expect(todayBox.x).toBeGreaterThanOrEqual(pillBox.x + pillBox.width);
-    // Right-aligned to the row edge.
-    expect(Math.abs((todayBox.x + todayBox.width) - (rowBox.x + rowBox.width))).toBeLessThan(2);
   });
 
   test('nav row keeps its vertical rhythm at desktop and 390px', async ({ page }) => {
@@ -669,6 +673,91 @@ test.describe('calendar', () => {
     const person = page.getByRole('button', { name: 'Alice Anderson' }).first();
     await person.press('Space');
     await expect(page.locator('app-person-detail-modal h2')).toContainText('Alice Anderson');
+  });
+
+  test('desktop view toggle swaps the month grid for the full timeline and back', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+
+    const toggle = page.locator('.calendar-view-toggle');
+    await expect(toggle).toBeVisible();
+
+    await toggle.locator('mat-button-toggle', { hasText: 'Timeline' }).click();
+    await expect(page.locator('.calendar-month-view-container')).toBeHidden();
+    // The row stays rendered so the toggle can switch back; only the month nav hides.
+    await expect(page.locator('.calendar-nav-row')).toBeVisible();
+    await expect(page.locator('.calendar-nav-inner')).toBeHidden();
+    await expect(toggle).toBeVisible();
+    const timeline = page.locator('.calendar-timeline-view');
+    await expect(timeline).toBeVisible();
+    const timelineBox = (await timeline.boundingBox())!;
+    const navBox = (await page.locator('.calendar-nav-row').boundingBox())!;
+    const viewport = page.viewportSize()!;
+    const gapAbove = timelineBox.y - (navBox.y + navBox.height);
+    const gapBelow = viewport.height - (timelineBox.y + timelineBox.height);
+    // Fits the viewport with an even, pleasing margin above and below.
+    expect(gapBelow).toBeGreaterThanOrEqual(16);
+    expect(Math.abs(gapAbove - gapBelow)).toBeLessThan(2);
+    await expect(timeline.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+    await expect(timeline.locator('app-week-agenda')).toBeVisible();
+
+    await toggle.locator('mat-button-toggle', { hasText: 'Month' }).click();
+    await expect(page.locator('.calendar-month-view-container')).toBeVisible();
+    await expect(page.locator('.calendar-nav-row')).toBeVisible();
+    await expect(page.locator('.calendar-timeline-view')).toHaveCount(0);
+  });
+
+  test('mobile hides the view toggle and inline Expand still opens the agenda', async ({ page }) => {
+    await login(page, 'admin');
+    const original = page.viewportSize()!;
+    await page.setViewportSize({ width: 390, height: 844 });
+    try {
+      await page.goto('/calendar?year=2026&month=3');
+      await expect(page.locator('.calendar-view-toggle')).toBeHidden();
+
+      const expand = page.locator('.calendar-timeline-preview .week-agenda-full-btn');
+      await expect(expand).toBeVisible();
+      await expand.click();
+
+      const dialog = page.getByRole('dialog');
+      await expect(dialog.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+      await dialog.getByRole('button', { name: 'Close agenda' }).click();
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+    } finally {
+      await page.setViewportSize(original);
+    }
+  });
+
+  test('picking a day in the timeline selects it in the month grid', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=3');
+    await page.locator('.calendar-view-toggle mat-button-toggle', { hasText: 'Timeline' }).click();
+
+    const timeline = page.locator('.calendar-timeline-view');
+    const row = timeline.getByRole('button', { name: /March 5,/ }).first();
+    await row.scrollIntoViewIfNeeded();
+    await row.click();
+    await expect(row).toHaveAttribute('aria-pressed', 'true');
+
+    await page.locator('.calendar-view-toggle mat-button-toggle', { hasText: 'Month' }).click();
+    await expect(page.locator('.cal-day-control[aria-label^="March 5,"]')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('timeline keeps the ampersand right after the first name', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/calendar?year=2026&month=11');
+    await page.locator('.calendar-view-toggle mat-button-toggle', { hasText: 'Timeline' }).click();
+
+    const timeline = page.locator('.calendar-timeline-view');
+    const couple = timeline.locator('.is-anniversary').first();
+    await couple.scrollIntoViewIfNeeded();
+    await expect(couple.locator('.event-ampersand-inline')).toBeVisible();
+
+    const nameBox = (await couple.locator('.event-title-link').boundingBox())!;
+    const ampBox = (await couple.locator('.event-ampersand-inline').boundingBox())!;
+    // Same row, and the ampersand trails the name rather than the far edge.
+    expect(Math.abs((ampBox.y + ampBox.height / 2) - (nameBox.y + nameBox.height / 2))).toBeLessThan(6);
+    expect(ampBox.x - (nameBox.x + nameBox.width)).toBeLessThan(12);
   });
 });
 
