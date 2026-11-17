@@ -5,6 +5,22 @@ Scope tokens: admin/security, admin/ui, build/perf, calendar/print, calendar/ui,
 
 ## Entries
 
+- D-20261117-11 | 2026-11-17 | [decision] | calendar/ui | Desktop calendar gains a `Month`/`Timeline` toggle that swaps the grid for a full `app-week-agenda`, hidden below 1024px where the inline preview stays | src/app/components/calendar/calendar.component.html:75
+
+- D-20261117-12 | 2026-11-17 | [trap] | media/routing | The audio player must set `audio.src` in code, not a template `[src]` binding, or selecting a track plays the stale source | src/app/components/audio-player/audio-player.component.ts:190
+
+- D-20261117-05 | 2026-11-17 | [decision] | admin/ui | Recovery and Data Requests merged into one super-only Support portal at /admin/support. Old URLs redirect. Badge testid `admin-nav-badge-support` | src/app/admin/admin-nav.ts:41
+
+- D-20261117-06 | 2026-11-17 | [trap] | admin/ui | An admin page scss that omits `@use 'src/app/styles/admin-data' as *` silently renders tinted Material default cards instead of admin-surface | src/app/components/admin-analytics/admin-analytics.component.scss:1
+
+- D-20261117-07 | 2026-11-17 | [decision] | admin/ui | Admin cards are white admin-surface only. Any light green, yellow, or cream card background is never acceptable | docs/design/ADMIN_SURFACES.md:5
+
+- D-20261117-08 | 2026-11-17 | [trap] | admin/ui | GA4 `date` returns YYYYMMDD and omits zero-traffic days, so the callable normalizes to ISO and zero-fills a 30-point axis | functions/src/admin-analytics-summary.ts:42
+
+- D-20261117-09 | 2026-11-17 | [decision] | admin/ui | Analytics charts are hand-built SVG with labels in HTML, no chart library. The last GA day is annotated partial rather than timezone-corrected | src/app/components/admin-analytics/admin-analytics.component.html:93
+
+- D-20261117-10 | 2026-11-17 | [outcome] | admin/ui | Support merge plus analytics report green on Polish-2026-11-16, uncommitted: npm run check 959 tests, analytics e2e 9, critique ledger 36 findings settled | docs/critique/2026-11-17_AnalyticsReport.md
+
 - D-20261117-01 | 2026-11-17 | [decision] | nav/ui | Top bar replaces the 1280px breakpoint with a ResizeObserver fit check; a #ref on `mat-toolbar` must be read as ElementRef, not the component | src/app/app.component.ts:62
 
 - D-20261117-02 | 2026-11-17 | [trap] | nav/ui | The hidden measuring nav must be 0x0 with overflow hidden or it widens the document and breaks no-horizontal-overflow e2e | src/app/app.component.scss:191

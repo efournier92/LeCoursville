@@ -6,7 +6,6 @@
 - Lens set: correctness, visual, data-integrity, testing
 
 ## Findings
-## Findings
 
 - C-20261117-01 | 2026-11-17 | correctness | medium | high | addressed | GA daily dates come back as raw YYYYMMDD while fixture and range use ISO, so labels render 20260101 | functions/src/admin-analytics-summary.ts:279
   - rebuttal | addressed | upheld: functions:279 emits raw YYYYMMDD, spec codifies it
@@ -41,6 +40,7 @@
 - C-20261117-16 | 2026-11-17 | data-integrity | medium | high | addressed | GA daily rows are not zero-filled, so fewer than 30 points can meet a payload that claims a 30-day range | functions/src/admin-analytics-summary.ts:278
   - rebuttal | addressed | upheld: GA omits zero days, payload can claim 30 days with fewer points
 - C-20261117-17 | 2026-11-17 | data-integrity | medium | medium | addressed | Range includes today partial GA day without marking it, while the fixture final day is a full synthetic day | functions/src/admin-analytics-summary.ts:211
+  - rebuttal | addressed | human chose to annotate the partial last day. E2e asserts the note only on ga source
   - rebuttal | addressed | upheld: endDate today includes a partial day unmarked
 - C-20261117-18 | 2026-11-17 | data-integrity | low | high | rejected | FIXTURE is built once at import with Date.now, so warm instances serve a window that ends on boot date | functions/src/admin-analytics-summary.ts:127
   - rebuttal | rejected | fixture and range share one now value and the UI labels sample data
@@ -64,8 +64,6 @@
   - rebuttal | addressed | upheld: no component spec covers the chart helpers
 - C-20261117-28 | 2026-11-17 | testing | low | high | addressed | Source label and loading testids are never asserted, so a source flip or stuck skeleton would pass | src/app/components/admin-analytics/admin-analytics.component.html:28
   - rebuttal | addressed | upheld: source label and loading testids unasserted
-
-
 - C-20261117-29 | 2026-11-17 | maintainability | medium | high | addressed | daily pageViews is fetched and allocated but never rendered | functions/src/admin-analytics-summary.ts:14
   - rebuttal | addressed | deleted or rendered in the un-ship pass
 - C-20261117-30 | 2026-11-17 | maintainability | medium | high | addressed | DateLabel x and anchor never reach the DOM | src/app/components/admin-analytics/admin-analytics.component.ts:6
