@@ -12,7 +12,7 @@ describe("ConfirmDialogService", () => {
   let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   const data: ConfirmDialogData = {
-    title: "Delete photo?",
+    title: "Delete Photo?",
     message: "This cannot be undone.",
     destructive: true,
   };

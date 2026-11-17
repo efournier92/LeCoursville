@@ -434,7 +434,7 @@ export class AdminMediaUploadVideoComponent implements OnInit, OnDestroy {
   async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
     const title = media.title || media.fileName || 'this video';
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete video?',
+      title: 'Delete Video?',
       message: `Delete "${title}"? This cannot be undone.`,
       confirmLabel: 'Delete video',
       destructive: true,

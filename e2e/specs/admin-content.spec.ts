@@ -256,7 +256,7 @@ test.describe('admin content surfaces', () => {
 
       await page.getByRole('button', { name: 'Reject fixture.png' }).click();
       const confirm = page.locator('app-confirm-dialog');
-      await expect(confirm).toContainText('Reject upload?');
+      await expect(confirm).toContainText('Reject Upload?');
       await expect(confirm).toContainText('permanently deletes');
       await expect(confirm).toContainText('fixture.png');
       await confirm.getByRole('button', { name: 'Reject upload' }).click();
@@ -376,7 +376,7 @@ test.describe('admin content surfaces', () => {
 
       await preview.getByRole('button', { name: 'Reject' }).click();
       const confirm = page.locator('app-confirm-dialog');
-      await expect(confirm).toContainText('Reject upload?');
+      await expect(confirm).toContainText('Reject Upload?');
       await confirm.getByRole('button', { name: 'Reject upload' }).click();
 
       await expect(preview).toBeHidden();
@@ -612,17 +612,22 @@ test.describe('admin content surfaces', () => {
     await expect(renameDialog).toBeHidden();
   });
 
-  test('every switch uses the same 36x20 track', async ({ page }) => {
+  test('every switch uses the same 36x20 track and unselected tone', async ({ page }) => {
     const trackSize = (locator: import('@playwright/test').Locator) =>
       locator.locator('.mdc-switch__track').evaluate((el) => {
         const rect = el.getBoundingClientRect();
         return { width: Math.round(rect.width), height: Math.round(rect.height) };
       });
+    const trackColorToken = (locator: import('@playwright/test').Locator) =>
+      locator.locator('.mdc-switch__track').evaluate((el) =>
+        getComputedStyle(el).getPropertyValue('--mat-slide-toggle-unselected-track-color').trim(),
+      );
 
     await login(page, 'admin');
     await page.goto('/admin/features');
     await expect(page.getByTestId('feature-toggle-contacts')).toBeVisible();
     const featureTrack = await trackSize(page.getByTestId('feature-toggle-contacts'));
+    const featureToken = await trackColorToken(page.getByTestId('feature-toggle-contacts'));
     await expect(
       page.getByTestId('feature-toggle-contacts').locator('.mdc-switch__handle-track'),
     ).toHaveCSS('transition-duration', '0.175s');
@@ -631,8 +636,11 @@ test.describe('admin content surfaces', () => {
     const archiveSwitch = page.getByRole('switch', { name: 'Published', exact: true });
     await expect(archiveSwitch).toBeVisible();
     const archiveTrack = await trackSize(archiveSwitch);
+    const archiveToken = await trackColorToken(archiveSwitch);
 
     expect(featureTrack).toEqual({ width: 36, height: 20 });
     expect(archiveTrack).toEqual(featureTrack);
+    expect(featureToken).not.toBe('');
+    expect(archiveToken).toBe(featureToken);
   });
 });

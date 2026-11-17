@@ -158,7 +158,7 @@ export class AdminFamiliesComponent implements OnInit, OnDestroy {
 
   async onDelete(family: Family): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete family?',
+      title: 'Delete Family?',
       message: `Delete family ${family.name}? This cannot be undone.`,
       confirmLabel: 'Delete',
       destructive: true,

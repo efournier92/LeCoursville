@@ -86,8 +86,8 @@ export class ErrorsService {
 
   private openErrorDialog(): MatDialogRef<PromptModalComponent, any> {
     return this.promptModal.openDialog(
-      'Sorry, we encountered an error. We need to sign you out.',
-      'If this keeps happening, please contact Eric at efournier92@gmail.com.',
+      'We Need to Sign You Out',
+      'Sorry, we encountered an error. If this keeps happening, please contact Eric at efournier92@gmail.com.',
       [
         {
           label: 'Sign Out',

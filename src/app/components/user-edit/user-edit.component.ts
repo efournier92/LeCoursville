@@ -100,7 +100,7 @@ export class UserEditComponent implements OnInit, OnChanges {
     }
     if (changes.messages.length > 0) {
       const confirmed = await this.confirmDialog.confirm({
-        title: 'Change access?',
+        title: 'Change Access?',
         message: changes.messages.join(' '),
         confirmLabel: 'Save',
         destructive: changes.destructive,
@@ -140,7 +140,7 @@ export class UserEditComponent implements OnInit, OnChanges {
   async onDeleteUser(user: User): Promise<void> {
     this.deleteError = '';
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete user?',
+      title: 'Delete User?',
       message: `Delete ${this.displayName(user)}? This cannot be undone.`,
       confirmLabel: 'Delete',
       destructive: true,

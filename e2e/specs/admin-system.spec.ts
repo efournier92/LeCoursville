@@ -132,11 +132,12 @@ test.describe('admin system surfaces', () => {
       const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
 
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
-      const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      const editor = page.getByRole('dialog').filter({ hasText: 'Edit User' });
       await expect(editor).toBeVisible();
+      await expect(editor.getByRole('button', { name: 'Cancel' })).toHaveClass(/mat-mdc-outlined-button/);
       await editor.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
-      const grantDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
+      const grantDialog = page.getByRole('dialog').filter({ hasText: 'Change Access?' });
       await expect(grantDialog).toContainText('Give Regular User content admin access?');
       await grantDialog.getByRole('button', { name: 'Save' }).click();
       await expect(editor).toHaveCount(0);
@@ -154,11 +155,11 @@ test.describe('admin system surfaces', () => {
       expect(grant.at).toBeGreaterThanOrEqual(startedAt);
 
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
-      const reopen = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      const reopen = page.getByRole('dialog').filter({ hasText: 'Edit User' });
       await expect(reopen).toBeVisible();
       await reopen.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await reopen.getByRole('button', { name: 'Save' }).click();
-      const revokeDialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
+      const revokeDialog = page.getByRole('dialog').filter({ hasText: 'Change Access?' });
       await expect(revokeDialog).toContainText('Remove content admin access from Regular User?');
       await revokeDialog.getByRole('button', { name: 'Save' }).click();
       await expect(reopen).toHaveCount(0);
@@ -226,7 +227,7 @@ test.describe('admin system surfaces', () => {
     const row = table.locator('tbody tr').filter({ hasText: 'user@e2e.local' });
 
     await row.getByRole('button', { name: 'Edit Regular User' }).click();
-    const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+    const editor = page.getByRole('dialog').filter({ hasText: 'Edit User' });
     await expect(editor).toBeVisible();
     await expect(editor.locator('input[name="user-name"]')).toHaveValue('Regular User');
 
@@ -245,7 +246,7 @@ test.describe('admin system surfaces', () => {
 
     await row.getByRole('button', { name: 'Delete Regular User' }).click();
     const dialog = page.getByRole('dialog');
-    await expect(dialog).toContainText('Delete user?');
+    await expect(dialog).toContainText('Delete User?');
     await expect(dialog).toContainText('Delete Regular User? This cannot be undone.');
 
     await dialog.getByRole('button', { name: 'Cancel' }).click();
@@ -290,7 +291,7 @@ test.describe('admin system surfaces', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText(year);
-    await expect(dialog).toContainText('Delete calendar?');
+    await expect(dialog).toContainText('Delete Calendar?');
 
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);
@@ -316,7 +317,7 @@ test.describe('admin system surfaces', () => {
 
       await row.getByRole('button', { name: 'Delete' }).click();
       const dialog = page.getByRole('dialog');
-      await expect(dialog).toContainText('Delete calendar?');
+      await expect(dialog).toContainText('Delete Calendar?');
       await expect(dialog).toContainText(year);
       await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
 
@@ -349,7 +350,7 @@ test.describe('admin system surfaces', () => {
       await page.getByRole('button', { name: 'Update' }).click();
 
       const dialog = page.getByRole('dialog');
-      await expect(dialog).toContainText('Replace calendar?');
+      await expect(dialog).toContainText('Replace Calendar?');
       await expect(dialog).toContainText(targetYear);
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
@@ -454,7 +455,7 @@ test.describe('admin system surfaces', () => {
 
     try {
       await login(page, 'admin');
-      await page.goto('/admin/recovery');
+      await page.goto('/admin/support');
 
       const list = page.getByTestId('admin-recovery-list');
       await expect(list).toBeVisible();
@@ -493,7 +494,7 @@ test.describe('admin system surfaces', () => {
 
     try {
       await login(page, 'admin');
-      await page.goto('/admin/recovery');
+      await page.goto('/admin/support');
 
       const row = page
         .getByTestId('admin-recovery-list')

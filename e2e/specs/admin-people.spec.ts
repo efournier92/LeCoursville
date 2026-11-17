@@ -98,7 +98,7 @@ test.describe('admin people surfaces', () => {
     await expect(rows).toHaveCount(2, { timeout: 20000 });
 
     await page.getByRole('button', { name: 'Delete Alder' }).click();
-    await expect(page.getByRole('heading', { name: 'Delete family?' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Delete Family?' })).toBeVisible();
     await expect(page.getByText('Delete family Alder? This cannot be undone.')).toBeVisible();
     await page.getByRole('button', { name: 'Cancel' }).click();
 

@@ -87,7 +87,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       ? ' Could not check pending uploads. Pending uploads stay in the queue after deletion.'
       : ` ${pendingUploads} pending ${pendingUploads === 1 ? 'upload references' : 'uploads reference'} this member. Pending uploads stay in the queue after deletion.`;
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete user?',
+      title: 'Delete User?',
       message: `Delete ${this.displayName(user)}? This cannot be undone.${uploadWarning}`,
       confirmLabel: 'Delete',
       destructive: true,

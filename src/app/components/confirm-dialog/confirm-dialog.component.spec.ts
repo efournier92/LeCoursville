@@ -39,7 +39,7 @@ describe("ConfirmDialogComponent", () => {
   beforeEach(() => {
     dialogRef = { close: jasmine.createSpy('close') };
     data = {
-      title: 'Delete user?',
+      title: 'Delete User?',
       message: 'Delete Ada Lovelace? This cannot be undone.',
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
@@ -50,7 +50,7 @@ describe("ConfirmDialogComponent", () => {
   it("renders the title and message", async () => {
     await create();
 
-    expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Delete user?');
+    expect(fixture.nativeElement.querySelector('h2').textContent).toContain('Delete User?');
     expect(
       fixture.nativeElement.querySelector('.confirm-dialog-message').textContent,
     ).toContain('Delete Ada Lovelace?');

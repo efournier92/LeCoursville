@@ -183,7 +183,7 @@ export class AdminSongsComponent implements OnInit, OnDestroy {
   async onDelete(song: Song): Promise<void> {
     this.actionError = null;
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete song?',
+      title: 'Delete Song?',
       message: `Delete ${song.title}? This cannot be undone.`,
       confirmLabel: 'Delete',
       confirmTestId: 'admin-delete-confirm',
