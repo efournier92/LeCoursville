@@ -11,6 +11,7 @@ export { closeRecoveryRequest } from "./close-recovery-request";
 export { updateAlertRecipients } from "./update-alert-recipients";
 export { createUserUpload } from "./create-user-upload";
 export { onAdminAlertCreated } from "./admin-alert-created";
+export { onDataRequestCreated } from "./data-request-created";
 export { onAccountCreated } from "./account-created";
 export { claimMemberRole } from "./claim-member-role";
 export { changeUserRole } from "./change-user-role";

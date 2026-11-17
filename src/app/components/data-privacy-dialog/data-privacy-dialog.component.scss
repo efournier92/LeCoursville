@@ -4,40 +4,40 @@
   font-size: 0.875rem;
   line-height: 1.55;
   color: var(--color-ink-2);
-}
 
-.dialog-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.dialog-action {
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-  color: var(--color-link);
-  font: inherit;
-  font-size: 0.875rem;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--color-surface-muted);
+  // Each scenario is its own block. On wide screens the question and answer
+  // run together; on phones each gets its own line so a narrow measure never
+  // strands "an update." or "take it down." on a ragged second line.
+  p {
+    margin: 0;
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
+  p + p {
+    margin-top: 8px;
+  }
+
+  .scenario-ask {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .scenario-do {
+    color: var(--color-ink-2);
+    margin-left: 0.3em;
   }
 }
 
-.dialog-response {
-  margin: 16px 0 0;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--color-ink-2);
+@media (max-width: 600px) {
+  .dialog-copy {
+    .scenario-ask,
+    .scenario-do {
+      display: block;
+    }
+
+    .scenario-do {
+      margin-left: 0;
+    }
+  }
 }
 
 .request-panel {
@@ -67,13 +67,6 @@
 
 .request-field {
   width: 100%;
-}
-
-.request-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
 }
 
 .request-field-error {
@@ -110,9 +103,6 @@
   }
 }
 
-@media (max-width: 600px) {
-  .request-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
+mat-dialog-content.mat-mdc-dialog-content {
+  padding-bottom: 8px !important;
 }

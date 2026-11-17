@@ -2,20 +2,16 @@ import { buildDataRequest, validateDataRequest } from './data-request';
 
 describe('data request contract', () => {
   const input = {
-    kind: 'removal' as const,
-    dataClass: 'people' as const,
     contact: ' person@example.com ',
-    description: ' Please remove my listing. ',
+    description: ' Please fix my listing. ',
   };
 
-  it('builds an open request with a trimmed contact and no audit fields', () => {
+  it('builds an open request with trimmed fields', () => {
     const record = buildDataRequest('req-1', input, 1234, 'uid-1');
     expect(record).toEqual({
       id: 'req-1',
-      kind: 'removal',
-      dataClass: 'people',
       contact: 'person@example.com',
-      description: 'Please remove my listing.',
+      description: 'Please fix my listing.',
       status: 'open',
       createdAt: 1234,
       requesterUid: 'uid-1',
@@ -27,19 +23,22 @@ describe('data request contract', () => {
     expect(record.requesterUid).toBeUndefined();
   });
 
-  it('rejects missing contact and unknown classes', () => {
-    const errors = validateDataRequest({ ...input, contact: '  ', dataClass: 'secrets' as never });
-    expect(errors['contact']).toContain('email');
-    expect(errors['dataClass']).toContain('Choose');
+  it('rejects a missing contact', () => {
+    const errors = validateDataRequest({ ...input, contact: '  ' });
+    expect(errors['contact']).toBe('Enter your email address.');
   });
 
-  it('rejects a contact that is neither an email nor a phone number', () => {
-    const errors = validateDataRequest({ ...input, contact: 'not a contact' });
-    expect(errors['contact']).toContain('valid email');
-    expect(validateDataRequest({ ...input, contact: '+1 (512) 555-0100' })['contact']).toBeUndefined();
+  it('rejects an invalid email', () => {
+    const errors = validateDataRequest({ ...input, contact: 'not an email' });
+    expect(errors['contact']).toBe('Enter a valid email address.');
   });
 
-  it('caps the free-text fields', () => {
+  it('rejects an empty description', () => {
+    const errors = validateDataRequest({ ...input, description: '   ' });
+    expect(errors['description']).toBe('Tell us what this is about.');
+  });
+
+  it('caps both fields', () => {
     const errors = validateDataRequest({
       ...input,
       contact: 'a'.repeat(201),

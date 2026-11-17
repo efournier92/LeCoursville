@@ -357,7 +357,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
       ? `${request.name} (${request.email})`
       : request.email;
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Generate reset link?',
+      title: 'Generate Reset Link?',
       message: `Generate a password reset link for ${account}?`,
       confirmLabel: 'Generate',
     });
@@ -456,7 +456,7 @@ export class AdminRecoveryComponent implements OnInit, OnDestroy {
 
   async removeRecipient(email: string): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Remove recipient?',
+      title: 'Remove Recipient?',
       message: `Remove ${email} from the recovery alert recipients? They will stop receiving recovery alerts.`,
       confirmLabel: 'Remove',
       destructive: true,

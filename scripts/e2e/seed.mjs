@@ -522,31 +522,24 @@ async function main() {
         createdAt: now - 30 * 86400000,
       },
     },
-    // Data-rights queue fixtures: one open removal and one resolved update,
-    // plus an audit entry so the admin surface has a non-PII record to render.
+    // Data-rights queue fixtures: one open message and one closed one, so the
+    // admin surface exercises both the Close and Reopen actions.
     dataRequests: {
-      'data-request-removal': {
-        id: 'data-request-removal',
-        kind: 'removal',
-        dataClass: 'people',
-        contact: 'data-removal@e2e.local',
-        description: 'Please remove my public listing.',
+      'data-request-open': {
+        id: 'data-request-open',
+        contact: 'data-open@e2e.local',
+        description: 'Please tell me what you store about my family.',
         status: 'open',
         createdAt: now - 3 * 86400000,
-        throttleKey: 'seed-removal',
-        verifiedAt: now - 2 * 86400000,
-        verifiedBy: 'seed-admin',
-        verificationMethod: 'admin_review',
+        throttleKey: 'seed-open',
       },
-      'data-request-update': {
-        id: 'data-request-update',
-        kind: 'update',
-        dataClass: 'photos',
-        contact: 'data-update@e2e.local',
-        description: 'Please correct the caption on my photo.',
-        status: 'resolved',
+      'data-request-closed': {
+        id: 'data-request-closed',
+        contact: 'data-closed@e2e.local',
+        description: 'Checking in about my listing.',
+        status: 'closed',
         createdAt: now - 10 * 86400000,
-        throttleKey: 'seed-update',
+        throttleKey: 'seed-closed',
       },
     },
     config: {

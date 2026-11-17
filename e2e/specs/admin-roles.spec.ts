@@ -44,7 +44,7 @@ const SYSTEM_ROUTES: AdminRoute[] = [
     ready: (page) => expect(page.getByTestId('feature-toggle-chat')).toBeVisible(),
   },
   {
-    path: '/admin/recovery',
+    path: '/admin/support',
     ready: (page) => expect(page.getByTestId('admin-account-creations')).toBeVisible(),
   },
   {
@@ -85,7 +85,7 @@ async function expectMemberModeration(page: Page, who: 'admin' | 'staff') {
 
 async function expectExpressionControls(page: Page, who: 'admin' | 'staff') {
   await login(page, who);
-  await page.goto('/expressions');
+  await page.goto('/admin/expressions');
   await expect(page.locator('.create-expression-button')).toBeVisible();
   const card = page.locator('.expression-card-wrapper', { hasText: 'Live long and prosper' }).first();
   await card.hover();
@@ -122,8 +122,9 @@ test.describe('admin roles', () => {
 
   test('content admin is redirected from every system admin page', async ({ page }) => {
     await login(page, 'staff');
-    for (const route of SYSTEM_ROUTES) {
-      await page.goto(route.path);
+    const legacyRoutes = ['/admin/recovery', '/admin/data-requests'];
+    for (const path of [...SYSTEM_ROUTES.map((route) => route.path), ...legacyRoutes]) {
+      await page.goto(path);
       await expect(page).not.toHaveURL(/\/admin/);
       await expect(page.locator('app-admin')).toHaveCount(0);
       await expect(page.getByTestId('admin-nav')).toHaveCount(0);

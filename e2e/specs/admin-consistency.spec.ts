@@ -55,8 +55,8 @@ const ADMIN_ROUTES: AdminRoute[] = [
     rowActions: '.upload-actions button',
   },
   {
-    path: '/admin/recovery',
-    title: 'Recovery',
+    path: '/admin/support',
+    title: 'Support',
     ready: (page) => expect(page.getByTestId('admin-account-creations')).toBeVisible(),
   },
   {
@@ -354,7 +354,7 @@ test.describe('admin consistency fixes', () => {
   test('recovery account rows share a grid and the mobile calendar aligns its value column', async ({ page }) => {
     await login(page, 'admin');
 
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const rows = page.locator('.account-row');
     await expect(rows.first()).toBeVisible();
     const columns = await rows.evaluateAll((els) => els.slice(0, 3).map((el) => {

@@ -115,15 +115,9 @@ const adminSet = [
   },
   {
     role: 'admin',
-    path: '/admin/recovery',
-    slug: 'admin-recovery',
+    path: '/admin/support',
+    slug: 'admin-support',
     ready: '[data-testid="admin-account-creations"]',
-  },
-  {
-    role: 'admin',
-    path: '/admin/data-requests',
-    slug: 'admin-data-requests',
-    ready: '[data-testid="admin-data-requests-list"]',
   },
   { role: 'admin', path: '/admin/photo-albums', slug: 'admin-photo-albums', ready: '.admin-album-grid' },
   // role staff, same surfaces minus the super-admin only pages

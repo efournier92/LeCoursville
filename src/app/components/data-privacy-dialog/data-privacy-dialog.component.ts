@@ -1,12 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import {
-  DATA_REQUEST_CLASSES,
-  DataRequestClass,
-  DataRequestInput,
-  DataRequestKind,
-  validateDataRequest,
-} from 'src/app/models/data-request';
+import { DataRequestInput, validateDataRequest } from 'src/app/models/data-request';
 import { AuthService } from 'src/app/services/auth.service';
 import { DataRequestsService } from 'src/app/services/data-requests.service';
 
@@ -18,27 +12,6 @@ import { DataRequestsService } from 'src/app/services/data-requests.service';
   standalone: false,
 })
 export class DataPrivacyDialogComponent {
-  readonly dataClasses = DATA_REQUEST_CLASSES;
-  readonly panelHeadings: Record<DataRequestKind, string> = {
-    update: 'Something wrong or out of date?',
-    removal: 'Something we should stop sharing about you?',
-    contact: 'Something else on your mind?',
-  };
-  readonly panelBodies: Record<DataRequestKind, string> = {
-    update: 'Tell us what to fix or bring up to date, and the best way to reach you. We will review your request and reply.',
-    removal: 'Ask us to stop sharing information about you. We will review your request before acting on it, and we reply either way.',
-    contact: 'Send us a note about your information, with details and the way to reach you. We will review it and reply.',
-  };
-  readonly actions: { kind: DataRequestKind; label: string }[] = [
-    { kind: 'update', label: 'Update' },
-    { kind: 'removal', label: 'Remove' },
-    { kind: 'contact', label: 'Contact' },
-  ];
-  readonly responseLine =
-    'We review each request and reply to the email or phone you give us.';
-
-  kind: DataRequestKind | null = null;
-  dataClass: DataRequestClass = 'people';
   contact = '';
   description = '';
   error = '';
@@ -46,7 +19,7 @@ export class DataPrivacyDialogComponent {
   submitted = false;
   busy = false;
   readonly successMessage =
-    'Thank you. We will review your request and reply using the contact details you gave us.';
+    'Thank you. We will read your message and reply to your email.';
 
   @ViewChild('successPanel') successPanel?: ElementRef<HTMLElement>;
 
@@ -54,38 +27,21 @@ export class DataPrivacyDialogComponent {
     private dataRequests: DataRequestsService,
     private authService: AuthService,
     private dialogRef: MatDialogRef<DataPrivacyDialogComponent>,
-  ) {}
+  ) {
+    // Signed-in visitors shouldn't retype the address we already know; the
+    // field stays editable so they can still give a different one.
+    this.contact = this.authService.getCachedUser()?.email ?? '';
+  }
 
   close(): void {
     this.dialogRef.close();
   }
 
-  openForm(kind: DataRequestKind): void {
-    this.kind = kind;
-    this.dataClass = kind === 'contact' ? 'other' : 'people';
-    this.contact = '';
-    this.description = '';
-    this.submitted = false;
-    this.error = '';
-    this.fieldErrors = {};
-  }
-
-  closeForm(): void {
-    this.kind = null;
-    this.contact = '';
-    this.description = '';
-    this.submitted = false;
-    this.error = '';
-    this.fieldErrors = {};
-  }
-
   async submit(): Promise<void> {
-    if (!this.kind || this.busy) {
+    if (this.busy) {
       return;
     }
     const input: DataRequestInput = {
-      kind: this.kind,
-      dataClass: this.dataClass,
       contact: this.contact,
       description: this.description,
     };
@@ -104,7 +60,7 @@ export class DataPrivacyDialogComponent {
       this.description = '';
       setTimeout(() => this.successPanel?.nativeElement.focus());
     } catch (error) {
-      this.error = (error as Error)?.message || 'We could not send your request. Try again.';
+      this.error = (error as Error)?.message || 'We could not send your message. Try again.';
     } finally {
       this.busy = false;
     }
