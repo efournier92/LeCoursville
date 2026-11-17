@@ -1,0 +1,84 @@
+# Critique Ledger: Analytics Report
+
+- Goal: rebuild /admin/analytics as a white-card, rich, professional analytics report from GA4 summary data with inline SVG charts
+- Started: 2026-11-17
+- Branch: Polish-2026-11-16
+- Lens set: correctness, visual, data-integrity, testing
+
+## Findings
+## Findings
+
+- C-20261117-01 | 2026-11-17 | correctness | medium | high | addressed | GA daily dates come back as raw YYYYMMDD while fixture and range use ISO, so labels render 20260101 | functions/src/admin-analytics-summary.ts:279
+  - rebuttal | addressed | upheld: functions:279 emits raw YYYYMMDD, spec codifies it
+- C-20261117-02 | 2026-11-17 | correctness | medium | medium | addressed | Chart x is derived from array index not date, so GA days with zero traffic stretch across the axis | src/app/components/admin-analytics/admin-analytics.component.ts:133
+  - rebuttal | addressed | upheld: ts:133 index math misplaces omitted GA days
+- C-20261117-03 | 2026-11-17 | correctness | low | high | addressed | Middle date label is pinned at x=360 while index 14 plots at 347.6, and 1-2 point series repeat the start date | src/app/components/admin-analytics/admin-analytics.component.ts:78
+  - rebuttal | addressed | upheld: ts:78 x=360 vs index14 at 347.6
+- C-20261117-04 | 2026-11-17 | correctness | low | medium | rejected | insight getter derefs summary.topPages[0] without a guard and throws when the array is absent | src/app/components/admin-analytics/admin-analytics.component.ts:114
+  - rebuttal | rejected | ts:119 already guards and an absent array breaks the typed contract
+- C-20261117-05 | 2026-11-17 | visual | high | high | addressed | Trend uses a fixed 720 viewBox, so at 390px the 11-unit labels and strokes shrink to about 5px and stay illegible | src/app/components/admin-analytics/admin-analytics.component.html:91
+  - rebuttal | addressed | upheld: html:75 fixed viewBox shrinks labels to ~5px at 390px
+- C-20261117-06 | 2026-11-17 | visual | medium | high | addressed | Users legend swatch renders solid honey because transparent gradient stops show the accent background, yet the series is dashed | src/app/components/admin-analytics/admin-analytics.component.scss:96
+  - rebuttal | addressed | upheld: scss:97 solid accent shows through gradient stops while series is dashed
+- C-20261117-07 | 2026-11-17 | visual | medium | high | addressed | Dark theme loses every gridline since the stroke is a theme-invariant rgba baked for light surfaces | src/styles.scss:153
+  - rebuttal | addressed | upheld: ink-07 has no dark override, gridlines composite 1.01:1
+- C-20261117-08 | 2026-11-17 | visual | medium | high | rejected | One share-bar style encodes two scales, max-relative for pages and events but share-of-total for devices, with no scale stated | src/app/components/admin-analytics/admin-analytics.component.html:124
+  - rebuttal | rejected | every bar is value labelled and devices also print share percent
+- C-20261117-09 | 2026-11-17 | visual | medium | high | addressed | Device rows cap the track at 160px with no justification, leaving most of the card empty and bars bunched left | src/app/components/admin-analytics/admin-analytics.component.scss:119
+  - rebuttal | addressed | upheld: scss:119 caps the device track at 160px
+- C-20261117-10 | 2026-11-17 | visual | medium | high | addressed | Source label and KPI captions use ink-3 at 3:1 contrast for small text, below the 4.5:1 floor | src/app/components/admin-analytics/admin-analytics.component.scss:52
+  - rebuttal | addressed | upheld: ink-3 captions compute 3.18:1 at 12-14px
+- C-20261117-11 | 2026-11-17 | visual | low | high | addressed | Area closes at y=220 while zero maps to 212, so the fill bleeds below the baseline under the date labels | src/app/components/admin-analytics/admin-analytics.component.ts:145
+  - rebuttal | addressed | upheld: ts:145 closes area at y=220 while baseline is 212
+- C-20261117-12 | 2026-11-17 | visual | low | high | rejected | Polylines start and end exactly at the viewBox edges with 2px strokes and clip 1px on each side | src/app/components/admin-analytics/admin-analytics.component.ts:133
+  - rebuttal | rejected | sub-pixel stroke cap loss at the viewBox edge, no data affected
+- C-20261117-13 | 2026-11-17 | data-integrity | high | high | rejected | GA daily date is YYYYMMDD while range is ISO, so range start and end can disagree with the first and last daily point | functions/src/admin-analytics-summary.ts:279
+  - rebuttal | rejected | duplicate of C-20261117-01, same root cause and fix
+- C-20261117-14 | 2026-11-17 | data-integrity | medium | high | addressed | Fixture topEvents are not sorted descending, so the ranked table shows first_visit 812 above user_engagement 2980 | functions/src/admin-analytics-summary.ts:110
+  - rebuttal | addressed | upheld: fixture events out of descending order at functions:110
+- C-20261117-15 | 2026-11-17 | data-integrity | medium | high | addressed | GA device report uses limit 3, so truncated device rows need not sum to sessions while the UI divides by returned rows | functions/src/admin-analytics-summary.ts:257
+  - rebuttal | addressed | upheld: limit 3 truncates while UI renormalises shares
+- C-20261117-16 | 2026-11-17 | data-integrity | medium | high | addressed | GA daily rows are not zero-filled, so fewer than 30 points can meet a payload that claims a 30-day range | functions/src/admin-analytics-summary.ts:278
+  - rebuttal | addressed | upheld: GA omits zero days, payload can claim 30 days with fewer points
+- C-20261117-17 | 2026-11-17 | data-integrity | medium | medium | addressed | Range includes today partial GA day without marking it, while the fixture final day is a full synthetic day | functions/src/admin-analytics-summary.ts:211
+  - rebuttal | addressed | upheld: endDate today includes a partial day unmarked
+- C-20261117-18 | 2026-11-17 | data-integrity | low | high | rejected | FIXTURE is built once at import with Date.now, so warm instances serve a window that ends on boot date | functions/src/admin-analytics-summary.ts:127
+  - rebuttal | rejected | fixture and range share one now value and the UI labels sample data
+- C-20261117-19 | 2026-11-17 | data-integrity | low | high | rejected | GA daily users are per-day uniques but range totals are unique users, so sums cannot match while the fixture implies they do | functions/src/admin-analytics-summary.ts:270
+  - rebuttal | rejected | no label claims daily users are additive to range uniques
+- C-20261117-20 | 2026-11-17 | data-integrity | low | medium | addressed | isoDate is UTC but GA dates follow property timezone, so range end can land a day past the last GA date | functions/src/admin-analytics-summary.ts:38
+  - rebuttal | addressed | upheld: UTC range can end a day past the last property-timezone row
+- C-20261117-21 | 2026-11-17 | testing | high | high | addressed | Trend test asserts only role and a non-empty aria-label, so a blank or NaN polyline would still pass | e2e/specs/admin-analytics.spec.ts:21
+  - rebuttal | addressed | upheld: spec:21 accepts any non-empty aria-label
+- C-20261117-22 | 2026-11-17 | testing | high | high | addressed | Bar test asserts width greater than zero only, which a div with no width binding also satisfies | e2e/specs/admin-analytics.spec.ts:108
+  - rebuttal | addressed | upheld: spec:108 width>0 passes with the binding removed
+- C-20261117-23 | 2026-11-17 | testing | high | high | addressed | Empty daily branch is never rendered by a test, so the no-results state is unproven | src/app/components/admin-analytics/admin-analytics.component.html:67
+  - rebuttal | addressed | upheld: empty daily branch never rendered by a test
+- C-20261117-24 | 2026-11-17 | testing | medium | high | addressed | White-surface probe reads only the first admin-surface div, leaving the four mat-cards unverified | e2e/specs/admin-analytics.spec.ts:58
+  - rebuttal | addressed | upheld: spec:58 probes the first surface only
+- C-20261117-25 | 2026-11-17 | testing | medium | high | addressed | Insight asserted only on the leading path text, so share math, peak line and the empty-topPages branch are untested | e2e/specs/admin-analytics.spec.ts:41
+  - rebuttal | addressed | upheld: spec:41 asserts only the leading path fragment
+- C-20261117-26 | 2026-11-17 | testing | medium | high | rejected | Only an internal callable error is mocked, so malformed and partial payloads never reach the ready render | e2e/specs/admin-analytics.spec.ts:69
+  - rebuttal | rejected | malformed payloads are outside the AnalyticsSummary contract
+- C-20261117-27 | 2026-11-17 | testing | medium | high | addressed | No unit spec covers the chart helpers, including the zero-max guard, single-day series and percent clamp | src/app/components/admin-analytics/admin-analytics.component.ts:128
+  - rebuttal | addressed | upheld: no component spec covers the chart helpers
+- C-20261117-28 | 2026-11-17 | testing | low | high | addressed | Source label and loading testids are never asserted, so a source flip or stuck skeleton would pass | src/app/components/admin-analytics/admin-analytics.component.html:28
+  - rebuttal | addressed | upheld: source label and loading testids unasserted
+
+
+- C-20261117-29 | 2026-11-17 | maintainability | medium | high | addressed | daily pageViews is fetched and allocated but never rendered | functions/src/admin-analytics-summary.ts:14
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-30 | 2026-11-17 | maintainability | medium | high | addressed | DateLabel x and anchor never reach the DOM | src/app/components/admin-analytics/admin-analytics.component.ts:6
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-31 | 2026-11-17 | maintainability | medium | high | addressed | range.days is asserted in specs but nothing renders it while copy hard-codes Thirty days | functions/src/admin-analytics-summary.ts:19
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-32 | 2026-11-17 | maintainability | low | high | addressed | deviceTotal getter is read only by deviceDenominator | src/app/components/admin-analytics/admin-analytics.component.ts:117
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-33 | 2026-11-17 | maintainability | low | high | addressed | scss rule restates ink-2 already inherited from admin-intro | src/app/components/admin-analytics/admin-analytics.component.scss:15
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-34 | 2026-11-17 | maintainability | low | high | addressed | count greater than three is implied by the exact count nine two lines above | e2e/specs/admin-analytics.spec.ts:41
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-35 | 2026-11-17 | maintainability | low | high | addressed | not.toContain NaN is implied by the exact string equality on the next line | src/app/components/admin-analytics/admin-analytics.component.spec.ts:62
+  - rebuttal | addressed | deleted or rendered in the un-ship pass
+- C-20261117-36 | 2026-11-17 | maintainability | low | high | addressed | not.toThrow duplicates the exact string evaluation of the same expression | src/app/components/admin-analytics/admin-analytics.component.spec.ts:135
+  - rebuttal | addressed | deleted or rendered in the un-ship pass

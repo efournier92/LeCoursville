@@ -25,11 +25,27 @@ export interface AnalyticsTableRow {
   value: number;
 }
 
+export interface AnalyticsDailyPoint {
+  date: string;
+  users: number;
+  sessions: number;
+}
+
 export interface AnalyticsSummary {
   source: 'fixture' | 'ga';
-  totals: { users: number; sessions: number };
+  range: { days: number; start: string; end: string };
+  totals: {
+    users: number;
+    sessions: number;
+    pageViews: number;
+    bounceRate: number;
+    avgSessionSeconds: number;
+    newUsers: number;
+  };
+  daily: AnalyticsDailyPoint[];
   topPages: AnalyticsTableRow[];
   topEvents: AnalyticsTableRow[];
+  devices: AnalyticsTableRow[];
 }
 
 const HTTP_STATUS_SUFFIX = / \[\d{3}\]$/;
