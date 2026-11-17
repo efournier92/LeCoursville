@@ -1,5 +1,5 @@
 @if (!message.isDeleted) {
-  <div class="expression-card">
+  <div class="expression-card" [class.card-editable]="canEdit">
     <div class="expression-content">
       <div class="expression-header">
         <h3 class="expression-title">&ldquo;{{ message.title }}&rdquo;</h3>
@@ -36,12 +36,16 @@
         }
       </div>
     </div>
-    @if (user && user.roles && user.roles.admin) {
+    @if (canEdit) {
       <div
         class="expression-actions"
         >
         <button
           mat-icon-button
+          color="primary"
+          matTooltip="Edit"
+          [attr.aria-label]="'Edit ' + message.title"
+          data-testid="edit-expression"
           (click)="editMessage()"
           >
           <mat-icon>edit</mat-icon>
