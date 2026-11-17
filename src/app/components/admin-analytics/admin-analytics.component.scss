@@ -74,6 +74,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.chart-partial-note {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-2);
+}
+
 .chart-legend {
   display: flex;
   flex-wrap: wrap;

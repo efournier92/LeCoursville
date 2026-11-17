@@ -34,6 +34,7 @@ test.describe('admin analytics', () => {
       expect(points).not.toContain('undefined');
     }
     await expect(page.getByTestId('admin-analytics-dates').locator('span')).toHaveCount(3);
+    await expect(page.getByTestId('admin-analytics-partial-note')).toHaveCount(0);
 
     const pages = page.getByTestId('admin-analytics-pages');
     await expect(pages.locator('tbody tr')).toHaveCount(9);
@@ -50,6 +51,24 @@ test.describe('admin analytics', () => {
     await expectBarsHaveWidth(devices, false);
 
     await expect(page.getByTestId('admin-analytics-insight')).toContainText('/ leads with');
+  });
+
+  test('analytics: a ga source marks the last date and adds the partial-day note', async ({ page }) => {
+    await login(page, 'admin');
+    await page.route('**/adminAnalyticsSummary', async (route) => {
+      const response = await route.fetch();
+      const body = await response.json();
+      body.result.source = 'ga';
+      await route.fulfill({ response, json: body });
+    });
+
+    await page.goto('/admin/analytics');
+    await expect(page.getByTestId('admin-analytics-totals')).toBeVisible({ timeout: 20000 });
+
+    const note = page.getByTestId('admin-analytics-partial-note');
+    await expect(note).toBeVisible();
+    await expect(note).toContainText('may be partial');
+    await expect(page.getByTestId('admin-analytics-dates').locator('span').last()).toHaveText(/\*$/);
   });
 
   test('analytics: cards use the shared white surface token', async ({ page }) => {

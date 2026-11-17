@@ -86,9 +86,12 @@
           </svg>
           <div class="chart-dates" data-testid="admin-analytics-dates">
             @for (label of dateLabels; track label.text) {
-              <span>{{ label.text }}</span>
+              <span>{{ label.text }}{{ $last && summary.source === 'ga' ? '*' : '' }}</span>
             }
           </div>
+          @if (summary.source === 'ga') {
+            <p class="chart-partial-note" data-testid="admin-analytics-partial-note">The newest day (*) may be partial so far.</p>
+          }
           <div class="chart-legend">
             <span class="legend-item">
               <span class="legend-swatch sessions-swatch" aria-hidden="true"></span>
