@@ -25,6 +25,7 @@ import { AdminPeopleImportComponent } from '../admin-people-import/admin-people-
 import { AdminPeopleComponent } from '../admin-people/admin-people.component';
 import { AdminRecoveryComponent } from '../admin-recovery/admin-recovery.component';
 import { AdminSongsComponent } from '../admin-songs/admin-songs.component';
+import { AdminSupportComponent } from '../admin-support/admin-support.component';
 import { AdminUsersComponent } from '../admin-users/admin-users.component';
 import { SongDraftDialogComponent } from '../song-draft-dialog/song-draft-dialog.component';
 
@@ -98,13 +99,19 @@ const routes: Routes = [
         canActivate: [SuperAdminGuard],
       },
       {
-        path: ADMIN_ROUTE.recovery,
-        component: AdminRecoveryComponent,
+        path: ADMIN_ROUTE.support,
+        component: AdminSupportComponent,
         canActivate: [SuperAdminGuard],
       },
       {
-        path: ADMIN_ROUTE.dataRequests,
-        component: AdminDataRequestsComponent,
+        path: 'recovery',
+        redirectTo: ADMIN_ROUTE.support,
+        pathMatch: 'full',
+      },
+      {
+        path: 'data-requests',
+        redirectTo: ADMIN_ROUTE.support,
+        pathMatch: 'full',
       },
       {
         path: ADMIN_ROUTE.analytics,
@@ -135,6 +142,7 @@ const routes: Routes = [
     SongDraftDialogComponent,
     AdminAnalyticsComponent,
     AdminDataRequestsComponent,
+    AdminSupportComponent,
   ],
   imports: [
     CommonModule,

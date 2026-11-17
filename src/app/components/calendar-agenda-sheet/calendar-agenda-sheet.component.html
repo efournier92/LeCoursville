@@ -1,16 +1,17 @@
 <div class="calendar-agenda-sheet-body">
   <div class="calendar-agenda-sheet-header">
-    <h2>Expand</h2>
+    <h2>Timeline</h2>
     <button mat-icon-button type="button" class="calendar-agenda-sheet-close" aria-label="Close agenda" (click)="close()">
       <mat-icon aria-hidden="true">close</mat-icon>
     </button>
   </div>
   <app-week-agenda
     variant="full"
+    [hideTitle]="true"
     [events]="data.events"
     [anchorDate]="data.anchorDate"
     [selectedDay]="selected"
-    (daySelect)="selected = $event"
+    (daySelect)="selectDay($event)"
     (personClick)="openPerson($event)"
     (spouseClick)="openPerson($event)"
   ></app-week-agenda>

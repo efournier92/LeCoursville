@@ -92,7 +92,7 @@ describe('AdminComponent', () => {
     expect(nav.getAttribute('aria-busy')).toBe('false');
     expect(nav.querySelectorAll('.admin-nav-skeleton').length).toBe(0);
     expect(nav.querySelectorAll('.sidebar-group').length).toBe(3);
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(12);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(11);
   });
 
   it('renders only content items for a content admin', () => {
@@ -102,7 +102,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
 
     const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(6);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(5);
     expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
   });
 
@@ -113,7 +113,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
 
     const nav = fixture.nativeElement.querySelector('[data-testid="admin-nav"]');
-    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(7);
+    expect(nav.querySelectorAll('[data-testid^="admin-nav-link-"]').length).toBe(6);
     expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-link-users"]')).toBeNull();
   });
 
@@ -125,7 +125,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-recovery"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-support"]')).toBeNull();
   });
 
   it('shows upload and recovery counts with an accessible label', () => {
@@ -138,7 +138,7 @@ describe('AdminComponent', () => {
     const uploads = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-uploads"]');
     expect(uploads.textContent).toContain('3');
     expect(uploads.textContent).toContain('3 pending');
-    const recovery = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-recovery"]');
+    const recovery = fixture.nativeElement.querySelector('[data-testid="admin-nav-badge-support"]');
     expect(recovery.textContent).toContain('2 outstanding');
   });
 

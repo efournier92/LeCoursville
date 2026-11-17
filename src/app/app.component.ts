@@ -1,4 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { VersionService } from './services/version.service';
@@ -15,8 +25,11 @@ import { filter, take } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   user: User;
+  // True = hamburger. Default true so unit/jsdom runs (no ResizeObserver) keep
+  // the toggle the app.component.spec expects.
+  navCollapsed = true;
   // True once the auth outcome is fully known: signed out, or signed in
   // with the RTDB user record loaded (authResolved$ emits then, not at
   // firebase-auth restore time — that gap flashed a wrong Sign In link).
@@ -37,7 +50,71 @@ export class AppComponent implements OnInit {
     private themeService: ThemeService,
     private router: Router,
     private route: ActivatedRoute,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef,
   ) {}
+
+  // RUNTIME NAV FIT
+
+  private _toolbar?: ElementRef<HTMLElement>;
+  private _navDesktop?: ElementRef<HTMLElement>;
+
+  @ViewChild('toolbar', { read: ElementRef }) set toolbarRef(ref: ElementRef<HTMLElement> | undefined) {
+    this._toolbar = ref;
+    this.syncNavObserver();
+  }
+
+  @ViewChild('navDesktop') set navDesktopRef(ref: ElementRef<HTMLElement> | undefined) {
+    this._navDesktop = ref;
+    this.syncNavObserver();
+  }
+
+  private navObserver?: ResizeObserver;
+
+  ngAfterViewInit(): void {
+    this.syncNavObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.navObserver?.disconnect();
+  }
+
+  private syncNavObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this.navObserver?.disconnect();
+    this.navObserver = new ResizeObserver(() => this.zone.run(() => this.updateNavMode()));
+    const toolbar = this._toolbar?.nativeElement;
+    const nav = this._navDesktop?.nativeElement;
+    if (toolbar) this.navObserver.observe(toolbar);
+    if (nav) this.navObserver.observe(nav);
+    this.zone.run(() => this.updateNavMode());
+  }
+
+  private updateNavMode(): void {
+    const toolbar = this._toolbar?.nativeElement;
+    const nav = this._navDesktop?.nativeElement;
+    if (!toolbar || !nav || typeof window === 'undefined' || !window.getComputedStyle) {
+      this.applyNavCollapsed(true);
+      return;
+    }
+    const style = window.getComputedStyle(toolbar);
+    const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+    const left = toolbar.querySelector<HTMLElement>('.toolbar-left')?.getBoundingClientRect().width ?? 0;
+    const theme = toolbar.querySelector<HTMLElement>('.theme-switch')?.getBoundingClientRect().width ?? 0;
+    const available = toolbar.clientWidth - pad - left - theme - 10; // .icons-menu gap
+    const required = nav.scrollWidth;
+    if (required <= 0 || available <= 0) {
+      this.applyNavCollapsed(true);
+      return;
+    }
+    this.applyNavCollapsed(required > available - 8); // small buffer stops flicker
+  }
+
+  private applyNavCollapsed(collapsed: boolean): void {
+    if (collapsed === this.navCollapsed) return;
+    this.navCollapsed = collapsed;
+    this.cdr.detectChanges();
+  }
 
   get theme$() {
     return this.themeService.theme$;

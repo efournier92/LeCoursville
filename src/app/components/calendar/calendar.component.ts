@@ -58,6 +58,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
   legacyCalendarPdf = false;
   printFlagsReady = false;
   prefsError = false;
+  calendarViewMode: 'month' | 'timeline' = 'month';
 
   private userSub: Subscription | null = null;
   private eventsSub: Subscription | null = null;
@@ -242,6 +243,16 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   isCurrentPickerMonth(index: number): boolean {
     return this.months[index] === this.viewMonth && this.pickerYear === this.selectedYear;
+  }
+
+  /** The Today shortcut only earns its space when the view is not already on
+   *  the current month. */
+  get isViewingCurrentMonth(): boolean {
+    if (!this.viewMonth) {
+      return true;
+    }
+    const now = new Date();
+    return this.selectedYear === now.getFullYear() && this.viewMonth === this.months[now.getMonth()];
   }
 
   selectPickerMonth(monthIndex: number): void {

@@ -26,6 +26,7 @@ export class CalendarViewComponent implements OnInit, OnChanges, OnDestroy {
   @Input() viewDate: Date;
   @Input() selectedYear: number;
   @Input() events: RecurringEvent[];
+  @Input() viewMode: 'month' | 'timeline' = 'month';
 
   @Output() refreshView: EventEmitter<Event> = new EventEmitter();
   @Output() personClick: EventEmitter<string> = new EventEmitter();
@@ -109,13 +110,23 @@ export class CalendarViewComponent implements OnInit, OnChanges, OnDestroy {
     this.selectedDay = new Date(date);
   }
 
+  onTimelineDaySelect(date: Date): void {
+    this.selectedDay = new Date(date);
+    this.agendaAnchor = this.midnight(date);
+  }
+
   openFullAgenda(): void {
-    this.dialog.open(CalendarAgendaSheetComponent, {
-      data: {
-        events: this.events,
-        anchorDate: this.agendaAnchor,
-        selectedDay: this.selectedDay,
+    const data = {
+      events: this.events,
+      anchorDate: this.agendaAnchor,
+      selectedDay: this.selectedDay,
+      onDaySelect: (date: Date) => {
+        this.selectedDay = new Date(date);
+        this.agendaAnchor = this.midnight(date);
       },
+    };
+    this.dialog.open(CalendarAgendaSheetComponent, {
+      data,
       panelClass: 'calendar-agenda-sheet',
       width: '100vw',
       maxWidth: '100vw',

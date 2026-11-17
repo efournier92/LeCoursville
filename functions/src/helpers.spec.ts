@@ -96,6 +96,7 @@ describe("isAllowedContinueUrl", () => {
   afterEach(() => {
     delete process.env.FUNCTIONS_EMULATOR;
     delete process.env.ALLOW_LOCAL_CONTINUE_ORIGINS;
+    delete process.env.GCLOUD_PROJECT;
   });
 
   it("accepts each allowed production origin at the action path", () => {
@@ -132,6 +133,26 @@ describe("isAllowedContinueUrl", () => {
 
   it("rejects a malformed URL", () => {
     expect(isAllowedContinueUrl("not a url")).toBe(false);
+  });
+
+  it("accepts the dev project's own hosting origins in the dev project", () => {
+    process.env.GCLOUD_PROJECT = "lecoursville-dev";
+    expect(isAllowedContinueUrl("https://lecoursville-dev.web.app/auth/action")).toBe(true);
+    expect(
+      isAllowedContinueUrl("https://lecoursville-dev.firebaseapp.com/auth/action")
+    ).toBe(true);
+  });
+
+  it("rejects dev hosting origins in the prod project", () => {
+    process.env.GCLOUD_PROJECT = "lecoursville";
+    expect(isAllowedContinueUrl("https://lecoursville-dev.web.app/auth/action")).toBe(false);
+    expect(
+      isAllowedContinueUrl("https://lecoursville-dev.firebaseapp.com/auth/action")
+    ).toBe(false);
+  });
+
+  it("rejects dev hosting origins when the project id is unknown", () => {
+    expect(isAllowedContinueUrl("https://lecoursville-dev.web.app/auth/action")).toBe(false);
   });
 });
 

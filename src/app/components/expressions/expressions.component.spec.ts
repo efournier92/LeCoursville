@@ -1,16 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { Router } from '@angular/router';
 import { vi } from 'vitest';
 
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { ExpressionsComponent } from './expressions.component';
 import { Expression } from 'src/app/models/expression';
+import { ExpressionEditDialogComponent } from 'src/app/components/expression-edit-dialog/expression-edit-dialog.component';
 
 describe('ExpressionsComponent', () => {
   let component: ExpressionsComponent;
   let fixture: ComponentFixture<ExpressionsComponent>;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -22,10 +26,15 @@ describe('ExpressionsComponent', () => {
   });
 
   beforeEach(() => {
+    router = TestBed.inject(Router);
     fixture = TestBed.createComponent(ExpressionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  function setUrl(url: string): void {
+    Object.defineProperty(router, 'url', { configurable: true, get: () => url });
+  }
 
   function showExpressions(): void {
     component.loading = false;
@@ -55,11 +64,18 @@ describe('ExpressionsComponent', () => {
     expect(cards()).toBe(1);
   });
 
-  it('shows Create only to admins', () => {
+  it('gates Create to admins on the admin surface only', () => {
+    setUrl('/expressions');
+    component.user = { roles: { admin: true } } as any;
     showExpressions();
     const createButton = () =>
       fixture.nativeElement.querySelector('.create-expression-button');
 
+    expect(createButton()).toBeNull();
+
+    setUrl('/admin/expressions');
+    component.user = { roles: { admin: false } } as any;
+    fixture.detectChanges();
     expect(createButton()).toBeNull();
 
     component.user = { roles: { admin: true } } as any;
@@ -67,13 +83,53 @@ describe('ExpressionsComponent', () => {
     expect(createButton()).not.toBeNull();
   });
 
-  it('renders the inline edit surface for an expression flagged editable', () => {
+  it('renders no inline edit surface and opens the dialog on edit', () => {
+    setUrl('/admin/expressions');
+    component.user = { id: 'a', roles: { admin: true } } as any;
     showExpressions();
-    component.allItems[0].isEditable = true;
-    component.displayedItems = component.allItems as unknown as Expression[];
+    const expression = component.allItems[0] as Expression;
+    expression.isEditable = true;
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('app-expression-edit')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-expression-edit')).toBeNull();
+
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open').mockReturnValue({} as any);
+    component.onEdit(expression);
+
+    expect(openSpy).toHaveBeenCalledWith(
+      ExpressionEditDialogComponent,
+      expect.objectContaining({
+        data: { expression, authorId: expression.authorId },
+      }),
+    );
+  });
+
+  it('opens the create dialog with a null expression on the admin surface', () => {
+    setUrl('/admin/expressions');
+    component.user = { id: 'u1', roles: { admin: true } } as any;
+    showExpressions();
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open').mockReturnValue({} as any);
+
+    component.onCreate();
+
+    expect(openSpy).toHaveBeenCalledWith(
+      ExpressionEditDialogComponent,
+      expect.objectContaining({ data: { expression: null, authorId: 'u1' } }),
+    );
+  });
+
+  it('does not open the create dialog off the admin surface', () => {
+    setUrl('/expressions');
+    component.user = { id: 'u1', roles: { admin: true } } as any;
+    showExpressions();
+    const dialog = TestBed.inject(MatDialog);
+    const openSpy = vi.spyOn(dialog, 'open').mockReturnValue({} as any);
+
+    component.onCreate();
+
+    expect(openSpy).not.toHaveBeenCalled();
   });
 
   it('renders the empty state when the loaded collection is empty', () => {

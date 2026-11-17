@@ -129,12 +129,6 @@
     // MDC's track ends 4px inside the host; pull the visible track onto the
     // page's 16px right rail.
     margin-right: -4px;
-    // Off is a control boundary, not a hairline: the darker control token
-    // keeps the unselected track visible without relying on hue.
-    --mat-slide-toggle-unselected-track-color: var(--color-input-border);
-    --mat-slide-toggle-unselected-hover-track-color: var(--color-input-border);
-    --mat-slide-toggle-unselected-focus-track-color: var(--color-input-border);
-    --mat-slide-toggle-unselected-pressed-track-color: var(--color-input-border);
   }
 
   .feature-icon {

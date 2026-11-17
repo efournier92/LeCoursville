@@ -21,6 +21,7 @@ export class AuthComponent implements OnInit {
   isEditMode: boolean;
   showPassword = false;
   showConfirmPassword = false;
+  showHelp = false;
   email = "";
   name = "";
   password = "";
@@ -105,6 +106,10 @@ export class AuthComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  toggleHelp(): void {
+    this.showHelp = !this.showHelp;
+  }
+
   get submitLabel(): string {
     if (this.loading) {
       return this.isCreateAccount ? "Creating Account…" : "Signing In…";
@@ -119,6 +124,7 @@ export class AuthComponent implements OnInit {
       return;
     }
     this.isCreateAccount = mode === "create";
+    this.showHelp = false;
     this.error = "";
     this.errorField = "";
     this.info = "";

@@ -566,7 +566,7 @@ export class AdminMediaUploadAudioAlbumComponent
   async onDeleteSelectedMedia(media: UploadableMedia): Promise<void> {
     const title = media?.title || media?.folderName || 'this album';
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete album?',
+      title: 'Delete Album?',
       message: `Delete "${title}"? This cannot be undone.`,
       confirmLabel: 'Delete album',
       destructive: true,

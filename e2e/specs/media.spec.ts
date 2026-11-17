@@ -1069,6 +1069,33 @@ test.describe('media', () => {
       .toBe(true);
   });
 
+  test('audio: clicking a track autoplays it', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/media/explorer');
+    await page.getByText('E2E Audio').first().click();
+
+    const audio = page.locator('.audio-player-element');
+    const toggle = page.locator('.audio-player-toggle');
+    const tracks = page.locator('.audio-player-track');
+    await expect(tracks).toHaveCount(2);
+    await expect(tracks.nth(1)).not.toHaveClass(/active/);
+
+    await tracks.nth(1).click();
+
+    await expect(tracks.nth(1)).toHaveClass(/active/);
+    await expect(tracks.nth(1)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('.audio-player-track-title')).toHaveText('E2E Track Two');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(async () => (await audio.evaluate((el) => (el as HTMLAudioElement).currentTime)) ?? 0, {
+        timeout: 15000,
+      })
+      .toBeGreaterThan(0);
+    await expect.poll(async () => audio.evaluate((el) => (el as HTMLAudioElement).paused)).toBe(false);
+
+    await toggle.click();
+  });
+
   test('audio: transport controls are keyboard reachable and announce state', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/media/explorer');

@@ -42,7 +42,7 @@ import { NavbarLinksComponent } from "./components/navbar-links/navbar-links.com
 import { FeatureDisabledComponent } from "./components/feature-disabled/feature-disabled.component";
 import { ExpressionsComponent } from "./components/expressions/expressions.component";
 import { ExpressionViewComponent } from "src/app/components/expression-view/expression-view.component";
-import { ExpressionEditComponent } from "./components/expression-edit/expression-edit.component";
+import { ExpressionEditDialogComponent } from "./components/expression-edit-dialog/expression-edit-dialog.component";
 import { PeopleComponent } from "./components/people/people.component";
 import { LvLoadErrorComponent } from "src/app/components/load-error/load-error.component";
 import { NoResultsMessageComponent } from "./components/no-results-message/no-results-message.component";
@@ -74,7 +74,7 @@ import { ThemePillComponent } from "./components/shared/theme-pill/theme-pill.co
         NavbarLinksComponent,
         ExpressionsComponent,
         ExpressionViewComponent,
-        ExpressionEditComponent,
+        ExpressionEditDialogComponent,
         PeopleComponent,
         AuthActionComponent,
         RecoveryRequestComponent,

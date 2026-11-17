@@ -22,70 +22,168 @@
   }
 
   @if (state === 'ready' && summary) {
-    <mat-card class="admin-surface analytics-totals-card">
-      <h2 class="admin-card-title">Last 30 Days</h2>
-      <table class="admin-table" data-testid="admin-analytics-totals">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td data-label="Metric">Users</td>
-            <td data-label="Value" data-testid="admin-analytics-users">{{ summary.totals.users }}</td>
-          </tr>
-          <tr>
-            <td data-label="Metric">Sessions</td>
-            <td data-label="Value" data-testid="admin-analytics-sessions">{{ summary.totals.sessions }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </mat-card>
+    <div class="analytics-report">
+      <p class="admin-intro">
+        Last {{ summary.range.days }} days. Source:
+        <span class="analytics-source" data-testid="admin-analytics-source">{{ summary.source === 'ga' ? 'Google Analytics' : 'Sample data' }}</span>
+      </p>
 
-    <mat-card class="admin-surface">
-      <h2 class="admin-card-title">Top Pages</h2>
-      <table class="admin-table" data-testid="admin-analytics-pages">
-        <thead>
-          <tr>
-            <th>Path</th>
-            <th>Views</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of summary.topPages; track row.label) {
-            <tr>
-              <td data-label="Path">{{ row.label }}</td>
-              <td data-label="Views">{{ row.value }}</td>
-            </tr>
-          } @empty {
-            <tr><td colspan="2" class="admin-muted">No page data.</td></tr>
-          }
-        </tbody>
-      </table>
-    </mat-card>
+      <div class="kpi-row" data-testid="admin-analytics-totals">
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">Users</span>
+          <span class="kpi-value" data-testid="admin-analytics-users">{{ summary.totals.users | number }}</span>
+          <span class="kpi-caption">Unique visitors</span>
+        </div>
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">Sessions</span>
+          <span class="kpi-value" data-testid="admin-analytics-sessions">{{ summary.totals.sessions | number }}</span>
+          <span class="kpi-caption">Visits started</span>
+        </div>
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">Page Views</span>
+          <span class="kpi-value" data-testid="admin-analytics-views">{{ summary.totals.pageViews | number }}</span>
+          <span class="kpi-caption">Pages opened</span>
+        </div>
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">New Users</span>
+          <span class="kpi-value" data-testid="admin-analytics-new-users">{{ summary.totals.newUsers | number }}</span>
+          <span class="kpi-caption">First visits</span>
+        </div>
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">Avg. Session</span>
+          <span class="kpi-value" data-testid="admin-analytics-avg-session">{{ formatDuration(summary.totals.avgSessionSeconds) }}</span>
+          <span class="kpi-caption">Minutes per visit</span>
+        </div>
+        <div class="admin-surface kpi-card">
+          <span class="kpi-label">Bounce Rate</span>
+          <span class="kpi-value" data-testid="admin-analytics-bounce">{{ formatPercent(summary.totals.bounceRate) }}</span>
+          <span class="kpi-caption">Single page visits</span>
+        </div>
+      </div>
 
-    <mat-card class="admin-surface">
-      <h2 class="admin-card-title">Top Events</h2>
-      <table class="admin-table" data-testid="admin-analytics-events">
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of summary.topEvents; track row.label) {
-            <tr>
-              <td data-label="Event">{{ row.label }}</td>
-              <td data-label="Count">{{ row.value }}</td>
-            </tr>
-          } @empty {
-            <tr><td colspan="2" class="admin-muted">No event data.</td></tr>
+      <mat-card class="admin-surface analytics-card">
+        <h2 class="admin-card-title">Sessions And Users</h2>
+        <p class="chart-subtitle">{{ summary.range.start }} to {{ summary.range.end }}</p>
+        @if (daily.length === 0) {
+          <app-no-results-message
+            title="No trend data yet"
+            hint="Daily traffic appears once analytics has a day of data."
+            noun="days" />
+        } @else {
+          <svg
+            class="trend-chart"
+            viewBox="0 0 720 200"
+            preserveAspectRatio="none"
+            role="img"
+            [attr.aria-label]="trendAriaLabel"
+            data-testid="admin-analytics-trend">
+            @for (y of gridlineYs; track y) {
+              <line x1="0" [attr.y1]="y" x2="720" [attr.y2]="y" stroke="var(--color-border)" vector-effect="non-scaling-stroke" />
+            }
+            <path [attr.d]="sessionsArea" fill="var(--color-brand-primary)" fill-opacity="0.1" vector-effect="non-scaling-stroke" />
+            <polyline [attr.points]="sessionsPoints" fill="none" stroke="var(--color-brand-primary)" stroke-width="2" vector-effect="non-scaling-stroke" />
+            <polyline [attr.points]="usersPoints" fill="none" stroke="var(--color-accent)" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+          </svg>
+          <div class="chart-dates" data-testid="admin-analytics-dates">
+            @for (label of dateLabels; track label.text) {
+              <span>{{ label.text }}{{ $last && summary.source === 'ga' ? '*' : '' }}</span>
+            }
+          </div>
+          @if (summary.source === 'ga') {
+            <p class="chart-partial-note" data-testid="admin-analytics-partial-note">The newest day (*) may be partial so far.</p>
           }
-        </tbody>
-      </table>
-    </mat-card>
+          <div class="chart-legend">
+            <span class="legend-item">
+              <span class="legend-swatch sessions-swatch" aria-hidden="true"></span>
+              Sessions
+            </span>
+            <span class="legend-item">
+              <span class="legend-swatch users-swatch" aria-hidden="true"></span>
+              Users
+            </span>
+          </div>
+        }
+      </mat-card>
+
+      <mat-card class="admin-surface analytics-card">
+        <h2 class="admin-card-title">Top Pages</h2>
+        <div class="admin-table-scroll">
+          <table class="admin-table" data-testid="admin-analytics-pages">
+            <thead>
+              <tr>
+                <th>Path</th>
+                <th class="numeric">Views</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of summary.topPages; track row.label) {
+                <tr>
+                  <td data-label="Path">{{ row.label }}</td>
+                  <td data-label="Views" class="share-cell">
+                    <span class="share-number">{{ row.value | number }}</span>
+                    <div class="share-track" aria-hidden="true">
+                      <div class="bar" [style.width.%]="percent(row.value, topPageValue)"></div>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="2" class="admin-muted">No page data.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </mat-card>
+
+      <mat-card class="admin-surface analytics-card">
+        <h2 class="admin-card-title">Top Events</h2>
+        <div class="admin-table-scroll">
+          <table class="admin-table" data-testid="admin-analytics-events">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th class="numeric">Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of summary.topEvents; track row.label) {
+                <tr>
+                  <td data-label="Event">{{ row.label }}</td>
+                  <td data-label="Count" class="share-cell">
+                    <span class="share-number">{{ row.value | number }}</span>
+                    <div class="share-track" aria-hidden="true">
+                      <div class="bar" [style.width.%]="percent(row.value, topEventValue)"></div>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="2" class="admin-muted">No event data.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </mat-card>
+
+      <mat-card class="admin-surface analytics-card">
+        <h2 class="admin-card-title">Devices</h2>
+        <div class="device-list" data-testid="admin-analytics-devices">
+          @for (row of summary.devices; track row.label) {
+            <div class="device-row">
+              <span class="device-label">{{ row.label }}</span>
+              <div class="share-track" aria-hidden="true">
+                <div class="bar" [style.width.%]="percent(row.value, deviceDenominator)"></div>
+              </div>
+              <span class="device-percent">{{ formatPercent(deviceShare(row.value)) }}</span>
+            </div>
+          } @empty {
+            <p class="admin-muted">No device data.</p>
+          }
+        </div>
+      </mat-card>
+
+      <mat-card class="admin-surface analytics-card">
+        <h2 class="admin-card-title">Insight</h2>
+        <p class="insight-line" data-testid="admin-analytics-insight">{{ insight }}</p>
+      </mat-card>
+    </div>
   }
 </div>

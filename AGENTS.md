@@ -62,6 +62,10 @@ gate still requires an explicit human sign-off; a red gate prompts a deliberate
   still applies, and the bundle identity check still runs.
 - Never bypass the sign-off, and never skip a gate you have not actually run.
 
+## Admin UI
+
+Admin cards, tables, and page scss follow `docs/design/ADMIN_SURFACES.md`.
+
 ## Environment
 
 - Java is required by the emulator suite: `export

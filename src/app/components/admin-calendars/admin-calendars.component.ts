@@ -105,7 +105,7 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
 
   async onDelete(calendar: Calendar): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete calendar?',
+      title: 'Delete Calendar?',
       message: `Delete the ${calendar.year} calendar PDF mapping? This cannot be undone.`,
       confirmLabel: 'Delete',
       destructive: true,
@@ -146,7 +146,7 @@ export class AdminCalendarsComponent implements OnInit, OnDestroy {
     );
     if (duplicate) {
       const replace = await this.confirmDialog.confirm({
-        title: 'Replace calendar?',
+        title: 'Replace Calendar?',
         message: `A calendar already exists for ${year}. Replace its PDF mapping?`,
         confirmLabel: 'Replace',
         destructive: true,

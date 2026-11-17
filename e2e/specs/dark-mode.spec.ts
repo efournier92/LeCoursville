@@ -179,6 +179,11 @@ test('theme toggle sits immediately left of the desktop nav items', async ({ pag
   // Logo stays within the 64px toolbar row (it had blown up when the left
   // cluster lost its definite height).
   expect(logoBox!.height).toBeLessThanOrEqual(64);
+  const glyphBox = await page.locator('.toolbar-icon').boundingBox();
+  expect(glyphBox).toBeTruthy();
+  // Grown for desktop presence: ~85% of the 64px bar.
+  expect(glyphBox!.height).toBeGreaterThan(51);
+  expect(glyphBox!.height).toBeLessThan(58);
   expect(toolbarBox!.height).toBe(64);
   // Logo on the left, then the toggle immediately left of the nav items.
   expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(toggleBox!.x);
@@ -379,6 +384,12 @@ test('mobile: logo left, theme toggle and hamburger grouped at the right', async
   // The toggle sits in the right third of the bar, not the middle.
   const toggleCenterX = toggleBox!.x + toggleBox!.width / 2;
   expect(toggleCenterX).toBeGreaterThan(toolbar!.x + toolbar!.width * 0.6);
+
+  const glyphBox = await page.locator('.toolbar-icon').boundingBox();
+  expect(glyphBox).toBeTruthy();
+  // Phone cap: ~75% of the 64px bar.
+  expect(glyphBox!.height).toBeGreaterThan(45);
+  expect(glyphBox!.height).toBeLessThan(51);
 
   await toggle.click();
   // WebKit does not focus buttons on click, so never assert focus here.

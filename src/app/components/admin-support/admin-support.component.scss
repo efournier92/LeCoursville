@@ -1,0 +1,12 @@
+.support-section + .support-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-overlay-ink-07);
+}
+
+.support-section-title {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}

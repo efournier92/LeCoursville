@@ -82,6 +82,10 @@ describe('CalendarComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('starts in month view mode', () => {
+    expect(component.calendarViewMode).toBe('month');
+  });
+
   it('initializes the view to the current month and year', () => {
     const now = new Date();
     expect(component.selectedYear).toBe(now.getFullYear());

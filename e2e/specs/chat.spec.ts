@@ -14,8 +14,10 @@ async function openChatAs(page: Page, who: 'admin' | 'user' | 'other') {
   if (who === 'admin') {
     return;
   }
-  // Sign out only from the Account page; reach it through the SPA link.
-  await page.getByRole('link', { name: 'Account' }).click();
+  // Sign out only from the Account page. Navigate directly because the
+  // fit-based nav can park the Account link behind the hamburger at the
+  // default viewport.
+  await page.goto('/account');
   await expect(page).toHaveURL('/account');
   await logout(page);
   await login(page, who);

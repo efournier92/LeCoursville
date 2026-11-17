@@ -95,11 +95,11 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.adminBadgeService.outstandingRecoveryRequests().subscribe({
         next: count => {
           this.outstandingRecoveryRequests = count;
-          this.badgeFailures.recovery = false;
+          this.badgeFailures.support = false;
         },
         error: () => {
           this.outstandingRecoveryRequests = 0;
-          this.badgeFailures.recovery = true;
+          this.badgeFailures.support = true;
         },
       }),
     );
@@ -109,7 +109,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (key === 'uploads') {
       return this.pendingUploads;
     }
-    return key === 'recovery' ? this.outstandingRecoveryRequests : 0;
+    return key === 'support' ? this.outstandingRecoveryRequests : 0;
   }
 
   badgeText(count: number): string {
@@ -117,7 +117,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   badgeLabel(key: AdminRouteKey, count: number): string {
-    return `${this.badgeText(count)} ${key === 'recovery' ? 'outstanding' : 'pending'}`;
+    return `${this.badgeText(count)} ${key === 'support' ? 'outstanding' : 'pending'}`;
   }
 
   hasBadge(key: AdminRouteKey): boolean {
@@ -130,7 +130,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   badgeAccessibleLabel(key: AdminRouteKey): string {
     if (this.badgeFailures[key]) {
-      return key === 'recovery'
+      return key === 'support'
         ? 'Outstanding recovery requests count unavailable'
         : 'Pending uploads count unavailable';
     }

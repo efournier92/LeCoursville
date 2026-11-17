@@ -1,11 +1,24 @@
-.request-meta,
-.request-description {
-  color: var(--color-ink-2);
-  font-size: 0.8125rem;
+@use 'src/app/styles/admin-data' as *;
+
+.requests-card {
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-subtitle {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-ink-2);
+  }
 }
 
-.request-kind {
-  font-weight: 600;
+.request-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.request-status {
+  font-weight: 500;
   text-transform: capitalize;
 }
 
@@ -19,5 +32,12 @@
     flex-basis: 100%;
     color: var(--color-error);
     font-size: 0.8125rem;
+  }
+}
+
+// Desktop only: the actions cell is flex, so park its buttons at the right edge.
+@media (min-width: 601px) {
+  .request-row-actions {
+    justify-content: flex-end;
   }
 }

@@ -1,111 +1,72 @@
 <div data-testid="data-privacy-dialog">
-  <h2 mat-dialog-title>Your information</h2>
+  <h2 mat-dialog-title>Data and Privacy</h2>
   <mat-dialog-content>
-    <p class="dialog-copy">Our family keeps this site, and we want it to be right for all who visit.</p>
+    <div class="dialog-copy">
+      <p><span class="scenario-ask">Something wrong or out of date?</span> <span class="scenario-do">Send us an update.</span></p>
+      <p><span class="scenario-ask">Rather not have your info shared here?</span> <span class="scenario-do">We'll take it down.</span></p>
+    </div>
     <p class="visually-hidden" role="status" aria-live="polite" data-testid="data-request-status">
       {{ submitted ? successMessage : '' }}
     </p>
-    <div class="dialog-actions" role="group" aria-label="Data rights requests">
-      @for (action of actions; track action.kind) {
-        <button
-          type="button"
-          class="dialog-action"
-          [attr.data-testid]="'data-request-open-' + action.kind"
-          [attr.aria-expanded]="kind === action.kind"
-          (click)="openForm(action.kind)">
-          {{ action.label }}
-        </button>
-      }
-    </div>
-    <p class="dialog-response" data-testid="data-request-response">{{ responseLine }}</p>
-
-    @if (kind) {
-      <section
-        class="request-panel"
-        aria-labelledby="data-request-heading"
-        data-testid="data-request-form">
-        <h2 id="data-request-heading">{{ panelHeadings[kind] }}</h2>
-        <p class="request-body">{{ panelBodies[kind] }}</p>
-        @if (!submitted) {
-          <form (ngSubmit)="submit()" novalidate>
-            <mat-form-field class="request-field">
-              <mat-label>What is this about?</mat-label>
-              <mat-select
-                name="dataClass"
-                [(ngModel)]="dataClass"
-                data-testid="data-request-class"
-                [attr.aria-invalid]="fieldErrors['dataClass'] ? 'true' : null"
-                [attr.aria-describedby]="fieldErrors['dataClass'] ? 'data-request-class-error' : null">
-                @for (option of dataClasses; track option) {
-                  <mat-option [value]="option">{{ option }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            @if (fieldErrors['dataClass']) {
-              <p class="request-field-error" id="data-request-class-error">{{ fieldErrors['dataClass'] }}</p>
-            }
-
-            <mat-form-field class="request-field">
-              <mat-label>Email or phone</mat-label>
-              <input
-                matInput
-                name="contact"
-                autocomplete="email"
-                [(ngModel)]="contact"
-                data-testid="data-request-contact"
-                [attr.aria-invalid]="fieldErrors['contact'] ? 'true' : null"
-                [attr.aria-describedby]="fieldErrors['contact'] ? 'data-request-contact-error' : null" />
-            </mat-form-field>
-            @if (fieldErrors['contact']) {
-              <p class="request-field-error" id="data-request-contact-error">{{ fieldErrors['contact'] }}</p>
-            }
-
-            <mat-form-field class="request-field">
-              <mat-label>Details (optional)</mat-label>
-              <textarea
-                matInput
-                name="description"
-                rows="3"
-                [(ngModel)]="description"
-                data-testid="data-request-description"
-                [attr.aria-invalid]="fieldErrors['description'] ? 'true' : null"
-                [attr.aria-describedby]="fieldErrors['description'] ? 'data-request-description-error' : null"></textarea>
-            </mat-form-field>
-            @if (fieldErrors['description']) {
-              <p class="request-field-error" id="data-request-description-error">{{ fieldErrors['description'] }}</p>
-            }
-
-            @if (error) {
-              <p class="request-error" role="alert" data-testid="data-request-error">{{ error }}</p>
-            }
-
-            <div class="request-actions">
-              <button mat-stroked-button type="button" (click)="closeForm()">Cancel</button>
-              <button
-                mat-flat-button
-                color="primary"
-                type="submit"
-                data-testid="data-request-submit"
-                [disabled]="busy">
-                {{ busy ? 'Sending...' : 'Send request' }}
-              </button>
-            </div>
-          </form>
-        } @else {
-          <div
-            #successPanel
-            class="request-success"
-            tabindex="-1"
-            data-testid="data-request-success">
-            <mat-icon aria-hidden="true">check_circle_outline</mat-icon>
-            <p>{{ successMessage }}</p>
-            <button mat-stroked-button type="button" (click)="closeForm()">Close</button>
-          </div>
+    @if (!submitted) {
+      <form id="data-request-form" class="request-panel" (ngSubmit)="submit()" novalidate data-testid="data-request-form">
+        <mat-form-field class="request-field">
+          <mat-label>Your Email</mat-label>
+          <input
+            matInput
+            name="contact"
+            autocomplete="email"
+            [(ngModel)]="contact"
+            data-testid="data-request-contact"
+            [attr.aria-invalid]="fieldErrors['contact'] ? 'true' : null"
+            [attr.aria-describedby]="fieldErrors['contact'] ? 'data-request-contact-error' : null" />
+        </mat-form-field>
+        @if (fieldErrors['contact']) {
+          <p class="request-field-error" id="data-request-contact-error">{{ fieldErrors['contact'] }}</p>
         }
-      </section>
+
+        <mat-form-field class="request-field">
+          <mat-label>How Can We Help?</mat-label>
+          <textarea
+            matInput
+            name="description"
+            rows="3"
+            [(ngModel)]="description"
+            data-testid="data-request-description"
+            [attr.aria-invalid]="fieldErrors['description'] ? 'true' : null"
+            [attr.aria-describedby]="fieldErrors['description'] ? 'data-request-description-error' : null"></textarea>
+        </mat-form-field>
+        @if (fieldErrors['description']) {
+          <p class="request-field-error" id="data-request-description-error">{{ fieldErrors['description'] }}</p>
+        }
+
+        @if (error) {
+          <p class="request-error" role="alert" data-testid="data-request-error">{{ error }}</p>
+        }
+      </form>
+    } @else {
+      <div
+        #successPanel
+        class="request-success"
+        tabindex="-1"
+        data-testid="data-request-success">
+        <mat-icon aria-hidden="true">check_circle_outline</mat-icon>
+        <p>{{ successMessage }}</p>
+      </div>
     }
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button mat-stroked-button type="button" data-testid="data-privacy-close" (click)="close()">Close</button>
+    <button mat-stroked-button type="button" data-testid="data-privacy-cancel" (click)="close()">Cancel</button>
+    @if (!submitted) {
+      <button
+        mat-flat-button
+        color="primary"
+        type="submit"
+        form="data-request-form"
+        data-testid="data-request-submit"
+        [disabled]="busy">
+        {{ busy ? 'Sending...' : 'Send Message' }}
+      </button>
+    }
   </mat-dialog-actions>
 </div>

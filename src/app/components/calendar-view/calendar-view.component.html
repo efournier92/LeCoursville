@@ -94,29 +94,43 @@
       </div>
     </div>
   </ng-template>
-  @if (isMobile) {
-    <app-week-agenda
-      class="calendar-timeline-preview"
-      variant="preview"
-      [events]="events"
-      [anchorDate]="agendaAnchor"
-      [selectedDay]="selectedDay"
-      (daySelect)="onPreviewDaySelect($event)"
-      (personClick)="personClick.emit($event)"
-      (spouseClick)="spouseClick.emit($event)"
-      (fullAgenda)="openFullAgenda()"
-    ></app-week-agenda>
-  }
-  <div class="calendar-scroll-container">
-    <div class="calendar-month-view-container">
-      <mwl-calendar-month-view
-        [activeDay]="activeDay"
-        [viewDate]="viewDate"
+  @if (viewMode === 'timeline' && !isMobile) {
+    <div class="calendar-timeline-view">
+      <app-week-agenda
+        variant="full"
         [events]="events"
-        [headerTemplate]="customHeaderTemplate"
-        [cellTemplate]="customCellTemplate"
-        >
-      </mwl-calendar-month-view>
+        [anchorDate]="agendaAnchor"
+        [selectedDay]="selectedDay"
+        (daySelect)="onTimelineDaySelect($event)"
+        (personClick)="personClick.emit($event)"
+        (spouseClick)="spouseClick.emit($event)"
+      ></app-week-agenda>
     </div>
-  </div>
+  } @else {
+    @if (isMobile) {
+      <app-week-agenda
+        class="calendar-timeline-preview"
+        variant="preview"
+        [events]="events"
+        [anchorDate]="agendaAnchor"
+        [selectedDay]="selectedDay"
+        (daySelect)="onPreviewDaySelect($event)"
+        (personClick)="personClick.emit($event)"
+        (spouseClick)="spouseClick.emit($event)"
+        (fullAgenda)="openFullAgenda()"
+      ></app-week-agenda>
+    }
+    <div class="calendar-scroll-container">
+      <div class="calendar-month-view-container">
+        <mwl-calendar-month-view
+          [activeDay]="activeDay"
+          [viewDate]="viewDate"
+          [events]="events"
+          [headerTemplate]="customHeaderTemplate"
+          [cellTemplate]="customCellTemplate"
+          >
+        </mwl-calendar-month-view>
+      </div>
+    </div>
+  }
 </div>

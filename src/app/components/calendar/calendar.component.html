@@ -49,6 +49,7 @@
       </div>
     </app-page-toolbar>
     <div class="calendar-nav-row">
+      @if (calendarViewMode === 'month') {
       <div class="d-flex align-items-center calendar-nav-inner">
         <div mwlCalendarPreviousView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_left</mat-icon>
@@ -68,42 +69,51 @@
         <div mwlCalendarNextView (click)="changeView(viewDate)" [view]="view" [(viewDate)]="viewDate" class="calendar-nav-btn">
           <mat-icon class="calendar-nav-icon">keyboard_arrow_right</mat-icon>
         </div>
-        <button
-          type="button"
-          class="calendar-today-btn"
-          (click)="goToToday()">
-          Today
-        </button>
       </div>
-    </div>
-    @if (datePickerOpen) {
-      <div
-        class="calendar-datepicker-dropdown"
-        appDismissOnOutside
-        [dismissIgnore]="monthPill?.nativeElement"
-        (dismiss)="onPickerDismiss($event)">
-        <div class="calendar-datepicker-panel">
-          <div class="calendar-datepicker-header">
-            <div class="calendar-datepicker-nav" (click)="navigateYear(-1)">
-              <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_left</mat-icon>
-            </div>
-            <span class="calendar-datepicker-year">{{ pickerYear }}</span>
-            <div class="calendar-datepicker-nav" (click)="navigateYear(1)">
-              <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_right</mat-icon>
-            </div>
-          </div>
-          <div class="calendar-datepicker-grid">
-            @for (month of months; track month; let i = $index) {
-              <div class="calendar-datepicker-cell" [ngClass]="{'is-selected': isCurrentPickerMonth(i)}" (click)="selectPickerMonth(i)">
-                {{ month.substring(0, 3) }}
+      @if (datePickerOpen) {
+        <div
+          class="calendar-datepicker-dropdown"
+          appDismissOnOutside
+          [dismissIgnore]="monthPill?.nativeElement"
+          (dismiss)="onPickerDismiss($event)">
+          <div class="calendar-datepicker-panel">
+            <div class="calendar-datepicker-header">
+              <div class="calendar-datepicker-nav" (click)="navigateYear(-1)">
+                <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_left</mat-icon>
               </div>
-            }
+              <span class="calendar-datepicker-year">{{ pickerYear }}</span>
+              <div class="calendar-datepicker-nav" (click)="navigateYear(1)">
+                <mat-icon class="calendar-datepicker-nav-icon">keyboard_arrow_right</mat-icon>
+              </div>
+            </div>
+            <div class="calendar-datepicker-grid">
+              @for (month of months; track month; let i = $index) {
+                <div class="calendar-datepicker-cell" [ngClass]="{'is-selected': isCurrentPickerMonth(i)}" (click)="selectPickerMonth(i)">
+                  {{ month.substring(0, 3) }}
+                </div>
+              }
+            </div>
           </div>
         </div>
+      }
+      }
+      <div class="calendar-nav-right">
+        @if (calendarViewMode === 'month' && !isViewingCurrentMonth) {
+          <button
+            type="button"
+            class="calendar-today-btn"
+            (click)="goToToday()">
+            Current Month
+          </button>
+        }
+        <mat-button-toggle-group class="calendar-view-toggle" aria-label="Calendar view" [(ngModel)]="calendarViewMode">
+          <mat-button-toggle value="month"><mat-icon aria-hidden="true">calendar_view_month</mat-icon>Month</mat-button-toggle>
+          <mat-button-toggle value="timeline"><mat-icon aria-hidden="true">view_timeline</mat-icon>Timeline</mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
-    }
+    </div>
     <div class="calendar-view-wrap">
-      <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
+      <app-calendar-view class="calendar-view-component" [viewDate]="viewDate" [selectedYear]="selectedYear" [events]="events" [viewMode]="calendarViewMode" (personClick)="openPersonModal($event)" (spouseClick)="openPersonModal($event)"></app-calendar-view>
       @if (status === 'empty') {
         <div class="calendar-empty">
           <p class="calendar-empty-title">We couldn't find any events.</p>

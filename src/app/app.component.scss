@@ -51,16 +51,23 @@
 }
 
 .toolbar-icon {
-  // The logo asset is portrait (520x640); at the old 80% height hint the
-  // glyph overran the bar on phones and bled onto the page ground. Clamp it to
-  // 60% of the header height and let .toolbar-logo's flex centring hold it in
-  // the green bar. The 44x44 button box is untouched.
+  // The logo asset is portrait (520x640). 85% of the 64px bar gives it real
+  // brand presence on desktop; the phone override below caps it at 75% so the
+  // foot never bleeds past the green bar. The 44x44 button box is untouched,
+  // and the 1px lift keeps the foot-heavy glyph optically centred.
   display: block;
-  height: 60%;
+  height: 85%;
   width: auto;
   max-width: 100%;
   object-fit: contain;
+  transform: translateY(-1px);
   cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .toolbar-icon {
+    height: 75%;
+  }
 }
 
 .toolbar-left {
@@ -175,15 +182,25 @@
   }
 }
 
-/* The inline nav outgrows the bar below 1280px, earlier than Bootstrap's 992px lg. */
-.nav-desktop { display: none; }
-.nav-mobile { display: block; }
-
-@media (min-width: 1280px) {
-  .nav-desktop { display: block; }
-  .nav-mobile { display: none; }
-  .nav-skeleton.nav-desktop { display: flex; }
+/* The bar stays inline whenever the links fit; the fit detector in
+   AppComponent flips these classes. No fixed viewport breakpoint. */
+.nav-desktop { display: block; flex: 0 0 auto; white-space: nowrap; }
+// Collapsed: keep the links laid out so scrollWidth reports their natural
+// width, but box them at 0x0 with clipped overflow so the invisible copy
+// never widens the document or creates a horizontal scrollbar.
+.nav-desktop.nav-measuring {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
+.nav-desktop.nav-measuring ::ng-deep #lecoursville-navbar-links {
+  width: max-content;
+}
+.nav-mobile { display: none; }
+.nav-mobile.nav-visible { display: block; }
 
 /* Nav loading skeleton styles live globally in styles.scss (shared by
    app.component and navbar-links; Angular scopes component styles). */

@@ -137,7 +137,8 @@
 }
 
 .expression-card:hover .expression-actions,
-.expression-card:focus-within .expression-actions {
+.expression-card:focus-within .expression-actions,
+.expression-card.card-editable .expression-actions {
   opacity: 1;
 }
 

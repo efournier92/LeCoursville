@@ -3,6 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestSharedModule } from '../../../test-shared.module';
 import { AppModule } from '../../app.module';
 import { CalendarViewComponent } from './calendar-view.component';
+import { CalendarAgendaSheetComponent } from '../calendar-agenda-sheet/calendar-agenda-sheet.component';
 
 function change<T>(value: T): any {
   return { currentValue: value, previousValue: value, firstChange: false, isFirstChange: () => false };
@@ -79,5 +80,34 @@ describe('CalendarViewComponent', () => {
     component.ngOnChanges({ viewDate: change(component.viewDate) });
     expect(component.selectedDay).toEqual(new Date(2024, 8, 1));
     expect(component.agendaAnchor).toEqual(new Date(2024, 8, 1));
+  });
+
+  it('onTimelineDaySelect moves selectedDay and agendaAnchor', () => {
+    component.onTimelineDaySelect(new Date(2024, 6, 20));
+    expect(component.selectedDay).toEqual(new Date(2024, 6, 20));
+    expect(component.agendaAnchor).toEqual(new Date(2024, 6, 20));
+  });
+
+  it('openFullAgenda keeps the full-screen sheet on mobile', () => {
+    component.isMobile = true;
+    const open = spyOn(component.dialog, 'open').mockReturnValue({} as any);
+
+    component.openFullAgenda();
+
+    const config = open.mock.calls[0][1] as any;
+    expect(config.panelClass).toBe('calendar-agenda-sheet');
+    expect(config.disableClose).toBe(true);
+  });
+
+  it('openFullAgenda routes the mobile sheet day selection back to the grid', () => {
+    component.isMobile = true;
+    const open = spyOn(component.dialog, 'open').mockReturnValue({} as any);
+    component.openFullAgenda();
+
+    const config = open.mock.calls[0][1] as any;
+    config.data.onDaySelect(new Date(2024, 6, 20));
+
+    expect(component.selectedDay).toEqual(new Date(2024, 6, 20));
+    expect(component.agendaAnchor).toEqual(new Date(2024, 6, 20));
   });
 });

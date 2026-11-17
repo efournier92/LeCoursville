@@ -40,15 +40,18 @@ test.describe('expressions', () => {
       await login(page, 'admin');
       await page.goto('/admin/expressions');
       await page.getByRole('button', { name: 'Create Expression' }).click();
-      await page.getByLabel('Expression').fill(CREATED_TITLE);
-      await page.getByLabel('Attribution').fill('E2E Family');
-      await page.getByLabel('Author').fill('E2E Author');
-      await page.getByLabel('Year Written').fill('2026');
-      await page.getByLabel('Description').fill('Created by the e2e gate.');
-      await page.getByRole('button', { name: 'Save' }).click();
-      await page.getByRole('button', { name: 'Yes' }).click();
-      // Wait for the server write before reloading: the in-place card text
-      // comes from the local ngModel, so only the stored record proves it.
+      await expect(page.locator('[data-testid="expression-edit-dialog"]')).toBeVisible();
+      // Scope to the dialog: getByLabel('Expression') also matches the dialog's
+      // own accessible name ("Create Expression").
+      const dialog = page.getByRole('dialog');
+      await dialog.getByLabel('Expression').fill(CREATED_TITLE);
+      await dialog.getByLabel('Attribution').fill('E2E Family');
+      await dialog.getByLabel('Author').fill('E2E Author');
+      await dialog.getByLabel('Year Written').fill('2026');
+      await dialog.getByLabel('Description').fill('Created by the e2e gate.');
+      await dialog.getByRole('button', { name: 'Save' }).click();
+      // Wait for the server write before reloading: the card text can come
+      // from local state, so only the stored record proves it.
       await expect.poll(() => findExpressionId(CREATED_TITLE)).not.toBeNull();
       await page.reload();
       await expect(page.getByText(CREATED_TITLE)).toBeVisible();
@@ -67,9 +70,10 @@ test.describe('expressions', () => {
       await page.goto('/admin/expressions');
       const card = page.locator('.expression-card-wrapper', { hasText: 'Make it so' }).first();
       await card.locator('.expression-actions button').first().click();
-      await page.getByLabel('Expression').fill(EDITED_TITLE);
-      await page.getByRole('button', { name: 'Save' }).click();
-      await page.getByRole('button', { name: 'Yes' }).click();
+      await expect(page.locator('[data-testid="expression-edit-dialog"]')).toBeVisible();
+      const dialog = page.getByRole('dialog');
+      await dialog.getByLabel('Expression').fill(EDITED_TITLE);
+      await dialog.getByRole('button', { name: 'Save' }).click();
       await expect
         .poll(async () => (await readDb<Record<string, any>>('messages/expr-2'))?.title)
         .toBe(EDITED_TITLE);
@@ -116,23 +120,37 @@ test.describe('expressions', () => {
     await expect(page.locator('app-expression-edit')).toHaveCount(0);
   });
 
-  test('admin on the member route sees the create and edit controls', async ({ page }) => {
+  test('admin on the member route sees no create or edit controls', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/expressions');
-    await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
-    await expect(page.locator('.expression-actions').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create Expression' })).toHaveCount(0);
+    await expect(page.locator('.expression-actions')).toHaveCount(0);
   });
 
   test('admin route shows the Create control and edit actions', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/admin/expressions');
     await expect(page.getByRole('button', { name: 'Create Expression' })).toBeVisible();
-    await expect(page.locator('.expression-actions').first()).toBeVisible();
+    await expect(page.locator('.expression-actions').first()).toHaveCSS('opacity', '1');
+  });
+
+  test('cancel edit closes the dialog without changing the stored title', async ({ page }) => {
+    const seeded = await readDb<Record<string, any>>('messages/expr-2');
+    await login(page, 'admin');
+    await page.goto('/admin/expressions');
+    const card = page.locator('.expression-card-wrapper', { hasText: 'Make it so' }).first();
+    await card.locator('.expression-actions button').first().click();
+    await expect(page.locator('[data-testid="expression-edit-dialog"]')).toBeVisible();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Expression').fill('Discarded title');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.locator('[data-testid="expression-edit-dialog"]')).toHaveCount(0);
+    expect((await readDb<Record<string, any>>('messages/expr-2'))?.title).toBe(seeded?.title);
   });
 
   test('create expression button uses the theme-invariant brand fill', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/expressions');
+    await page.goto('/admin/expressions');
     const button = page.getByRole('button', { name: 'Create Expression' });
     await expect(button).toBeVisible();
     await expect(button).toHaveCSS('background-color', 'rgb(39, 116, 74)');

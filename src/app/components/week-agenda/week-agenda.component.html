@@ -6,7 +6,9 @@
     aria-live="polite"
     aria-label="Calendar timeline">
     <div class="week-agenda-header">
-      <h2 class="week-agenda-title">Timeline</h2>
+      @if (!hideTitle) {
+        <h2 class="week-agenda-title">Timeline</h2>
+      }
       <span class="week-agenda-range">
         {{ windowAnchor | date : 'MMM d' }} – {{ rangeEnd | date : 'MMM d' }}
       </span>

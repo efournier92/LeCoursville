@@ -1,6 +1,6 @@
 @if (userSignedIn?.id && formUser) {
   @if (isAdminMode) {
-    <h2 mat-dialog-title>Edit user</h2>
+    <h2 mat-dialog-title>Edit User</h2>
     <div mat-dialog-content class="user-edit-dialog-body">
       <form>
         <ng-container [ngTemplateOutlet]="userFields"></ng-container>
@@ -8,7 +8,7 @@
     </div>
     <div mat-dialog-actions align="end" class="user-card-footer-actions">
       <button
-        mat-button
+        mat-stroked-button
         class="admin-form-action-button admin-form-action-button-cancel"
         color="accent"
         (click)="onCancelEdit()"

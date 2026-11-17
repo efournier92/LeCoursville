@@ -107,6 +107,15 @@
   text-align: left;
 }
 
+// The name button defaults to width 100 percent, which shoves the ampersand to
+// the far right of the row. Size it to the name so the ampersand trails the
+// name, then the spouse drops to the next line.
+.anniv-first-line .event-title-link {
+  width: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .event-ampersand-inline {
   color: var(--color-ink-2);
   user-select: none;

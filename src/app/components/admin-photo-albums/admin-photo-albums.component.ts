@@ -446,7 +446,7 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
       return;
     }
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete photo?',
+      title: 'Delete Photo?',
       message: `Delete ${photo.info ? `“${photo.info}”` : 'this photo'} from “${this.selectedAlbum.title}”? This cannot be undone.`,
       confirmLabel: 'Delete photo',
       destructive: true,
@@ -480,7 +480,7 @@ export class AdminPhotoAlbumsComponent implements OnInit, OnDestroy {
     }
     const photoCount = this.getPhotoCount(album);
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete album?',
+      title: 'Delete Album?',
       message: `Delete “${album.title}” and its ${photoCount} photo${photoCount === 1 ? '' : 's'}? This cannot be undone.`,
       confirmLabel: 'Delete album',
       destructive: true,

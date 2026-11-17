@@ -1,0 +1,45 @@
+<h2 mat-dialog-title data-testid="expression-edit-dialog">
+  {{ data.expression ? 'Edit Expression' : 'Create Expression' }}
+</h2>
+
+<mat-dialog-content [attr.aria-busy]="saving">
+  <div class="dialog-row">
+    <mat-form-field class="dialog-field">
+      <mat-label>Expression</mat-label>
+      <input matInput cdkFocusInitial [(ngModel)]="title" aria-required="true" />
+    </mat-form-field>
+    <mat-form-field class="dialog-field">
+      <mat-label>Attribution</mat-label>
+      <input matInput [(ngModel)]="attribution" />
+    </mat-form-field>
+  </div>
+
+  <div class="dialog-row">
+    <mat-form-field class="dialog-field">
+      <mat-label>Author</mat-label>
+      <input matInput [(ngModel)]="authorName" />
+    </mat-form-field>
+    <mat-form-field class="dialog-field">
+      <mat-label>Year Written</mat-label>
+      <input matInput [(ngModel)]="yearWritten" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field class="dialog-field">
+    <mat-label>Description</mat-label>
+    <textarea matInput cdkTextareaAutosize [(ngModel)]="body"></textarea>
+  </mat-form-field>
+
+  @if (error) {
+    <p class="dialog-error" role="alert">{{ error }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" [disabled]="saving" (click)="onCancel()">
+    Cancel
+  </button>
+  <button mat-flat-button color="primary" type="button" [disabled]="saving" (click)="onSave()">
+    {{ saving ? 'Saving…' : 'Save' }}
+  </button>
+</mat-dialog-actions>

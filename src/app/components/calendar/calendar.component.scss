@@ -28,6 +28,42 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 8px;
+}
+
+.calendar-view-toggle {
+  align-items: center;
+  align-self: center;
+  --mat-standard-button-toggle-height: 40px;
+  // Brand selected state; the default M3 container is a lime green. Use the
+  // theme-invariant brand solid so white ink stays readable in dark mode too.
+  --mat-button-toggle-selected-state-background-color: var(--color-brand-solid);
+  --mat-button-toggle-selected-state-text-color: var(--color-on-brand-solid);
+
+  // The highlight alone carries the selection; the injected check mark is noise.
+  ::ng-deep .mat-button-toggle-checkbox-wrapper {
+    display: none;
+  }
+
+  // Material still reserves 30px on the leading edge for that check mark, which
+  // makes the selected segment wider than the other. Drop it so nothing grows.
+  ::ng-deep .mat-button-toggle-checked .mat-button-toggle-button {
+    padding-left: 0 !important;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+  }
+}
+
+// Mobile already carries the inline agenda preview plus its Expand button.
+@media (max-width: 1023px) {
+  .calendar-view-toggle {
+    display: none;
+  }
 }
 
 // Phone-only disclosure; desktop keeps the switches inline in the toolbar row.
@@ -85,9 +121,22 @@
 .calendar-nav-row {
   display: flex;
   justify-content: center;
+  // Timeline mode keeps the nav row (and its toggle) but drops the month nav,
+  // so pin the height the month controls give it to stop the page jumping.
+  min-height: 48px;
   margin: 24px 0;
   position: relative;
   z-index: 101;
+}
+
+.calendar-nav-right {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .calendar-nav-inner {
@@ -156,11 +205,10 @@
 // Jump back to the current month. The label is "Today" because that is the
 // anchor people know from other calendars; the action refocuses the month.
 .calendar-today-btn {
-  min-height: 40px;
+  min-height: 36px;
   padding: 0 14px;
   border: 0;
-  border-left: 1px solid var(--color-border);
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  border-radius: var(--radius-control);
   background: none;
   font: inherit;
   font-size: 0.9em;
@@ -298,6 +346,22 @@
 @media (max-width: 600px) {
   .calendar-component-container {
     // page-content supplies the gutters (16px on mobile).
+  }
+
+  // Same row while it fits; the toggle is hidden here, so the remaining
+  // Current Month shortcut wraps onto its own centered line.
+  .calendar-nav-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .calendar-nav-right {
+    position: static;
+    transform: none;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
   }
 
   .calendar-toolbar {

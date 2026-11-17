@@ -880,7 +880,7 @@ test.describe('songs', () => {
 
         const dialog = page.getByTestId('song-draft-dialog');
         await expect(dialog).toBeVisible();
-        await expect(dialog).toHaveText('Add song');
+        await expect(dialog).toHaveText('Add Song');
         await expect(page.getByTestId('draft-title')).toHaveValue(title);
         await expect(page.getByTestId('draft-source')).toHaveValue('E2E Hymnal');
         await expect(page.getByTestId('draft-key')).toHaveValue('D');
@@ -1071,7 +1071,7 @@ test.describe('songs', () => {
         await expect(row).toBeVisible();
         await row.getByTestId('admin-delete-song').click();
 
-        const confirm = page.getByRole('dialog').filter({ hasText: 'Delete song?' });
+        const confirm = page.getByRole('dialog').filter({ hasText: 'Delete Song?' });
         await expect(confirm).toContainText('Delete Noël? This cannot be undone.');
         await confirm.getByTestId('admin-delete-confirm').click();
         await expect(row).toHaveCount(0);

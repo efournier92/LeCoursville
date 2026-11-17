@@ -114,6 +114,11 @@ html {
   --color-input-border: #878E99;
   --color-input-border-invalid: #B3261E;
   --color-focus: var(--color-brand-primary);
+  // Google's brand mark colours are mandated by Google's sign-in guidelines and must not be themed.
+  --color-google-red: #EA4335;
+  --color-google-blue: #4285F4;
+  --color-google-yellow: #FBBC05;
+  --color-google-green: #34A853;
 
   // Role badges — member neutral, admin brand tint, super brand solid.
   // Colour is redundant encoding; the role text stays. Every pair clears 4.5:1.
@@ -1124,8 +1129,9 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   --mat-slide-toggle-unselected-hover-state-layer-opacity: 0;
   --mat-slide-toggle-unselected-focus-state-layer-opacity: 0;
   --mat-slide-toggle-unselected-pressed-state-layer-opacity: 0;
-  // Calm two-tone state: brand track with a white knob when selected, hairline
-  // track with a surface knob when not, and the same tones on every state.
+  // Calm two-tone state: brand track with a white knob when selected. Off is a
+  // control boundary, not a hairline, so the darker control token keeps the
+  // unselected track visible without relying on hue. Same tone on every state.
   --mat-slide-toggle-selected-track-color: var(--color-brand-solid);
   --mat-slide-toggle-selected-hover-track-color: var(--color-brand-solid);
   --mat-slide-toggle-selected-focus-track-color: var(--color-brand-solid);
@@ -1134,10 +1140,10 @@ html[data-theme="dark"] .cal-month-view .cal-day-cell.cal-today .cal-day-number 
   --mat-slide-toggle-selected-hover-handle-color: var(--color-on-brand-solid);
   --mat-slide-toggle-selected-focus-handle-color: var(--color-on-brand-solid);
   --mat-slide-toggle-selected-pressed-handle-color: var(--color-on-brand-solid);
-  --mat-slide-toggle-unselected-track-color: var(--color-border);
-  --mat-slide-toggle-unselected-hover-track-color: var(--color-border);
-  --mat-slide-toggle-unselected-focus-track-color: var(--color-border);
-  --mat-slide-toggle-unselected-pressed-track-color: var(--color-border);
+  --mat-slide-toggle-unselected-track-color: var(--color-input-border);
+  --mat-slide-toggle-unselected-hover-track-color: var(--color-input-border);
+  --mat-slide-toggle-unselected-focus-track-color: var(--color-input-border);
+  --mat-slide-toggle-unselected-pressed-track-color: var(--color-input-border);
   --mat-slide-toggle-unselected-handle-color: var(--color-surface);
   --mat-slide-toggle-unselected-hover-handle-color: var(--color-surface);
   --mat-slide-toggle-unselected-focus-handle-color: var(--color-surface);

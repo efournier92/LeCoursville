@@ -1,0 +1,27 @@
+@use 'src/app/styles/admin-data' as *;
+
+.dialog-field {
+  width: 100%;
+}
+
+.dialog-row {
+  display: flex;
+  gap: 12px;
+}
+
+.dialog-row .dialog-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dialog-error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 600px) {
+  .dialog-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

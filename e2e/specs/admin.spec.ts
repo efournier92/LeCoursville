@@ -104,11 +104,11 @@ test.describe('admin', () => {
 
     try {
       await row.getByRole('button', { name: 'Edit Regular User' }).click();
-      const editor = page.getByRole('dialog').filter({ hasText: 'Edit user' });
+      const editor = page.getByRole('dialog').filter({ hasText: 'Edit User' });
       await expect(editor).toBeVisible();
       await editor.getByRole('switch', { name: 'Content Admin', exact: true }).click();
       await editor.getByRole('button', { name: 'Save' }).click();
-      const dialog = page.getByRole('dialog').filter({ hasText: 'Change access?' });
+      const dialog = page.getByRole('dialog').filter({ hasText: 'Change Access?' });
       await expect(dialog).toContainText('Give Regular User content admin access?');
       await dialog.getByRole('button', { name: 'Cancel' }).click();
       await expect(dialog).toHaveCount(0);
@@ -129,8 +129,7 @@ test.describe('admin', () => {
       { name: 'Features', path: '/admin/features' },
       { name: 'Analytics', path: '/admin/analytics' },
       { name: 'Users', path: '/admin/users' },
-      { name: 'Recovery', path: '/admin/recovery' },
-      { name: 'Data Requests', path: '/admin/data-requests' },
+      { name: 'Support', path: '/admin/support' },
       { name: 'Families', path: '/admin/families' },
       { name: 'People', path: '/admin/people' },
       { name: 'Uploads', path: '/admin/uploads' },
@@ -149,6 +148,16 @@ test.describe('admin', () => {
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.locator('app-page-toolbar').first()).toBeVisible();
     }
+  });
+
+  test('legacy recovery and data-request URLs redirect to Support', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/admin/recovery');
+    await expect(page).toHaveURL(/\/admin\/support$/);
+    await page.goto('/admin/data-requests');
+    await expect(page).toHaveURL(/\/admin\/support$/);
+    await expect(page.getByRole('heading', { name: 'Data and Privacy', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Account Recovery', exact: true })).toBeVisible();
   });
 
   test('the retired admin Contacts route and nav item are gone', async ({ page }) => {
@@ -204,7 +213,7 @@ test.describe('admin', () => {
       await page.goto('/admin/users');
       const nav = page.getByTestId('admin-nav');
       const uploadsBadge = nav.getByTestId('admin-nav-badge-uploads');
-      const recoveryBadge = nav.getByTestId('admin-nav-badge-recovery');
+      const recoveryBadge = nav.getByTestId('admin-nav-badge-support');
       await expect(uploadsBadge).toBeVisible();
       await expect(uploadsBadge.locator('[aria-hidden="true"]')).toHaveText('2');
       await expect(uploadsBadge).toContainText('2 pending');
@@ -232,7 +241,7 @@ test.describe('admin', () => {
 
   test('recovery list shows the seeded outstanding and closed requests', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const list = page.getByTestId('admin-recovery-list');
     await expect(list.locator('.recovery-row').filter({ hasText: 'recovery-open@e2e.local' })).toBeVisible();
     const closed = list.locator('.recovery-row').filter({ hasText: 'recovery-closed@e2e.local' });
@@ -245,7 +254,7 @@ test.describe('admin', () => {
     await page.goto('/admin/families');
     await expect(page.getByTestId('admin-nav')).toBeVisible();
     await expect(page.getByTestId('admin-nav-badge-uploads')).toHaveCount(0);
-    await expect(page.getByTestId('admin-nav-badge-recovery')).toHaveCount(0);
+    await expect(page.getByTestId('admin-nav-badge-support')).toHaveCount(0);
   });
 
   test('admin index redirects a super admin to families', async ({ page }) => {
@@ -370,7 +379,7 @@ test.describe('admin', () => {
       await page.goto('/admin');
       const nav = page.getByTestId('admin-nav');
       await expect(nav.getByTestId('admin-nav-link-photoAlbums')).toHaveCount(0);
-      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(12);
+      await expect(nav.locator('[data-testid^="admin-nav-link-"]')).toHaveCount(11);
       await page.goto('/admin/media');
       await expect(page.getByTestId('media-section-photo-albums')).toHaveCount(0);
     } finally {
