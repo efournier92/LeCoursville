@@ -29,7 +29,6 @@
       </div>
       <audio #mediaElement
         class="audio-player-element"
-        [src]="$safeNavigationMigration(currentTrack?.url)"
         preload="metadata"
         (timeupdate)="onTimeUpdate()"
         (loadedmetadata)="onLoadedMetadata()"

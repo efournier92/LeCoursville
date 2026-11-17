@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { UploadableMedia } from 'src/app/models/media/media';
 import { AudioAlbum } from 'src/app/models/media/audio-album';
 import { MediaService } from 'src/app/services/media.service';
@@ -20,7 +20,7 @@ interface AudioTrack {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AudioPlayerComponent implements OnChanges {
+export class AudioPlayerComponent implements OnChanges, AfterViewInit {
   @Input() album: AudioAlbum = new AudioAlbum();
 
   @ViewChild('mediaElement', { static: false }) mediaElement: ElementRef<HTMLAudioElement>;
@@ -44,6 +44,11 @@ export class AudioPlayerComponent implements OnChanges {
     this.currentTrack = null;
     this.resetTransport();
     this.addTracksToPlaylist();
+    this.applyTrackSource();
+  }
+
+  ngAfterViewInit(): void {
+    this.applyTrackSource();
   }
 
   // PUBLIC METHODS
@@ -58,6 +63,7 @@ export class AudioPlayerComponent implements OnChanges {
     if (!audio) {
       return;
     }
+    audio.src = track.url;
     audio.load();
     this.startPlayback(audio);
   }
@@ -177,6 +183,13 @@ export class AudioPlayerComponent implements OnChanges {
     );
     if (this.tracks.length > 0) {
       this.currentTrack = this.tracks[0];
+    }
+  }
+
+  private applyTrackSource(): void {
+    const audio = this.mediaElement?.nativeElement;
+    if (audio && this.currentTrack?.url) {
+      audio.src = this.currentTrack.url;
     }
   }
 

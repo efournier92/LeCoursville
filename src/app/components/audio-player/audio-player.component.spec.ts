@@ -74,6 +74,8 @@ describe('AudioPlayerComponent', () => {
     expect(buttons[0].classList).not.toContain('active');
     expect(buttons[1].getAttribute('aria-current')).toBe('true');
     expect(buttons[0].hasAttribute('aria-current')).toBe(false);
+    expect(component.isPlaying).toBe(true);
+    expect((component.mediaElement.nativeElement as HTMLAudioElement).src).toContain('/second.mp3');
   });
 
   it('plays and pauses the media element from the transport button', () => {

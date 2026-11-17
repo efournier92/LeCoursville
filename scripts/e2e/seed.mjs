@@ -410,7 +410,7 @@ async function main() {
     'media-audio': {
       id: 'media-audio', title: 'E2E Audio', artist: 'E2E Artist', date: '2026',
       folderName: 'E2E', fileName: '', isSticky: false, isHidden: false,
-      listing: ['media-track-1'],
+      listing: ['media-track-1', 'media-track-2'],
       // download must be non-empty: media-explorer only selects media with a
       // download URL (shouldSetCurrentMedia); the player itself uses tracks.
       urls: { download: `http://localhost:5000/assets/e2e-fixtures/fixture.wav`, icon: '' },
@@ -418,6 +418,12 @@ async function main() {
     },
     'media-track-1': {
       id: 'media-track-1', title: 'E2E Track', artist: 'E2E Artist', date: '2026',
+      folderName: '', fileName: '', isSticky: false, isHidden: false, listing: [],
+      urls: { download: `http://localhost:5000/assets/e2e-fixtures/fixture.wav`, icon: '' },
+      type: 'audio-track', format: 'audio/mpeg', dateUpdated: now,
+    },
+    'media-track-2': {
+      id: 'media-track-2', title: 'E2E Track Two', artist: 'E2E Artist', date: '2026',
       folderName: '', fileName: '', isSticky: false, isHidden: false, listing: [],
       urls: { download: `http://localhost:5000/assets/e2e-fixtures/fixture.wav`, icon: '' },
       type: 'audio-track', format: 'audio/mpeg', dateUpdated: now,
