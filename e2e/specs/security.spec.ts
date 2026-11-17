@@ -87,8 +87,11 @@ test.describe('security', () => {
       await page.getByTestId('chat-message-input').fill('<img src=x onerror="window.__xss=1">');
       await page.getByTestId('chat-send').click();
       await page.getByRole('button', { name: 'Yes' }).click();
+      // Confirm the write landed before leaving the page, otherwise the full
+      // navigation can tear the app down mid-flush.
+      await expect(page.getByText('XSS probe')).toBeVisible();
       // View as another user (the payload executes for ANY viewer).
-      await page.getByRole('link', { name: 'Account' }).click();
+      await page.goto('/account');
       await logout(page);
       await login(page, 'other');
       await page.goto('/chat');
