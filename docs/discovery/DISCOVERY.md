@@ -1,9 +1,19 @@
 # Discovery
 
 One line per finding, decision, assumption, trap, question, or outcome. Newest first. Evidence required.
-Scope tokens: admin/security, admin/ui, build/perf, calendar/print, media/routing, rules/deploy, songs/ui
+Scope tokens: admin/security, admin/ui, build/perf, calendar/print, calendar/ui, data/ui, expressions/ui, media/routing, nav/ui, rules/deploy, songs/ui
 
 ## Entries
+
+- D-20261117-01 | 2026-11-17 | [decision] | nav/ui | Top bar replaces the 1280px breakpoint with a ResizeObserver fit check; a #ref on `mat-toolbar` must be read as ElementRef, not the component | src/app/app.component.ts:62
+
+- D-20261117-02 | 2026-11-17 | [trap] | nav/ui | The hidden measuring nav must be 0x0 with overflow hidden or it widens the document and breaks no-horizontal-overflow e2e | src/app/app.component.scss:191
+
+- D-20261117-03 | 2026-11-17 | [decision] | calendar/ui | Current Month shortcut hides while isViewingCurrentMonth, right-aligns on desktop, and wraps at 600px | src/app/components/calendar/calendar.component.ts:249
+
+- D-20261117-04 | 2026-11-17 | [decision] | data/ui | Data and Privacy dialog is one email plus message form, prefills the signed-in email, and labels the message field How Can We Help? | src/app/components/data-privacy-dialog/data-privacy-dialog.component.ts:33
+
+- D-20261117-05 | 2026-11-17 | [decision] | expressions/ui | Create and edit are gated to the /admin surface via canEditExpressions and open ExpressionEditDialogComponent | src/app/components/expressions/expressions.component.ts:50
 
 - D-20261116-01 | 2026-11-16 | [trap] | admin/security | Repo and emulator deny pending users, but there is no recorded deploy of the `roles/user` gate landed in `5ceb2c46` (2026-10-30), and a manual test on the dev project still had full access. `ng build`/`ng serve` use `useEmulators: false`, so only an `--configuration=e2e` bundle exercises emulator rules | src/environments/environment.ts:10
 
