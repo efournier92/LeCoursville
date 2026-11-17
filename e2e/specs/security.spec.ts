@@ -108,10 +108,10 @@ test.describe('security', () => {
     // Read-only user side: expression creation lives on the admin route.
     await page.goto('/admin/expressions');
     await page.getByRole('button', { name: 'Create Expression' }).click();
-    await page.getByLabel('Expression').fill('XSS expression');
-    await page.getByLabel('Description').fill('<img src=x onerror="window.__xss=2">');
-    await page.getByRole('button', { name: 'Save' }).click();
-    await page.getByRole('button', { name: 'Yes' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Create Expression' });
+    await dialog.getByLabel('Expression').fill('XSS expression');
+    await dialog.getByLabel('Description').fill('<img src=x onerror="window.__xss=2">');
+    await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('XSS expression')).toBeVisible();
     await expectNoInjectedHandler(page);
     const xss = await page.evaluate(() => (window as any).__xss ?? 0);
@@ -252,9 +252,9 @@ test.describe('security', () => {
     expect(unexpected).toEqual([]);
   });
 
-  test('non-admin cannot open /admin/recovery', async ({ page }) => {
+  test('non-admin cannot open /admin/support', async ({ page }) => {
     await login(page, 'user');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     await expect(page).not.toHaveURL(/\/admin/);
     await expect(page.getByTestId('admin-recovery-list')).toHaveCount(0);
     await expect(page).toHaveURL(/\/calendar/);
@@ -282,7 +282,7 @@ test.describe('security', () => {
     const routes = [
       '/admin/users',
       '/admin/features',
-      '/admin/recovery',
+      '/admin/support',
       '/admin/analytics',
       '/admin/family-explorer',
       '/admin/uploads',

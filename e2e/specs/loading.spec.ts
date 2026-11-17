@@ -33,7 +33,7 @@ const ADMIN_ROUTES: { route: string; content: (page: Page) => Locator }[] = [
   { route: '/admin/media', content: (p) => p.getByTestId('media-section-video') },
   { route: '/admin/photo-albums', content: (p) => p.locator('.admin-album-card').first() },
   { route: '/admin/uploads', content: (p) => p.getByText('pending.png').first() },
-  { route: '/admin/recovery', content: (p) => p.getByTestId('admin-account-creations') },
+  { route: '/admin/support', content: (p) => p.getByTestId('admin-account-creations') },
   { route: '/admin/features', content: (p) => p.locator('mat-slide-toggle').first() },
   { route: '/admin/analytics', content: (p) => p.getByTestId('admin-analytics-totals') },
   { route: '/admin/family-explorer', content: (p) => p.getByTestId('archive-row-archive-1') },
