@@ -31,12 +31,20 @@ test.afterEach(async () => {
   cleanup = [];
 });
 
+async function openHelp(page: Page): Promise<void> {
+  const toggle = page.getByTestId('auth-help-toggle');
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+    await toggle.click();
+  }
+}
+
 async function requestReset(page: Page, email: string): Promise<void> {
   await page.goto('/');
   // Wait for auth to resolve before driving the form, so the handler is bound
   // under full-suite load (WebKit raced the first paint otherwise).
   await expect(page.getByTestId('nav-links-skeleton')).toHaveCount(0);
   await page.getByTestId('auth-email').fill(email);
+  await openHelp(page);
   await page.getByTestId('auth-forgot').click();
   await expect(page.getByTestId('auth-reset-info')).toBeVisible();
 }
@@ -114,6 +122,7 @@ async function addRecoveryRequest(page: Page, email: string, name: string, alter
   // form region, and a click dispatched mid-flip lands on a detached node.
   await expect(page.getByTestId('theme-toggle')).toBeVisible();
   await expect(page.getByTestId('auth-email')).toBeVisible();
+  await openHelp(page);
   await page.getByTestId('auth-recovery-open').click();
   await expect(page.getByTestId('recovery-email')).toBeVisible();
   await page.getByTestId('recovery-email').fill(email);
@@ -123,26 +132,70 @@ async function addRecoveryRequest(page: Page, email: string, name: string, alter
   }
   await page.getByTestId('recovery-submit').click();
   await expect(page.getByTestId('recovery-confirmation')).toBeVisible();
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: 'Done' }).click();
 }
 
 test.describe('account recovery', () => {
-  test('login page shows Google, forgot-password, and recovery affordances', async ({ page }) => {
+  test('login page shows Google and hides help behind a toggle', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByTestId('auth-google')).toBeVisible();
+    await expect(page.getByTestId('auth-google')).toContainText('Sign in with Google');
+    const toggle = page.getByTestId('auth-help-toggle');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('auth-forgot')).toHaveCount(0);
+    await expect(page.getByTestId('auth-recovery-open')).toHaveCount(0);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId('auth-forgot')).toBeVisible();
+    await expect(page.getByTestId('auth-forgot')).toContainText('Forgot password?');
     await expect(page.getByTestId('auth-recovery-open')).toBeVisible();
-    await expect(page.getByTestId('auth-google')).toContainText('Continue with Google');
-    // The recovery backstop is the prominent secondary action, not a buried link.
     await expect(page.getByTestId('auth-recovery-open')).toContainText('Get help signing in');
   });
 
   test('recovery dialog prefills the email typed on the sign-in form', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-email').fill('prefill-e2e@e2e.local');
+    await openHelp(page);
     await page.getByTestId('auth-recovery-open').click();
     await expect(page.getByTestId('recovery-email')).toHaveValue('prefill-e2e@e2e.local');
     await page.getByRole('button', { name: 'Cancel' }).click();
+  });
+
+  test('recovery dialog groups the form and confirms with a single Done action', async ({ page }) => {
+    const email = `recovery-grouped-${Date.now()}@e2e.local`;
+
+    await page.goto('/');
+    await openHelp(page);
+    await page.getByTestId('auth-recovery-open').click();
+    await expect(page.getByTestId('recovery-email')).toBeVisible();
+
+    const dialog = page.locator('mat-dialog-container');
+    await expect(dialog.getByRole('heading', { name: 'Request Account Recovery' })).toBeVisible();
+    await expect(dialog.getByText('Your Account', { exact: true })).toBeVisible();
+    await expect(dialog.getByText('Backup Contact (Optional)', { exact: true })).toBeVisible();
+    await expect(
+      dialog.getByText('We will use this if your LeCoursville email is not working.', { exact: true }),
+    ).toBeVisible();
+    await expect(dialog.getByText('Another email or phone', { exact: true })).toBeVisible();
+    await expect(dialog.getByText('Message', { exact: true })).toBeVisible();
+    await expect(dialog.getByText(/Another email or phone, optional/)).toHaveCount(0);
+    await expect(dialog.getByText(/^Message, optional$/)).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Send Request' })).toBeVisible();
+
+    await page.getByTestId('recovery-email').fill(email);
+    await page.getByTestId('recovery-name').fill('Recovery Grouped');
+    await page.getByTestId('recovery-submit').click();
+    await expect(page.getByTestId('recovery-confirmation')).toBeVisible();
+
+    await expect.poll(async () => (await requestsFor(email)).length).toBe(1);
+    const [request] = await requestsFor(email);
+    cleanup.push(`recoveryRequests/${request.key}`);
+
+    await expect(dialog.locator('mat-dialog-actions button')).toHaveCount(1);
+    await expect(dialog.getByRole('button', { name: 'Done' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Done' }).click();
   });
 
   test('forgot password writes a reset email and shows the generic banner', async ({ page }) => {
@@ -236,6 +289,7 @@ test.describe('account recovery', () => {
 
       const before = await latestOutboundEmail('password_reset', { to: email });
       await page.getByTestId('auth-email').fill(email);
+      await openHelp(page);
       await page.getByTestId('auth-forgot').click();
       await expect(page.getByTestId('auth-reset-info')).toBeVisible();
 
@@ -253,6 +307,7 @@ test.describe('account recovery', () => {
     const before = (await requestsFor(email)).length;
 
     await page.goto('/');
+    await openHelp(page);
     await page.getByTestId('auth-recovery-open').click();
     await page.getByTestId('recovery-submit').click();
     await expect(page.getByTestId('recovery-error')).toBeVisible();
@@ -267,7 +322,7 @@ test.describe('account recovery', () => {
     const [request] = await requestsFor(email);
     expect(request.alternateContact ?? null).toBeNull();
     cleanup.push(`recoveryRequests/${request.key}`);
-    await page.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
   });
 
   test('admin generates a reset link, emails the alternate, resolves, and audits', async ({ page }) => {
@@ -283,7 +338,7 @@ test.describe('account recovery', () => {
     cleanup.push(`recoveryRequests/${request.key}`);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page
       .locator('.recovery-row')
       .filter({ hasText: marker })
@@ -364,7 +419,7 @@ test.describe('account recovery', () => {
     cleanup.push(`recoveryRequests/${request.key}`);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
@@ -409,7 +464,7 @@ test.describe('account recovery', () => {
     cleanup.push(`recoveryRequests/${request.key}`);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: accountEmail });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recovery-reason').fill('Verified by phone');
@@ -445,7 +500,7 @@ test.describe('account recovery', () => {
     cleanup.push(`recoveryRequests/${request.key}`);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: email });
     await expect(row).toBeVisible();
 
@@ -476,7 +531,7 @@ test.describe('account recovery', () => {
       await writeDb('config/adminAlertRecipients', []);
 
       await login(page, 'admin');
-      await page.goto('/admin/recovery');
+      await page.goto('/admin/support');
 
       const card = page.getByTestId('admin-recipients');
       await expect(card.locator('app-no-results-message')).toContainText('recovery alerts go nowhere');
@@ -491,7 +546,7 @@ test.describe('account recovery', () => {
     const triggerEmail = 'recovery-eleven@e2e.local';
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     await expect(page.getByTestId('admin-recipients')).toBeVisible();
 
     await page.getByTestId('admin-recipient-email').fill(added);
@@ -536,7 +591,7 @@ test.describe('account recovery', () => {
     await trackAlertRows(triggerEmail);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page.locator('.recipient-row', { hasText: added });
     await expect(row).toBeVisible();
     await row.getByTestId('admin-recipient-remove').click();
@@ -591,7 +646,7 @@ test.describe('account recovery', () => {
     }
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     await expect(page.getByTestId('admin-account-creations')).toContainText(email);
   });
 
@@ -605,7 +660,7 @@ test.describe('account recovery', () => {
     }
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const card = page.getByTestId('admin-recovery-activity');
     await expect(card.locator('.activity-row').filter({ hasText: email })).toBeVisible();
 
@@ -628,7 +683,7 @@ test.describe('account recovery', () => {
     cleanup.push(`recoveryRequests/${key}`);
 
     await login(page, 'admin');
-    await page.goto('/admin/recovery');
+    await page.goto('/admin/support');
     const row = page.locator('.recovery-row').filter({ hasText: marker }).filter({ hasText: email });
     await expect(row).toBeVisible();
     await expect(row.getByTestId('admin-recovery-status')).toHaveText('pending');

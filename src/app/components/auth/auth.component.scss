@@ -196,11 +196,40 @@
 }
 
 .auth-google {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   height: 48px;
   border-radius: var(--radius-control);
   font-weight: 600;
+  background: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent) !important;
+  // minimalist: pin the outlined-button tokens neutral so Material's primary
+  // hue does not repaint the Google button green in either theme.
+  --mdc-outlined-button-label-text-color: var(--color-ink);
+  --mdc-outlined-button-outline-color: color-mix(in srgb, var(--color-ink) 20%, transparent);
+  --mdc-outlined-button-container-color: var(--color-surface);
+  --mdc-outlined-button-hover-label-text-color: var(--color-ink);
+  --mdc-outlined-button-focus-label-text-color: var(--color-ink);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-ink) 4%, var(--color-surface)) !important;
+    border-color: color-mix(in srgb, var(--color-ink) 32%, transparent) !important;
+  }
+}
+
+.auth-google-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-google-icon {
+  flex-shrink: 0;
+  display: block;
 }
 
 .auth-divider {
@@ -217,6 +246,32 @@
     flex: 1;
     height: 1px;
     background: var(--color-overlay-ink-10);
+  }
+}
+
+.auth-help-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-2);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -467,8 +522,16 @@
     margin-top: 2px;
   }
 
+  .auth-google {
+    height: 44px;
+  }
+
+  .auth-divider {
+    margin: 12px 0 6px;
+  }
+
   .auth-card--login .auth-submit {
-    margin-top: 16px;
+    margin-top: 10px;
   }
 
   // Account page: lift the Sign Out pill clear of the fold.

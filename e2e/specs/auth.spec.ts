@@ -196,12 +196,13 @@ test.describe('auth', () => {
     await expect(page).toHaveURL(/\/calendar/);
   });
 
-  test('login page shows a labelled Google button', async ({ page }) => {
+  test('login page shows a labelled Google button with an inline icon', async ({ page }) => {
     await page.goto('/');
     const google = page.getByTestId('auth-google');
     await expect(google).toBeVisible();
-    await expect(google).toContainText('Continue with Google');
-    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+    await expect(google).toContainText('Sign in with Google');
+    await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
+    await expect(google.locator('svg')).toHaveCount(1);
   });
 
   test('account theme control is full width on the surface color', async ({ page }) => {
@@ -282,16 +283,24 @@ test.describe('auth', () => {
     await expect(page.locator('input[type="email"]')).toHaveCount(0);
   });
 
-  test('sign-in card orders email above Google and uses the exact copy', async ({ page }) => {
+  test('sign-in card orders Google above email and uses the exact copy', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Sign In', exact: true })).toBeVisible();
     await expect(page.getByText('Welcome to LeCoursville', { exact: true })).toBeVisible();
     await expect(page.getByTestId('auth-submit')).toHaveText('Sign In');
     await expect(page.getByTestId('auth-mode-signin')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('auth-mode-create')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.getByTestId('auth-google')).toContainText('Sign in with Google');
+    const googleContent = page.getByTestId('auth-google').locator('.auth-google-content');
+    const googleIconBox = (await googleContent.locator('svg.auth-google-icon').boundingBox())!;
+    const googleWordBox = (await googleContent.locator('span').boundingBox())!;
+    expect(
+      Math.abs((googleIconBox.y + googleIconBox.height / 2) - (googleWordBox.y + googleWordBox.height / 2)),
+    ).toBeLessThan(6);
+    expect(googleIconBox.x + googleIconBox.width).toBeLessThanOrEqual(googleWordBox.x + 1);
     const emailBox = (await page.getByTestId('auth-email').boundingBox())!;
     const googleBox = (await page.getByTestId('auth-google').boundingBox())!;
-    expect(emailBox.y, 'email field renders above the Google button').toBeLessThan(googleBox.y);
+    expect(googleBox.y, 'Google button renders above the email field').toBeLessThan(emailBox.y);
   });
 
   test('mode tabs expose tab semantics, roving tabindex, and arrow navigation', async ({ page }) => {
@@ -318,15 +327,35 @@ test.describe('auth', () => {
     await expect(signin).toBeFocused();
   });
 
-  test('create mode keeps recovery links and shows the pending notice', async ({ page }) => {
+  test('create mode hides help controls, shows the pending notice, and restores the toggle', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('auth-mode-create').click();
     await expect(page.getByTestId('auth-pending-notice')).toContainText('pending until an admin approves');
-    await expect(page.getByTestId('auth-forgot')).toBeVisible();
-    await expect(page.getByTestId('auth-recovery-open')).toBeVisible();
+    await expect(page.getByTestId('auth-help-toggle')).toHaveCount(0);
+    await expect(page.getByTestId('auth-forgot')).toHaveCount(0);
+    await expect(page.getByTestId('auth-recovery-open')).toHaveCount(0);
 
     await page.getByTestId('auth-mode-signin').click();
     await expect(page.getByTestId('auth-pending-notice')).toHaveCount(0);
+    await expect(page.getByTestId('auth-help-toggle')).toBeVisible();
+    await expect(page.getByTestId('auth-help-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('auth-forgot')).toHaveCount(0);
+  });
+
+  test('help controls stay hidden until the sign-in help toggle is pressed', async ({ page }) => {
+    await page.goto('/');
+    const toggle = page.getByTestId('auth-help-toggle');
+    await expect(toggle).toBeVisible();
+    await expect(toggle.locator('mat-icon')).toHaveCount(0);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('auth-forgot')).toHaveCount(0);
+    await expect(page.getByTestId('auth-recovery-open')).toHaveCount(0);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId('auth-forgot')).toBeVisible();
+    await expect(page.getByTestId('auth-recovery-open')).toBeVisible();
+    await expect(page.getByTestId('auth-recovery-open').locator('mat-icon')).toHaveText('local_hospital');
   });
 
   test('form errors are announced by role and associated with the failing field', async ({ page }) => {
