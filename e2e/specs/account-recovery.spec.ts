@@ -127,11 +127,18 @@ async function addRecoveryRequest(page: Page, email: string, name: string, alter
   await expect(page.getByTestId('recovery-email')).toBeVisible();
   await page.getByTestId('recovery-email').fill(email);
   await page.getByTestId('recovery-name').fill(name);
-  if (alternateContact) {
-    await page.getByTestId('recovery-alt-contact').fill(alternateContact);
-  }
   await page.getByTestId('recovery-submit').click();
   await expect(page.getByTestId('recovery-confirmation')).toBeVisible();
+  if (alternateContact) {
+    // The dialog no longer collects a backup contact; the admin flows still
+    // read one, so seed it onto the row the submission just created.
+    await expect
+      .poll(async () => (await requestsFor(email)).filter((r) => r.name === name).length)
+      .toBeGreaterThan(0);
+    const request = (await requestsFor(email)).find((r) => r.name === name)!;
+    await writeDb(`recoveryRequests/${request.key}/alternateContact`, alternateContact);
+    cleanup.push(`recoveryRequests/${request.key}`);
+  }
   await page.getByRole('button', { name: 'Done' }).click();
 }
 
@@ -173,13 +180,14 @@ test.describe('account recovery', () => {
 
     const dialog = page.locator('mat-dialog-container');
     await expect(dialog.getByRole('heading', { name: 'Request Account Recovery' })).toBeVisible();
-    await expect(dialog.getByText('Your Account', { exact: true })).toBeVisible();
-    await expect(dialog.getByText('Backup Contact (Optional)', { exact: true })).toBeVisible();
+    await expect(dialog.getByText('Your Account', { exact: true })).toHaveCount(0);
+    await expect(dialog.getByText('Backup Contact (Optional)', { exact: true })).toHaveCount(0);
     await expect(
       dialog.getByText('We will use this if your LeCoursville email is not working.', { exact: true }),
-    ).toBeVisible();
-    await expect(dialog.getByText('Another email or phone', { exact: true })).toBeVisible();
-    await expect(dialog.getByText('Message', { exact: true })).toBeVisible();
+    ).toHaveCount(0);
+    await expect(dialog.getByText('Another email or phone', { exact: true })).toHaveCount(0);
+    await expect(page.getByTestId('recovery-alt-contact')).toHaveCount(0);
+    await expect(dialog.getByText('Message (optional)', { exact: true })).toBeVisible();
     await expect(dialog.getByText(/Another email or phone, optional/)).toHaveCount(0);
     await expect(dialog.getByText(/^Message, optional$/)).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Send Request' })).toBeVisible();
