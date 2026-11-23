@@ -4,33 +4,21 @@
     <p class="recovery-intro">
       Locked out? An administrator will review this and reply using the details below.
     </p>
-    <div class="recovery-group">
-      <p class="recovery-group-label">Your Account</p>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
-        <mat-label>Email on the account</mat-label>
-        <input matInput type="email" name="recoveryEmail" [(ngModel)]="email"
-          autocomplete="email" required data-testid="recovery-email" />
-      </mat-form-field>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
-        <mat-label>Full name</mat-label>
-        <input matInput name="recoveryName" [(ngModel)]="name"
-          maxlength="100" required data-testid="recovery-name" />
-      </mat-form-field>
-    </div>
-    <div class="recovery-group">
-      <p class="recovery-group-label">Backup Contact (Optional)</p>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
-        <mat-label>Another email or phone</mat-label>
-        <input matInput name="recoveryAlternateContact" [(ngModel)]="alternateContact"
-          maxlength="320" data-testid="recovery-alt-contact" />
-      </mat-form-field>
-      <p class="recovery-field-note">We will use this if your LeCoursville email is not working.</p>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
-        <mat-label>Message</mat-label>
-        <textarea matInput name="recoveryMessage" [(ngModel)]="message"
-          rows="3" maxlength="500" data-testid="recovery-message"></textarea>
-      </mat-form-field>
-    </div>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
+      <mat-label>Email on the account</mat-label>
+      <input matInput type="email" name="recoveryEmail" [(ngModel)]="email"
+        autocomplete="email" required data-testid="recovery-email" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
+      <mat-label>Full name</mat-label>
+      <input matInput name="recoveryName" [(ngModel)]="name"
+        maxlength="100" required data-testid="recovery-name" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="recovery-field">
+      <mat-label>Message (optional)</mat-label>
+      <textarea matInput name="recoveryMessage" [(ngModel)]="message"
+        rows="4" maxlength="500" data-testid="recovery-message"></textarea>
+    </mat-form-field>
     @if (error) {
       <div class="recovery-banner" role="alert" data-testid="recovery-error">
         <mat-icon aria-hidden="true">error_outline</mat-icon>

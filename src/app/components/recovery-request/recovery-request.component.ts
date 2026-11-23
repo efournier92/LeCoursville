@@ -18,7 +18,6 @@ export interface RecoveryDialogData {
 export class RecoveryRequestComponent {
   email = "";
   name = "";
-  alternateContact = "";
   message = "";
   loading = false;
   submitted = false;
@@ -48,14 +47,11 @@ export class RecoveryRequestComponent {
     }
     this.loading = true;
     this.error = "";
-    this.analytics.logEvent("recovery_submitted", {
-      hasAlternateContact: !!this.alternateContact.trim(),
-    });
+    this.analytics.logEvent("recovery_submitted", {});
     try {
       await this.cloudFunctions.submitRecoveryRequest({
         email,
         name: name.slice(0, 100),
-        alternateContact: this.alternateContact.trim().slice(0, 320) || undefined,
         message: this.message.trim().slice(0, 500) || undefined,
       });
       this.submitted = true;
